@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>websites — where Zimbabwe builds online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff;--bg2:#F6F7F9;--bg3:#FBFBFC;--ink:#0B0C0F;--ink2:#5A626E;--ink3:#9099A4;
+    --line:#ECEEF1;--line2:#E2E5EA;--black:#101114;--green:#15924B;--yellow:#F4C20D;--red:#E23B2E;
+    --r:16px;--ease:cubic-bezier(.22,1,.36,1);--maxw:1160px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"Hanken Grotesk",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:"Archivo",sans-serif;font-weight:800;line-height:1.05;letter-spacing:-.025em}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+  /* brand mark */
+  .brand{display:inline-flex;align-items:center;font-family:"Archivo",sans-serif;font-weight:900;font-size:1.5rem;letter-spacing:-.04em;color:var(--ink);line-height:1}
+  .brand .dots{display:inline-flex;flex-direction:column;justify-content:center;gap:.07em;margin:0 .04em}
+  .brand .dots i{width:.26em;height:.26em;border-radius:50%}
+  .brand .dots i:nth-child(1){background:var(--green)}.brand .dots i:nth-child(2){background:var(--yellow)}.brand .dots i:nth-child(3){background:var(--red)}
+  .flagbar{display:inline-flex;height:5px;border-radius:3px;overflow:hidden;width:62px}
+  .flagbar i{flex:1}.flagbar i:nth-child(1){background:var(--green)}.flagbar i:nth-child(2){background:var(--yellow)}.flagbar i:nth-child(3){background:var(--red)}
+  .tagline{font-family:"Archivo";font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:.7rem;color:var(--ink2)}
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:8px;font-family:"Hanken Grotesk";font-weight:600;font-size:.96rem;padding:13px 24px;border-radius:11px;border:1px solid transparent;cursor:pointer;transition:.22s var(--ease)}
+  .btn.dark{background:var(--black);color:#fff}.btn.dark:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(16,17,20,.5)}
+  .btn.ghost{background:#fff;color:var(--ink);border-color:var(--line2)}.btn.ghost:hover{border-color:var(--ink);background:var(--bg2)}
+  .btn.green{background:var(--green);color:#fff}.btn.green:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(21,146,75,.5)}
+  /* nav */
+  header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.8);backdrop-filter:blur(16px);border-bottom:1px solid transparent;transition:.3s}
+  header.s{border-color:var(--line);background:rgba(255,255,255,.92)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
+  .nav-links{display:flex;gap:32px}.nav-links a{font-size:.94rem;font-weight:500;color:var(--ink2)}.nav-links a:hover{color:var(--ink)}
+  .nav-right{display:flex;align-items:center;gap:18px}.nav-right .si{font-weight:600;font-size:.94rem}
+  /* hero */
+  .hero{padding:150px 0 70px;text-align:center;position:relative;overflow:hidden}
+  .hero .pill{display:inline-flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--line);padding:6px 14px;border-radius:100px;font-size:.82rem;font-weight:600;color:var(--ink2)}
+  .hero .pill .fb{display:inline-flex;height:9px;width:24px;border-radius:2px;overflow:hidden}.hero .pill .fb i{flex:1}.hero .pill .fb i:nth-child(1){background:var(--green)}.hero .pill .fb i:nth-child(2){background:var(--yellow)}.hero .pill .fb i:nth-child(3){background:var(--red)}
+  .hero h1{font-size:clamp(2.8rem,6.5vw,5rem);font-weight:900;margin:26px auto 0;max-width:16ch}
+  .hero h1 .g{color:var(--green)}
+  .hero p{font-size:1.22rem;color:var(--ink2);max-width:48ch;margin:22px auto 0}
+  .hero-cta{display:flex;gap:14px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+  .hero-note{font-size:.86rem;color:var(--ink3);margin-top:16px}
+  /* browser mock */
+  .mock{max-width:920px;margin:60px auto 0;border-radius:18px;border:1px solid var(--line2);background:#fff;box-shadow:0 50px 100px -40px rgba(11,12,15,.28),0 18px 40px -24px rgba(11,12,15,.18);overflow:hidden}
+  .mock .bar{display:flex;align-items:center;gap:7px;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--bg3)}
+  .mock .bar i{width:11px;height:11px;border-radius:50%;background:#DDE1E6}
+  .mock .url{margin-left:10px;flex:1;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:.78rem;color:var(--ink2);padding:6px 13px}
+  .mock .url b{color:var(--green);font-weight:700}
+  .mockface{display:grid;grid-template-columns:1.1fr .9fr;min-height:330px}
+  .mockL{padding:38px 34px;display:flex;flex-direction:column;justify-content:center}
+  .mockL .k{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--green);font-weight:700}
+  .mockL h3{font-size:2rem;margin:10px 0 8px}.mockL p{font-size:.92rem;color:var(--ink2);max-width:30ch}
+  .mockL .mb{display:inline-block;margin-top:18px;background:var(--black);color:#fff;font-size:.82rem;font-weight:600;padding:9px 18px;border-radius:8px;width:fit-content}
+  .mockR{background-size:cover;background-position:center}
+  /* sections */
+  section{padding:88px 0}
+  .eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--green)}
+  .eyebrow::before{content:"";width:22px;height:2px;background:var(--green)}
+  .sec-head{max-width:640px}
+  .sec-head.center{margin:0 auto;text-align:center}.sec-head.center .eyebrow{justify-content:center}
+  .sec-title{font-size:clamp(2rem,4vw,3rem);margin-top:16px}
+  .sec-sub{font-size:1.12rem;color:var(--ink2);margin-top:14px}
+  .seg{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:26px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:100px;padding:9px 18px;font-weight:600;font-size:.92rem;color:var(--ink2)}
+  /* features */
+  .feat{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:54px}
+  .fcard{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:26px 22px;transition:.3s var(--ease)}
+  .fcard:hover{border-color:var(--line2);box-shadow:0 24px 50px -34px rgba(11,12,15,.3);transform:translateY(-4px)}
+  .fico{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-size:1.2rem;margin-bottom:16px;background:var(--bg2)}
+  .fcard h3{font-size:1.16rem}.fcard p{font-size:.92rem;color:var(--ink2);margin-top:8px}
+  /* templates */
+  .tpls{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:54px}
+  .tpl{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#fff;transition:.3s var(--ease);display:block}
+  .tpl:hover{transform:translateY(-5px);box-shadow:0 28px 56px -34px rgba(11,12,15,.35);border-color:var(--line2)}
+  .tpl .thumb{aspect-ratio:16/10;background-size:cover;background-position:center;border-bottom:1px solid var(--line)}
+  .tpl .tb{padding:16px 18px;display:flex;align-items:center;justify-content:space-between}
+  .tpl .tb b{font-size:1rem}.tpl .tb span{font-size:.82rem;color:var(--ink3)}.tpl .tb .ar{color:var(--green);font-weight:700}
+  /* pricing */
+  .price{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:54px}
+  .plan{border:1px solid var(--line);border-radius:var(--r);padding:28px 24px;background:#fff;display:flex;flex-direction:column;transition:.3s var(--ease)}
+  .plan:hover{box-shadow:0 24px 50px -34px rgba(11,12,15,.3);transform:translateY(-4px)}
+  .plan.hl{border:2px solid var(--ink);position:relative}
+  .badge{position:absolute;top:-11px;left:24px;background:var(--green);color:#fff;font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:100px}
+  .plan .pn{font-family:"Archivo";font-weight:700;font-size:1.1rem}
+  .plan .pp{margin:14px 0 4px}.plan .pp b{font-family:"Archivo";font-size:2.4rem;font-weight:800;letter-spacing:-.03em}.plan .pp span{color:var(--ink2);font-size:.9rem;font-weight:500}
+  .plan .pd{font-size:.86rem;color:var(--ink2);min-height:36px}
+  .plan ul{list-style:none;margin:18px 0 22px;display:flex;flex-direction:column;gap:10px;flex:1}
+  .plan li{font-size:.9rem;display:flex;gap:9px}.plan li .ck{color:var(--green);font-weight:800}
+  .plan .btn{width:100%;justify-content:center}
+  /* steps */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:54px}
+  .step .no{font-family:"Archivo";font-weight:800;font-size:1.1rem;width:40px;height:40px;border-radius:11px;background:var(--bg2);display:grid;place-items:center;margin-bottom:16px}
+  .step h4{font-size:1.1rem}.step p{font-size:.9rem;color:var(--ink2);margin-top:6px}
+  /* cta band */
+  .cta{background:var(--black);color:#fff;border-radius:26px;margin:0 28px;padding:80px 0;text-align:center;position:relative;overflow:hidden}
+  .cta .fb{display:inline-flex;height:6px;width:80px;border-radius:3px;overflow:hidden;margin-bottom:24px}.cta .fb i{flex:1}.cta .fb i:nth-child(1){background:var(--green)}.cta .fb i:nth-child(2){background:var(--yellow)}.cta .fb i:nth-child(3){background:var(--red)}
+  .cta h2{color:#fff;font-size:clamp(2.2rem,4.5vw,3.4rem)}.cta p{color:rgba(255,255,255,.7);font-size:1.15rem;margin:16px auto 0;max-width:44ch}
+  .cta .btn{margin-top:30px}
+  /* footer */
+  footer{padding:64px 0 40px}
+  .foot{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;padding-bottom:36px;border-bottom:1px solid var(--line)}
+  .foot p{font-size:.92rem;color:var(--ink2);margin-top:14px;max-width:30ch}
+  .foot h5{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-bottom:14px}
+  .foot a{display:block;font-size:.92rem;color:var(--ink2);margin-bottom:10px}.foot a:hover{color:var(--ink)}
+  .foot-bot{display:flex;justify-content:space-between;align-items:center;padding-top:26px;flex-wrap:wrap;gap:12px;font-size:.86rem;color:var(--ink3)}
+  @media(max-width:980px){.feat,.price{grid-template-columns:repeat(2,1fr)}.tpls,.steps{grid-template-columns:repeat(2,1fr)}.foot{grid-template-columns:1fr 1fr}.mockface{grid-template-columns:1fr}.mockR{min-height:180px}.nav-links{display:none}}
+  @media(max-width:620px){.feat,.price,.tpls,.steps,.foot{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header id="hdr"><div class="wrap nav">
+  <a href="#" class="brand">webs<span class="dots"><i></i><i></i><i></i></span>tes</a>
+  <nav class="nav-links"><a href="#templates">Templates</a><a href="#pricing">Pricing</a><a href="#how">How it works</a></nav>
+  <div class="nav-right"><a class="si" href="../dashboard/customer.html">Sign in</a><a class="btn dark" href="#pricing">Build my site</a></div>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <span class="pill"><span class="fb"><i></i><i></i><i></i></span> Free .co.zw domain included</span>
+  <h1>Where Zimbabwe <span class="g">builds online.</span></h1>
+  <p>Pick a template, make it yours, and publish in minutes — hosting, a free .co.zw domain, mobile &amp; WhatsApp, all included. From $30 a year.</p>
+  <div class="hero-cta"><a class="btn dark" href="#pricing">Build my site — free domain</a><a class="btn ghost" href="#templates">Browse templates</a></div>
+  <div class="hero-note">No code. No designer. Live today.</div>
+
+  <div class="mock">
+    <div class="bar"><i></i><i></i><i></i><div class="url">🔒 <b>tendai-hardware</b>.co.zw</div></div>
+    <div class="mockface">
+      <div class="mockL"><span class="k">Hardware · Mutare</span><h3>Tendai's Hardware</h3><p>Quality tools, paint and building supplies — trusted since 2009.</p><span class="mb">Visit our store →</span></div>
+      <div class="mockR" style="background-image:url('https://picsum.photos/seed/tendai-hw/700/700')"></div>
+    </div>
+  </div>
+</div></section>
+
+<section style="padding-top:30px"><div class="wrap">
+  <div class="sec-head center"><span class="eyebrow">Built for every local business</span></div>
+  <div class="seg">
+    <span class="chip">🏫 Schools</span><span class="chip">⛪ Churches</span><span class="chip">💈 Salons</span><span class="chip">🍲 Restaurants</span><span class="chip">🏠 Real estate</span><span class="chip">💼 Consultants</span><span class="chip">🛍️ Retail</span><span class="chip">🤝 NGOs</span>
+  </div>
+</div></section>
+
+<section style="background:var(--bg2);border-radius:26px;margin:0 28px"><div class="wrap">
+  <div class="sec-head"><span class="eyebrow">Why websites</span><h2 class="sec-title">The fast, affordable way online.</h2><p class="sec-sub">Not here to out-feature the global builders — here to get a real Zimbabwean business online today.</p></div>
+  <div class="feat">
+    <div class="fcard"><div class="fico">⚡</div><h3>Live in minutes</h3><p>Choose a template, swap in your content, publish instantly.</p></div>
+    <div class="fcard"><div class="fico">🌍</div><h3>Free .co.zw domain</h3><p>Your own address included — or add a .com for $50/yr.</p></div>
+    <div class="fcard"><div class="fico">✏️</div><h3>Edit it yourself</h3><p>Change text, colours, images and logo anytime. No developer.</p></div>
+    <div class="fcard"><div class="fico">💬</div><h3>WhatsApp ready</h3><p>Every site ships with WhatsApp enquiries and contact forms.</p></div>
+  </div>
+</div></section>
+
+<section id="templates"><div class="wrap">
+  <div class="sec-head center"><span class="eyebrow">Industry templates</span><h2 class="sec-title">Start from a template built for you.</h2><p class="sec-sub">Designed for how Zimbabwean businesses actually work — then made unmistakably yours.</p></div>
+  <div class="tpls">
+    <a class="tpl" href="../templates/consultant/index.html"><div class="thumb" style="background-image:url('https://picsum.photos/seed/t-consult/600/375')"></div><div class="tb"><div><b>Consultants</b><br><span>Services &amp; leads</span></div><span class="ar">→</span></div></a>
+    <a class="tpl" href="../templates/salon/index.html"><div class="thumb" style="background-image:url('https://picsum.photos/seed/t-salon/600/375')"></div><div class="tb"><div><b>Salons &amp; beauty</b><br><span>Services &amp; bookings</span></div><span class="ar">→</span></div></a>
+    <a class="tpl" href="../templates/restaurant/index.html"><div class="thumb" style="background-image:url('https://picsum.photos/seed/t-resto/600/375')"></div><div class="tb"><div><b>Restaurants</b><br><span>Menu &amp; orders</span></div><span class="ar">→</span></div></a>
+    <a class="tpl" href="../templates/realestate/index.html"><div class="thumb" style="background-image:url('https://picsum.photos/seed/t-estate/600/375')"></div><div class="tb"><div><b>Real estate</b><br><span>Listings &amp; enquiries</span></div><span class="ar">→</span></div></a>
+    <a class="tpl" href="../templates/school/index.html"><div class="thumb" style="background-image:url('https://picsum.photos/seed/t-school/600/375')"></div><div class="tb"><div><b>Schools</b><br><span>Programmes &amp; enrolment</span></div><span class="ar">→</span></div></a>
+    <a class="tpl" href="#pricing"><div class="thumb" style="background:var(--bg2);display:grid;place-items:center;font-size:1.8rem">✨</div><div class="tb"><div><b>More monthly</b><br><span>New industries added</span></div><span class="ar">→</span></div></a>
+  </div>
+</div></section>
+
+<section id="pricing" style="background:var(--bg2);border-radius:26px;margin:0 28px"><div class="wrap">
+  <div class="sec-head center"><span class="eyebrow">Simple pricing</span><h2 class="sec-title">Affordable to start. Grows with you.</h2><p class="sec-sub">Start free-domain on .co.zw. Upgrade only when you're ready.</p></div>
+  <div class="price">
+    <div class="plan"><div class="pn">Website</div><div class="pp"><b>$30</b><span>/ year</span></div><p class="pd">A professional site on your free .co.zw domain.</p><ul><li><span class="ck">✓</span>Free .co.zw domain</li><li><span class="ck">✓</span>Hosting &amp; SSL</li><li><span class="ck">✓</span>Self-service editing</li><li><span class="ck">✓</span>WhatsApp &amp; forms</li></ul><a class="btn ghost" href="#">Start free domain</a></div>
+    <div class="plan hl"><span class="badge">Most popular</span><div class="pn">Website + .com</div><div class="pp"><b>$50</b><span>/ year</span></div><p class="pd">Everything, on your own global .com address.</p><ul><li><span class="ck">✓</span>Everything in Website</li><li><span class="ck">✓</span>Your own .com domain</li><li><span class="ck">✓</span>Domain managed for you</li><li><span class="ck">✓</span>Priority support</li></ul><a class="btn dark" href="#">Get a .com</a></div>
+    <div class="plan"><div class="pn">Online store</div><div class="pp"><b>$30</b><span>/ month</span></div><p class="pd">Sell online — products, payments &amp; WhatsApp checkout.</p><ul><li><span class="ck">✓</span>Products &amp; payments</li><li><span class="ck">✓</span>EcoCash &amp; cards</li><li><span class="ck">✓</span>Orders &amp; inventory</li><li><span class="ck">✓</span>WhatsApp store</li></ul><a class="btn ghost" href="#">Add a store</a></div>
+    <div class="plan"><div class="pn">Bespoke</div><div class="pp"><b>$250</b><span>+ project</span></div><p class="pd">Custom-built website, designed to your exact brief.</p><ul><li><span class="ck">✓</span>Tailored design</li><li><span class="ck">✓</span>Custom features</li><li><span class="ck">✓</span>Dedicated team</li><li><span class="ck">✓</span>Managed delivery</li></ul><a class="btn ghost" href="#">Request a quote</a></div>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="sec-head center"><span class="eyebrow">How it works</span><h2 class="sec-title">From idea to online in four steps.</h2></div>
+  <div class="steps">
+    <div class="step"><div class="no">1</div><h4>Pick a template</h4><p>Choose the one built for your industry.</p></div>
+    <div class="step"><div class="no">2</div><h4>Make it yours</h4><p>Add your words, photos, colours and logo.</p></div>
+    <div class="step"><div class="no">3</div><h4>Publish free</h4><p>Go live on your free .co.zw domain instantly.</p></div>
+    <div class="step"><div class="no">4</div><h4>Grow online</h4><p>Add a store, a .com, or commission a bespoke build.</p></div>
+  </div>
+</div></section>
+
+<section class="cta"><div class="wrap">
+  <span class="fb"><i></i><i></i><i></i></span>
+  <h2>Your business deserves to be found.</h2>
+  <p>Join the businesses getting online with websites — affordable, simple, and proudly Zimbabwean.</p>
+  <a class="btn green" href="#pricing">Build my site — from $30/yr</a>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="foot">
+    <div><a href="#" class="brand">webs<span class="dots"><i></i><i></i><i></i></span>tes</a><p>The fast, affordable way for Zimbabwean businesses to get online.</p><div class="flagbar" style="margin-top:16px"><i></i><i></i><i></i></div></div>
+    <div><h5>Product</h5><a href="#templates">Templates</a><a href="#pricing">Pricing</a><a href="#how">How it works</a><a href="../dashboard/customer.html">Dashboard</a></div>
+    <div><h5>Business</h5><a href="#">Schools</a><a href="#">Restaurants</a><a href="#">Real estate</a><a href="#">Online stores</a></div>
+    <div><h5>Company</h5><a href="#">About</a><a href="#">Support</a><a href="#">Contact</a></div>
+  </div>
+  <div class="foot-bot"><span>© 2026 websites · where Zimbabwe builds online</span><span class="tagline">Made in Zimbabwe 🇿🇼</span></div>
+</div></footer>
+<script>addEventListener('scroll',()=>document.getElementById('hdr').classList.toggle('s',scrollY>10));</script>
+</body></html>

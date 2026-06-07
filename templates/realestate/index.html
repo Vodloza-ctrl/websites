@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mvura Properties — Homes & Land across Zimbabwe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--forest:#13392A;--forest2:#1C4F3B;--cream:#F6F1E7;--gold:#B0852F;--ink:#1E2A24;--ink2:#5E6B63;--paper:#fff;--line:rgba(19,57,42,.12)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Plus Jakarta Sans",sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Fraunces",serif;font-weight:600;line-height:1.08;letter-spacing:-.02em}
+  a{color:inherit;text-decoration:none}.wrap{max-width:1160px;margin:0 auto;padding:0 26px}
+  header{position:sticky;top:0;z-index:50;background:rgba(246,241,231,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+  .logo{font-family:"Fraunces",serif;font-weight:700;font-size:1.35rem}.logo b{color:var(--gold)}
+  .nav nav{display:flex;gap:26px}.nav nav a{font-size:.9rem;font-weight:500;color:var(--ink2)}.nav nav a:hover{color:var(--forest)}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--forest);color:#fff;font-weight:600;font-size:.9rem;padding:11px 20px;border-radius:8px;transition:.2s}.btn:hover{background:var(--forest2)}
+  .hero{position:relative;min-height:62vh;display:flex;align-items:center;color:#fff}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(19,57,42,.85),rgba(19,57,42,.35))}
+  .hero .wrap{position:relative;z-index:2;padding:50px 26px}
+  .hero .eyebrow{font-size:.82rem;letter-spacing:.18em;text-transform:uppercase;color:#D8C18A;font-weight:700}
+  .hero h1{font-size:clamp(2.4rem,5vw,4rem);margin:14px 0 16px;max-width:18ch}
+  .hero p{font-size:1.12rem;max-width:42ch;color:rgba(255,255,255,.9)}
+  .search{background:#fff;border-radius:12px;padding:12px;display:flex;gap:10px;margin-top:30px;max-width:640px;box-shadow:0 24px 50px -24px rgba(0,0,0,.5)}
+  .search input,.search select{flex:1;border:none;font-family:inherit;font-size:.92rem;padding:8px 10px;color:var(--ink);background:transparent}
+  .search .btn{flex:none}
+  section{padding:60px 0}.sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:34px;flex-wrap:wrap;gap:12px}
+  .sec-head h2{font-size:clamp(1.9rem,3.5vw,2.6rem)}.sec-head p{color:var(--ink2);margin-top:6px}
+  .listings{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .prop{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:.3s}
+  .prop:hover{transform:translateY(-5px);box-shadow:0 26px 50px -28px rgba(19,57,42,.4)}
+  .prop .ph{position:relative}.prop .ph img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+  .prop .badge{position:absolute;top:12px;left:12px;background:var(--gold);color:#fff;font-size:.74rem;font-weight:700;padding:4px 11px;border-radius:6px}
+  .prop .badge.rent{background:var(--forest)}
+  .prop .body{padding:18px}
+  .prop .price{font-family:"Fraunces",serif;font-size:1.5rem;font-weight:700;color:var(--forest)}
+  .prop h3{font-size:1.08rem;margin:4px 0 4px;font-family:"Plus Jakarta Sans";font-weight:700}
+  .prop .loc{font-size:.86rem;color:var(--ink2)}
+  .prop .feat{display:flex;gap:16px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:.84rem;color:var(--ink2)}
+  .prop .feat span{display:flex;align-items:center;gap:5px}
+  .prop .enq{margin-top:14px;display:flex;gap:8px}
+  .enqbtn{flex:1;text-align:center;background:var(--forest);color:#fff;font-weight:600;font-size:.84rem;padding:9px;border-radius:8px}
+  .enqwa{background:#25D366;color:#fff;font-weight:600;font-size:.84rem;padding:9px 12px;border-radius:8px}
+  .band{background:var(--forest);color:#fff;text-align:center;padding:58px 0;border-radius:0}
+  .band h2{color:#fff;font-size:clamp(2rem,4vw,2.6rem)}.band p{color:rgba(255,255,255,.72);margin:12px auto 0;max-width:46ch}
+  .wa{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:#fff;font-weight:700;padding:14px 26px;border-radius:10px;margin-top:24px}
+  footer{background:#0C261C;color:rgba(255,255,255,.6);padding:40px 0;font-size:.9rem}
+  .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  @media(max-width:860px){.listings{grid-template-columns:1fr}.nav nav{display:none}.search{flex-wrap:wrap}}
+</style></head>
+<body>
+<header><div class="wrap nav">
+  <div class="logo">Mvura<b>.</b>Properties</div>
+  <nav><a href="#listings">Listings</a><a href="#sell">Sell with us</a><a href="#contact">Contact</a></nav>
+  <a href="#contact" class="btn">List your property</a>
+</div></header>
+
+<div class="hero">
+  <img src="https://picsum.photos/seed/mvura-home/1600/1000" alt="Modern home">
+  <div class="wrap">
+    <span class="eyebrow">Sales · Rentals · Land</span>
+    <h1>Find your place in Zimbabwe.</h1>
+    <p>Trusted property across Harare and beyond — for residents and the diaspora buying back home.</p>
+    <div class="search">
+      <select><option>Buy</option><option>Rent</option></select>
+      <input placeholder="Suburb or city">
+      <select><option>Any price</option><option>Up to $100k</option><option>$100k–250k</option></select>
+      <a class="btn">Search</a>
+    </div>
+  </div>
+</div>
+
+<section id="listings">
+  <div class="wrap">
+    <div class="sec-head"><div><h2>Featured listings</h2><p>Hand-picked homes and land, updated weekly.</p></div><a href="#" style="font-weight:600;color:var(--forest)">View all →</a></div>
+    <div class="listings">
+      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-borrowdale/600/450" alt=""><span class="badge">For sale</span></div><div class="body"><div class="price">$285,000</div><h3>4-bed family home</h3><div class="loc">Borrowdale, Harare</div><div class="feat"><span>🛏 4 beds</span><span>🛁 3 baths</span><span>📐 2,000m²</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
+      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-avondale/600/450" alt=""><span class="badge rent">To rent</span></div><div class="body"><div class="price">$650<span style="font-size:.9rem;color:var(--ink2)">/mo</span></div><h3>2-bed apartment</h3><div class="loc">Avondale, Harare</div><div class="feat"><span>🛏 2 beds</span><span>🛁 2 baths</span><span>🚗 Secure</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
+      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-land/600/450" alt=""><span class="badge">For sale</span></div><div class="body"><div class="price">$45,000</div><h3>Residential stand</h3><div class="loc">Ruwa, Harare</div><div class="feat"><span>📐 800m²</span><span>📄 Title deed</span><span>💧 Serviced</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
+      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-bulawayo/600/450" alt=""><span class="badge">For sale</span></div><div class="body"><div class="price">$135,000</div><h3>3-bed townhouse</h3><div class="loc">Hillside, Bulawayo</div><div class="feat"><span>🛏 3 beds</span><span>🛁 2 baths</span><span>🚗 Garage</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
+      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-cottage/600/450" alt=""><span class="badge rent">To rent</span></div><div class="body"><div class="price">$420<span style="font-size:.9rem;color:var(--ink2)">/mo</span></div><h3>Garden cottage</h3><div class="loc">Mount Pleasant, Harare</div><div class="feat"><span>🛏 1 bed</span><span>🛁 1 bath</span><span>🌿 Garden</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
+      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-farm/600/450" alt=""><span class="badge">For sale</span></div><div class="body"><div class="price">$320,000</div><h3>Smallholding & house</h3><div class="loc">Goromonzi</div><div class="feat"><span>📐 4 ha</span><span>🛏 3 beds</span><span>💧 Borehole</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="sell">
+  <div class="wrap">
+    <h2>Selling or renting out? Let's list it.</h2>
+    <p>Professional photos, diaspora reach and honest valuations. Your property in front of serious buyers.</p>
+    <a href="https://wa.me/263770000000" class="wa">💬 List with us on WhatsApp</a>
+  </div>
+</section>
+
+<footer><div class="wrap foot">
+  <div><span class="logo" style="color:#fff">Mvura<b>.</b>Properties</span><p style="margin-top:8px" id="contact">📍 8 Borrowdale Road, Harare · ✉ info@mvura.co.zw</p></div>
+  <div>© 2026 Mvura Properties · Built with websites.co.zw</div>
+</div></footer>
+</body></html>

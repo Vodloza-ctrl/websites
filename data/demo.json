@@ -1,0 +1,14 @@
+{
+  "business": "Tendai's Hardware",
+  "headline": "Everything for your home & build.",
+  "tagline": "Quality tools, paint and building supplies — trusted across Mutare since 2009.",
+  "cta": "Visit our store",
+  "heroImage": "tendai-hw",
+  "theme": { "accent": "#15924B" },
+  "services": [
+    { "icon": "🔧", "title": "Tools & hardware", "body": "Power and hand tools from trusted brands, in stock and ready." },
+    { "icon": "🎨", "title": "Paint & finishes", "body": "Interior and exterior paint, mixed to your colour while you wait." },
+    { "icon": "🧱", "title": "Building supplies", "body": "Cement, timber, roofing and plumbing for every project." }
+  ],
+  "contact": { "heading": "Come see us in Mutare", "whatsapp": "+263770000000" }
+}

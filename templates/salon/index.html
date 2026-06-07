@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhanha Beauty Lounge — Hair, Nails & Skin, Avondale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--plum:#3A1F2B;--blush:#F7ECEC;--rose:#C96A7E;--gold:#B08D57;--ink:#2E2329;--ink2:#7A6A70;--paper:#fff;--line:rgba(58,31,43,.12)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Jost",sans-serif;color:var(--ink);background:var(--paper);line-height:1.65;font-weight:300;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;line-height:1.08;letter-spacing:.01em}
+  a{color:inherit;text-decoration:none}.wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+  .logo{font-family:"Cormorant Garamond",serif;font-weight:700;font-size:1.55rem;letter-spacing:.02em}
+  .nav nav{display:flex;gap:30px}.nav nav a{font-size:.86rem;letter-spacing:.06em;text-transform:uppercase;font-weight:400;color:var(--ink2)}.nav nav a:hover{color:var(--rose)}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--plum);color:#fff;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding:12px 22px;border-radius:2px;transition:.2s}
+  .btn:hover{background:var(--rose)}
+  .hero{position:relative;min-height:78vh;display:flex;align-items:center;border-radius:0}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(58,31,43,.72),rgba(58,31,43,.25))}
+  .hero .wrap{position:relative;z-index:2;color:#fff;padding:60px 26px}
+  .hero .eyebrow{font-size:.82rem;letter-spacing:.22em;text-transform:uppercase;color:#E7C6CF}
+  .hero h1{font-size:clamp(2.8rem,6vw,4.6rem);margin:14px 0 18px;max-width:16ch}
+  .hero p{font-size:1.15rem;max-width:40ch;color:rgba(255,255,255,.9)}
+  .hero .btn{margin-top:30px;background:var(--gold)}.hero .btn:hover{background:#fff;color:var(--plum)}
+  section{padding:74px 0}.sec-head{text-align:center;max-width:600px;margin:0 auto 48px}
+  .sec-head .eyebrow{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--rose)}
+  .sec-head h2{font-size:clamp(2.2rem,4vw,3rem);margin-top:10px}.sec-head p{color:var(--ink2);margin-top:10px}
+  .services{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 50px;max-width:760px;margin:0 auto}
+  .srv{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0;border-bottom:1px dashed var(--line)}
+  .srv .n{font-family:"Cormorant Garamond",serif;font-size:1.3rem;font-weight:600}
+  .srv .meta{font-size:.84rem;color:var(--ink2)}.srv .p{font-family:"Cormorant Garamond",serif;font-size:1.3rem;color:var(--gold);font-weight:600}
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .gallery img{width:100%;aspect-ratio:1/1.2;object-fit:cover;border-radius:3px}
+  .cta{background:var(--blush);border-radius:0;text-align:center}
+  .cta h2{font-size:clamp(2.2rem,4vw,3rem)}.cta p{color:var(--ink2);margin:12px auto 0;max-width:44ch}
+  .wa{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;font-weight:500;letter-spacing:.06em;padding:14px 26px;border-radius:2px;margin-top:24px;font-size:.86rem;text-transform:uppercase}
+  .hours{display:flex;justify-content:center;gap:40px;margin-top:30px;flex-wrap:wrap;font-size:.92rem;color:var(--ink2)}
+  footer{background:var(--plum);color:rgba(255,255,255,.65);padding:40px 0;font-size:.88rem;text-align:center}
+  .footlogo{font-family:"Cormorant Garamond",serif;font-size:1.5rem;color:#fff;font-weight:700}
+  @media(max-width:760px){.services{grid-template-columns:1fr;gap:0}.gallery{grid-template-columns:repeat(2,1fr)}.nav nav{display:none}}
+</style></head>
+<body>
+<header><div class="wrap nav">
+  <div class="logo">Nhanha Beauty</div>
+  <nav><a href="#services">Services</a><a href="#gallery">Gallery</a><a href="#visit">Visit</a></nav>
+  <a href="#visit" class="btn">Book now</a>
+</div></header>
+
+<div class="hero">
+  <img src="https://picsum.photos/seed/nhanha-salon/1600/1000" alt="Beauty lounge interior">
+  <div class="wrap">
+    <span class="eyebrow">Hair · Nails · Skin</span>
+    <h1>Where you leave feeling beautiful.</h1>
+    <p>Avondale's home for expert hair, flawless nails and glowing skin — by stylists who treat every client like the only one.</p>
+    <a href="#visit" class="btn">Book your appointment</a>
+  </div>
+</div>
+
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Our menu</span><h2>Services & pricing</h2><p>Honest prices, no surprises. Walk-ins welcome when we have space.</p></div>
+    <div class="services">
+      <div class="srv"><div><div class="n">Wash & style</div><div class="meta">Blow-dry & finish</div></div><div class="p">$15</div></div>
+      <div class="srv"><div><div class="n">Braids & cornrows</div><div class="meta">From, per session</div></div><div class="p">$35</div></div>
+      <div class="srv"><div><div class="n">Gel manicure</div><div class="meta">Shape, gel & art</div></div><div class="p">$20</div></div>
+      <div class="srv"><div><div class="n">Pedicure</div><div class="meta">Spa treatment</div></div><div class="p">$18</div></div>
+      <div class="srv"><div><div class="n">Facial</div><div class="meta">Deep cleanse & glow</div></div><div class="p">$25</div></div>
+      <div class="srv"><div><div class="n">Lash extensions</div><div class="meta">Classic / volume</div></div><div class="p">$30</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="gallery" style="background:var(--blush)">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Our work</span><h2>Recently at the lounge</h2></div>
+    <div class="gallery">
+      <img src="https://picsum.photos/seed/nhanha1/500/600" alt="Hair styling">
+      <img src="https://picsum.photos/seed/nhanha2/500/600" alt="Nail art">
+      <img src="https://picsum.photos/seed/nhanha3/500/600" alt="Braids">
+      <img src="https://picsum.photos/seed/nhanha4/500/600" alt="Facial treatment">
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="visit">
+  <div class="wrap">
+    <h2>Come see us in Avondale</h2>
+    <p>Book on WhatsApp and we'll confirm your slot right away.</p>
+    <a href="https://wa.me/263770000000" class="wa">💬 Book on WhatsApp</a>
+    <div class="hours">
+      <div>📍 Shop 4, Avondale Shops, Harare</div>
+      <div>🕘 Tue–Sat · 9am – 6pm</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footlogo">Nhanha Beauty</div>
+  <p style="margin-top:8px">© 2026 Nhanha Beauty Lounge · Built with websites.co.zw</p>
+</footer>
+</body></html>
