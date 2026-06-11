@@ -114,8 +114,8 @@
 <script>
 (function(){
   "use strict";
-  // Routed under app.websites.co.zw, so same-origin relative paths.
-  var AUTH = "/auth", API = "/api";
+  // Absolute URLs — dashboard is served from Pages, API is on app.websites.co.zw
+  var AUTH = "https://app.websites.co.zw/auth", API = "https://app.websites.co.zw/api";
   var now = Math.floor(Date.now()/1000);
   var DEMO = false;
   var state = { owner:null, channel:"whatsapp", phone:"", step:"phone" };
