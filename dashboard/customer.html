@@ -159,7 +159,10 @@
   function friendly(code){ return errText[code] || "Something went wrong. Try again."; }
 
   async function api(path, opts){
-    var r = await fetch(path, Object.assign({ credentials:"include", headers:{"Content-Type":"application/json"} }, opts||{}));
+    var token = localStorage.getItem("wcz_token");
+    var headers = {"Content-Type":"application/json"};
+    if (token) headers["Authorization"] = "Bearer " + token;
+    var r = await fetch(path, Object.assign({ headers: headers }, opts||{}));
     var data = {}; try{ data = await r.json(); }catch(e){}
     return { ok:r.ok, status:r.status, data:data };
   }
@@ -169,6 +172,7 @@
     try {
       var r = await api(AUTH+"/me", { method:"GET" });
       if (r.data && r.data.authenticated){ state.owner = r.data.owner; return renderDashboard(); }
+      localStorage.removeItem("wcz_token");
       return renderLogin();
     } catch(e){
       // No backend reachable (e.g. design preview) -> show sample data.
@@ -275,6 +279,7 @@
     try {
       var r = await api(AUTH+"/verify-otp", { method:"POST", body:JSON.stringify(body) });
       if (!r.ok){ btn.disabled=false; btn.textContent="Verify & sign in"; return setMsg(friendly(r.data.error)); }
+      if (r.data.token) localStorage.setItem("wcz_token", r.data.token);
       state.owner = r.data.owner;
       renderDashboard();
     } catch(e){ btn.disabled=false; btn.textContent="Verify & sign in"; setMsg("Network error. Try again."); }
@@ -356,6 +361,7 @@
   async function signOut(){
     if (DEMO){ DEMO=false; state.owner=null; return renderLogin(); }
     try { await api(AUTH+"/logout", { method:"POST" }); } catch(e){}
+    localStorage.removeItem("wcz_token");
     state.owner=null; renderLogin();
   }
 
