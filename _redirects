@@ -1,2 +1,5 @@
-# Redirect root to marketing page (fallback if root directory isn't set in Pages)
-/   /marketing/index.html   302
+# Cloudflare Pages _redirects
+# The root index.html IS the marketing page — no redirect needed.
+# These handle deep links from the dashboard SPA.
+/dashboard      /dashboard/customer.html  200
+/dashboard/*    /dashboard/customer.html  200

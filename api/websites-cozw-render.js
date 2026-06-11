@@ -28,7 +28,8 @@ export default {
     }
 
     const target = resolveHost(host, url.pathname, root);
-    if (!target) return holdingPage(404, "Site not found");
+    // null = apex / www / app / reserved host -> pass through to Cloudflare Pages
+    if (!target) return fetch(request);
 
     const site = await loadSite(env.DB, target);
     if (!site) return holdingPage(404, "Site not found");
