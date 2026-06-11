@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cheetahs Football Academy — Develop. Compete. Excel. Bulawayo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--black:#0A0A0A;--gold:#D4A017;--gold2:#F0B820;--sky:#0A84D0;--ink:#161616;--ink2:#5A6370;--paper:#fff;--surface:#F5F6F8;--line:#E3E6EA}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Open Sans",sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:"Oswald",sans-serif;font-weight:700;line-height:1.05;letter-spacing:.01em;text-transform:uppercase}
+  a{color:inherit;text-decoration:none}.wrap{max-width:1160px;margin:0 auto;padding:0 26px}
+  /* topbar */
+  .topbar{background:var(--black);color:rgba(255,255,255,.7);font-size:.78rem;padding:7px 0}
+  .topbar .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+  .topbar b{color:var(--gold)}
+  header{position:sticky;top:0;z-index:50;background:var(--black);border-bottom:2px solid var(--gold)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .logo{display:flex;align-items:center;gap:11px;color:#fff}
+  .crest{width:42px;height:42px;border-radius:8px;background:var(--gold);display:grid;place-items:center;flex:none}
+  .crest svg{width:22px;height:22px;fill:var(--black)}
+  .wordmark{display:flex;flex-direction:column;line-height:1}
+  .wordmark .name{font-family:"Oswald";font-size:1.2rem;font-weight:700;color:#fff;letter-spacing:.04em}
+  .wordmark .sub{font-size:.7rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase}
+  .nav nav{display:flex;gap:24px}.nav nav a{font-family:"Oswald";font-size:.92rem;font-weight:500;color:rgba(255,255,255,.75);letter-spacing:.05em;text-transform:uppercase}.nav nav a:hover{color:var(--gold)}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-family:"Oswald";font-weight:600;font-size:.9rem;letter-spacing:.06em;text-transform:uppercase;padding:11px 22px;border-radius:6px;border:none;cursor:pointer;transition:.18s}
+  .btn.gold{background:var(--gold);color:var(--black)}.btn.gold:hover{background:var(--gold2)}
+  .btn.outline{border:2px solid var(--gold);color:var(--gold);background:transparent}.btn.outline:hover{background:var(--gold);color:var(--black)}
+  .btn.sky{background:var(--sky);color:#fff}
+  /* hero */
+  .hero{position:relative;min-height:78vh;display:flex;align-items:flex-end;overflow:hidden}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.25) 60%,transparent 100%)}
+  .hero .wrap{position:relative;z-index:2;padding:0 26px 60px;color:#fff}
+  .hero .kicker{font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700;font-family:"Open Sans"}
+  .hero h1{font-size:clamp(3rem,7vw,5.5rem);margin:10px 0 16px;max-width:18ch;line-height:.95}
+  .hero h1 span{color:var(--gold)}
+  .hero p{font-size:1.12rem;max-width:46ch;color:rgba(255,255,255,.85)}
+  .hero-actions{display:flex;gap:14px;margin-top:26px;flex-wrap:wrap}
+  /* stats bar */
+  .stats-bar{background:var(--gold);color:var(--black)}
+  .stats-bar .wrap{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;flex-wrap:wrap;gap:10px}
+  .stat{text-align:center}
+  .stat .n{font-family:"Oswald";font-size:1.8rem;font-weight:700;line-height:1}
+  .stat .l{font-size:.74rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+  section{padding:64px 0}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--gold)}
+  .sec-head{max-width:620px;margin-bottom:44px}
+  .sec-head.center{margin:0 auto 44px;text-align:center}.sec-head.center .eyebrow{justify-content:center}
+  .sec-head h2{font-size:clamp(1.9rem,3.5vw,2.8rem);margin-top:10px}.sec-head p{color:var(--ink2);margin-top:10px;font-family:"Open Sans"}
+  /* programs */
+  .programs{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .prog{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+  .prog .band{background:var(--black);color:var(--gold);padding:10px 16px;font-family:"Oswald";font-size:.84rem;letter-spacing:.14em;text-transform:uppercase}
+  .prog .body{padding:20px 16px}
+  .prog h3{font-size:1.1rem;margin-bottom:8px;color:var(--black)}
+  .prog .age{display:inline-block;font-size:.74rem;font-weight:700;padding:3px 10px;border-radius:6px;background:var(--gold);color:var(--black);margin-bottom:10px}
+  .prog p{font-size:.88rem;color:var(--ink2);margin-bottom:14px}
+  .prog .fee{font-size:.82rem;font-weight:600;color:var(--sky)}
+  /* coaches */
+  .coaches{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .coach{text-align:center}
+  .coach img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;margin-bottom:14px;border:3px solid var(--line)}
+  .coach .name{font-family:"Oswald";font-size:1.05rem;letter-spacing:.04em}
+  .coach .role{font-size:.8rem;color:var(--gold);font-weight:600;margin-top:3px}
+  .coach p{font-size:.84rem;color:var(--ink2);margin-top:8px}
+  /* timetable */
+  .timetable{width:100%;border-collapse:collapse}
+  .timetable th{font-family:"Oswald";font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;background:var(--black);color:var(--gold);padding:12px 16px;text-align:left}
+  .timetable td{padding:12px 16px;font-size:.9rem;border-bottom:1px solid var(--line)}
+  .timetable tr:last-child td{border-bottom:none}
+  .timetable tr:nth-child(even) td{background:var(--surface)}
+  .badge{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:5px;background:var(--gold);color:var(--black)}
+  /* CTA */
+  .cta-band{background:var(--black);color:#fff;border-radius:16px;padding:56px 48px;display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+  .cta-band h2{font-size:clamp(2rem,4vw,3rem)}
+  .cta-band h2 span{color:var(--gold)}
+  .cta-band p{color:rgba(255,255,255,.75);margin-top:10px;font-size:1.05rem}
+  .cta-band .actions{display:flex;flex-direction:column;gap:10px;justify-content:center}
+  /* results */
+  .results{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .result-card{border-left:4px solid var(--gold);background:var(--surface);border-radius:0 12px 12px 0;padding:16px 20px}
+  .result-card .competition{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+  .result-card h3{font-size:1.05rem;margin:4px 0}
+  .result-card .year{font-size:.82rem;color:var(--gold);font-weight:700}
+  footer{background:var(--black);color:rgba(255,255,255,.65);padding:36px 0}
+  .foot-in{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+  .foot-in .logo{color:#fff}
+  .foot-links{display:flex;gap:22px}.foot-links a{font-size:.82rem;color:rgba(255,255,255,.6)}.foot-links a:hover{color:var(--gold)}
+  @media(max-width:900px){
+    .programs{grid-template-columns:1fr 1fr}.coaches{grid-template-columns:1fr 1fr}
+    .cta-band{grid-template-columns:1fr}.results{grid-template-columns:1fr}
+    .nav nav,.nav .btn{display:none}
+  }
+  @media(max-width:600px){.programs{grid-template-columns:1fr}.coaches{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <span>📍 Thorngrove Sports Park, Bulawayo</span>
+    <span>📞 <b>+263 29 123 4567</b> · Trials every Saturday 7 AM</span>
+  </div>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="nav">
+      <div class="logo">
+        <div class="crest">
+          <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="9" stroke="#0A0A0A" stroke-width="2" fill="none"/>
+            <path d="M7 11 Q11 5 15 11 Q11 17 7 11Z" fill="#0A0A0A"/>
+          </svg>
+        </div>
+        <div class="wordmark">
+          <span class="name">Cheetahs FC Academy</span>
+          <span class="sub">Bulawayo · Est. 2014</span>
+        </div>
+      </div>
+      <nav>
+        <a href="#">Programs</a><a href="#">Coaches</a><a href="#">Results</a><a href="#">Trials</a><a href="#">Contact</a>
+      </nav>
+      <a href="#enroll" class="btn gold">Enroll Now</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1400&q=80" alt="Football training">
+  <div class="wrap">
+    <p class="kicker">Bulawayo's Premier Youth Academy</p>
+    <h1>We build <span>champions</span> on and off the pitch</h1>
+    <p>Full-time technical training, physical conditioning and academic mentorship for Zimbabwe's next generation of footballers.</p>
+    <div class="hero-actions">
+      <a href="#enroll" class="btn gold">Register for Trials →</a>
+      <a href="#programs" class="btn outline">View Programs</a>
+    </div>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="wrap">
+    <div class="stat"><p class="n">340+</p><p class="l">Active Players</p></div>
+    <div class="stat"><p class="n">12</p><p class="l">Coaches &amp; Staff</p></div>
+    <div class="stat"><p class="n">23</p><p class="l">Trophies Won</p></div>
+    <div class="stat"><p class="n">8</p><p class="l">Pro Graduates</p></div>
+    <div class="stat"><p class="n">10</p><p class="l">Years Strong</p></div>
+  </div>
+</div>
+
+<section id="programs">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Programs</p>
+      <h2>Training for Every Age Group</h2>
+      <p>All programs run year-round with weekend matches in the Metro League.</p>
+    </div>
+    <div class="programs">
+      <div class="prog">
+        <div class="band">Grassroots</div>
+        <div class="body">
+          <span class="age">Ages 5–10</span>
+          <h3>Foundational Skills</h3>
+          <p>Ball mastery, coordination, and a love for the game. Saturday morning sessions in a fun, safe environment.</p>
+          <p class="fee">USD 8 / month</p>
+        </div>
+      </div>
+      <div class="prog">
+        <div class="band">Junior Academy</div>
+        <div class="body">
+          <span class="age">Ages 11–15</span>
+          <h3>Technical Development</h3>
+          <p>Tactical understanding, positional play, and competitive match experience in junior leagues.</p>
+          <p class="fee">USD 15 / month</p>
+        </div>
+      </div>
+      <div class="prog">
+        <div class="band">Elite</div>
+        <div class="body">
+          <span class="age">Ages 16–20</span>
+          <h3>Pre-Professional Pathway</h3>
+          <p>Full-week training, video analysis, strength &amp; conditioning, and direct links to senior clubs.</p>
+          <p class="fee">USD 30 / month</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--surface)">
+  <div class="wrap">
+    <div class="sec-head center">
+      <p class="eyebrow">Coaching Staff</p>
+      <h2>World-Class Mentors</h2>
+    </div>
+    <div class="coaches">
+      <div class="coach">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80" alt="Head Coach">
+        <p class="name">Tonderai Moyo</p>
+        <p class="role">Head Coach · UEFA B Licence</p>
+        <p>Former FC Platinum midfielder. 14 years coaching experience across Zimbabwe and South Africa.</p>
+      </div>
+      <div class="coach">
+        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&q=80" alt="Goalkeeper Coach">
+        <p class="name">Blessing Ncube</p>
+        <p class="role">Goalkeeper Coach · CAF A Licence</p>
+        <p>Caps for Zimbabwe Warriors. Specialist goalkeeper development since 2018.</p>
+      </div>
+      <div class="coach">
+        <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&q=80" alt="Fitness Coach">
+        <p class="name">Rumbidzai Sithole</p>
+        <p class="role">Strength &amp; Conditioning</p>
+        <p>BSc Sports Science (NUST). Specialist youth periodisation and injury prevention.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Schedule</p>
+      <h2>Weekly Training Timetable</h2>
+    </div>
+    <table class="timetable">
+      <thead><tr><th>Day</th><th>Time</th><th>Group</th><th>Venue</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Tuesday</td><td>4:00 – 6:00 PM</td><td>Junior Academy (U13/U15)</td><td>Main Pitch A</td><td><span class="badge">Skills</span></td></tr>
+        <tr><td>Wednesday</td><td>4:00 – 6:00 PM</td><td>Elite (U17/U20)</td><td>Main Pitch A</td><td><span class="badge">Tactical</span></td></tr>
+        <tr><td>Thursday</td><td>4:00 – 6:00 PM</td><td>Junior Academy (U11/U13)</td><td>Pitch B</td><td><span class="badge">Skills</span></td></tr>
+        <tr><td>Saturday</td><td>7:00 – 9:00 AM</td><td>Grassroots (U5–U10)</td><td>Pitch B</td><td><span class="badge">Fun</span></td></tr>
+        <tr><td>Saturday</td><td>9:30 AM – 12:00 PM</td><td>Elite Match Day</td><td>Various</td><td><span class="badge">League</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section style="background:var(--surface)">
+  <div class="wrap">
+    <div class="sec-head center">
+      <p class="eyebrow">Honours</p>
+      <h2>Our Trophy Cabinet</h2>
+    </div>
+    <div class="results">
+      <div class="result-card"><p class="competition">Matabeleland Youth League</p><h3>🏆 Champions — U15 Division</h3><p class="year">2025</p></div>
+      <div class="result-card"><p class="competition">Zifa Bulawayo Province</p><h3>🥈 Runners Up — U17 Cup</h3><p class="year">2025</p></div>
+      <div class="result-card"><p class="competition">Matabeleland Youth League</p><h3>🏆 Champions — U13 Division</h3><p class="year">2024</p></div>
+      <div class="result-card"><p class="competition">Harare International Youth Tournament</p><h3>🥉 3rd Place — U17 Category</h3><p class="year">2024</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="enroll">
+  <div class="wrap">
+    <div class="cta-band">
+      <div>
+        <h2>Ready to Join the <span>Cheetahs</span>?</h2>
+        <p>Trials run every Saturday at 7 AM — no appointment needed. Bring boots, water, and hunger.</p>
+      </div>
+      <div class="actions">
+        <a href="https://wa.me/26329123456" class="btn gold">💬 WhatsApp to Register</a>
+        <a href="tel:+26329123456" class="btn outline" style="color:#fff;border-color:rgba(255,255,255,.4)">📞 Call Us</a>
+        <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin-top:6px">Trials are FREE. Bring ID or birth cert for age verification.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <div class="logo">Cheetahs FC Academy · Bulawayo</div>
+      <div class="foot-links">
+        <a href="#">Programs</a><a href="#">Trials</a><a href="#">Contact</a>
+      </div>
+      <p style="font-size:.8rem">© 2026 Cheetahs Football Academy</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

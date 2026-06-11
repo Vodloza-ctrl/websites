@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>websites.co.zw — Project Overview v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#F6F7F9;--ink:#0B0C0F;--ink2:#5A626E;--green:#15924B;--yellow:#F4C20D;--red:#E23B2E;--line:#ECEEF1;--black:#101114}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Hanken Grotesk",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;padding:40px 28px 80px;-webkit-font-smoothing:antialiased}
+  .brand{font-family:"Archivo";font-weight:900;font-size:1.6rem;letter-spacing:-.04em;display:inline-flex;align-items:center}
+  .brand .dots{display:inline-flex;flex-direction:column;gap:.07em;margin:0 .04em}.brand .dots i{width:.26em;height:.26em;border-radius:50%}
+  .brand .dots i:nth-child(1){background:var(--green)}.brand .dots i:nth-child(2){background:var(--yellow)}.brand .dots i:nth-child(3){background:var(--red)}
+  .wrap{max-width:1000px;margin:0 auto}
+  .hero{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--line)}
+  .hero h1{font-family:"Archivo";font-size:2.2rem;font-weight:900;margin:14px 0 8px}
+  .hero p{color:var(--ink2);max-width:60ch}
+  .section-label{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--ink2);margin-bottom:14px;margin-top:36px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit;transition:.18s;display:block}
+  .card:hover{border-color:var(--black);transform:translateY(-2px);box-shadow:0 12px 28px -12px rgba(11,12,15,.2)}
+  .card .tag{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:8px}
+  .card .tag.green{color:var(--green)}.card .tag.blue{color:#1F6FEB}.card .tag.amber{color:#B45309}
+  .card h3{font-family:"Archivo";font-size:.98rem;font-weight:700;margin-bottom:6px}
+  .card p{font-size:.82rem;color:var(--ink2)}
+  .worker-card{background:var(--black);color:#fff;border-color:var(--black)}
+  .worker-card .tag{color:rgba(255,255,255,.5)}
+  .worker-card h3{color:#fff}.worker-card p{color:rgba(255,255,255,.7)}
+  .status-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .st{font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:6px}
+  .st.done{background:#E4F4EA;color:#13743C}.st.pending{background:#FFF3E0;color:#9C5C00}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="brand">webs<span class="dots"><i></i><i></i><i></i></span>tes</div>
+    <h1>websites.co.zw — Build v2</h1>
+    <p>Multi-tenant WaaS for Zimbabwean SMEs. 7 templates · 5 deployed Workers · Live D1 on Cloudflare. Built by Ya-Sibo? Media.</p>
+    <div class="status-row">
+      <span class="st done">✓ Render Worker live</span>
+      <span class="st done">✓ Payments Worker live</span>
+      <span class="st done">✓ Auth Worker live</span>
+      <span class="st done">✓ AI Worker live</span>
+      <span class="st done">✓ Renewal Cron live</span>
+      <span class="st done">✓ Elite Sports live</span>
+      <span class="st pending">⏳ Marketing site (deploy to Pages)</span>
+      <span class="st pending">⏳ Self-serve editor wiring</span>
+    </div>
+  </div>
+
+  <p class="section-label">Front of House</p>
+  <div class="grid">
+    <a href="marketing/index.html" class="card"><p class="tag green">Marketing</p><h3>marketing/index.html</h3><p>Landing page. Deploy to websites.co.zw via Cloudflare Pages.</p></a>
+    <a href="dashboard/customer.html" class="card"><p class="tag green">Dashboard</p><h3>dashboard/customer.html</h3><p>Owner dashboard. Wires to app.websites.co.zw /api/sites.</p></a>
+    <a href="dashboard/admin.html" class="card"><p class="tag blue">Admin</p><h3>dashboard/admin.html</h3><p>Ops view: all sites, payments, status, ZISPA queue.</p></a>
+    <a href="editor/index.html" class="card"><p class="tag blue">Editor</p><h3>editor/index.html</h3><p>Self-service site editor with live preview and AI generation.</p></a>
+  </div>
+
+  <p class="section-label">Templates (7 industries)</p>
+  <div class="grid">
+    <a href="templates/restaurant/index.html" class="card"><p class="tag amber">Template</p><h3>🍖 Restaurant / Grill</h3><p>Gango Grill House · ember palette · Playfair Display</p></a>
+    <a href="templates/salon/index.html" class="card"><p class="tag amber">Template</p><h3>💅 Salon / Beauty</h3><p>Nhanha Beauty Lounge · blush palette · Cormorant Garamond</p></a>
+    <a href="templates/school/index.html" class="card"><p class="tag amber">Template</p><h3>🏫 School / Academy</h3><p>Chengeto Academy · navy/gold · Fraunces</p></a>
+    <a href="templates/consultant/index.html" class="card"><p class="tag amber">Template</p><h3>💼 Consultant / Advisory</h3><p>Tafara Advisory · navy · Fraunces</p></a>
+    <a href="templates/realestate/index.html" class="card"><p class="tag amber">Template</p><h3>🏠 Real Estate</h3><p>Mvura Properties · forest/cream · Fraunces</p></a>
+    <a href="templates/church/index.html" class="card"><p class="tag amber">Template — NEW</p><h3>⛪ Church / NGO</h3><p>Maranatha Community Church · warm amber · Fraunces</p></a>
+    <a href="templates/sports/index.html" class="card"><p class="tag amber">Template — NEW</p><h3>⚽ Sports / Academy</h3><p>Cheetahs FC Academy · black/gold · Oswald</p></a>
+  </div>
+
+  <p class="section-label">Cloudflare Workers (deploy via wrangler)</p>
+  <div class="grid">
+    <div class="card worker-card"><p class="tag">api/</p><h3>websites-cozw-render.js</h3><p>Multi-tenant render. Serves *.websites.co.zw from D1 content JSON.</p></div>
+    <div class="card worker-card"><p class="tag">api/</p><h3>websites-cozw-payments.js</h3><p>Paynow USD+ZiG. POST /pay, webhook, poll. Idempotent confirmPaid.</p></div>
+    <div class="card worker-card"><p class="tag">api/</p><h3>websites-cozw-dashboard.js</h3><p>Sites CRUD + AI proxy. Auth via wcz_session cookie.</p></div>
+    <div class="card worker-card"><p class="tag">api/</p><h3>websites-cozw-ai.js</h3><p>Claude Sonnet 4.6 copy generation. Tier-gated, cost-tracked.</p></div>
+    <div class="card worker-card"><p class="tag">api/</p><h3>websites-cozw-renewal-cron.js</h3><p>published→grace→suspended lifecycle. WhatsApp reminder ladder.</p></div>
+  </div>
+
+  <p class="section-label">Data Layer</p>
+  <div class="grid">
+    <div class="card"><p class="tag blue">SQL</p><h3>api/schema.sql</h3><p>Canonical D1 schema: sites, owners, payments, sessions, otp_codes, ai_generations.</p></div>
+  </div>
+</div>
+</body>
+</html>

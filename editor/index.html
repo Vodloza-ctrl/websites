@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>websites.co.zw — Build your site</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface:#eef0f3; --card:#fff; --line:#e3e5ea;
+    --ink:#1a1b22; --ink-soft:#4a4d59; --muted:#868a96;
+    --gold:#a87d1a; --gold-strong:#876312; --gold-soft:#f4ecd6;
+    --live:#1d7a4d; --live-bg:#e3f2ea; --suspend:#b23b30; --suspend-bg:#f7e3e0;
+    --radius:14px; --r-sm:9px; --shadow:0 1px 2px rgba(20,22,30,.04),0 8px 24px rgba(20,22,30,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--surface);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:6px}
+  .bar{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+  .bar-in{max-width:1180px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .logo{font-family:"Space Grotesk";font-weight:700;font-size:19px;letter-spacing:-.01em}
+  .logo .tld{color:var(--gold)}
+  .bar a{color:var(--ink-soft);text-decoration:none;font-size:14px}
+  .bar a:hover{color:var(--ink)}
+  .ribbon{background:var(--gold-soft);color:var(--gold-strong);text-align:center;font-size:12.5px;font-weight:600;padding:7px}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 22px 70px;display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:26px;align-items:start}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr;gap:20px}}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .panel h2{font-family:"Space Grotesk";font-weight:600;font-size:16px;margin:0;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .form{padding:6px 18px 18px}
+  label.fld{display:block;font-size:13px;font-weight:600;color:var(--ink-soft);margin:14px 0 6px}
+  .hint{color:var(--muted);font-weight:400;font-size:12px}
+  .input,.area,select{width:100%;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);background:#fff}
+  .area{min-height:74px;resize:vertical}
+  .input:focus,.area:focus,select:focus{outline:none;border-color:var(--gold)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .checks{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  .checks label{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-soft);font-weight:500}
+  .group-label{font-family:"Space Grotesk";font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:22px 0 2px}
+
+  .btn{border:1px solid transparent;border-radius:var(--r-sm);padding:11px 16px;font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background .15s,border-color .15s}
+  .btn-gold{background:var(--gold);color:#fff}
+  .btn-gold:hover{background:var(--gold-strong)}
+  .btn-gold[disabled]{opacity:.55;cursor:default}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--ink-soft)}
+  .actions-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+  .budget{font-size:12.5px;color:var(--muted);margin-top:10px}
+  .budget b{color:var(--ink-soft)}
+  .msg{font-size:13px;margin-top:12px;padding:9px 11px;border-radius:8px;display:none}
+  .msg.err{display:block;color:var(--suspend);background:var(--suspend-bg)}
+  .msg.ok{display:block;color:var(--live);background:var(--live-bg)}
+
+  /* preview */
+  .pv-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .pv-head h2{border:none;padding:0}
+  .pv-tag{font-size:12px;color:var(--muted)}
+  .pv-body{padding:20px 18px 22px}
+  .pv-empty{padding:60px 24px;text-align:center;color:var(--muted)}
+  .pv-empty .big{font-family:"Space Grotesk";font-size:19px;color:var(--ink);margin-bottom:6px}
+  .ed{width:100%;border:1px solid transparent;border-radius:6px;padding:4px 6px;font-family:inherit;background:transparent;color:inherit}
+  .ed:hover{border-color:var(--line)} .ed:focus{outline:none;border-color:var(--gold);background:#fff}
+  .pv-hero{padding:18px;border-radius:12px;background:#15151c;color:#fff}
+  .pv-hero .ed{color:#fff}
+  .pv-hero .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-soft)}
+  .pv-hero h1{font-family:"Space Grotesk";font-weight:600;font-size:24px;margin:6px 0}
+  .pv-cta{display:inline-block;margin-top:8px;background:var(--gold);color:#fff;border-radius:8px;padding:8px 14px;font-weight:600;font-size:13px}
+  .pv-sec{margin-top:22px}
+  .pv-sec .lab{font-family:"Space Grotesk";font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+  .pv-sec h3{font-family:"Space Grotesk";font-weight:600;font-size:18px;margin:0 0 6px}
+  .svc{border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+  .svc .t{font-weight:600}
+  .contact{font-size:14px;color:var(--ink-soft)}
+  .contact div{margin-top:3px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="ribbon"></div>
+<div class="bar"><div class="bar-in">
+  <span class="logo">websites<span class="tld">.co.zw</span></span>
+  <a href="/">← Back to your sites</a>
+</div></div>
+
+<div class="wrap">
+  <!-- intake -->
+  <div class="panel">
+    <h2>Tell us about your business</h2>
+    <div class="form">
+      <label class="fld" for="business_name">Business name</label>
+      <input class="input" id="business_name" placeholder="Elite Sports Institute">
+
+      <div class="two">
+        <div><label class="fld" for="industry">Industry</label>
+          <input class="input" id="industry" placeholder="Football academy"></div>
+        <div><label class="fld" for="city">City</label>
+          <input class="input" id="city" placeholder="Bulawayo"></div>
+      </div>
+
+      <label class="fld" for="description">What you do</label>
+      <textarea class="area" id="description" placeholder="A youth football academy developing young players in Bulawayo."></textarea>
+
+      <label class="fld" for="target_customers">Who you serve <span class="hint">optional</span></label>
+      <input class="input" id="target_customers" placeholder="Parents of aspiring young footballers">
+
+      <div class="two">
+        <div><label class="fld" for="years_operating">Years operating <span class="hint">optional</span></label>
+          <input class="input" id="years_operating" placeholder="5"></div>
+        <div><label class="fld" for="usp">What makes you different <span class="hint">optional</span></label>
+          <input class="input" id="usp" placeholder="Pro-licensed coaches"></div>
+      </div>
+
+      <label class="fld" for="services">Services / offerings <span class="hint">one per line</span></label>
+      <textarea class="area" id="services" placeholder="Youth coaching&#10;Holiday clinics&#10;Talent scouting"></textarea>
+
+      <label class="fld">Sections to generate</label>
+      <div class="checks">
+        <label><input type="checkbox" class="sec" value="hero" checked> Hero</label>
+        <label><input type="checkbox" class="sec" value="about" checked> About</label>
+        <label><input type="checkbox" class="sec" value="services" checked> Services</label>
+      </div>
+
+      <div class="group-label">Contact &amp; links</div>
+      <div class="two">
+        <div><label class="fld" for="c_phone">Phone</label><input class="input" id="c_phone" placeholder="0772 123 456"></div>
+        <div><label class="fld" for="c_whatsapp">WhatsApp</label><input class="input" id="c_whatsapp" placeholder="0772 123 456"></div>
+      </div>
+      <div class="two">
+        <div><label class="fld" for="c_email">Email</label><input class="input" id="c_email" placeholder="hello@business.co.zw"></div>
+        <div><label class="fld" for="c_address">Address</label><input class="input" id="c_address" placeholder="Bulawayo"></div>
+      </div>
+      <div class="two">
+        <div><label class="fld" for="s_facebook">Facebook</label><input class="input" id="s_facebook" placeholder="facebook.com/…"></div>
+        <div><label class="fld" for="s_instagram">Instagram</label><input class="input" id="s_instagram" placeholder="instagram.com/…"></div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn btn-gold" id="generate">Generate with AI</button>
+        <button class="btn btn-ghost" id="save" style="display:none">Save</button>
+      </div>
+      <div class="budget" id="budget"></div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <!-- preview -->
+  <div class="panel">
+    <div class="pv-head"><h2>Preview</h2><span class="pv-tag" id="pvtag">Not generated yet</span></div>
+    <div class="pv-body" id="preview">
+      <div class="pv-empty"><div class="big">Your site will appear here</div>
+        Fill in your business details and hit <b>Generate with AI</b>. You can edit any of the copy before saving.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var API = "/api", AUTH = "/auth";
+  var DEMO = false;
+  var $ = function(id){ return document.getElementById(id); };
+  var state = { siteId:null, content:null, budget:null };
+
+  var params = new URLSearchParams(location.search);
+  state.siteId = params.get("site");
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function setMsg(t,k){ var m=$("msg"); if(!t){m.className="msg";m.textContent="";return;} m.className="msg "+(k||"err"); m.textContent=t; }
+
+  async function api(path, opts){
+    var r = await fetch(path, Object.assign({ credentials:"include", headers:{"Content-Type":"application/json"} }, opts||{}));
+    var data={}; try{ data=await r.json(); }catch(e){}
+    return { ok:r.ok, status:r.status, data:data };
+  }
+
+  /* ---- read intake form into a brief ---- */
+  function readBrief(){
+    var sections = [].slice.call(document.querySelectorAll(".sec:checked")).map(function(c){return c.value;});
+    var services = $("services").value.split("\n").map(function(s){return s.trim();}).filter(Boolean);
+    var contact = { phone:$("c_phone").value.trim(), whatsapp:$("c_whatsapp").value.trim(), email:$("c_email").value.trim(), address:$("c_address").value.trim() };
+    var social = { facebook:$("s_facebook").value.trim(), instagram:$("s_instagram").value.trim() };
+    return {
+      business_name:$("business_name").value.trim(),
+      industry:$("industry").value.trim(),
+      city:$("city").value.trim(),
+      description:$("description").value.trim(),
+      target_customers:$("target_customers").value.trim(),
+      years_operating:$("years_operating").value.trim(),
+      unique_selling_point:$("usp").value.trim(),
+      services:services, sections:sections, contact:contact, social:social
+    };
+  }
+  function fillForm(b){
+    if(!b) return;
+    $("business_name").value=b.business_name||""; $("industry").value=b.industry||""; $("city").value=b.city||"";
+    $("description").value=b.description||""; $("target_customers").value=b.target_customers||"";
+    $("years_operating").value=b.years_operating||""; $("usp").value=b.unique_selling_point||"";
+    $("services").value=(b.services||[]).join("\n");
+    if(b.contact){ $("c_phone").value=b.contact.phone||""; $("c_whatsapp").value=b.contact.whatsapp||""; $("c_email").value=b.contact.email||""; $("c_address").value=b.contact.address||""; }
+    if(b.social){ $("s_facebook").value=b.social.facebook||""; $("s_instagram").value=b.social.instagram||""; }
+    if(Array.isArray(b.sections)&&b.sections.length){ document.querySelectorAll(".sec").forEach(function(c){ c.checked=b.sections.indexOf(c.value)>-1; }); }
+  }
+
+  /* ---- boot ---- */
+  (async function init(){
+    try{
+      if(state.siteId){
+        var r = await api(API+"/sites/"+encodeURIComponent(state.siteId),{method:"GET"});
+        if(r.status===401){ location.href="/"; return; }
+        if(r.ok && r.data.site){
+          $("business_name").value = r.data.site.site_name||"";
+          var c = r.data.site.content ? JSON.parse(r.data.site.content) : null;
+          if(c){ fillForm(c._brief); state.content = stripBrief(c); renderPreview(); }
+        }
+      } else {
+        // probe backend to decide demo mode
+        await api(AUTH+"/me",{method:"GET"});
+      }
+    }catch(e){ DEMO=true; showRibbon("Preview — sample mode, nothing is saved"); }
+    $("generate").addEventListener("click", onGenerate);
+    $("save").addEventListener("click", onSave);
+  })();
+
+  function stripBrief(c){ var x=Object.assign({},c); delete x._brief; return x; }
+  function showRibbon(t){ $("ribbon").outerHTML='<div class="ribbon" id="ribbon">'+esc(t)+'</div>'; }
+
+  async function ensureSite(brief){
+    if(state.siteId) return state.siteId;
+    if(DEMO){ state.siteId="demo_site"; return state.siteId; }
+    var r = await api(API+"/sites",{method:"POST",body:JSON.stringify({site_name:brief.business_name||"Untitled site"})});
+    if(!r.ok) throw new Error(r.data.error||"create_failed");
+    state.siteId = r.data.site.id;
+    return state.siteId;
+  }
+
+  /* ---- generate ---- */
+  async function onGenerate(){
+    setMsg("");
+    var brief = readBrief();
+    if(!brief.business_name){ return setMsg("Add your business name first."); }
+    var btn=$("generate"); btn.disabled=true; var orig=btn.textContent; btn.textContent="Generating…";
+    try{
+      if(DEMO){ state.content = demoContent(brief); state.budget={used:1,limit:3,remaining:2,tier:"trial"}; renderAll(); return; }
+      await ensureSite(brief);
+      var r = await api(API+"/sites/"+encodeURIComponent(state.siteId)+"/generate",{method:"POST",body:JSON.stringify({brief:brief})});
+      if(!r.ok){
+        if(r.data.error==="generation_limit_reached"){ setMsg(limitMsg(r.data.budget)); state.budget=r.data.budget; renderBudget(); }
+        else setMsg(genErr(r.data.error));
+        return;
+      }
+      state.content = r.data.content; state.budget = r.data.budget;
+      renderAll();
+    }catch(e){ setMsg("Couldn't generate. Try again."); }
+    finally{ btn.disabled=false; btn.textContent=orig; }
+  }
+  function renderAll(){ renderPreview(); renderBudget(); $("save").style.display=""; $("generate").textContent="Regenerate"; setMsg("Generated. Edit anything below, then save.","ok"); }
+
+  function limitMsg(b){
+    if(b && b.tier==="trial") return "You've used your free preview generation. Publish your site to unlock "+ (b.limit||3) +" more.";
+    return "You've used all "+((b&&b.limit)||3)+" generations for this site.";
+  }
+  var genErrText={ ai_not_configured:"AI isn't switched on yet.", generation_failed:"The generator had trouble — try again.", forbidden:"That site isn't on your account.", site_not_found:"Site not found." };
+  function genErr(c){ return genErrText[c]||"Couldn't generate. Try again."; }
+
+  function renderBudget(){
+    var b=state.budget; if(!b){ $("budget").textContent=""; return; }
+    var tier = b.tier==="paid" ? "paid plan" : "free trial";
+    $("budget").innerHTML = "Generations: <b>"+b.used+" / "+b.limit+"</b> used ("+tier+"). "+b.remaining+" left.";
+  }
+
+  /* ---- editable preview ---- */
+  function renderPreview(){
+    var c = state.content && state.content.content; if(!c){ return; }
+    $("pvtag").textContent = (state.content.theme && state.content.theme.palette) ? state.content.theme.palette : "draft";
+    var has = function(k){ return state.content.theme && state.content.theme.sections && state.content.theme.sections.indexOf(k)>-1; };
+    var p = $("preview"); p.innerHTML="";
+
+    // hero
+    if(c.hero){
+      var hero = node('<div class="pv-hero"><div class="eyebrow"></div></div>');
+      hero.appendChild(edit("h1", c.hero, "headline", state.content));
+      hero.appendChild(edit("div", c.hero, "subheadline", state.content));
+      var cta=document.createElement("span"); cta.className="pv-cta"; cta.textContent=c.hero.cta_label||"Get in touch"; hero.appendChild(cta);
+      p.appendChild(hero);
+    }
+    // business name + tagline
+    var ident = node('<div class="pv-sec"></div>');
+    ident.appendChild(edit("div", c, "business_name", state.content, "h3"));
+    ident.appendChild(edit("div", c, "tagline", state.content));
+    p.appendChild(ident);
+    // about
+    if(c.about){
+      var ab=node('<div class="pv-sec"><div class="lab">About</div></div>');
+      ab.appendChild(edit("h3", c.about, "heading", state.content));
+      ab.appendChild(edit("div", c.about, "body", state.content, "area"));
+      p.appendChild(ab);
+    }
+    // services
+    if(Array.isArray(c.services) && c.services.length){
+      var sv=node('<div class="pv-sec"><div class="lab">Services</div></div>');
+      c.services.forEach(function(s,i){
+        var box=node('<div class="svc"></div>');
+        box.appendChild(edit("div", s, "title", state.content, "t"));
+        box.appendChild(edit("div", s, "description", state.content));
+        sv.appendChild(box);
+      });
+      p.appendChild(sv);
+    }
+    // contact (owner-supplied; read-only display)
+    if(c.contact){
+      var ct=node('<div class="pv-sec"><div class="lab">Contact</div><div class="contact"></div></div>');
+      var box=ct.querySelector(".contact");
+      ["phone","whatsapp","email","address"].forEach(function(k){ if(c.contact[k]) box.appendChild(node('<div>'+esc(cap(k))+': '+esc(c.contact[k])+'</div>')); });
+      p.appendChild(ct);
+    }
+  }
+  function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+  function node(html){ var t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
+  // editable field bound to obj[key]; tag chooses element/look
+  function edit(tag, obj, key, root, look){
+    var isArea = look==="area" || (obj[key]&&String(obj[key]).length>90);
+    var inp = document.createElement(isArea?"textarea":"input");
+    inp.className = "ed" + (look==="h3"?"":"") ;
+    if(look==="h3"){ inp.style.fontFamily="Space Grotesk"; inp.style.fontWeight="600"; inp.style.fontSize="18px"; }
+    if(look==="t"){ inp.style.fontWeight="600"; }
+    if(isArea){ inp.rows=3; }
+    inp.value = obj[key]==null?"":obj[key];
+    inp.addEventListener("input", function(){ obj[key]=inp.value; });
+    if(tag==="h1"){ inp.style.fontFamily="Space Grotesk"; inp.style.fontWeight="600"; inp.style.fontSize="22px"; }
+    var wrap=document.createElement(tag==="h1"||tag==="h3"?"div":"div"); wrap.appendChild(inp); return wrap;
+  }
+
+  /* ---- save ---- */
+  async function onSave(){
+    setMsg("");
+    if(!state.content){ return setMsg("Generate your site first."); }
+    var brief = readBrief();
+    var btn=$("save"); btn.disabled=true; var o=btn.textContent; btn.textContent="Saving…";
+    try{
+      if(DEMO){ setMsg("Saved (sample mode).","ok"); return; }
+      await ensureSite(brief);
+      var payload = Object.assign({}, state.content, { _brief: brief });
+      var r = await api(API+"/sites/"+encodeURIComponent(state.siteId),{method:"PUT",body:JSON.stringify({ site_name:brief.business_name, content:payload })});
+      if(!r.ok){ setMsg(genErr(r.data.error)||"Couldn't save."); return; }
+      setMsg("Saved. Preview it, or publish to go live.","ok");
+      showAfterSave();
+    }catch(e){ setMsg("Couldn't save. Try again."); }
+    finally{ btn.disabled=false; btn.textContent=o; }
+  }
+  function showAfterSave(){
+    var row=document.querySelector(".actions-row");
+    if(document.getElementById("after")) return;
+    var after=node('<div id="after" style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">'+
+      '<a class="btn btn-ghost" target="_blank" rel="noopener" href="https://app.websites.co.zw/preview/'+esc(state.siteId)+'">Preview site</a>'+
+      '<a class="btn btn-gold" href="/checkout?site='+esc(state.siteId)+'">Publish — $30/year</a></div>');
+    row.parentNode.insertBefore(after, row.nextSibling);
+  }
+
+  /* ---- demo content ---- */
+  function demoContent(b){
+    var svc=(b.services.length?b.services:["Coaching","Clinics","Scouting"]).slice(0,4).map(function(t){return {title:t, description:"Professional "+t.toLowerCase()+" delivered with care in "+(b.city||"Bulawayo")+"."};});
+    return { theme:{palette:"black-white-gold", font_pair:"sports-sans", sections:["hero","about","services","contact"]},
+      content:{ business_name:b.business_name||"Your Business", tagline:b.unique_selling_point||"Built in "+(b.city||"Bulawayo"),
+        hero:{headline:(b.business_name||"Your Business"), subheadline:b.description||"Helping "+(b.target_customers||"our community")+" with what matters.", cta_label:"Get in touch"},
+        about:{heading:"About us", body:(b.description||"We are a "+(b.industry||"local business")+" based in "+(b.city||"Bulawayo")+".")+" "+(b.years_operating?("Serving the community for "+b.years_operating+" years."):"")},
+        services:svc, seo:{title:(b.business_name||"")+" — "+(b.industry||""), description:b.description||""},
+        contact:b.contact, social:b.social } };
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maranatha Community Church — Hope. Family. Faith. Chitungwiza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--warm:#2C1A0E;--amber:#C07A2B;--amber2:#E09A3B;--cream:#FAF5EE;--ink:#241A10;--ink2:#6A5A44;--paper:#fff;--line:rgba(44,26,14,.12)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Plus Jakarta Sans",sans-serif;color:var(--ink);background:var(--cream);line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Fraunces",serif;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}.wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+  header{position:sticky;top:0;z-index:50;background:rgba(250,245,238,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-family:"Fraunces",serif;font-weight:700;font-size:1.25rem}
+  .cross{width:34px;height:34px;border-radius:8px;background:var(--warm);display:grid;place-items:center;flex:none}
+  .cross svg{width:16px;height:16px}
+  .nav nav{display:flex;gap:26px}.nav nav a{font-size:.9rem;font-weight:500;color:var(--ink2)}.nav nav a:hover{color:var(--warm)}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--warm);color:#fff;font-weight:600;font-size:.9rem;padding:11px 20px;border-radius:8px;transition:.2s}.btn:hover{background:var(--amber);color:#fff}
+  .btn.outline{background:transparent;border:1.5px solid var(--warm);color:var(--warm)}.btn.outline:hover{background:var(--warm);color:#fff}
+  /* hero */
+  .hero{position:relative;min-height:68vh;display:flex;align-items:center;color:#fff}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(44,26,14,.9),rgba(44,26,14,.35))}
+  .hero .wrap{position:relative;z-index:2;padding:60px 26px}
+  .eyebrow{font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber2);font-weight:700}
+  .hero h1{font-size:clamp(2.4rem,5.5vw,4.2rem);margin:14px 0 18px;max-width:18ch}
+  .hero p{font-size:1.12rem;max-width:44ch;color:rgba(255,255,255,.88)}
+  .hero-actions{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap}
+  .btn.ghost{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.5);color:#fff}
+  /* service times */
+  .times-bar{background:var(--warm);color:#fff}
+  .times-bar .wrap{display:flex;align-items:center;gap:40px;padding:14px 26px;flex-wrap:wrap}
+  .time-item .label{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--amber2);font-weight:700}
+  .time-item .val{font-weight:600;font-size:.96rem}
+  section{padding:64px 0}
+  .sec-head{text-align:center;max-width:600px;margin:0 auto 44px}
+  .sec-head h2{font-size:clamp(1.9rem,3.5vw,2.8rem);margin-top:10px}.sec-head p{color:var(--ink2);margin-top:10px}
+  /* values */
+  .values{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .vcard{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:28px 24px;text-align:center}
+  .vcard .icon{width:52px;height:52px;border-radius:12px;background:var(--cream);display:grid;place-items:center;font-size:1.5rem;margin:0 auto 16px}
+  .vcard h3{font-size:1.1rem;margin-bottom:8px}.vcard p{font-size:.9rem;color:var(--ink2)}
+  /* pastor */
+  .pastor{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center}
+  .pastor img{width:100%;border-radius:16px;aspect-ratio:4/4.5;object-fit:cover;box-shadow:0 40px 80px -40px rgba(44,26,14,.4)}
+  .pastor .kicker{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
+  .pastor h2{font-size:clamp(1.8rem,3vw,2.6rem);margin:12px 0 16px}
+  .pastor p{color:var(--ink2);font-size:1.05rem;line-height:1.7;margin-bottom:12px}
+  /* ministries */
+  .min-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .mcard{border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;gap:16px;align-items:flex-start;background:var(--paper)}
+  .mcard .ico{width:44px;height:44px;border-radius:10px;background:var(--cream);display:grid;place-items:center;font-size:1.2rem;flex:none}
+  .mcard h3{font-size:1rem;margin-bottom:6px}.mcard p{font-size:.88rem;color:var(--ink2)}
+  /* events */
+  .events{display:flex;flex-direction:column;gap:12px}
+  .event{display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px}
+  .event .date{text-align:center;background:var(--warm);border-radius:8px;padding:6px 0;color:#fff}
+  .event .date .day{font-family:"Fraunces",serif;font-size:1.4rem;font-weight:600;line-height:1}
+  .event .date .month{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em}
+  .event h3{font-size:.96rem;font-weight:600}.event p{font-size:.84rem;color:var(--ink2)}
+  .event .tag{font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:6px;background:var(--cream);color:var(--warm);white-space:nowrap}
+  /* giving */
+  .give-band{background:var(--warm);color:#fff;text-align:center;border-radius:16px;padding:54px 40px}
+  .give-band h2{font-size:clamp(2rem,3.5vw,2.8rem);margin:10px 0 14px}
+  .give-band p{color:rgba(255,255,255,.8);max-width:44ch;margin:0 auto 28px}
+  .give-band .btn{background:#fff;color:var(--warm)}.give-band .btn:hover{background:var(--amber2);color:#fff}
+  /* location */
+  .location{display:grid;grid-template-columns:1.3fr .7fr;gap:40px;align-items:center}
+  .map-mock{background:linear-gradient(135deg,#ddd 0%,#ccc 100%);border-radius:14px;aspect-ratio:16/10;overflow:hidden;position:relative;border:1px solid var(--line);display:grid;place-items:center;color:#888;font-size:1.4rem}
+  .address-box h3{font-size:1.4rem;margin-bottom:16px}
+  .addr-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+  .addr-row .ico{font-size:1.1rem;margin-top:2px}
+  .addr-row p{font-size:.92rem;color:var(--ink2);line-height:1.5}
+  footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
+  .foot-in{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .foot-in .logo{color:#fff}.foot-in p{font-size:.84rem}
+  .socials{display:flex;gap:10px}
+  .soc{width:34px;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:.85rem;color:#fff}
+  @media(max-width:900px){
+    .values{grid-template-columns:1fr 1fr}.pastor{grid-template-columns:1fr}.pastor img{aspect-ratio:16/9}
+    .min-grid{grid-template-columns:1fr}.location{grid-template-columns:1fr}
+    .nav nav,.nav .btn{display:none}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="nav">
+      <div class="logo">
+        <div class="cross">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6.5" y="1" width="3" height="14" rx="1.2" fill="#C07A2B"/>
+            <rect x="1" y="5.5" width="14" height="3" rx="1.2" fill="#C07A2B"/>
+          </svg>
+        </div>
+        Maranatha Community Church
+      </div>
+      <nav>
+        <a href="#">About</a><a href="#">Sermons</a><a href="#">Ministries</a><a href="#">Events</a><a href="#">Give</a>
+      </nav>
+      <a href="#visit" class="btn">Plan Your Visit</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <img src="https://images.unsplash.com/photo-1438232992991-995b671e4668?w=1400&q=80" alt="Church gathering">
+  <div class="wrap">
+    <p class="eyebrow">Chitungwiza · Est. 1989</p>
+    <h1>You are welcome here. All of you.</h1>
+    <p>A community of faith growing together in love, serving Chitungwiza and beyond since 1989.</p>
+    <div class="hero-actions">
+      <a href="#visit" class="btn">Plan Your Visit →</a>
+      <a href="#sermons" class="btn ghost">Watch Online</a>
+    </div>
+  </div>
+</section>
+
+<div class="times-bar">
+  <div class="wrap">
+    <div class="time-item"><p class="label">Sunday Service</p><p class="val">7:00 AM &amp; 10:00 AM</p></div>
+    <div class="time-item"><p class="label">Wednesday Prayer</p><p class="val">6:30 PM</p></div>
+    <div class="time-item"><p class="label">Friday Youth</p><p class="val">5:00 PM</p></div>
+    <div class="time-item"><p class="label">WhatsApp Updates</p><p class="val">+263 77 123 4567</p></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Who We Are</p>
+      <h2>A church that cares</h2>
+      <p>We believe every person has purpose, every family deserves support, and every community can thrive. These three values shape everything we do.</p>
+    </div>
+    <div class="values">
+      <div class="vcard"><div class="icon">🙏</div><h3>Authentic Faith</h3><p>Deep, honest, Spirit-led worship every week — no performance, just presence.</p></div>
+      <div class="vcard"><div class="icon">❤️</div><h3>Genuine Community</h3><p>Small groups, pastoral care, and a culture where nobody walks alone.</p></div>
+      <div class="vcard"><div class="icon">🌍</div><h3>Local Impact</h3><p>Feeding programmes, school support, and community development right here in Chitungwiza.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--paper);padding:80px 0">
+  <div class="wrap">
+    <div class="pastor">
+      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=700&q=80" alt="Lead Pastor">
+      <div>
+        <p class="kicker">Lead Pastor</p>
+        <h2>A message from Pastor David Nhari</h2>
+        <p>We started Maranatha with eleven people in a living room. Today we are over two thousand strong — but the heart has never changed. Every Sunday we gather as family, and every week we push outwards into the community we love.</p>
+        <p>I believe the local church is the hope of Zimbabwe. Come and be part of something bigger than yourself.</p>
+        <a href="#visit" class="btn" style="margin-top:20px">Join Us This Sunday →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Ministries</p>
+      <h2>There is a place for you</h2>
+    </div>
+    <div class="min-grid">
+      <div class="mcard"><div class="ico">👦</div><div><h3>Children's Church</h3><p>Ages 3–12. Fun, Bible-based teaching while parents worship. Fully supervised.</p></div></div>
+      <div class="mcard"><div class="ico">🎸</div><div><h3>Youth (Zvakanaka)</h3><p>Secondary and tertiary students. Friday evenings, live music, real talk.</p></div></div>
+      <div class="mcard"><div class="ico">👩</div><div><h3>Women's Fellowship</h3><p>Monthly gatherings, mentorship, and a WhatsApp community for daily encouragement.</p></div></div>
+      <div class="mcard"><div class="ico">🤲</div><div><h3>Community Feeding</h3><p>Every Saturday we serve hot meals at Unit K. Volunteers always welcome.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--paper)">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Coming Up</p>
+      <h2>Events</h2>
+    </div>
+    <div class="events">
+      <div class="event">
+        <div class="date"><p class="day">22</p><p class="month">Jun</p></div>
+        <div><h3>Men's Breakfast &amp; Prayer Walk</h3><p>6:00 AM · Church grounds</p></div>
+        <span class="tag">Men</span>
+      </div>
+      <div class="event">
+        <div class="date"><p class="day">29</p><p class="month">Jun</p></div>
+        <div><h3>Family Fun Day — Celebrating 35 years</h3><p>2:00 PM · Chiremba Grounds</p></div>
+        <span class="tag">All Ages</span>
+      </div>
+      <div class="event">
+        <div class="date"><p class="day">6</p><p class="month">Jul</p></div>
+        <div><h3>Baptism Sunday</h3><p>10:00 AM Service · Register by 30 June</p></div>
+        <span class="tag">Worship</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="give-band">
+      <p class="eyebrow" style="color:var(--amber2)">Partner With Us</p>
+      <h2>Your giving changes lives in Chitungwiza</h2>
+      <p>Every dollar sown supports our feeding programme, school bursaries, and community outreach. Give once or set up a monthly partnership.</p>
+      <a href="#give" class="btn">Give Online →</a>
+    </div>
+  </div>
+</section>
+
+<section id="visit">
+  <div class="wrap">
+    <div class="sec-head"><p class="eyebrow">Find Us</p><h2>Visit this Sunday</h2></div>
+    <div class="location">
+      <div class="map-mock">📍</div>
+      <div class="address-box">
+        <h3>Plan your visit</h3>
+        <div class="addr-row"><span class="ico">📍</span><p>Stand 4821, Unit M<br>Chitungwiza, Zimbabwe</p></div>
+        <div class="addr-row"><span class="ico">🕖</span><p>Sunday: 7:00 AM &amp; 10:00 AM<br>Wednesday: 6:30 PM<br>Friday Youth: 5:00 PM</p></div>
+        <div class="addr-row"><span class="ico">📞</span><p>+263 77 123 4567</p></div>
+        <div class="addr-row"><span class="ico">✉️</span><p>info@maranathachurch.co.zw</p></div>
+        <a href="https://wa.me/263771234567" class="btn" style="margin-top:16px;background:#25D366">💬 WhatsApp Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <div class="logo" style="color:#fff">Maranatha Community Church</div>
+      <p>© 2026 Maranatha Community Church · Chitungwiza</p>
+      <div class="socials">
+        <a class="soc" href="#">f</a><a class="soc" href="#">▶</a><a class="soc" href="#">✉</a>
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

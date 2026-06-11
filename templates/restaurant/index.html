@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gango Grill House — Flame-grilled, Borrowdale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--char:#221A14;--ember:#D2541F;--amber:#E0A12E;--cream:#FBF4E9;--ink:#2A211A;--ink2:#6E6055;--paper:#fff;--line:rgba(34,26,20,.12)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Plus Jakarta Sans",sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Playfair Display",serif;font-weight:700;line-height:1.06}
+  a{color:inherit;text-decoration:none}.wrap{max-width:1140px;margin:0 auto;padding:0 26px}
+  header{position:sticky;top:0;z-index:50;background:rgba(34,26,20,.95);backdrop-filter:blur(10px)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:15px 0;color:#fff}
+  .logo{font-family:"Playfair Display",serif;font-weight:800;font-size:1.4rem}.logo b{color:var(--amber)}
+  .nav nav{display:flex;gap:26px}.nav nav a{font-size:.9rem;font-weight:500;color:rgba(255,255,255,.78)}.nav nav a:hover{color:#fff}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-weight:600;font-size:.9rem;padding:11px 20px;border-radius:8px;transition:.2s}.btn:hover{background:#B5440F}
+  .hero{position:relative;min-height:72vh;display:flex;align-items:flex-end}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(34,26,20,.92),rgba(34,26,20,.2))}
+  .hero .wrap{position:relative;z-index:2;color:#fff;padding:0 26px 56px}
+  .hero .eyebrow{font-size:.82rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);font-weight:700}
+  .hero h1{font-size:clamp(2.8rem,6vw,4.8rem);margin:12px 0 14px}
+  .hero p{font-size:1.15rem;max-width:42ch;color:rgba(255,255,255,.88)}
+  .hero-actions{display:flex;gap:14px;margin-top:26px}
+  .ghost{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.4)}
+  section{padding:66px 0}.sec-head{text-align:center;max-width:600px;margin:0 auto 44px}
+  .sec-head .eyebrow{font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ember);font-weight:700}
+  .sec-head h2{font-size:clamp(2rem,4vw,2.8rem);margin-top:8px}.sec-head p{color:var(--ink2);margin-top:10px}
+  .cat{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:34px}
+  .pill{background:var(--paper);border:1px solid var(--line);border-radius:100px;padding:8px 18px;font-size:.88rem;font-weight:600;cursor:pointer}
+  .pill.on{background:var(--char);color:#fff;border-color:var(--char)}
+  .menu{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .dish{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:.3s}
+  .dish:hover{transform:translateY(-4px);box-shadow:0 24px 44px -28px rgba(34,26,20,.4)}
+  .dish img{width:100%;aspect-ratio:4/3;object-fit:cover}
+  .dish .body{padding:18px}
+  .dish h3{font-size:1.2rem;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .dish .price{font-family:"Plus Jakarta Sans";color:var(--ember);font-weight:700;font-size:1.05rem;white-space:nowrap}
+  .dish p{font-size:.88rem;color:var(--ink2);margin:6px 0 14px}
+  .add{display:flex;align-items:center;justify-content:space-between}
+  .addbtn{background:var(--char);color:#fff;font-weight:600;font-size:.84rem;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;display:inline-flex;gap:7px;align-items:center}
+  .addbtn:hover{background:var(--ember)}
+  .tag{font-size:.72rem;background:#FBF1DE;color:#92580A;padding:3px 9px;border-radius:6px;font-weight:600}
+  .band{background:var(--char);color:#fff;text-align:center;padding:60px 0}
+  .band h2{color:#fff;font-size:clamp(2rem,4vw,2.8rem)}.band p{color:rgba(255,255,255,.7);margin:12px auto 0;max-width:46ch}
+  .wa{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;font-weight:700;padding:14px 26px;border-radius:10px;margin-top:24px}
+  /* floating cart — the e-store upsell hint */
+  .cart{position:fixed;right:20px;bottom:20px;background:var(--ember);color:#fff;border-radius:14px;padding:14px 20px;box-shadow:0 20px 40px -16px rgba(210,84,31,.7);display:flex;align-items:center;gap:14px;z-index:60}
+  .cart b{font-size:1.05rem}.cart .c{background:#fff;color:var(--ember);font-weight:800;border-radius:8px;padding:5px 10px;font-size:.9rem}
+  footer{background:#16100B;color:rgba(255,255,255,.6);padding:40px 0;font-size:.9rem}
+  .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  @media(max-width:860px){.menu{grid-template-columns:1fr}.nav nav{display:none}}
+</style></head>
+<body>
+<header><div class="wrap nav">
+  <div class="logo">Gango<b>Grill</b></div>
+  <nav><a href="#menu">Menu</a><a href="#order">Order</a><a href="#visit">Visit</a></nav>
+  <a href="#order" class="btn">Order online</a>
+</div></header>
+
+<div class="hero">
+  <img src="https://picsum.photos/seed/gango-grill/1600/1000" alt="Flame-grilled food">
+  <div class="wrap">
+    <span class="eyebrow">Flame-grilled · Borrowdale</span>
+    <h1>Real fire. Real flavour.</h1>
+    <p>Zimbabwe's favourite grill — succulent meats, fresh sides and that smoky gango taste, ready to eat in or order to your door.</p>
+    <div class="hero-actions"><a href="#order" class="btn">Order online</a><a href="#menu" class="btn ghost">See the menu</a></div>
+  </div>
+</div>
+
+<section id="menu">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Our menu</span><h2>What's on the grill</h2><p>Add items to your order and check out on WhatsApp — delivery across the northern suburbs.</p></div>
+    <div class="cat"><span class="pill on">All</span><span class="pill">Grills</span><span class="pill">Sadza & stews</span><span class="pill">Sides</span><span class="pill">Drinks</span></div>
+    <div class="menu">
+      <div class="dish"><img src="https://picsum.photos/seed/dish-mixedgrill/600/450" alt=""><div class="body"><h3>Mixed grill platter <span class="price">$14</span></h3><p>Beef, chicken & boerewors, flame-grilled, with sadza and chips.</p><div class="add"><span class="tag">Bestseller</span><button class="addbtn">+ Add to order</button></div></div></div>
+      <div class="dish"><img src="https://picsum.photos/seed/dish-roadrunner/600/450" alt=""><div class="body"><h3>Road-runner chicken <span class="price">$10</span></h3><p>Free-range chicken, slow-grilled with peri sauce and veg.</p><div class="add"><span class="tag">Spicy</span><button class="addbtn">+ Add to order</button></div></div></div>
+      <div class="dish"><img src="https://picsum.photos/seed/dish-tbone/600/450" alt=""><div class="body"><h3>T-bone & sadza <span class="price">$12</span></h3><p>300g T-bone steak, fresh sadza and greens.</p><div class="add"><span style="font-size:.84rem;color:var(--ink2)">Serves 1</span><button class="addbtn">+ Add to order</button></div></div></div>
+      <div class="dish"><img src="https://picsum.photos/seed/dish-beefstew/600/450" alt=""><div class="body"><h3>Beef stew & sadza <span class="price">$8</span></h3><p>Slow-cooked beef stew with sadza and covo.</p><div class="add"><span style="font-size:.84rem;color:var(--ink2)">Serves 1</span><button class="addbtn">+ Add to order</button></div></div></div>
+      <div class="dish"><img src="https://picsum.photos/seed/dish-chips/600/450" alt=""><div class="body"><h3>Loaded chips <span class="price">$5</span></h3><p>Crispy chips topped with cheese and grilled chicken.</p><div class="add"><span style="font-size:.84rem;color:var(--ink2)">Side</span><button class="addbtn">+ Add to order</button></div></div></div>
+      <div class="dish"><img src="https://picsum.photos/seed/dish-maheu/600/450" alt=""><div class="body"><h3>Maheu <span class="price">$2</span></h3><p>Traditional maize drink, served cold.</p><div class="add"><span style="font-size:.84rem;color:var(--ink2)">500ml</span><button class="addbtn">+ Add to order</button></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="order">
+  <div class="wrap">
+    <h2>Hungry? Order in two taps.</h2>
+    <p>Build your order, then send it straight to our kitchen on WhatsApp. Delivery across Borrowdale, Mount Pleasant & Avondale.</p>
+    <a href="https://wa.me/263770000000" class="wa">💬 Order on WhatsApp</a>
+  </div>
+</section>
+
+<footer><div class="wrap foot">
+  <div><span class="logo" style="color:#fff">Gango<b>Grill</b></span><p style="margin-top:8px" id="visit">📍 Sam Levy's Village, Borrowdale · 🕙 11am–10pm daily</p></div>
+  <div>© 2026 Gango Grill House · Built with websites.co.zw</div>
+</div></footer>
+
+<div class="cart">🛒 <b>Your order</b> <span class="c" id="ccount">3</span></div>
+<script>
+  let count=3;
+  document.querySelectorAll('.addbtn').forEach(b=>b.addEventListener('click',()=>{count++;document.getElementById('ccount').textContent=count;b.textContent='✓ Added';setTimeout(()=>b.innerHTML='+ Add to order',900)}));
+  document.querySelectorAll('.pill').forEach(p=>p.addEventListener('click',()=>{document.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on')}));
+</script>
+</body></html>
