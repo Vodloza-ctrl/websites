@@ -63,7 +63,15 @@ export default {
     const url    = new URL(request.url);
     const path   = url.pathname;
     const method = request.method;
-    const origin = env.APP_ORIGIN || "https://app.websites.co.zw";
+    // Allow requests from both the Pages site and app subdomain
+    const requestOrigin = request.headers.get("Origin") || "";
+    const allowedOrigins = [
+      "https://www.websites.co.zw",
+      "https://websites.co.zw",
+      "https://app.websites.co.zw",
+      env.APP_ORIGIN || "",
+    ].filter(Boolean);
+    const origin = allowedOrigins.includes(requestOrigin) ? requestOrigin : allowedOrigins[0];
 
     if (method === "OPTIONS") return cors(null, 204, origin);
     if (path === "/health")   return cors(json({ ok: true, service: "websites-cozw-auth" }), 200, origin);
