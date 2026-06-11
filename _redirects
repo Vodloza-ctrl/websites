@@ -1,0 +1,2 @@
+# Redirect root to marketing page (fallback if root directory isn't set in Pages)
+/   /marketing/index.html   302
