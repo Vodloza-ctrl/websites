@@ -28,8 +28,22 @@ export default {
     }
 
     const target = resolveHost(host, url.pathname, root);
-    // null = apex / www / app / reserved host -> pass through to Cloudflare Pages
-    if (!target) return fetch(request);
+
+    // app.websites.co.zw (non-preview) → forward to auth/dashboard Worker
+    if (target && target.context === "app") {
+      const authHost = env.AUTH_WORKER_HOST || "websites-cozw-auth.yasibomedia.workers.dev";
+      const authUrl  = new URL(request.url);
+      authUrl.hostname = authHost;
+      return fetch(new Request(authUrl.toString(), request));
+    }
+
+    // null = apex / www → forward to Pages (rewrite hostname to avoid loop)
+    if (!target) {
+      const pagesHost = env.PAGES_HOST || "websites-aon.pages.dev";
+      const pagesUrl  = new URL(request.url);
+      pagesUrl.hostname = pagesHost;
+      return fetch(new Request(pagesUrl.toString(), request));
+    }
 
     const site = await loadSite(env.DB, target);
     if (!site) return holdingPage(404, "Site not found");
@@ -76,7 +90,7 @@ function resolveHost(host, pathname, root) {
   if (host === appHost) {
     const m = pathname.match(/^\/preview\/([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)(?:\/|$)/i);
     if (m) return { context: "preview", token: m[1].toLowerCase() };
-    return null;
+    return { context: "app" }; // forward to auth/dashboard worker
   }
   if (host === root || host === `www.${root}`) return null;
   const publicSuffix = `.${root}`;
