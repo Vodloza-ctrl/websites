@@ -171,12 +171,17 @@ img{display:block;max-width:100%}
 .img-thumb-add{aspect-ratio:1;border-radius:var(--r-xs);border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink3);cursor:pointer;transition:border-color .15s,background .15s;position:relative;overflow:hidden}
 .img-thumb-add:hover{border-color:var(--green);background:var(--green-bg);color:var(--green)}
 .img-thumb-add input{position:absolute;inset:0;opacity:0;cursor:pointer}
-/* Variants input */
-.variants-input{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
-.variant-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1.5px solid var(--line2);border-radius:20px;padding:4px 10px;font-size:12.5px;font-weight:600;color:var(--ink2)}
-.variant-chip button{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:14px;line-height:1;padding:0 0 0 2px}
-.variant-add{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1.5px dashed var(--line2);border-radius:20px;padding:4px 10px;font-size:12.5px;color:var(--ink3);cursor:pointer;transition:.12s}
-.variant-add:hover{border-color:var(--green);color:var(--green)}
+/* Variants preset UI */
+.vpreset-section{background:var(--surface);border-radius:var(--r-xs);padding:8px 10px}
+.vpreset-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.vpreset-row{display:flex;flex-wrap:wrap;gap:5px}
+.vpreset{border:1.5px solid var(--line2);border-radius:6px;padding:4px 10px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:var(--ink2);transition:.12s;line-height:1.4}
+.vpreset:hover{border-color:var(--green);color:var(--green)}
+.vpreset-on{background:var(--green);color:#fff;border-color:var(--green)}
+.vpreset-on:hover{background:var(--green-dk);border-color:var(--green-dk)}
+/* Product upload zone */
+.product-upload-zone{border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface);min-height:44px;display:flex;flex-direction:column;justify-content:center}
+.product-upload-zone:hover{border-color:var(--green)}
 /* Stock selector */
 .stock-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
 .stock-opt{flex:1;min-width:80px;border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:7px 10px;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink3);cursor:pointer;transition:.12s;background:#fff}
@@ -843,21 +848,90 @@ window.setStock = function(id,stock,btn){
   if(row)row.querySelectorAll(".stock-opt").forEach(function(b){b.className="stock-opt";});
   btn.className="stock-opt active-"+stock;
 };
-window.addVariant = function(id){
-  var val=prompt("Enter a variant (e.g. S, M, L or Red, Blue)");
+
+window.togglePreset = function(id, val){
+  var p=state.products.find(function(p){return p.id===id;});
+  if(!p)return;
+  if(!Array.isArray(p.variants))p.variants=[];
+  var idx=p.variants.indexOf(val);
+  if(idx>-1){
+    p.variants.splice(idx,1); // remove if already active
+  } else {
+    p.variants.push(val); // add if not active
+  }
+  markDirty();
+  // Re-render just the chips and update preset button states — no full re-render
+  var card=document.querySelector('[data-pid="'+id+'"]');
+  if(!card)return;
+  renderVariantChips(card, id, p.variants);
+  // Update all preset button states in this card
+  card.querySelectorAll(".vpreset").forEach(function(btn){
+    var v=btn.getAttribute("title");
+    btn.className="vpreset"+(p.variants.indexOf(v)>-1?" vpreset-on":"");
+  });
+};
+window.addVariant = function(id, val){
   if(!val||!val.trim())return;
   var p=state.products.find(function(p){return p.id===id;});
-  if(p){ if(!Array.isArray(p.variants))p.variants=[]; p.variants.push(val.trim()); markDirty(); renderProducts(); }
+  if(!p)return;
+  if(!Array.isArray(p.variants))p.variants=[];
+  // Don't add duplicates
+  if(p.variants.indexOf(val.trim())>-1)return;
+  p.variants.push(val.trim());
+  markDirty();
+  // Re-render just the variant chips area for this card
+  var card=document.querySelector('[data-pid="'+id+'"]');
+  if(card) renderVariantChips(card, id, p.variants);
 };
 window.removeVariant = function(id,idx){
   var p=state.products.find(function(p){return p.id===id;});
-  if(p&&Array.isArray(p.variants)){ p.variants.splice(idx,1); markDirty(); renderProducts(); }
+  if(p&&Array.isArray(p.variants)){ p.variants.splice(idx,1); markDirty();
+    var card=document.querySelector('[data-pid="'+id+'"]');
+    if(card) renderVariantChips(card, id, p.variants);
+  }
 };
-window.triggerProductUpload = function(id){ var el=document.getElementById("pf_"+id); if(el)el.click(); };
+window.addCustomVariant = function(id, inputId){
+  var el=document.getElementById(inputId);
+  if(!el)return;
+  var val=el.value.trim();
+  if(!val)return;
+  // Support comma-separated entry: "S, M, L" adds three variants
+  val.split(",").forEach(function(v){ window.addVariant(id, v.trim()); });
+  el.value="";
+};
+
+function renderVariantChips(card, id, variants){
+  var wrap=card.querySelector(".variant-chips-wrap");
+  if(!wrap)return;
+  wrap.innerHTML=variants.map(function(v,i){
+    return '<span class="variant-chip">'+esc(v)+'<button type="button" onclick="removeVariant(\''+id+'\','+i+')" aria-label="Remove">×</button></span>';
+  }).join("");
+}
+
+window.triggerProductUpload = function(id){
+  var el=document.getElementById("pf_"+id);
+  if(el){ el.value=""; el.click(); }
+};
 window.handleProductUpload = async function(id,input){
   var file=input.files[0]; if(!file)return;
-  var url=await uploadToR2(file,"products"); if(!url){toast("Upload failed","err");return;}
-  updateProduct(id,"image",url); renderProducts(); toast("Photo uploaded ✓","ok");
+  // Show uploading state
+  var card=document.querySelector('[data-pid="'+id+'"]');
+  var zone=card?card.querySelector(".product-upload-zone"):null;
+  if(zone)zone.innerHTML='<div class="uz-label" style="font-size:12px;color:var(--ink3)">Uploading…</div>';
+  var url=await uploadToR2(file,"products");
+  if(!url){
+    toast("Upload failed — try again","err");
+    if(zone)zone.innerHTML='<label class="uz-label" style="font-size:12px;cursor:pointer">Upload photo<input type="file" id="pf_'+id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+id+'\',this)"></label>';
+    return;
+  }
+  updateProduct(id,"image",url);
+  // Update thumbnail in card header
+  var th=card?card.querySelector(".product-thumb-placeholder"):null;
+  if(th) th.outerHTML='<img class="product-thumb" src="'+esc(url)+'" alt="">';
+  // Update upload zone to show change photo
+  if(zone)zone.innerHTML='<img src="'+esc(url)+'" style="width:100%;height:56px;object-fit:cover;border-radius:6px;display:block"><label style="font-size:11px;color:var(--ink3);cursor:pointer;display:block;text-align:center;margin-top:4px">Change photo<input type="file" id="pf_'+id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+id+'\',this)"></label>';
+  markDirty();
+  toast("Photo uploaded ✓","ok");
 };
 
 function renderProducts(){
@@ -867,50 +941,105 @@ function renderProducts(){
   empty.style.display=state.products.length===0?"":"none";
   limitMsg.style.display=state.products.length>=STARTER_PRODUCT_LIMIT?"block":"none";
   list.querySelectorAll(".product-card").forEach(function(c){c.remove();});
+
+  // Preset variant suggestions by category
+  var SIZE_PRESETS  = ["XS","S","M","L","XL","XXL","One size"];
+  var COLOR_PRESETS = ["Black","White","Red","Blue","Green","Yellow","Pink","Gold","Navy","Grey"];
+
   state.products.forEach(function(p){
     var card=document.createElement("div");
     card.className="product-card";
     card.dataset.pid=p.id;
-    var thumbHtml=p.image?'<img class="product-thumb" src="'+esc(p.image)+'" alt="">'
+
+    var thumbHtml=p.image
+      ?'<img class="product-thumb" src="'+esc(p.image)+'" alt="">'
       :'<div class="product-thumb-placeholder">📦</div>';
     var variants=Array.isArray(p.variants)?p.variants:[];
     var varChips=variants.map(function(v,i){
-      return '<span class="variant-chip">'+esc(v)+'<button onclick="removeVariant(\''+p.id+'\','+i+')">×</button></span>';
+      return '<span class="variant-chip">'+esc(v)+'<button type="button" onclick="removeVariant(\''+p.id+'\','+i+')" aria-label="Remove">×</button></span>';
     }).join("");
     var stock=p.stock||"in";
-    card.innerHTML='<div class="product-card-head" onclick="toggleProduct(\''+p.id+'\')" style="cursor:pointer">'+
-      thumbHtml+'<div class="product-name">'+(p.name||'<em style="color:var(--ink3)">Tap to edit</em>')+'</div>'+
-      '<div class="product-price">'+(p.price||'')+'</div></div>'+
-    '<div class="product-card-body">'+
-      '<div class="two">'+
-        '<div class="fld-group"><label class="fld-label">Name</label>'+
-          '<input class="fld-input" placeholder="e.g. Gel Manicure" value="'+esc(p.name||'')+'" onchange="updateProduct(\''+p.id+'\',\'name\',this.value)"></div>'+
-        '<div class="fld-group"><label class="fld-label">Category <span class="fld-hint">optional</span></label>'+
-          '<input class="fld-input cat-field" placeholder="e.g. Nails, Drinks" value="'+esc(p.category||'')+'" onchange="updateProduct(\''+p.id+'\',\'category\',this.value)"></div>'+
+
+    // Upload zone — use label trick to avoid onclick/click conflicts
+    var uploadZoneHtml = p.image
+      ? '<div class="product-upload-zone"><img src="'+esc(p.image)+'" style="width:100%;height:56px;object-fit:cover;border-radius:6px;display:block"><label style="font-size:11px;color:var(--ink3);cursor:pointer;display:block;text-align:center;margin-top:4px">Change photo<input type="file" id="pf_'+p.id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+p.id+'\',this)"></label></div>'
+      : '<div class="product-upload-zone"><label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 8px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink2)">📷 Upload photo<input type="file" id="pf_'+p.id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+p.id+'\',this)"></label></div>';
+
+    // Size preset chips
+    var sizeChips=SIZE_PRESETS.map(function(s){
+      var active=variants.indexOf(s)>-1;
+      return '<button type="button" class="vpreset'+(active?" vpreset-on":"")+'" onclick="togglePreset(\''+p.id+'\',\''+s+'\')" title="'+s+'">'+s+'</button>';
+    }).join("");
+    // Colour preset chips
+    var colorChips=COLOR_PRESETS.map(function(c){
+      var active=variants.indexOf(c)>-1;
+      return '<button type="button" class="vpreset'+(active?" vpreset-on":"")+'" onclick="togglePreset(\''+p.id+'\',\''+c+'\')" title="'+c+'">'+c+'</button>';
+    }).join("");
+
+    card.innerHTML=
+      '<div class="product-card-head" onclick="toggleProduct(\''+p.id+'\')" style="cursor:pointer">'+
+        thumbHtml+
+        '<div class="product-name">'+(p.name||'<em style="color:var(--ink3)">Tap to edit</em>')+'</div>'+
+        '<div class="product-price">'+(p.price||'')+'</div>'+
+        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:.4"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
       '</div>'+
-      '<div class="two">'+
-        '<div class="fld-group"><label class="fld-label">Price</label>'+
-          '<input class="fld-input" placeholder="$15 / $15 000" value="'+esc(p.price||'')+'" onchange="updateProduct(\''+p.id+'\',\'price\',this.value)"></div>'+
-        '<div class="fld-group"><label class="fld-label">Photo</label>'+
-          '<div class="upload-zone" style="padding:10px" onclick="triggerProductUpload(\''+p.id+'\')">'+
-            '<input type="file" id="pf_'+p.id+'" accept="image/*" onchange="handleProductUpload(\''+p.id+'\',this)">'+
-            '<div class="uz-label" style="font-size:12px">'+(p.image?'Change photo':'Upload photo')+'</div>'+
+      '<div class="product-card-body">'+
+
+        // Row 1: Name + Category
+        '<div class="two">'+
+          '<div class="fld-group"><label class="fld-label">Item name</label>'+
+            '<input class="fld-input" placeholder="e.g. Home Jersey" value="'+esc(p.name||'')+'" oninput="updateProduct(\''+p.id+'\',\'name\',this.value)"></div>'+
+          '<div class="fld-group"><label class="fld-label">Category <span class="fld-hint">optional</span></label>'+
+            '<input class="fld-input" placeholder="e.g. Jerseys, Food" value="'+esc(p.category||'')+'" oninput="updateProduct(\''+p.id+'\',\'category\',this.value)"></div>'+
+        '</div>'+
+
+        // Row 2: Price + Photo
+        '<div class="two">'+
+          '<div class="fld-group"><label class="fld-label">Price</label>'+
+            '<input class="fld-input" placeholder="$20 / $20 000" value="'+esc(p.price||'')+'" oninput="updateProduct(\''+p.id+'\',\'price\',this.value)"></div>'+
+          '<div class="fld-group"><label class="fld-label">Photo</label>'+
+            uploadZoneHtml+
+          '</div>'+
+        '</div>'+
+
+        // Description
+        '<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'+
+          '<textarea class="fld-textarea" style="min-height:52px" placeholder="Brief description…" oninput="updateProduct(\''+p.id+'\',\'description\',this.value)">'+esc(p.description||'')+'</textarea></div>'+
+
+        // Variants — redesigned
+        '<div class="fld-group">'+
+          '<label class="fld-label">Variants <span class="fld-hint">— tap to add, tap again to remove</span></label>'+
+          // Active chips
+          '<div class="variant-chips-wrap" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:4px">'+varChips+'</div>'+
+          // Size presets
+          '<div class="vpreset-section">'+
+            '<div class="vpreset-label">Sizes</div>'+
+            '<div class="vpreset-row">'+sizeChips+'</div>'+
+          '</div>'+
+          // Colour presets
+          '<div class="vpreset-section" style="margin-top:8px">'+
+            '<div class="vpreset-label">Colours</div>'+
+            '<div class="vpreset-row">'+colorChips+'</div>'+
+          '</div>'+
+          // Custom entry
+          '<div style="display:flex;gap:6px;margin-top:8px">'+
+            '<input class="fld-input" id="vcustom_'+p.id+'" placeholder="Other option (e.g. 500ml, Left foot)" style="font-size:13px;padding:8px 10px" onkeydown="if(event.key===\'Enter\'){addCustomVariant(\''+p.id+'\',\'vcustom_'+p.id+'\');event.preventDefault();}">'+
+            '<button type="button" class="btn btn-ghost btn-sm" onclick="addCustomVariant(\''+p.id+'\',\'vcustom_'+p.id+'\')" style="white-space:nowrap;flex-shrink:0">+ Add</button>'+
+          '</div>'+
+          '<div style="font-size:11.5px;color:var(--ink3);margin-top:5px">Tip: type multiple at once separated by commas — e.g. "S, M, L"</div>'+
+        '</div>'+
+
+        // Stock status
+        '<div class="fld-group"><label class="fld-label">Stock status</label>'+
+          '<div class="stock-row">'+
+            '<button type="button" class="stock-opt '+(stock==="in"?"active-in":"")+'" onclick="setStock(\''+p.id+'\',\'in\',this)">✓ In stock</button>'+
+            '<button type="button" class="stock-opt '+(stock==="low"?"active-low":"")+'" onclick="setStock(\''+p.id+'\',\'low\',this)">⚠ Low stock</button>'+
+            '<button type="button" class="stock-opt '+(stock==="out"?"active-out":"")+'" onclick="setStock(\''+p.id+'\',\'out\',this)">✗ Out of stock</button>'+
           '</div></div>'+
-      '</div>'+
-      '<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'+
-        '<textarea class="fld-textarea" style="min-height:56px" placeholder="Brief description…" onchange="updateProduct(\''+p.id+'\',\'description\',this.value)">'+esc(p.description||'')+'</textarea></div>'+
-      '<div class="fld-group"><label class="fld-label">Variants <span class="fld-hint">sizes, colours, options</span></label>'+
-        '<div class="variants-input">'+varChips+
-          '<button class="variant-add" onclick="addVariant(\''+p.id+'\')">+ Add variant</button>'+
-        '</div></div>'+
-      '<div class="fld-group"><label class="fld-label">Stock status</label>'+
-        '<div class="stock-row">'+
-          '<button class="stock-opt '+(stock==="in"?"active-in":"")+'" onclick="setStock(\''+p.id+'\',\'in\',this)">✓ In stock</button>'+
-          '<button class="stock-opt '+(stock==="low"?"active-low":"")+'" onclick="setStock(\''+p.id+'\',\'low\',this)">⚠ Low stock</button>'+
-          '<button class="stock-opt '+(stock==="out"?"active-out":"")+'" onclick="setStock(\''+p.id+'\',\'out\',this)">✗ Out of stock</button>'+
-        '</div></div>'+
-      '<div style="margin-top:10px"><button class="product-del" onclick="removeProduct(\''+p.id+'\')">Remove item</button></div>'+
-    '</div>';
+
+        '<div style="margin-top:12px"><button type="button" class="product-del" onclick="removeProduct(\''+p.id+'\')">Remove item</button></div>'+
+      '</div>';
+
     list.insertBefore(card,empty);
   });
 }
