@@ -114,8 +114,11 @@
 <script>
 (function(){
   "use strict";
-  // Absolute URLs — dashboard is served from Pages, API is on app.websites.co.zw
-  var AUTH = "https://app.websites.co.zw/auth", API = "https://app.websites.co.zw/api";
+  // All API and app URLs are absolute — dashboard HTML is served from Pages (www)
+  // but the app/auth/API live on app.websites.co.zw
+  var AUTH    = "https://app.websites.co.zw/auth";
+  var API     = "https://app.websites.co.zw/api";
+  var APP     = "https://app.websites.co.zw";
   var now = Math.floor(Date.now()/1000);
   var DEMO = false;
   var state = { owner:null, channel:"whatsapp", phone:"", step:"phone" };
@@ -130,7 +133,10 @@
     if (s.draft_subdomain) return "https://"+s.draft_subdomain+".websites.co.zw";
     return null;
   }
-  function previewUrl(s){ return "https://app.websites.co.zw/preview/"+(s.draft_subdomain||s.id); }
+  function previewUrl(s){ return APP+"/preview/"+(s.draft_subdomain||s.id); }
+  function editorUrl(s){ return APP+"/editor/?site="+s.id; }
+  function checkoutUrl(s,purpose){ return APP+"/checkout?site="+s.id+(purpose?"&purpose="+purpose:""); }
+  function newSiteUrl(){ return APP+"/new"; }
 
   function statusInfo(s){
     var d = daysLeft(s);
@@ -175,7 +181,6 @@
       localStorage.removeItem("wcz_token");
       return renderLogin();
     } catch(e){
-      // No backend reachable (e.g. design preview) -> show sample data.
       DEMO = true; state.owner = { name:"Elite Sports", phone:"263772123456" };
       return renderDashboard();
     }
@@ -275,7 +280,6 @@
     if (code.length<4){ return setMsg("Enter the code we sent you."); }
     var btn = document.getElementById("verify"); btn.disabled=true; btn.textContent="Signing in…";
     var body = { phone: state.phone, code: code };
-    var email = state.channel==="email" ? state.phone : null; // email already provided at request
     try {
       var r = await api(AUTH+"/verify-otp", { method:"POST", body:JSON.stringify(body) });
       if (!r.ok){ btn.disabled=false; btn.textContent="Verify & sign in"; return setMsg(friendly(r.data.error)); }
@@ -296,7 +300,7 @@
       '</div></div>'+
       '<div class="wrap">'+
         '<div class="head"><div><h1>Your sites</h1><div class="sub" id="subcount">Loading…</div></div>'+
-          '<a class="btn btn-gold" href="/new">New site</a></div>'+
+          '<a class="btn btn-gold" href="'+esc(newSiteUrl())+'">New site</a></div>'+
         '<div class="grid" id="grid">'+
           '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>'+
         '</div>'+
@@ -307,11 +311,22 @@
     var sites = await getSites();
     var grid = document.getElementById("grid");
     var sub = document.getElementById("subcount");
-    if (!sites){ grid.innerHTML=""; grid.appendChild(el('<div class="empty"><h2>Couldn\u2019t load your sites</h2><p>Refresh the page to try again.</p></div>')); sub.textContent=""; return; }
+    if (!sites){
+      grid.innerHTML="";
+      grid.appendChild(el('<div class="empty"><h2>Couldn\u2019t load your sites</h2><p>Refresh the page to try again.</p></div>'));
+      sub.textContent="";
+      return;
+    }
     sub.textContent = sites.length===0 ? "No sites yet" : sites.length+" site"+(sites.length===1?"":"s");
     grid.innerHTML = "";
     if (sites.length===0){
-      grid.appendChild(el('<div class="empty"><h2>Build your first website</h2><p>Create a site, generate it with AI, preview it, then publish for $30/year.</p><a class="btn btn-gold" href="/new">Create a site</a></div>'));
+      grid.appendChild(el(
+        '<div class="empty">'+
+          '<h2>Build your first website</h2>'+
+          '<p>Create a site, generate it with AI, preview it, then publish for $30/year.</p>'+
+          '<a class="btn btn-gold" href="'+esc(newSiteUrl())+'">Create a site</a>'+
+        '</div>'
+      ));
       return;
     }
     sites.forEach(function(s){ grid.appendChild(siteCard(s)); });
@@ -323,7 +338,7 @@
     if (DEMO) return demoSites();
     try {
       var r = await api(API+"/sites", { method:"GET" });
-      if (r.status===401){ return renderLogin(), null; }
+      if (r.status===401){ renderLogin(); return null; }
       if (!r.ok) return null;
       return r.data.sites || [];
     } catch(e){ return null; }
@@ -335,25 +350,35 @@
     var live = (s.status==="published" || s.status==="grace");
     var urlRow = live && pub
       ? '<a href="'+esc(pub)+'" target="_blank" rel="noopener">'+esc(pub.replace(/^https:\/\//,""))+'</a>'
-      : '<span class="off">'+esc(pub ? pub.replace(/^https:\/\//,"") : "no address yet")+' · not public yet</span>';
+      : '<span class="off">'+esc(pub ? pub.replace(/^https:\/\//,"") : "no address yet")+' \u00b7 not public yet</span>';
 
     var planLabel = s.plan==="pro" ? "Pro" : "Starter";
     var d = daysLeft(s);
     var expiry = s.expires_at ? (d>0 ? "Renews in "+d+" day"+(d===1?"":"s") : "Expired") : "Not published";
 
-    var actions = '<a class="btn btn-ghost" href="'+esc(previewUrl(s))+'" target="_blank" rel="noopener">Preview</a>'+
-                  '<a class="btn btn-ghost" href="/edit?site='+esc(s.id)+'">Edit</a>';
-    if (s.status==="draft" || s.status==="pending_payment") actions += '<a class="btn btn-gold" href="/checkout?site='+esc(s.id)+'">Publish</a>';
-    else if (s.status==="grace" || s.status==="suspended" || (s.status==="published" && d!=null && d<=14)) actions += '<a class="btn btn-gold" href="/checkout?site='+esc(s.id)+'&purpose=renewal">Renew</a>';
+    // All action URLs are absolute pointing to app.websites.co.zw
+    var actions =
+      '<a class="btn btn-ghost" href="'+esc(previewUrl(s))+'" target="_blank" rel="noopener">Preview</a>'+
+      '<a class="btn btn-ghost" href="'+esc(editorUrl(s))+'">Edit</a>';
+
+    if (s.status==="draft" || s.status==="pending_payment") {
+      actions += '<a class="btn btn-gold" href="'+esc(checkoutUrl(s))+'">Publish</a>';
+    } else if (s.status==="grace" || s.status==="suspended" || (s.status==="published" && d!=null && d<=14)) {
+      actions += '<a class="btn btn-gold" href="'+esc(checkoutUrl(s,"renewal"))+'">Renew</a>';
+    }
 
     return el(
       '<div class="card">'+
-        '<div class="card-top"><h2>'+esc(s.site_name||"Untitled site")+'</h2>'+
-          '<span class="pill t-'+st.tone+'">'+esc(st.label)+'</span></div>'+
+        '<div class="card-top">'+
+          '<h2>'+esc(s.site_name||"Untitled site")+'</h2>'+
+          '<span class="pill t-'+st.tone+'">'+esc(st.label)+'</span>'+
+        '</div>'+
         '<p class="meaning">'+esc(st.meaning)+'</p>'+
         '<div class="url">'+urlRow+'</div>'+
-        '<div class="meta"><span><span class="k">'+esc(planLabel)+'</span></span>'+
-          '<span>'+esc(expiry)+'</span></div>'+
+        '<div class="meta">'+
+          '<span><span class="k">'+esc(planLabel)+'</span></span>'+
+          '<span>'+esc(expiry)+'</span>'+
+        '</div>'+
         '<div class="actions">'+actions+'</div>'+
       '</div>');
   }
@@ -368,7 +393,7 @@
   function demoSites(){
     return [
       { id:"site_001", site_name:"Elite Sports Institute", status:"published", plan:"starter",
-        draft_subdomain:"elite-sports", custom_domain:null, custom_domain_status:"none",
+        draft_subdomain:"elite", custom_domain:null, custom_domain_status:"none",
         published_at:now-2*86400, expires_at:now+363*86400, ai_generations_used:1 },
       { id:"site_test", site_name:"My First Site", status:"draft", plan:"starter",
         draft_subdomain:"my-first-site", custom_domain:null, custom_domain_status:"none",
