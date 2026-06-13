@@ -1,795 +1,1270 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edit Site — websites.co.zw</title>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>websites.co.zw — Edit your site</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --brand-green:  #006400;
-    --brand-gold:   #FFD200;
-    --brand-red:    #EF3340;
-    --ink:          #111827;
-    --muted:        #6B7280;
-    --border:       #E5E7EB;
-    --surface:      #F9FAFB;
-    --white:        #FFFFFF;
-    --radius:       8px;
-    --shadow:       0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
-    --font-head:    'Archivo', sans-serif;
-    --font-body:    'Hanken Grotesk', sans-serif;
-  }
-
-  html, body { height: 100%; font-family: var(--font-body); color: var(--ink); background: var(--surface); }
-
-  /* ── Layout ── */
-  .layout { display: grid; grid-template-columns: 420px 1fr; height: 100vh; }
-
-  /* ── Sidebar (intake form) ── */
-  .sidebar {
-    background: var(--white);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    overflow: hidden;
-  }
-  .sidebar-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .sidebar-header .logo { font-family: var(--font-head); font-weight: 700; font-size: 18px; color: var(--brand-green); }
-  .sidebar-header .logo span { color: var(--brand-gold); }
-  .site-name { font-size: 13px; color: var(--muted); margin-top: 2px; }
-
-  .sidebar-body { flex: 1; overflow-y: auto; padding: 20px 24px 24px; }
-
-  .section-label {
-    font-family: var(--font-head); font-size: 11px; font-weight: 600;
-    letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
-    margin: 20px 0 10px;
-  }
-  .section-label:first-child { margin-top: 0; }
-
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
-  .field input, .field textarea, .field select {
-    width: 100%; padding: 9px 12px; border: 1px solid var(--border);
-    border-radius: var(--radius); font-size: 14px; font-family: var(--font-body);
-    color: var(--ink); background: var(--white); transition: border-color .15s;
-    resize: vertical;
-  }
-  .field input:focus, .field textarea:focus, .field select:focus {
-    outline: none; border-color: var(--brand-green);
-    box-shadow: 0 0 0 3px rgba(0,100,0,.08);
-  }
-  .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  /* Services repeater */
-  .service-list { display: flex; flex-direction: column; gap: 10px; }
-  .service-item {
-    border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 12px; background: var(--surface); position: relative;
-  }
-  .service-item input { margin-bottom: 6px; }
-  .service-item .remove-svc {
-    position: absolute; top: 8px; right: 8px;
-    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px;
-    line-height: 1; padding: 2px 6px; border-radius: 4px;
-  }
-  .service-item .remove-svc:hover { background: var(--surface); color: var(--brand-red); }
-  .add-svc {
-    margin-top: 8px; padding: 8px 14px; background: none; border: 1px dashed var(--border);
-    border-radius: var(--radius); font-size: 13px; color: var(--muted); cursor: pointer;
-    width: 100%; text-align: left; transition: all .15s;
-  }
-  .add-svc:hover { border-color: var(--brand-green); color: var(--brand-green); }
-
-  /* Gen counter */
-  .gen-counter {
-    font-size: 12px; color: var(--muted); text-align: right; margin-bottom: 10px;
-  }
-  .gen-counter.warning { color: var(--brand-red); }
-
-  /* Actions */
-  .sidebar-footer {
-    padding: 16px 24px;
-    border-top: 1px solid var(--border);
-    flex-shrink: 0;
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 11px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 600;
-    font-family: var(--font-head); cursor: pointer; border: none; transition: all .15s;
-    width: 100%;
-  }
-  .btn-primary { background: var(--brand-green); color: var(--white); }
-  .btn-primary:hover:not(:disabled) { background: #005000; }
-  .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
-  .btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--border); }
-  .btn-secondary:hover:not(:disabled) { border-color: var(--brand-green); color: var(--brand-green); }
-  .btn-secondary:disabled { opacity: .55; cursor: not-allowed; }
-  .btn-accent { background: var(--brand-gold); color: var(--ink); }
-  .btn-accent:hover:not(:disabled) { background: #e6bd00; }
-  .btn-accent:disabled { opacity: .55; cursor: not-allowed; }
-
-  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  .spinner {
-    width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.35);
-    border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none;
-  }
-  .btn-primary.loading .spinner { display: block; }
-  .btn-primary.loading .btn-label { opacity: .7; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--ink); color: var(--white); padding: 10px 20px; border-radius: 20px;
-    font-size: 13px; opacity: 0; transition: all .25s; pointer-events: none; z-index: 99;
-    white-space: nowrap;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.error { background: var(--brand-red); }
-  .toast.success { background: var(--brand-green); }
-
-  /* ── Preview pane ── */
-  .preview-pane {
-    display: flex; flex-direction: column; overflow: hidden;
-  }
-  .preview-toolbar {
-    padding: 14px 20px; background: var(--white); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-  }
-  .preview-toolbar h2 { font-family: var(--font-head); font-size: 14px; font-weight: 600; }
-  .preview-url { font-size: 12px; color: var(--muted); font-family: monospace; }
-  .preview-actions { display: flex; gap: 8px; }
-  .preview-actions .btn { width: auto; padding: 8px 16px; font-size: 13px; }
-
-  .preview-frame { flex: 1; overflow: hidden; position: relative; }
-
-  /* ── Site preview card (rendered inline) ── */
-  .site-preview {
-    height: 100%; overflow-y: auto; background: #fff;
-    font-family: 'Archivo', sans-serif;
-  }
-
-  /* Empty state */
-  .empty-state {
-    height: 100%; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px;
-    color: var(--muted); text-align: center; padding: 40px;
-  }
-  .empty-icon { font-size: 48px; opacity: .4; }
-  .empty-state p { font-size: 15px; max-width: 280px; line-height: 1.5; }
-
-  /* ── Rendered site styles (inside preview) ── */
-  .rdr-hero {
-    background: linear-gradient(135deg, #006400 0%, #004d00 100%);
-    color: #fff; padding: 80px 40px; text-align: center;
-  }
-  .rdr-hero h1 { font-size: clamp(28px, 4vw, 48px); font-weight: 700; margin-bottom: 12px; }
-  .rdr-hero p  { font-size: 18px; opacity: .85; max-width: 560px; margin: 0 auto 28px; }
-  .rdr-hero-cta {
-    display: inline-block; background: var(--brand-gold); color: #111;
-    padding: 13px 28px; border-radius: 6px; font-weight: 700; text-decoration: none; font-size: 15px;
-  }
-  .rdr-section { padding: 64px 40px; max-width: 900px; margin: 0 auto; }
-  .rdr-section h2 { font-size: 28px; font-weight: 700; margin-bottom: 16px; color: #111; }
-  .rdr-section p  { font-size: 16px; line-height: 1.7; color: #374151; }
-  .rdr-divider { height: 1px; background: #E5E7EB; margin: 0 40px; }
-  .rdr-services { background: #F9FAFB; padding: 64px 40px; }
-  .rdr-services h2 { font-size: 28px; font-weight: 700; margin-bottom: 32px; text-align: center; color: #111; }
-  .rdr-services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto; }
-  .rdr-service-card {
-    background: #fff; border-radius: 8px; padding: 24px;
-    border: 1px solid #E5E7EB; border-top: 3px solid #006400;
-  }
-  .rdr-service-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #111; }
-  .rdr-service-card p  { font-size: 14px; line-height: 1.6; color: #6B7280; }
-  .rdr-contact { background: #111827; color: #fff; padding: 64px 40px; text-align: center; }
-  .rdr-contact h2 { font-size: 28px; font-weight: 700; margin-bottom: 24px; }
-  .rdr-contact-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 28px; }
-  .rdr-contact-item { font-size: 15px; opacity: .85; }
-  .rdr-contact-item strong { color: #FFD200; display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
-  .rdr-socials { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-  .rdr-social-link {
-    display: inline-block; padding: 8px 18px; border-radius: 20px;
-    background: rgba(255,255,255,.1); color: #fff; text-decoration: none;
-    font-size: 13px; font-weight: 600; transition: background .15s;
-  }
-  .rdr-social-link:hover { background: rgba(255,255,255,.2); }
-  .rdr-draft-banner {
-    background: var(--brand-red); color: #fff; text-align: center;
-    padding: 10px 20px; font-size: 13px; font-weight: 600; letter-spacing: .04em;
-  }
-
-  /* Upsell banner */
-  .upsell-banner {
-    background: linear-gradient(90deg, #FFF7ED, #FFFBEB);
-    border: 1px solid #FED7AA; border-radius: var(--radius);
-    padding: 14px 16px; font-size: 13px; line-height: 1.5; color: #92400E;
-  }
-  .upsell-banner strong { color: #78350F; }
-  .upsell-banner a { color: var(--brand-green); font-weight: 600; text-decoration: none; }
-
-  /* Cap-reached message */
-  .cap-msg {
-    background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--radius);
-    padding: 14px 16px; font-size: 13px; color: #991B1B;
-  }
+:root{
+  --green:#15924B; --green-dk:#0f6e39; --green-bg:#e8f5ee;
+  --gold:#a87d1a;  --gold-dk:#876312;  --gold-bg:#fdf3dc;
+  --red:#c0392b;
+  --ink:#0d0f14;   --ink2:#3d4251;     --ink3:#6b7180;
+  --surface:#f0f2f6; --card:#ffffff;
+  --line:#e2e5eb;  --line2:#d0d4dc;
+  --pro:#7c3aed;   --pro-bg:#f3eeff;
+  --r:14px; --r-sm:9px; --r-xs:6px;
+  --shadow:0 1px 3px rgba(13,15,20,.06),0 6px 20px rgba(13,15,20,.07);
+  --shadow-lg:0 4px 8px rgba(13,15,20,.08),0 16px 40px rgba(13,15,20,.12);
+  --font-head:"Archivo",system-ui,sans-serif;
+  --font-body:"Hanken Grotesk",system-ui,sans-serif;
+  --bar:56px; --dock:68px; --sidebar:220px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--surface);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button,input,textarea,select{font-family:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:4px}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--bar);background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:12px;}
+.topbar-logo{font-family:var(--font-head);font-weight:800;font-size:17px;letter-spacing:-.02em;display:flex;align-items:center;gap:2px}
+.topbar-logo .tld{color:var(--green)}
+.topbar-logo .flag{display:inline-flex;flex-direction:column;gap:2px;margin-left:5px}
+.topbar-logo .flag i{display:block;width:3px;height:3px;border-radius:50%}
+.topbar-logo .flag i:nth-child(1){background:var(--green)}
+.topbar-logo .flag i:nth-child(2){background:var(--gold)}
+.topbar-logo .flag i:nth-child(3){background:var(--red)}
+.topbar-site{font-size:13px;font-weight:600;color:var(--ink2);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r-sm);font-weight:600;font-size:13.5px;padding:9px 16px;transition:.15s;border:1.5px solid transparent;white-space:nowrap}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover{background:var(--green-dk);border-color:var(--green-dk)}
+.btn-green:disabled{opacity:.5;cursor:default}
+.btn-ghost{background:transparent;color:var(--ink2);border-color:var(--line2)}
+.btn-ghost:hover{border-color:var(--ink3);color:var(--ink)}
+.btn-gold{background:var(--gold);color:#fff;border-color:var(--gold)}
+.btn-gold:hover{background:var(--gold-dk)}
+.btn-pro{background:var(--pro-bg);color:var(--pro);border-color:var(--pro-bg)}
+.btn-sm{padding:6px 12px;font-size:12.5px}
+.layout{display:flex;padding-top:var(--bar);height:100vh;overflow:hidden;}
+.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;padding:8px 0 24px;}
+.nav-section{padding:16px 12px 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:1px 6px;border-radius:var(--r-xs);font-size:14px;font-weight:500;color:var(--ink2);cursor:pointer;transition:background .12s,color .12s;position:relative;}
+.nav-item:hover{background:var(--surface);color:var(--ink)}
+.nav-item.active{background:var(--green-bg);color:var(--green);font-weight:600}
+.nav-item .nav-ico{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .nav-ico{opacity:1}
+.nav-badge{margin-left:auto;font-size:11px;font-weight:700;background:var(--pro-bg);color:var(--pro);padding:2px 6px;border-radius:20px}
+.main{flex:1;overflow-y:auto;padding:20px 20px 100px;min-width:0;}
+@media(min-width:900px){.main{padding:24px 28px 80px}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.panel-head{padding:16px 18px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel-head h2{font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:-.01em}
+.panel-body{padding:18px}
+.panel-body + .panel-body{border-top:1px solid var(--line)}
+.fld-group{margin-bottom:14px}
+.fld-group:last-child{margin-bottom:0}
+.fld-label{display:block;font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.fld-hint{font-weight:400;color:var(--ink3);font-size:11.5px}
+.fld-input,.fld-textarea,.fld-select{width:100%;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-size:14.5px;color:var(--ink);background:#fff;transition:border-color .15s;}
+.fld-textarea{min-height:80px;resize:vertical;line-height:1.5}
+.fld-input:focus,.fld-textarea:focus,.fld-select:focus{outline:none;border-color:var(--green)}
+.fld-input::placeholder,.fld-textarea::placeholder{color:#b0b6c3}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.two{grid-template-columns:1fr}}
+.upload-zone{border:2px dashed var(--line2);border-radius:var(--r-sm);padding:20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;background:#fafbfc;position:relative;overflow:hidden;}
+.upload-zone:hover{border-color:var(--green);background:var(--green-bg)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone .uz-icon{font-size:28px;margin-bottom:6px;display:block}
+.upload-zone .uz-label{font-size:13px;font-weight:600;color:var(--ink2)}
+.upload-zone .uz-sub{font-size:12px;color:var(--ink3);margin-top:2px}
+.upload-preview{margin-top:10px;position:relative;display:inline-block;width:100%}
+.upload-preview img{width:100%;max-height:160px;object-fit:cover;border-radius:var(--r-xs);border:1px solid var(--line)}
+.upload-remove{position:absolute;top:6px;right:6px;background:rgba(13,15,20,.7);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;border:none}
+.upload-progress{height:3px;background:var(--line);border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+.upload-progress-bar{height:100%;background:var(--green);width:0%;transition:width .3s}
+.product-list{display:flex;flex-direction:column;gap:12px}
+.product-card{border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:#fafbfc}
+.product-card-head{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line)}
+.product-thumb{width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--surface);border:1px solid var(--line)}
+.product-thumb-placeholder{width:44px;height:44px;border-radius:6px;flex-shrink:0;background:var(--surface);border:1px dashed var(--line2);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--ink3)}
+.product-name{font-weight:600;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.product-price{font-family:var(--font-head);font-weight:700;font-size:14px;color:var(--green);white-space:nowrap}
+.product-card-body{padding:10px 12px;display:none}
+.product-card.open .product-card-body{display:block}
+.product-card.open .product-card-head{background:var(--green-bg)}
+.product-del{color:var(--red);font-size:13px;font-weight:600;padding:6px 10px;border-radius:var(--r-xs);background:transparent;border:1px solid transparent}
+.product-del:hover{background:#fdecea;border-color:#f5c6c3}
+.ai-box{background:linear-gradient(135deg,#0d2818 0%,#0f3d22 60%,#1a5c35 100%);border-radius:var(--r);padding:22px 20px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden;}
+.ai-box::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(21,146,75,.35) 0%,transparent 70%);}
+.ai-box-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px}
+.ai-box h3{font-family:var(--font-head);font-size:19px;font-weight:800;line-height:1.15;margin-bottom:8px}
+.ai-box p{font-size:13.5px;color:rgba(255,255,255,.78);line-height:1.55;margin-bottom:16px}
+.ai-steps{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.ai-step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:rgba(255,255,255,.85)}
+.ai-step-num{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.ai-budget{font-size:12px;color:rgba(255,255,255,.5);margin-top:10px}
+.ai-budget b{color:rgba(255,255,255,.8)}
+.btn-ai{background:#fff;color:var(--green-dk);border:none;font-weight:700;font-size:14px;padding:12px 20px;border-radius:var(--r-sm);display:inline-flex;align-items:center;gap:8px;transition:.15s}
+.btn-ai:hover{background:var(--green-bg);transform:translateY(-1px)}
+.btn-ai:disabled{opacity:.6;cursor:default;transform:none}
+.btn-ai .spinner{width:16px;height:16px;border:2px solid rgba(21,100,55,.3);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;display:none}
+.btn-ai.loading .spinner{display:block}
+.btn-ai.loading .ai-ico{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.upsell{border:1.5px solid var(--gold);border-radius:var(--r-sm);padding:14px 16px;background:var(--gold-bg);display:flex;gap:12px;align-items:flex-start;margin-top:14px}
+.upsell-ico{font-size:22px;flex-shrink:0;margin-top:1px}
+.upsell-body{flex:1;min-width:0}
+.upsell-body strong{font-size:13.5px;font-weight:700;color:var(--gold-dk);display:block;margin-bottom:3px}
+.upsell-body p{font-size:12.5px;color:var(--ink2);line-height:1.45}
+.upsell-pro{border-color:var(--pro);background:var(--pro-bg)}
+.upsell-pro .upsell-body strong{color:var(--pro)}
+.preview-drawer{position:fixed;bottom:0;left:0;right:0;height:calc(100vh - var(--bar));background:var(--card);transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);z-index:90;display:flex;flex-direction:column;border-top:2px solid var(--line);}
+.preview-drawer.open{transform:translateY(0)}
+.preview-bar{height:48px;display:flex;align-items:center;padding:0 16px;gap:12px;border-bottom:1px solid var(--line);flex-shrink:0;background:var(--card);}
+.preview-bar h3{font-size:14px;font-weight:600;flex:1}
+.preview-url{font-size:12px;color:var(--ink3);display:none}
+@media(min-width:600px){.preview-url{display:block}}
+.preview-frame-wrap{flex:1;overflow:hidden;background:var(--surface);position:relative}
+.preview-frame{width:100%;height:100%;border:none;display:block}
+.preview-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--surface);flex-direction:column;gap:10px}
+.preview-loading-ring{width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+.preview-loading p{font-size:13px;color:var(--ink3)}
+@media(min-width:900px){
+  .preview-drawer{position:relative;transform:none!important;height:auto;min-height:0;border-top:none;border-left:1px solid var(--line);flex:1;overflow:hidden;}
+  .preview-bar{border-top:none}
+  .preview-frame-wrap{height:calc(100vh - var(--bar) - 48px)}
+  .preview-toggle-btn{display:none!important}
+  .layout{padding-top:var(--bar)}
+}
+.dock{position:fixed;bottom:0;left:0;right:0;height:var(--dock);background:var(--card);border-top:1px solid var(--line);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.dock-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;cursor:pointer;font-size:10.5px;font-weight:600;color:var(--ink3);transition:color .12s;position:relative;}
+.dock-item.active{color:var(--green)}
+.dock-item svg{width:22px;height:22px}
+.dock-item .dock-dot{position:absolute;top:8px;right:calc(50% - 14px);width:7px;height:7px;border-radius:50%;background:var(--gold);border:2px solid var(--card);display:none;}
+.dock-item.has-dot .dock-dot{display:block}
+.tab-section{display:none}
+.tab-section.active{display:block}
+.status-badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 9px;border-radius:20px}
+.status-draft{background:#f0f2f6;color:var(--ink3)}
+.status-published{background:var(--green-bg);color:var(--green)}
+.status-pending{background:var(--gold-bg);color:var(--gold-dk)}
+.toast-wrap{position:fixed;bottom:calc(var(--dock) + 12px);left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+@media(min-width:900px){.toast-wrap{bottom:24px}}
+.toast{background:var(--ink);color:#fff;border-radius:24px;padding:10px 18px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none;display:flex;align-items:center;gap:8px;max-width:320px;text-align:center}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+.divider{height:1px;background:var(--line);margin:16px 0}
+.empty-state{text-align:center;padding:40px 20px;color:var(--ink3)}
+.empty-state .es-icon{font-size:36px;margin-bottom:10px;display:block}
+.empty-state p{font-size:14px;line-height:1.5}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:12px;background:var(--surface);color:var(--ink2)}
+.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.img-thumb-wrap{position:relative;aspect-ratio:1;border-radius:var(--r-xs);overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+.img-thumb-wrap img{width:100%;height:100%;object-fit:cover}
+.img-thumb-remove{position:absolute;top:4px;right:4px;background:rgba(13,15,20,.65);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:none}
+.img-thumb-add{aspect-ratio:1;border-radius:var(--r-xs);border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink3);cursor:pointer;transition:border-color .15s,background .15s;position:relative;overflow:hidden}
+.img-thumb-add:hover{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.img-thumb-add input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.vpreset-section{background:var(--surface);border-radius:var(--r-xs);padding:8px 10px}
+.vpreset-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.vpreset-row{display:flex;flex-wrap:wrap;gap:5px}
+.vpreset{border:1.5px solid var(--line2);border-radius:6px;padding:4px 10px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:var(--ink2);transition:.12s;line-height:1.4}
+.vpreset:hover{border-color:var(--green);color:var(--green)}
+.vpreset-on{background:var(--green);color:#fff;border-color:var(--green)}
+.vpreset-on:hover{background:var(--green-dk);border-color:var(--green-dk)}
+.product-upload-zone{border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface);min-height:44px;display:flex;flex-direction:column;justify-content:center}
+.product-upload-zone:hover{border-color:var(--green)}
+.stock-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.stock-opt{flex:1;min-width:80px;border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:7px 10px;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink3);cursor:pointer;transition:.12s;background:#fff}
+.stock-opt:hover{border-color:var(--ink3);color:var(--ink)}
+.stock-opt.active-in{border-color:#16a34a;color:#16a34a;background:#e8f5ee}
+.stock-opt.active-low{border-color:#d97706;color:#d97706;background:#fef3c7}
+.stock-opt.active-out{border-color:#dc2626;color:#dc2626;background:#fee2e2}
+@media(min-width:900px){
+  .dock{display:none}
+  .sidebar{display:flex}
+  .layout{display:flex}
+  .main{padding-bottom:40px}
+}
+@media(max-width:899px){
+  .sidebar{display:none}
+  .layout{display:block;overflow-y:auto;height:auto;padding-bottom:var(--dock)}
+  .main{height:auto;overflow:visible;padding-bottom:24px}
+}
+.palette-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:8px}
+.palette-swatch{border:2px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative}
+.palette-swatch:hover{border-color:var(--green)}
+.palette-swatch.active{border-color:var(--green);box-shadow:0 0 0 3px var(--green-bg)}
+.palette-swatch .sw-dots{display:flex;gap:4px;margin-bottom:8px}
+.palette-swatch .sw-dot{width:20px;height:20px;border-radius:50%;border:1px solid rgba(0,0,0,.08)}
+.palette-swatch .sw-name{font-size:11.5px;font-weight:600;color:var(--ink2);line-height:1.2}
+.palette-swatch .sw-check{position:absolute;top:7px;right:8px;color:var(--green);font-size:14px;display:none}
+.palette-swatch.active .sw-check{display:block}
+.font-grid{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.font-opt{border:2px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;cursor:pointer;transition:border-color .15s;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.font-opt:hover{border-color:var(--green)}
+.font-opt.active{border-color:var(--green);background:var(--green-bg)}
+.font-opt .fo-name{font-size:13px;font-weight:600;color:var(--ink2)}
+.font-opt .fo-preview{font-size:16px;color:var(--ink);font-weight:500}
+.font-opt .fo-check{color:var(--green);font-size:15px;display:none;flex-shrink:0}
+.font-opt.active .fo-check{display:block}
+.sec-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;transition:border-color .12s}
+.sec-row.active{background:var(--card);border-color:var(--green-bg)}
+.sec-toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.sec-toggle input{opacity:0;width:0;height:0;position:absolute}
+.sec-slider{position:absolute;inset:0;background:var(--line2);border-radius:11px;cursor:pointer;transition:.2s}
+.sec-slider::before{content:"";position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sec-toggle input:checked+.sec-slider{background:var(--green)}
+.sec-toggle input:checked+.sec-slider::before{transform:translateX(18px)}
+.sec-label{flex:1;font-size:14px;font-weight:600;color:var(--ink2)}
+.sec-row.active .sec-label{color:var(--ink)}
+.sec-arrows{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.sec-arr{background:var(--card);border:1.5px solid var(--line);border-radius:5px;width:26px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:var(--ink3);transition:border-color .12s,color .12s}
+.sec-arr:hover{border-color:var(--green);color:var(--green)}
+.sec-arr:disabled{opacity:.3;cursor:default}
 </style>
 </head>
 <body>
 
+<header class="topbar">
+  <div class="topbar-logo">websites<span class="tld">.co.zw</span><span class="flag"><i></i><i></i><i></i></span></div>
+  <div class="topbar-site" id="topSiteName">Loading…</div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost btn-sm" onclick="togglePreview()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3C4.5 3 1.5 8 1.5 8s3 5 6.5 5 6.5-5 6.5-5-3-5-6.5-5zm0 8a3 3 0 100-6 3 3 0 000 6z" fill="currentColor"/></svg>
+      Preview
+    </button>
+    <button class="btn btn-green btn-sm" id="saveBtn" onclick="onSave()">Save</button>
+  </div>
+</header>
+
 <div class="layout">
-
-  <!-- ══════════════════ SIDEBAR / INTAKE ══════════════════ -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">websites<span>.</span>co.zw</div>
-      <div class="site-name" id="site-name-label">Loading site…</div>
+  <nav class="sidebar">
+    <div class="nav-section">Build</div>
+    <div class="nav-item active" data-tab="basics" onclick="switchTab('basics',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/></svg>
+      Basics
     </div>
-
-    <div class="sidebar-body">
-
-      <!-- Business basics -->
-      <div class="section-label">Business Info</div>
-
-      <div class="field">
-        <label for="f-name">Business / Organisation Name *</label>
-        <input id="f-name" type="text" placeholder="e.g. Moyo Accounting Services">
-      </div>
-
-      <div class="row2">
-        <div class="field">
-          <label for="f-industry">Industry</label>
-          <select id="f-industry">
-            <option value="">Select…</option>
-            <option>Accounting & Finance</option>
-            <option>Agriculture</option>
-            <option>Construction & Civil</option>
-            <option>Education & Training</option>
-            <option>Events & Entertainment</option>
-            <option>Food & Hospitality</option>
-            <option>Health & Wellness</option>
-            <option>Legal Services</option>
-            <option>Logistics & Transport</option>
-            <option>Manufacturing</option>
-            <option>Media & Creative</option>
-            <option>Retail & Trade</option>
-            <option>Sports & Fitness</option>
-            <option>Technology</option>
-            <option>Tourism & Travel</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="f-city">City / Town</label>
-          <input id="f-city" type="text" placeholder="Bulawayo">
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="f-desc">What do you do? <span style="font-weight:400;color:var(--muted)">(2–3 sentences)</span></label>
-        <textarea id="f-desc" rows="3" placeholder="We help small businesses in Bulawayo manage their finances…"></textarea>
-      </div>
-
-      <div class="field">
-        <label for="f-years">Years in operation</label>
-        <input id="f-years" type="number" min="0" placeholder="5">
-      </div>
-
-      <!-- Services -->
-      <div class="section-label">Services / Offerings</div>
-      <div class="service-list" id="service-list"></div>
-      <button class="add-svc" id="add-svc-btn">+ Add a service</button>
-
-      <!-- Contact -->
-      <div class="section-label">Contact Details</div>
-      <div class="field">
-        <label for="f-phone">Phone / WhatsApp Number</label>
-        <input id="f-phone" type="tel" placeholder="+263 77 000 0000">
-      </div>
-      <div class="field">
-        <label for="f-email">Email Address</label>
-        <input id="f-email" type="email" placeholder="hello@yourbusiness.co.zw">
-      </div>
-      <div class="field">
-        <label for="f-address">Physical Address</label>
-        <input id="f-address" type="text" placeholder="15 Main Street, Bulawayo">
-      </div>
-
-      <!-- Socials -->
-      <div class="section-label">Social Media</div>
-      <div class="field">
-        <label for="f-wa">WhatsApp Number (for chat button)</label>
-        <input id="f-wa" type="tel" placeholder="+263 77 000 0000">
-        <div class="hint">Include country code. Leave blank to hide the button.</div>
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label for="f-fb">Facebook URL</label>
-          <input id="f-fb" type="url" placeholder="https://facebook.com/…">
-        </div>
-        <div class="field">
-          <label for="f-ig">Instagram URL</label>
-          <input id="f-ig" type="url" placeholder="https://instagram.com/…">
-        </div>
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label for="f-tw">X / Twitter URL</label>
-          <input id="f-tw" type="url" placeholder="https://x.com/…">
-        </div>
-        <div class="field">
-          <label for="f-li">LinkedIn URL</label>
-          <input id="f-li" type="url" placeholder="https://linkedin.com/…">
-        </div>
-      </div>
-
-      <!-- Upsell -->
-      <div class="upsell-banner" style="margin-top:20px">
-        <strong>Upgrade to Pro ($60/yr)</strong> — get your own <code>.com</code> domain, priority support, and video embeds.
-        <a href="/checkout?plan=pro">Upgrade now →</a>
-      </div>
-
-    </div><!-- /sidebar-body -->
-
-    <div class="sidebar-footer">
-      <div class="gen-counter" id="gen-counter"></div>
-      <button class="btn btn-primary" id="btn-generate">
-        <div class="spinner"></div>
-        <span class="btn-label">✦ Generate with AI</span>
-      </button>
-      <div class="btn-row">
-        <button class="btn btn-secondary" id="btn-save" disabled>Save draft</button>
-        <button class="btn btn-accent"    id="btn-preview" disabled>Preview ↗</button>
-      </div>
+    <div class="nav-item" data-tab="images" onclick="switchTab('images',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="6.5" cy="8" r="1.5" fill="currentColor"/><path d="M2 13l4-3 3 2 3-3 4 4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      Images
     </div>
-  </aside>
-
-  <!-- ══════════════════ PREVIEW PANE ══════════════════ -->
-  <main class="preview-pane">
-    <div class="preview-toolbar">
-      <div>
-        <h2>Live Preview</h2>
-        <div class="preview-url" id="preview-url-label"></div>
-      </div>
-      <div class="preview-actions">
-        <button class="btn btn-secondary" id="btn-open-preview" disabled style="width:auto">Open in tab ↗</button>
-      </div>
+    <div class="nav-item" data-tab="products" onclick="switchTab('products',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><path d="M3 5h12l-1.5 8H4.5L3 5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="7" cy="15" r="1" fill="currentColor"/><circle cx="12" cy="15" r="1" fill="currentColor"/><path d="M1 3h2l.5 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Products
     </div>
-    <div class="preview-frame">
-      <div id="preview-container" class="site-preview">
-        <div class="empty-state">
-          <div class="empty-icon">✦</div>
-          <p>Fill in your business details and click <strong>Generate with AI</strong> to see your site come to life.</p>
+    <div class="nav-item" data-tab="contact" onclick="switchTab('contact',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><path d="M3 4h12a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M2 5l7 5 7-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Contact
+    </div>
+    <div class="nav-item" data-tab="social" onclick="switchTab('social',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><circle cx="13.5" cy="4.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="4.5" cy="9" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13.5" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 8l6-3M6 10l6 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Social
+    </div>
+    <div class="nav-item" data-tab="design" onclick="switchTab('design',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/><path d="M9 3v2M9 13v2M3 9h2M13 9h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Design
+    </div>
+    <div class="nav-section" style="margin-top:8px">Publish</div>
+    <div class="nav-item" data-tab="publish" onclick="switchTab('publish',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><path d="M9 2v10M5 6l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Publish site
+    </div>
+  </nav>
+
+  <main class="main" id="mainArea">
+
+    <!-- TAB: BASICS -->
+    <div class="tab-section active" id="tab-basics">
+      <div class="ai-box">
+        <div class="ai-box-eyebrow">✦ AI Site Builder</div>
+        <h3>Generate your full website in seconds</h3>
+        <p>Fill in your business details below, then hit Generate. Our AI writes all the copy, structures your pages, and previews your site instantly.</p>
+        <div class="ai-steps">
+          <div class="ai-step"><div class="ai-step-num">1</div><span>Fill in your business name, what you do, and who you serve</span></div>
+          <div class="ai-step"><div class="ai-step-num">2</div><span>Hit <strong>Generate with AI</strong> — takes about 15 seconds</span></div>
+          <div class="ai-step"><div class="ai-step-num">3</div><span>Review the live preview, edit anything, then save and publish</span></div>
+        </div>
+        <button class="btn-ai" id="generateBtn" onclick="onGenerate()">
+          <span class="ai-ico">✦ Generate with AI</span>
+          <div class="spinner"></div>
+        </button>
+        <div class="ai-budget" id="aiBudget"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Your business</h2><span class="status-badge status-draft" id="statusBadge">Draft</span></div>
+        <div class="panel-body">
+          <div class="fld-group">
+            <label class="fld-label" for="f_name">Business name</label>
+            <input class="fld-input" id="f_name" placeholder="Elite Sports Institute" oninput="markDirty()">
+          </div>
+          <div class="two">
+            <div class="fld-group">
+              <label class="fld-label" for="f_industry">Industry</label>
+              <input class="fld-input" id="f_industry" placeholder="Football academy" oninput="markDirty()">
+            </div>
+            <div class="fld-group">
+              <label class="fld-label" for="f_city">City / Town</label>
+              <input class="fld-input" id="f_city" placeholder="Bulawayo" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="fld-group">
+            <label class="fld-label" for="f_desc">What you do <span class="fld-hint">— 1–2 sentences</span></label>
+            <textarea class="fld-textarea" id="f_desc" placeholder="A youth football academy developing young players in Bulawayo." oninput="markDirty()"></textarea>
+          </div>
+          <div class="fld-group">
+            <label class="fld-label" for="f_tagline">Tagline <span class="fld-hint">optional</span></label>
+            <input class="fld-input" id="f_tagline" placeholder="Developing champions on and off the field" oninput="markDirty()">
+          </div>
+          <div class="two">
+            <div class="fld-group">
+              <label class="fld-label" for="f_customers">Who you serve <span class="fld-hint">optional</span></label>
+              <input class="fld-input" id="f_customers" placeholder="Parents of young footballers" oninput="markDirty()">
+            </div>
+            <div class="fld-group">
+              <label class="fld-label" for="f_years">Years operating <span class="fld-hint">optional</span></label>
+              <input class="fld-input" id="f_years" placeholder="5" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="fld-group">
+            <label class="fld-label" for="f_usp">What makes you different <span class="fld-hint">optional</span></label>
+            <input class="fld-input" id="f_usp" placeholder="Pro-licensed UEFA coaches" oninput="markDirty()">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="fld-group">
+            <label class="fld-label">Services / offerings <span class="fld-hint">— one per line, used by AI</span></label>
+            <textarea class="fld-textarea" id="f_services" placeholder="Youth coaching&#10;Holiday clinics&#10;Talent scouting" oninput="markDirty()"></textarea>
+          </div>
+          <div class="fld-group">
+            <label class="fld-label">Website template</label>
+            <select class="fld-select" id="f_template" onchange="markDirty();buildSectionsList()">
+              <optgroup label="Services & Professional">
+                <option value="school-institution">School / Academy / NGO / Church</option>
+                <option value="bold-retail">General Business</option>
+                <option value="grill-house">Restaurant / Café / Grill</option>
+                <option value="beauty-salon">Salon / Spa / Clinic</option>
+                <option value="advisory-firm">Consultant / Law / Accounting</option>
+                <option value="property-estate">Property / Real Estate</option>
+              </optgroup>
+              <optgroup label="Retail & Products">
+                <option value="boutique-fashion">Boutique / Fashion / Cosmetics</option>
+                <option value="grocery-fmcg">Grocery / Supermarket / Spaza</option>
+                <option value="retail-hardware">Hardware / Electronics / General Retail</option>
+              </optgroup>
+            </select>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- TAB: IMAGES -->
+    <div class="tab-section" id="tab-images">
+      <div class="panel">
+        <div class="panel-head"><h2>Logo &amp; Hero image</h2><span class="tag" id="imgCount">0 / 10 uploaded</span></div>
+        <div class="panel-body">
+          <div class="fld-group">
+            <label class="fld-label">Logo <span class="fld-hint">— shown in the nav bar</span></label>
+            <div class="upload-zone" id="logoZone" onclick="triggerUpload('logo')">
+              <input type="file" id="logoFile" accept="image/*" onchange="handleUpload('logo',this)">
+              <span class="uz-icon">🏷️</span>
+              <div class="uz-label">Tap to upload your logo</div>
+              <div class="uz-sub">PNG or SVG with transparent background works best</div>
+            </div>
+            <div id="logoPreview" style="display:none" class="upload-preview">
+              <img id="logoImg" src="" alt="Logo">
+              <button class="upload-remove" onclick="removeImage('logo')">×</button>
+            </div>
+          </div>
+          <div class="fld-group">
+            <label class="fld-label">Hero image <span class="fld-hint">— big background photo at the top</span></label>
+            <div class="upload-zone" id="heroZone" onclick="triggerUpload('hero')">
+              <input type="file" id="heroFile" accept="image/*" onchange="handleUpload('hero',this)">
+              <span class="uz-icon">🖼️</span>
+              <div class="uz-label">Tap to upload a hero photo</div>
+              <div class="uz-sub">Landscape, at least 1200×600px recommended</div>
+            </div>
+            <div id="heroPreview" style="display:none" class="upload-preview">
+              <img id="heroImg" src="" alt="Hero" style="max-height:180px">
+              <button class="upload-remove" onclick="removeImage('hero')">×</button>
+            </div>
+            <div class="upload-progress" id="heroProgress"><div class="upload-progress-bar" id="heroProgressBar"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Gallery photos</h2><span class="fld-hint" style="font-size:12px">Up to 8 photos</span></div>
+        <div class="panel-body">
+          <div class="img-grid" id="galleryGrid"></div>
+        </div>
+      </div>
+      <div class="upsell">
+        <div class="upsell-ico">🎬</div>
+        <div class="upsell-body">
+          <strong>Add a video to your site</strong>
+          <p>Embed a YouTube or TikTok video, or host your own with Pro.</p>
+          <div style="margin-top:10px">
+            <div class="fld-group">
+              <label class="fld-label" for="f_video">YouTube / TikTok embed URL <span class="fld-hint">optional</span></label>
+              <input class="fld-input" id="f_video" placeholder="https://www.youtube.com/embed/…" oninput="markDirty()">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PRODUCTS -->
+    <div class="tab-section" id="tab-products">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Products &amp; Catalogue</h2>
+            <div style="font-size:12.5px;color:var(--ink3);margin-top:2px">Photos, prices, variants and stock status — no checkout needed</div>
+          </div>
+          <button class="btn btn-green btn-sm" onclick="addProduct()">+ Add</button>
+        </div>
+        <div class="panel-body">
+          <div class="product-list" id="productList">
+            <div class="empty-state" id="productEmpty">
+              <span class="es-icon">🛍️</span>
+              <p>No products yet.<br>Add items with photos, prices, variants and stock status.</p>
+            </div>
+          </div>
+          <div id="productLimitMsg" style="display:none;margin-top:12px">
+            <div class="upsell-pro upsell">
+              <div class="upsell-ico">⭐</div>
+              <div class="upsell-body">
+                <strong>Starter plan: 6 products included</strong>
+                <p>Upgrade to <b>Pro</b> for unlimited products plus an online store with cart and Paynow payments.</p>
+                <button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CONTACT -->
+    <div class="tab-section" id="tab-contact">
+      <div class="panel">
+        <div class="panel-head"><h2>Contact details</h2></div>
+        <div class="panel-body">
+          <div class="two">
+            <div class="fld-group">
+              <label class="fld-label" for="f_phone">Phone number</label>
+              <input class="fld-input" id="f_phone" placeholder="0772 000 000" oninput="markDirty()">
+            </div>
+            <div class="fld-group">
+              <label class="fld-label" for="f_whatsapp">WhatsApp number</label>
+              <input class="fld-input" id="f_whatsapp" placeholder="0772 000 000" oninput="markDirty()">
+            </div>
+          </div>
+          <div class="fld-group">
+            <label class="fld-label" for="f_email">Email address</label>
+            <input class="fld-input" id="f_email" placeholder="hello@yourbusiness.co.zw" oninput="markDirty()">
+          </div>
+          <div class="fld-group">
+            <label class="fld-label" for="f_address">Physical address <span class="fld-hint">optional</span></label>
+            <input class="fld-input" id="f_address" placeholder="15 Main Street, Bulawayo" oninput="markDirty()">
+          </div>
+          <div class="fld-group">
+            <label class="fld-label" for="f_hours">Business hours <span class="fld-hint">optional</span></label>
+            <input class="fld-input" id="f_hours" placeholder="Mon–Fri 8am–5pm, Sat 9am–1pm" oninput="markDirty()">
+          </div>
+          <div class="fld-group">
+            <label class="fld-label" for="f_location">City / Area</label>
+            <input class="fld-input" id="f_location" placeholder="Bulawayo" oninput="markDirty()">
+          </div>
+        </div>
+      </div>
+      <div class="upsell">
+        <div class="upsell-ico">📅</div>
+        <div class="upsell-body">
+          <strong>Let customers book appointments online</strong>
+          <p>Add a booking form so clients can schedule directly from your site. Available on <b>Pro</b>.</p>
+          <button class="btn btn-sm" style="margin-top:8px;background:var(--gold-bg);color:var(--gold-dk);border:1.5px solid var(--gold)" onclick="switchTab('publish',null)">See Pro features →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SOCIAL -->
+    <div class="tab-section" id="tab-social">
+      <div class="panel">
+        <div class="panel-head"><h2>Social media &amp; links</h2></div>
+        <div class="panel-body">
+          <div class="fld-group"><label class="fld-label">WhatsApp Business</label><input class="fld-input" id="s_whatsapp" placeholder="https://wa.me/263772000000" oninput="markDirty()"></div>
+          <div class="fld-group"><label class="fld-label">Facebook page</label><input class="fld-input" id="s_facebook" placeholder="https://facebook.com/yourpage" oninput="markDirty()"></div>
+          <div class="fld-group"><label class="fld-label">Instagram</label><input class="fld-input" id="s_instagram" placeholder="https://instagram.com/yourhandle" oninput="markDirty()"></div>
+          <div class="fld-group"><label class="fld-label">TikTok</label><input class="fld-input" id="s_tiktok" placeholder="https://tiktok.com/@yourhandle" oninput="markDirty()"></div>
+          <div class="fld-group"><label class="fld-label">X / Twitter <span class="fld-hint">optional</span></label><input class="fld-input" id="s_twitter" placeholder="https://x.com/yourhandle" oninput="markDirty()"></div>
+          <div class="fld-group"><label class="fld-label">LinkedIn <span class="fld-hint">optional</span></label><input class="fld-input" id="s_linkedin" placeholder="https://linkedin.com/company/yourco" oninput="markDirty()"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PUBLISH -->
+    <div class="tab-section" id="tab-publish">
+      <div class="panel">
+        <div class="panel-head"><h2>Publish your site</h2></div>
+        <div class="panel-body">
+          <div style="font-size:14px;color:var(--ink2);margin-bottom:18px;line-height:1.6">
+            Your site will be live at <b id="pubUrl" style="color:var(--green)">yoursite.websites.co.zw</b>. You can update it anytime after publishing.
+          </div>
+          <div class="panel" style="border:2px solid var(--green);box-shadow:none;margin-bottom:12px">
+            <div class="panel-body">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                <div>
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:6px">Starter</div>
+                  <div style="font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1">$30<span style="font-size:14px;font-weight:500;color:var(--ink3)">/year</span></div>
+                  <div style="font-size:12.5px;color:var(--ink3);margin-top:4px">Your .co.zw subdomain included</div>
+                </div>
+                <button class="btn btn-green" onclick="onPublish()">Publish now — $30/yr</button>
+              </div>
+              <div class="divider"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:var(--ink2)">
+                <div>✓ yoursite.websites.co.zw</div><div>✓ 6 products in catalogue</div>
+                <div>✓ AI content generation</div><div>✓ 10 image uploads</div>
+                <div>✓ Mobile-ready site</div><div>✓ Free SSL certificate</div>
+                <div>✓ WhatsApp order button</div><div>✓ All 9 site templates</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel" style="border:2px solid var(--pro);box-shadow:none;margin-bottom:0">
+            <div class="panel-body">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                <div>
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pro);margin-bottom:6px">Pro ⭐</div>
+                  <div style="font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1">$60<span style="font-size:14px;font-weight:500;color:var(--ink3)">/year</span></div>
+                  <div style="font-size:12.5px;color:var(--ink3);margin-top:4px">Your own .com domain included</div>
+                </div>
+                <button class="btn btn-pro" onclick="onPublishPro()">Get Pro — $60/yr</button>
+              </div>
+              <div class="divider"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:var(--ink2)">
+                <div>✓ Everything in Starter</div><div>✓ Your own .com domain</div>
+                <div>✓ Unlimited products</div><div>✓ Online store + cart</div>
+                <div>✓ Appointment bookings</div><div>✓ WhatsApp shop link</div>
+                <div>✓ Video hosting on R2</div><div>✓ Priority support</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DESIGN -->
+    <div class="tab-section" id="tab-design">
+      <div class="panel">
+        <div class="panel-head"><h2>Colour palette</h2></div>
+        <div class="panel-body">
+          <div class="fld-group">
+            <label class="fld-label">Choose a palette <span class="fld-hint">— sets the overall colour mood of your site</span></label>
+            <div class="palette-grid" id="paletteGrid"></div>
+          </div>
+          <div class="divider"></div>
+          <div class="fld-group">
+            <label class="fld-label" for="f_custom_accent">Brand colour override <span class="fld-hint">optional</span></label>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+              <input type="color" id="f_custom_accent_picker" style="width:44px;height:44px;border:1.5px solid var(--line);border-radius:var(--r-xs);padding:2px;cursor:pointer;background:#fff" oninput="onAccentPick(this.value)">
+              <input class="fld-input" id="f_custom_accent" placeholder="#e91e8c" style="flex:1;font-family:monospace" oninput="onAccentInput(this.value)" maxlength="7">
+              <button class="btn btn-ghost btn-sm" onclick="clearAccent()" id="clearAccentBtn" style="display:none">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Favicon preview</h2></div>
+        <div class="panel-body">
+          <div style="display:flex;align-items:center;gap:16px">
+            <canvas id="faviconCanvas" width="64" height="64" style="border-radius:12px;border:1px solid var(--line);flex-shrink:0"></canvas>
+            <div>
+              <div style="font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:4px">Auto-generated from your business name</div>
+              <div style="font-size:12.5px;color:var(--ink3);line-height:1.5">Uses your initials and brand colour. Updates automatically when you change your business name or colour.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Site font</h2></div>
+        <div class="panel-body">
+          <div class="fld-group">
+            <label class="fld-label">Font style</label>
+            <div class="font-grid" id="fontGrid"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Page sections</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Choose which sections appear and in what order</div></div>
+        </div>
+        <div class="panel-body">
+          <div style="font-size:12.5px;color:var(--ink3);margin-bottom:12px">Use ↑ ↓ to reorder. Toggle to show or hide each section.</div>
+          <div id="sectionsList" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+    </div>
+
   </main>
 
-</div><!-- /layout -->
+  <div class="preview-drawer" id="previewDrawer">
+    <div class="preview-bar">
+      <h3>Live preview</h3>
+      <span class="preview-url" id="previewUrlLabel">—</span>
+      <button class="btn btn-ghost btn-sm" onclick="refreshPreview()">↺ Refresh</button>
+      <button class="btn btn-ghost btn-sm" onclick="togglePreview()">✕</button>
+    </div>
+    <div class="preview-frame-wrap">
+      <div class="preview-loading" id="previewLoading">
+        <div class="preview-loading-ring"></div>
+        <p>Save your site to preview it</p>
+      </div>
+      <iframe class="preview-frame" id="previewFrame" title="Site preview" style="display:none"></iframe>
+    </div>
+  </div>
+</div>
 
-<div class="toast" id="toast"></div>
+<nav class="dock">
+  <div class="dock-item active" data-tab="basics" onclick="switchTab('basics',this)">
+    <svg viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="12" y="3" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="3" y="12" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="12" y="12" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/></svg>
+    Basics<div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" data-tab="images" onclick="switchTab('images',this)">
+    <svg viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10" r="2" fill="currentColor"/><path d="M3 16l5-4 4 3 3-3 5 4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+    Images<div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" data-tab="products" onclick="switchTab('products',this)">
+    <svg viewBox="0 0 22 22" fill="none"><path d="M4 7h14l-2 9H6L4 7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.2" fill="currentColor"/><circle cx="15" cy="19" r="1.2" fill="currentColor"/><path d="M2 4h2.5L5 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Products<div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" data-tab="contact" onclick="switchTab('contact',this)">
+    <svg viewBox="0 0 22 22" fill="none"><path d="M4 5h14a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M3 6l8 6 8-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Contact<div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" data-tab="publish" onclick="switchTab('publish',this)">
+    <svg viewBox="0 0 22 22" fill="none"><path d="M11 3v12M7 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Publish<div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" data-tab="design" onclick="switchTab('design',this)">
+    <svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="3" fill="currentColor"/><path d="M11 4v2M11 16v2M4 11h2M16 11h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Design<div class="dock-dot"></div>
+  </div>
+</nav>
+
+<div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-(function() {
-  'use strict';
+(function(){
+"use strict";
 
-  // ── Config ────────────────────────────────────────────────────────────────
-  const API = 'https://app.websites.co.zw';
-  // In dev, override: const API = 'https://websites-cozw-auth.yasibomedia.workers.dev';
+// ── Config ────────────────────────────────────────────────────────────────────
+// API lives on app.websites.co.zw; auth uses Bearer token from localStorage
+// (same token the dashboard stores after login)
+var API_BASE = "https://app.websites.co.zw";
+var DASH_URL = "https://app.websites.co.zw/dashboard/";
 
-  // ── State ─────────────────────────────────────────────────────────────────
-  let siteId    = null;
-  let genCount  = 0;
-  let genCap    = 5;
-  let lastContent = null;  // last saved/generated content blob
-  let lastTheme   = null;
+var siteId = new URLSearchParams(location.search).get("site");
+var state = { site:null, content:null, dirty:false, products:[], images:{}, gallery:[], previewOpen:false };
+var STARTER_PRODUCT_LIMIT = 6;
+var STARTER_IMAGE_LIMIT   = 10;
 
-  // ── Init ──────────────────────────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', init);
+// ── Auth helper ───────────────────────────────────────────────────────────────
+function getToken(){ return localStorage.getItem("wcz_token") || ""; }
 
-  async function init() {
-    const params = new URLSearchParams(location.search);
-    siteId = params.get('site');
+async function api(path, opts){
+  var token = getToken();
+  var headers = {"Content-Type":"application/json"};
+  if(token) headers["Authorization"] = "Bearer " + token;
+  var r = await fetch(API_BASE + path, Object.assign({ headers: headers }, opts||{}));
+  var data={};
+  try{ data=await r.json(); }catch(e){}
+  if(r.status===401){ location.href = DASH_URL; return {ok:false,status:401,data:{}}; }
+  return { ok:r.ok, status:r.status, data:data };
+}
 
-    if (siteId) {
-      await loadSite(siteId);
-    } else {
-      document.getElementById('site-name-label').textContent = 'New site';
-    }
+// ── Init ──────────────────────────────────────────────────────────────────────
+(async function init(){
+  if(!getToken()){ location.href = DASH_URL; return; }
+  if(!siteId){ toast("No site selected","err"); return; }
 
-    // Add first blank service row if none loaded
-    if (document.getElementById('service-list').children.length === 0) {
-      addServiceRow('', '');
-    }
+  var r = await api("/api/sites/"+encodeURIComponent(siteId));
+  if(!r.ok||!r.data.site){ toast("Site not found","err"); return; }
 
-    // Wire buttons
-    document.getElementById('btn-generate').addEventListener('click', onGenerate);
-    document.getElementById('btn-save').addEventListener('click', onSave);
-    document.getElementById('btn-preview').addEventListener('click', onPreview);
-    document.getElementById('btn-open-preview').addEventListener('click', onOpenPreview);
-    document.getElementById('add-svc-btn').addEventListener('click', () => addServiceRow('', ''));
+  state.site = r.data.site;
+
+  // content is stored as JSON string in D1 — parse it
+  var raw = {};
+  try{
+    var stored = state.site.content;
+    raw = (typeof stored === "string") ? JSON.parse(stored) : (stored || {});
+  }catch(e){ raw={}; }
+
+  state.content  = raw;
+  // The DB stores { theme:{...}, content:{...} } wrapper
+  var inner = (raw.content) || {};
+  state.products = Array.isArray(inner.products) ? inner.products : [];
+  state.images   = (inner.images && typeof inner.images==="object") ? inner.images : {};
+  state.gallery  = Array.isArray(inner.images && inner.images.gallery) ? inner.images.gallery : [];
+
+  populateForm();
+  renderProducts();
+  renderGallery();
+  renderImagePreviews();
+  updateBudget(null);
+  initDesignTab();
+
+  document.getElementById("topSiteName").textContent = state.site.site_name || "Your site";
+  document.getElementById("pubUrl").textContent = (state.site.draft_subdomain||"yoursite")+".websites.co.zw";
+
+  var badge = document.getElementById("statusBadge");
+  var s = state.site.status;
+  badge.textContent = s==="published"?"Published":s==="pending_payment"?"Payment pending":"Draft";
+  badge.className = "status-badge "+(s==="published"?"status-published":s==="pending_payment"?"status-pending":"status-draft");
+})();
+
+function populateForm(){
+  // content is stored as { theme, content } — get the inner content
+  var c = (state.content && state.content.content) || {};
+  // _brief stores the last intake form values for repopulation
+  var b = c._brief || state.content._brief || null;
+  var s = c.socials || {};
+  var ct = c.contact || {};
+
+  if(b){
+    set("f_name",     b.business_name || c.business_name || state.site.site_name || "");
+    set("f_industry", b.industry      || "");
+    set("f_city",     b.city          || c.location || "");
+    set("f_desc",     b.description   || "");
+    set("f_tagline",  c.tagline       || "");
+    set("f_customers",b.target_customers || "");
+    set("f_years",    b.years_operating  || "");
+    set("f_usp",      b.unique_selling_point || "");
+    var svcs = b.services || [];
+    set("f_services", Array.isArray(svcs)
+      ? svcs.map(function(s){ return typeof s==="string"?s:(s.title||""); }).filter(Boolean).join("\n")
+      : "");
+  } else {
+    set("f_name",    c.business_name || state.site.site_name || "");
+    set("f_tagline", c.tagline       || "");
+    set("f_city",    c.location      || "");
   }
 
-  // ── Load existing site ────────────────────────────────────────────────────
-  async function loadSite(id) {
-    try {
-      const res  = await fetch(API + '/api/sites/' + id, { credentials: 'include' });
-      if (!res.ok) throw new Error('Site not found');
-      const data = await res.json();
+  if(state.site.template_id) set("f_template", state.site.template_id);
+  set("f_phone",    ct.phone    || ""); set("f_whatsapp", ct.whatsapp || "");
+  set("f_email",    ct.email    || ""); set("f_address",  ct.address  || "");
+  set("f_hours",    c.hours     || ""); set("f_location", c.location  || "");
+  set("s_whatsapp", s.whatsapp  || ""); set("s_facebook", s.facebook  || "");
+  set("s_instagram",s.instagram || ""); set("s_tiktok",   s.tiktok    || "");
+  set("s_twitter",  s.twitter   || ""); set("s_linkedin", s.linkedin  || "");
+  set("f_video",    (c.video && c.video.embedUrl) || "");
 
-      genCount = data.gen_count || 0;
-      updateGenCounter();
+  document.getElementById("imgCount").textContent = countImages()+" / "+STARTER_IMAGE_LIMIT+" uploaded";
+}
 
-      const content = data.content || {};
-      const brief   = content._brief || {};
-      const theme   = content.theme || data.theme || {};
+function set(id,v){ var el=document.getElementById(id); if(el) el.value=v||""; }
+function g(id){ var el=document.getElementById(id); return el?el.value.trim():""; }
+function countImages(){ return (state.images.logo?1:0)+(state.images.hero?1:0)+(state.gallery||[]).length; }
 
-      // Populate form from stored brief
-      document.getElementById('f-name').value    = brief.business_name || content.business_name || '';
-      document.getElementById('f-industry').value= brief.industry  || '';
-      document.getElementById('f-city').value    = brief.city      || '';
-      document.getElementById('f-desc').value    = brief.description|| '';
-      document.getElementById('f-years').value   = brief.years_operating || '';
-      document.getElementById('f-phone').value   = brief.phone     || content.contact?.phone || '';
-      document.getElementById('f-email').value   = brief.email     || content.contact?.email || '';
-      document.getElementById('f-address').value = brief.address   || content.contact?.address || '';
-      document.getElementById('f-wa').value      = brief.whatsapp  || content.socials?.whatsapp || '';
-      document.getElementById('f-fb').value      = brief.facebook  || content.socials?.facebook || '';
-      document.getElementById('f-ig').value      = brief.instagram || content.socials?.instagram || '';
-      document.getElementById('f-tw').value      = brief.twitter   || content.socials?.twitter || '';
-      document.getElementById('f-li').value      = brief.linkedin  || content.socials?.linkedin || '';
+window.switchTab = function(tab,el){
+  document.querySelectorAll(".tab-section").forEach(function(s){s.classList.remove("active");});
+  var t=document.getElementById("tab-"+tab); if(t)t.classList.add("active");
+  document.querySelectorAll(".nav-item,.dock-item").forEach(function(i){i.classList.remove("active");});
+  if(el)el.classList.add("active");
+  document.querySelectorAll("[data-tab='"+tab+"']").forEach(function(i){i.classList.add("active");});
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+window.markDirty = function(){ state.dirty=true; };
 
-      // Services
-      const svcs = brief.services || [];
-      if (svcs.length) {
-        document.getElementById('service-list').innerHTML = '';
-        svcs.forEach(s => addServiceRow(s.title || '', s.body || s.description || ''));
+function readBrief(){
+  return {
+    business_name:      g("f_name"),
+    industry:           g("f_industry"),
+    city:               g("f_city"),
+    description:        g("f_desc"),
+    target_customers:   g("f_customers"),
+    years_operating:    g("f_years"),
+    unique_selling_point: g("f_usp"),
+    services: g("f_services").split("\n").map(function(s){return s.trim();}).filter(Boolean),
+    phone:    g("f_phone"),
+    email:    g("f_email"),
+    address:  g("f_address"),
+    whatsapp: g("f_whatsapp"),
+    contact:{ phone:g("f_phone"), whatsapp:g("f_whatsapp"), email:g("f_email"), address:g("f_address") },
+    social:{ whatsapp:g("s_whatsapp"), facebook:g("s_facebook"), instagram:g("s_instagram"), tiktok:g("s_tiktok"), twitter:g("s_twitter"), linkedin:g("s_linkedin") },
+    socials:{ whatsapp:g("s_whatsapp"), facebook:g("s_facebook"), instagram:g("s_instagram"), tiktok:g("s_tiktok"), twitter:g("s_twitter"), linkedin:g("s_linkedin") },
+  };
+}
+
+function buildContent(brief){
+  var existing = (state.content && state.content.content) || {};
+  var existingTheme = (state.content && state.content.theme) || {};
+  var theme = Object.assign(
+    { palette:paletteFor(g("f_template")), font_pair:fontFor(g("f_template")), sections:["hero","about","services","products","gallery","contact"] },
+    existingTheme
+  );
+  return {
+    theme: theme,
+    content: Object.assign({}, existing, {
+      business_name: brief.business_name,
+      tagline:       g("f_tagline"),
+      location:      g("f_location")||brief.city,
+      hours:         g("f_hours"),
+      contact:       brief.contact,
+      socials:       brief.social,
+      products:      state.products,
+      images:        Object.assign({}, state.images, { gallery: state.gallery }),
+      video:         g("f_video") ? { embedUrl:g("f_video") } : (existing.video||null),
+    }),
+  };
+}
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+// Auth worker reads brief directly from request body (no wrapper needed)
+window.onGenerate = async function(){
+  var brief = readBrief();
+  if(!brief.business_name){ toast("Add your business name first"); return; }
+  var btn = document.getElementById("generateBtn");
+  btn.classList.add("loading"); btn.disabled=true;
+  try{
+    // Send brief DIRECTLY as the body — auth worker does: const brief = await readJson(request)
+    var r = await api("/api/sites/"+encodeURIComponent(siteId)+"/generate", {
+      method:"POST",
+      body: JSON.stringify(brief)
+    });
+    if(!r.ok){
+      if(r.data.error==="gen_cap_reached"||r.data.error==="generation_limit_reached"){
+        updateBudget(r.data.detail||r.data.budget);
+        toast("Generation limit reached — publish to get more","err");
+      } else {
+        toast(r.data.error||r.data.message||"Couldn't generate, try again","err");
       }
-
-      // Update labels
-      document.getElementById('site-name-label').textContent = content.business_name || 'Untitled site';
-      const slug = data.draft_subdomain || id;
-      document.getElementById('preview-url-label').textContent = slug + '.websites.co.zw';
-      document.getElementById('btn-open-preview').href = 'https://app.websites.co.zw/preview/' + slug;
-
-      // Render preview if we have content
-      if (content.business_name) {
-        lastContent = content;
-        lastTheme   = theme;
-        renderPreview(content, theme);
-        document.getElementById('btn-save').disabled    = false;
-        document.getElementById('btn-preview').disabled = false;
-        document.getElementById('btn-open-preview').disabled = false;
-      }
-
-    } catch (err) {
-      showToast('Could not load site: ' + err.message, 'error');
-    }
-  }
-
-  // ── Generate ──────────────────────────────────────────────────────────────
-  async function onGenerate() {
-    if (genCount >= genCap) {
-      showToast('Generation limit reached. Upgrade to Pro for unlimited.', 'error');
       return;
     }
+    // Auth worker returns: { ok, gen_count, cap, theme, content }
+    // Merge AI output into state — preserve products/images/gallery
+    var aiContent = r.data.content || {};
+    var aiTheme   = r.data.theme   || {};
 
-    const brief = readBrief();
-    if (!brief.business_name) {
-      showToast('Please enter a business name first.', 'error');
-      return;
-    }
-
-    setGenerating(true);
-
-    try {
-      // Create site first if none exists
-      if (!siteId) {
-        const cr = await fetch(API + '/api/sites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ template_id: brief.industry ? briefToTemplate(brief.industry) : 'general-business' })
-        });
-        if (!cr.ok) throw new Error('Could not create site draft');
-        const cd = await cr.json();
-        siteId = cd.id;
-        history.replaceState(null, '', '?site=' + siteId);
-      }
-
-      const res = await fetch(API + '/api/sites/' + siteId + '/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(brief)
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 429 || data.error === 'gen_cap_reached') {
-          genCount = data.used || genCap;
-          updateGenCounter();
-          showCapReached();
-          return;
-        }
-        if (data.error === 'ai_not_configured') {
-          throw new Error('AI Worker not configured — check AI_WORKER_URL on the dashboard worker.');
-        }
-        if (data.error === 'ai_worker_unreachable') {
-          throw new Error('Could not reach AI Worker. Check deployment and AI_WORKER_URL.');
-        }
-        throw new Error(data.error || 'Generation failed');
-      }
-
-      genCount = data.gen_count || (genCount + 1);
-      updateGenCounter();
-      lastContent = data.content;
-      lastTheme   = data.theme;
-
-      renderPreview(data.content, data.theme);
-
-      document.getElementById('btn-save').disabled    = false;
-      document.getElementById('btn-preview').disabled = false;
-      document.getElementById('btn-open-preview').disabled = false;
-      document.getElementById('site-name-label').textContent = data.content.business_name || 'Site';
-
-      showToast('AI content generated!', 'success');
-
-    } catch (err) {
-      showToast(err.message, 'error');
-    } finally {
-      setGenerating(false);
-    }
-  }
-
-  // ── Save ──────────────────────────────────────────────────────────────────
-  async function onSave() {
-    if (!siteId || !lastContent) return;
-    document.getElementById('btn-save').disabled = true;
-
-    try {
-      const payload = { ...lastContent, theme: lastTheme };
-      const res = await fetch(API + '/api/sites/' + siteId, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error('Save failed');
-      showToast('Saved!', 'success');
-    } catch (err) {
-      showToast(err.message, 'error');
-    } finally {
-      document.getElementById('btn-save').disabled = false;
-    }
-  }
-
-  // ── Preview ───────────────────────────────────────────────────────────────
-  function onPreview() {
-    if (!siteId) return;
-    window.open('https://app.websites.co.zw/preview/' + siteId, '_blank');
-  }
-
-  function onOpenPreview() {
-    if (!siteId) return;
-    window.open('https://app.websites.co.zw/preview/' + siteId, '_blank');
-  }
-
-  // ── Read brief from form ──────────────────────────────────────────────────
-  function readBrief() {
-    const services = [];
-    document.querySelectorAll('.service-item').forEach(el => {
-      const t = el.querySelector('.svc-title').value.trim();
-      const b = el.querySelector('.svc-body').value.trim();
-      if (t) services.push({ title: t, body: b });
+    if(!state.content) state.content = {};
+    state.content.theme = aiTheme;
+    state.content.content = Object.assign({}, aiContent, {
+      products: state.products,
+      images:   Object.assign({}, state.images, { gallery: state.gallery }),
     });
 
-    return {
-      business_name:    v('f-name'),
-      industry:         v('f-industry'),
-      city:             v('f-city'),
-      description:      v('f-desc'),
-      years_operating:  v('f-years') ? parseInt(v('f-years')) : undefined,
-      services,
-      phone:            v('f-phone'),
-      email:            v('f-email'),
-      address:          v('f-address'),
-      whatsapp:         v('f-wa'),
-      facebook:         v('f-fb'),
-      instagram:        v('f-ig'),
-      twitter:          v('f-tw'),
-      linkedin:         v('f-li')
-    };
-  }
+    state.dirty = true;
+    updateBudget({ used: r.data.gen_count, limit: r.data.cap, remaining: r.data.cap - r.data.gen_count });
+    toast("Generated! Save to preview ✓","ok");
+    refreshPreview();
+  } catch(e){ toast("Network error — try again","err"); }
+  finally{ btn.classList.remove("loading"); btn.disabled=false; }
+};
 
-  function v(id) { return (document.getElementById(id).value || '').trim(); }
-
-  // ── Services repeater ─────────────────────────────────────────────────────
-  function addServiceRow(title, body) {
-    const list = document.getElementById('service-list');
-    const div  = document.createElement('div');
-    div.className = 'service-item';
-    div.innerHTML = `
-      <button class="remove-svc" title="Remove">×</button>
-      <input class="svc-title" type="text" placeholder="Service name" value="${esc(title)}" style="width:100%;margin-bottom:6px">
-      <textarea class="svc-body" rows="2" placeholder="Brief description…" style="width:100%">${esc(body)}</textarea>
-    `;
-    div.querySelector('.remove-svc').addEventListener('click', () => {
-      if (list.children.length > 1) div.remove();
+// ── Save ──────────────────────────────────────────────────────────────────────
+window.onSave = async function(){
+  var btn=document.getElementById("saveBtn"); btn.disabled=true; btn.textContent="Saving…";
+  var brief=readBrief(), content=buildContent(brief);
+  try{
+    var r = await api("/api/sites/"+encodeURIComponent(siteId), {
+      method:"PUT",
+      body: JSON.stringify({ site_name:brief.business_name||state.site.site_name, template_id:g("f_template"), content:content })
     });
-    list.appendChild(div);
+    if(!r.ok){ toast("Couldn't save — try again","err"); return; }
+    state.dirty=false;
+    if(r.data.site) state.site=r.data.site;
+    toast("Saved ✓","ok"); refreshPreview();
+  } catch(e){ toast("Network error","err"); }
+  finally{ btn.disabled=false; btn.textContent="Save"; }
+};
+
+window.onPublish    = function(){ location.href="https://app.websites.co.zw/checkout?site="+encodeURIComponent(siteId)+"&plan=starter"; };
+window.onPublishPro = function(){ location.href="https://app.websites.co.zw/checkout?site="+encodeURIComponent(siteId)+"&plan=pro"; };
+
+window.togglePreview = function(){
+  var d=document.getElementById("previewDrawer");
+  state.previewOpen=!state.previewOpen;
+  d.classList.toggle("open",state.previewOpen);
+  if(state.previewOpen)loadPreview();
+};
+window.refreshPreview = function(){ if(state.previewOpen||window.innerWidth>=900)loadPreview(); };
+
+function loadPreview(){
+  var slug=state.site&&state.site.draft_subdomain;
+  if(!slug){ document.getElementById("previewLoading").querySelector("p").textContent="Save first to preview"; return; }
+  var url="https://app.websites.co.zw/preview/"+encodeURIComponent(slug);
+  document.getElementById("previewUrlLabel").textContent=slug+".websites.co.zw";
+  var frame=document.getElementById("previewFrame"),loading=document.getElementById("previewLoading");
+  loading.style.display="flex"; frame.style.display="none"; frame.src=url;
+  frame.onload=function(){loading.style.display="none";frame.style.display="block";};
+}
+if(window.innerWidth>=900){ setTimeout(function(){state.previewOpen=true;loadPreview();},400); }
+
+/* ── PRODUCTS ── */
+window.addProduct = function(){
+  if(state.products.length>=STARTER_PRODUCT_LIMIT){ document.getElementById("productLimitMsg").style.display="block"; toast("6 product limit on Starter. Upgrade to Pro for unlimited.","err"); return; }
+  state.products.push({ id:"p_"+Date.now(), name:"", description:"", price:"", image:"", category:"", variants:[], stock:"in" });
+  renderProducts(); markDirty();
+};
+window.removeProduct = function(id){ state.products=state.products.filter(function(p){return p.id!==id;}); renderProducts(); markDirty(); };
+window.toggleProduct = function(id){ var c=document.querySelector('[data-pid="'+id+'"]'); if(c)c.classList.toggle("open"); };
+window.updateProduct = function(id,key,val){
+  var p=state.products.find(function(p){return p.id===id;}); if(p){p[key]=val;markDirty();}
+  var card=document.querySelector('[data-pid="'+id+'"]');
+  if(card){
+    var nm=card.querySelector(".product-name"),pr=card.querySelector(".product-price");
+    if(nm&&key==="name")nm.textContent=val||"New item";
+    if(pr&&key==="price")pr.textContent=val;
   }
-
-  // ── Render preview ────────────────────────────────────────────────────────
-  // Content contract (corrected shape):
-  //   business_name: string
-  //   tagline:       string
-  //   about:         STRING (not an object)
-  //   services:      [{ title, body }]  ← body not description
-  //   contact:       { phone, email, address }
-  //   socials:       { whatsapp, facebook, instagram, twitter, linkedin }
-  //   theme:         { palette, font_pair, variant, sections }
-
-  function renderPreview(content, theme) {
-    const c = content || {};
-    const t = theme   || {};
-
-    const name     = esc(c.business_name || 'Your Business');
-    const tagline  = esc(c.tagline || '');
-    // about is a plain string in the corrected contract
-    const about    = esc(typeof c.about === 'string' ? c.about
-                       : (c.about && c.about.body) ? c.about.body : '');
-
-    // Services use "body" key
-    const services = Array.isArray(c.services)
-      ? c.services.map(s => ({
-          title: esc(s.title || ''),
-          body:  esc(s.body || s.description || '')  // tolerate old shape too
-        }))
-      : [];
-
-    // Contact
-    const contact = c.contact || {};
-    const phone   = esc(contact.phone   || '');
-    const email   = esc(contact.email   || '');
-    const address = esc(contact.address || '');
-
-    // Socials live under c.socials (not c.social)
-    const socials  = c.socials || {};
-    const wa       = socials.whatsapp || '';
-    const fb       = socials.facebook || '';
-    const ig       = socials.instagram || '';
-    const tw       = socials.twitter || '';
-    const li       = socials.linkedin || '';
-
-    let html = `<div class="rdr-draft-banner">⚠ DRAFT — Not yet published</div>`;
-
-    // Hero
-    html += `
-      <div class="rdr-hero">
-        <h1>${name}</h1>
-        ${tagline ? `<p>${tagline}</p>` : ''}
-        <a class="rdr-hero-cta" href="#contact">Get in touch</a>
-      </div>`;
-
-    // About
-    if (about) {
-      html += `<div class="rdr-divider"></div>
-        <div class="rdr-section">
-          <h2>About Us</h2>
-          <p>${about}</p>
-        </div>`;
-    }
-
-    // Services
-    if (services.length) {
-      html += `<div class="rdr-services">
-        <h2>What We Offer</h2>
-        <div class="rdr-services-grid">`;
-      services.forEach(s => {
-        html += `<div class="rdr-service-card">
-          <h3>${s.title}</h3>
-          ${s.body ? `<p>${s.body}</p>` : ''}
-        </div>`;
-      });
-      html += `</div></div>`;
-    }
-
-    // Contact
-    const hasContact = phone || email || address;
-    const hasSocials = wa || fb || ig || tw || li;
-    if (hasContact || hasSocials) {
-      html += `<div class="rdr-contact" id="contact"><h2>Get In Touch</h2>`;
-      if (hasContact) {
-        html += `<div class="rdr-contact-grid">`;
-        if (phone)   html += `<div class="rdr-contact-item"><strong>Phone</strong>${phone}</div>`;
-        if (email)   html += `<div class="rdr-contact-item"><strong>Email</strong>${email}</div>`;
-        if (address) html += `<div class="rdr-contact-item"><strong>Address</strong>${address}</div>`;
-        html += `</div>`;
-      }
-      if (hasSocials) {
-        html += `<div class="rdr-socials">`;
-        if (wa) html += `<a class="rdr-social-link" href="https://wa.me/${wa.replace(/\D/g,'')}" target="_blank">💬 WhatsApp</a>`;
-        if (fb) html += `<a class="rdr-social-link" href="${fb}" target="_blank">Facebook</a>`;
-        if (ig) html += `<a class="rdr-social-link" href="${ig}" target="_blank">Instagram</a>`;
-        if (tw) html += `<a class="rdr-social-link" href="${tw}" target="_blank">X / Twitter</a>`;
-        if (li) html += `<a class="rdr-social-link" href="${li}" target="_blank">LinkedIn</a>`;
-        html += `</div>`;
-      }
-      html += `</div>`;
-    }
-
-    document.getElementById('preview-container').innerHTML = html;
+};
+window.setStock = function(id,stock,btn){
+  updateProduct(id,"stock",stock);
+  var row=btn.closest(".stock-row");
+  if(row)row.querySelectorAll(".stock-opt").forEach(function(b){b.className="stock-opt";});
+  btn.className="stock-opt active-"+stock;
+};
+window.togglePreset = function(id,val){
+  var p=state.products.find(function(p){return p.id===id;}); if(!p)return;
+  if(!Array.isArray(p.variants))p.variants=[];
+  var idx=p.variants.indexOf(val);
+  if(idx>-1){p.variants.splice(idx,1);}else{p.variants.push(val);}
+  markDirty();
+  var card=document.querySelector('[data-pid="'+id+'"]'); if(!card)return;
+  renderVariantChips(card,id,p.variants);
+  card.querySelectorAll(".vpreset").forEach(function(btn){
+    var v=btn.getAttribute("title");
+    btn.className="vpreset"+(p.variants.indexOf(v)>-1?" vpreset-on":"");
+  });
+};
+window.addVariant = function(id,val){
+  if(!val||!val.trim())return;
+  var p=state.products.find(function(p){return p.id===id;}); if(!p)return;
+  if(!Array.isArray(p.variants))p.variants=[];
+  if(p.variants.indexOf(val.trim())>-1)return;
+  p.variants.push(val.trim()); markDirty();
+  var card=document.querySelector('[data-pid="'+id+'"]');
+  if(card) renderVariantChips(card,id,p.variants);
+};
+window.removeVariant = function(id,idx){
+  var p=state.products.find(function(p){return p.id===id;});
+  if(p&&Array.isArray(p.variants)){ p.variants.splice(idx,1); markDirty();
+    var card=document.querySelector('[data-pid="'+id+'"]');
+    if(card) renderVariantChips(card,id,p.variants);
   }
-
-  // ── Gen counter UI ────────────────────────────────────────────────────────
-  function updateGenCounter() {
-    const el = document.getElementById('gen-counter');
-    const left = Math.max(0, genCap - genCount);
-    el.textContent = left + ' of ' + genCap + ' AI generations remaining (Starter plan)';
-    el.className = 'gen-counter' + (left <= 1 ? ' warning' : '');
-    document.getElementById('btn-generate').disabled = left === 0;
+};
+window.addCustomVariant = function(id,inputId){
+  var el=document.getElementById(inputId); if(!el)return;
+  var val=el.value.trim(); if(!val)return;
+  val.split(",").forEach(function(v){ window.addVariant(id,v.trim()); });
+  el.value="";
+};
+function renderVariantChips(card,id,variants){
+  var wrap=card.querySelector(".variant-chips-wrap"); if(!wrap)return;
+  wrap.innerHTML=variants.map(function(v,i){
+    return '<span class="variant-chip">'+esc(v)+'<button type="button" onclick="removeVariant(\''+id+'\','+i+')" aria-label="Remove">×</button></span>';
+  }).join("");
+}
+window.handleProductUpload = async function(id,input){
+  var file=input.files[0]; if(!file)return;
+  var card=document.querySelector('[data-pid="'+id+'"]');
+  var zone=card?card.querySelector(".product-upload-zone"):null;
+  if(zone)zone.innerHTML='<div class="uz-label" style="font-size:12px;color:var(--ink3)">Uploading…</div>';
+  var url=await uploadToR2(file,"products");
+  if(!url){ toast("Upload failed — try again","err");
+    if(zone)zone.innerHTML='<label class="uz-label" style="font-size:12px;cursor:pointer">Upload photo<input type="file" id="pf_'+id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+id+'\',this)"></label>';
+    return;
   }
+  updateProduct(id,"image",url);
+  var th=card?card.querySelector(".product-thumb-placeholder"):null;
+  if(th) th.outerHTML='<img class="product-thumb" src="'+esc(url)+'" alt="">';
+  if(zone)zone.innerHTML='<img src="'+esc(url)+'" style="width:100%;height:56px;object-fit:cover;border-radius:6px;display:block"><label style="font-size:11px;color:var(--ink3);cursor:pointer;display:block;text-align:center;margin-top:4px">Change photo<input type="file" id="pf_'+id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+id+'\',this)"></label>';
+  markDirty(); toast("Photo uploaded ✓","ok");
+};
 
-  function showCapReached() {
-    const footer = document.querySelector('.sidebar-footer');
-    let cap = footer.querySelector('.cap-msg');
-    if (!cap) {
-      cap = document.createElement('div');
-      cap.className = 'cap-msg';
-      footer.insertBefore(cap, footer.firstChild);
-    }
-    cap.innerHTML = `You've used all ${genCap} AI generations on the Starter plan. <a href="/checkout?plan=pro" style="color:var(--brand-green);font-weight:600">Upgrade to Pro</a> for unlimited generations.`;
-  }
+function renderProducts(){
+  var list=document.getElementById("productList");
+  var empty=document.getElementById("productEmpty");
+  var limitMsg=document.getElementById("productLimitMsg");
+  empty.style.display=state.products.length===0?"":"none";
+  limitMsg.style.display=state.products.length>=STARTER_PRODUCT_LIMIT?"block":"none";
+  list.querySelectorAll(".product-card").forEach(function(c){c.remove();});
+  var SIZE_PRESETS=["XS","S","M","L","XL","XXL","One size"];
+  var COLOR_PRESETS=["Black","White","Red","Blue","Green","Yellow","Pink","Gold","Navy","Grey"];
+  state.products.forEach(function(p){
+    var card=document.createElement("div");
+    card.className="product-card"; card.dataset.pid=p.id;
+    var thumbHtml=p.image?'<img class="product-thumb" src="'+esc(p.image)+'" alt="">':'<div class="product-thumb-placeholder">📦</div>';
+    var variants=Array.isArray(p.variants)?p.variants:[];
+    var varChips=variants.map(function(v,i){return '<span class="variant-chip">'+esc(v)+'<button type="button" onclick="removeVariant(\''+p.id+'\','+i+')" aria-label="Remove">×</button></span>';}).join("");
+    var stock=p.stock||"in";
+    var uploadZoneHtml=p.image
+      ?'<div class="product-upload-zone"><img src="'+esc(p.image)+'" style="width:100%;height:56px;object-fit:cover;border-radius:6px;display:block"><label style="font-size:11px;color:var(--ink3);cursor:pointer;display:block;text-align:center;margin-top:4px">Change photo<input type="file" id="pf_'+p.id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+p.id+'\',this)"></label></div>'
+      :'<div class="product-upload-zone"><label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 8px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink2)">📷 Upload photo<input type="file" id="pf_'+p.id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+p.id+'\',this)"></label></div>';
+    var sizeChips=SIZE_PRESETS.map(function(s){var active=variants.indexOf(s)>-1;return '<button type="button" class="vpreset'+(active?" vpreset-on":"")+'" onclick="togglePreset(\''+p.id+'\',\''+s+'\')" title="'+s+'">'+s+'</button>';}).join("");
+    var colorChips=COLOR_PRESETS.map(function(c){var active=variants.indexOf(c)>-1;return '<button type="button" class="vpreset'+(active?" vpreset-on":"")+'" onclick="togglePreset(\''+p.id+'\',\''+c+'\')" title="'+c+'">'+c+'</button>';}).join("");
+    card.innerHTML=
+      '<div class="product-card-head" onclick="toggleProduct(\''+p.id+'\')" style="cursor:pointer">'+
+        thumbHtml+
+        '<div class="product-name">'+(p.name||'<em style="color:var(--ink3)">Tap to edit</em>')+'</div>'+
+        '<div class="product-price">'+(p.price||'')+'</div>'+
+        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:.4"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+      '</div>'+
+      '<div class="product-card-body">'+
+        '<div class="two">'+
+          '<div class="fld-group"><label class="fld-label">Item name</label><input class="fld-input" placeholder="e.g. Home Jersey" value="'+esc(p.name||'')+'" oninput="updateProduct(\''+p.id+'\',\'name\',this.value)"></div>'+
+          '<div class="fld-group"><label class="fld-label">Category <span class="fld-hint">optional</span></label><input class="fld-input" placeholder="e.g. Jerseys" value="'+esc(p.category||'')+'" oninput="updateProduct(\''+p.id+'\',\'category\',this.value)"></div>'+
+        '</div>'+
+        '<div class="two">'+
+          '<div class="fld-group"><label class="fld-label">Price</label><input class="fld-input" placeholder="$20" value="'+esc(p.price||'')+'" oninput="updateProduct(\''+p.id+'\',\'price\',this.value)"></div>'+
+          '<div class="fld-group"><label class="fld-label">Photo</label>'+uploadZoneHtml+'</div>'+
+        '</div>'+
+        '<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label><textarea class="fld-textarea" style="min-height:52px" placeholder="Brief description…" oninput="updateProduct(\''+p.id+'\',\'description\',this.value)">'+esc(p.description||'')+'</textarea></div>'+
+        '<div class="fld-group">'+
+          '<label class="fld-label">Variants <span class="fld-hint">— tap to add, tap again to remove</span></label>'+
+          '<div class="variant-chips-wrap" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:4px">'+varChips+'</div>'+
+          '<div class="vpreset-section"><div class="vpreset-label">Sizes</div><div class="vpreset-row">'+sizeChips+'</div></div>'+
+          '<div class="vpreset-section" style="margin-top:8px"><div class="vpreset-label">Colours</div><div class="vpreset-row">'+colorChips+'</div></div>'+
+          '<div style="display:flex;gap:6px;margin-top:8px">'+
+            '<input class="fld-input" id="vcustom_'+p.id+'" placeholder="Other option, e.g. 500ml" style="font-size:13px;padding:8px 10px" onkeydown="if(event.key===\'Enter\'){addCustomVariant(\''+p.id+'\',\'vcustom_'+p.id+'\');event.preventDefault();}">'+
+            '<button type="button" class="btn btn-ghost btn-sm" onclick="addCustomVariant(\''+p.id+'\',\'vcustom_'+p.id+'\')" style="white-space:nowrap;flex-shrink:0">+ Add</button>'+
+          '</div>'+
+          '<div style="font-size:11.5px;color:var(--ink3);margin-top:5px">Tip: type multiple separated by commas — e.g. "S, M, L"</div>'+
+        '</div>'+
+        '<div class="fld-group"><label class="fld-label">Stock status</label>'+
+          '<div class="stock-row">'+
+            '<button type="button" class="stock-opt '+(stock==="in"?"active-in":"")+'" onclick="setStock(\''+p.id+'\',\'in\',this)">✓ In stock</button>'+
+            '<button type="button" class="stock-opt '+(stock==="low"?"active-low":"")+'" onclick="setStock(\''+p.id+'\',\'low\',this)">⚠ Low stock</button>'+
+            '<button type="button" class="stock-opt '+(stock==="out"?"active-out":"")+'" onclick="setStock(\''+p.id+'\',\'out\',this)">✗ Out of stock</button>'+
+          '</div></div>'+
+        '<div style="margin-top:12px"><button type="button" class="product-del" onclick="removeProduct(\''+p.id+'\')">Remove item</button></div>'+
+      '</div>';
+    list.insertBefore(card,empty);
+  });
+}
 
-  // ── Generate button loading state ─────────────────────────────────────────
-  function setGenerating(on) {
-    const btn = document.getElementById('btn-generate');
-    btn.disabled = on || genCount >= genCap;
-    btn.classList.toggle('loading', on);
+/* ── IMAGES ── */
+window.triggerUpload = function(type){ var el=document.getElementById(type+"File"); if(el)el.click(); };
+window.handleUpload = async function(type,input){
+  var file=input.files[0]; if(!file)return;
+  if(countImages()>=STARTER_IMAGE_LIMIT){toast("10 image limit on Starter.","err");return;}
+  showProgress(type,true);
+  var url=await uploadToR2(file,type);
+  showProgress(type,false);
+  if(!url){toast("Upload failed — try again","err");return;}
+  state.images[type]=url; renderImagePreviews(); updateImgCount(); markDirty(); toast("Uploaded ✓","ok");
+};
+function showProgress(type,show){ var p=document.getElementById(type+"Progress"); if(p)p.style.display=show?"block":"none"; }
+window.removeImage = function(type){ delete state.images[type]; renderImagePreviews(); updateImgCount(); markDirty(); };
+function renderImagePreviews(){
+  ["logo","hero"].forEach(function(type){
+    var preview=document.getElementById(type+"Preview"),zone=document.getElementById(type+"Zone"),img=document.getElementById(type+"Img");
+    if(state.images[type]){if(img)img.src=state.images[type];if(preview)preview.style.display="block";if(zone)zone.style.display="none";}
+    else{if(preview)preview.style.display="none";if(zone)zone.style.display="block";}
+  });
+}
+function updateImgCount(){ document.getElementById("imgCount").textContent=countImages()+" / "+STARTER_IMAGE_LIMIT+" uploaded"; }
+function renderGallery(){
+  var grid=document.getElementById("galleryGrid"); grid.innerHTML="";
+  state.gallery.forEach(function(url,i){
+    var wrap=document.createElement("div"); wrap.className="img-thumb-wrap";
+    wrap.innerHTML='<img src="'+esc(url)+'" loading="lazy"><button class="img-thumb-remove" onclick="removeGalleryImg('+i+')">×</button>';
+    grid.appendChild(wrap);
+  });
+  if(state.gallery.length<8){
+    var add=document.createElement("div"); add.className="img-thumb-add";
+    add.innerHTML='<input type="file" accept="image/*" onchange="handleGalleryUpload(this)"><span>+</span>';
+    grid.appendChild(add);
   }
+}
+window.handleGalleryUpload = async function(input){
+  var file=input.files[0]; if(!file)return;
+  if(countImages()>=STARTER_IMAGE_LIMIT){toast("10 image limit on Starter.","err");return;}
+  var url=await uploadToR2(file,"gallery"); if(!url){toast("Upload failed","err");return;}
+  state.gallery.push(url); renderGallery(); updateImgCount(); markDirty(); toast("Photo added ✓","ok");
+};
+window.removeGalleryImg = function(i){ state.gallery.splice(i,1); renderGallery(); updateImgCount(); markDirty(); };
 
-  // ── Industry → template mapping ───────────────────────────────────────────
-  function briefToTemplate(industry) {
-    const map = {
-      'Education & Training': 'school-institution',
-      'Sports & Fitness':     'school-institution',
-      'Health & Wellness':    'general-business',
-      'Food & Hospitality':   'general-business',
-    };
-    return map[industry] || 'general-business';
-  }
+/* ── R2 UPLOAD ── */
+async function uploadToR2(file,type){
+  var allowed=["image/jpeg","image/png","image/webp","image/gif","image/svg+xml"];
+  if(allowed.indexOf(file.type)<0){toast("Only JPG, PNG, WebP or SVG allowed","err");return null;}
+  if(file.size>8*1024*1024){toast("Image must be under 8MB","err");return null;}
+  var r=await api("/api/sites/"+encodeURIComponent(siteId)+"/upload-url",{method:"POST",body:JSON.stringify({filename:file.name,content_type:file.type,type:type})});
+  if(!r.ok)return null;
+  try{
+    var resp=await fetch(r.data.upload_url,{method:"PUT",body:file,headers:{"Content-Type":file.type}});
+    if(!resp.ok)return null;
+    return r.data.public_url;
+  }catch(e){return null;}
+}
 
-  // ── Toast ─────────────────────────────────────────────────────────────────
-  let toastTimer;
-  function showToast(msg, type) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show' + (type ? ' ' + type : '');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { t.className = 'toast'; }, 3500);
+/* ── BUDGET ── */
+function updateBudget(b){
+  var el=document.getElementById("aiBudget");
+  if(!b){
+    // Read gen count from the site row (ai_generations_used column)
+    var used=Number((state.site&&state.site.ai_generations_used)||0);
+    el.innerHTML="Generations used: <b>"+used+" / 10</b> on this site.";
+    if(used>=10){ document.getElementById("generateBtn").disabled=true; }
+    return;
   }
+  var limit=b.limit||10;
+  el.innerHTML="Generations: <b>"+b.used+" / "+limit+"</b>. "+Math.max(0,limit-b.used)+" remaining.";
+  if(b.remaining===0||b.used>=limit){
+    document.getElementById("generateBtn").disabled=true;
+    document.getElementById("generateBtn").querySelector(".ai-ico").textContent="✦ No generations left";
+  }
+}
 
-  // ── Escape HTML ───────────────────────────────────────────────────────────
-  function esc(str) {
-    return String(str || '').replace(/[&<>"']/g, c =>
-      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])
-    );
-  }
+/* ── PALETTE / FONT helpers ── */
+function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","grocery-fmcg":"market-fresh","grocery":"market-fresh","retail-hardware":"utility-slate","hardware":"utility-slate"};return m[t]||"clean-white";}
+function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","retail-hardware":"display-mono"};return m[t]||"grotesk-serif";}
+
+/* ── DESIGN TAB ── */
+var PALETTES_UI=[
+  {key:"black-white-gold",name:"Dark Gold",bg:"#0c0c0c",surface:"#161616",accent:"#c8a24a"},
+  {key:"midnight-purple",name:"Midnight Purple",bg:"#0d0a14",surface:"#17121f",accent:"#a855f7"},
+  {key:"deep-teal",name:"Deep Teal",bg:"#061a1a",surface:"#0d2828",accent:"#14b8a6"},
+  {key:"sky-blue",name:"Sky Blue",bg:"#0f1b2d",surface:"#16263d",accent:"#3da5e0"},
+  {key:"elite-sports",name:"Sports Green",bg:"#0a0a0a",surface:"#151515",accent:"#16a34a"},
+  {key:"rose-noir",name:"Rose Noir",bg:"#0e0b0d",surface:"#1a1318",accent:"#e8a0b0"},
+  {key:"clean-white",name:"Clean White",bg:"#ffffff",surface:"#f6f6f4",accent:"#1a1a1a"},
+  {key:"warm-terracotta",name:"Terracotta",bg:"#fdf6f0",surface:"#fff",accent:"#c0440e"},
+  {key:"ember-cream",name:"Ember Cream",bg:"#FBF4E9",surface:"#fff",accent:"#D2541F"},
+  {key:"blush-plum",name:"Blush Plum",bg:"#ffffff",surface:"#F7ECEC",accent:"#B08D57"},
+  {key:"soft-pink",name:"Soft Pink",bg:"#fff9fb",surface:"#fdeef3",accent:"#e91e8c"},
+  {key:"navy-gold",name:"Navy Gold",bg:"#ffffff",surface:"#EAF1F9",accent:"#C99A2E"},
+  {key:"slate-gold",name:"Slate Gold",bg:"#ffffff",surface:"#F4F6FA",accent:"#C08A2D"},
+  {key:"medical-teal",name:"Medical Teal",bg:"#f4fbfb",surface:"#e8f6f6",accent:"#0891b2"},
+  {key:"forest-cream",name:"Forest Cream",bg:"#F6F1E7",surface:"#fff",accent:"#B0852F"},
+  {key:"market-fresh",name:"Market Fresh",bg:"#ffffff",surface:"#f4faf5",accent:"#1e8c3a"},
+  {key:"bright-orange",name:"Bright Orange",bg:"#ffffff",surface:"#fff8f3",accent:"#ea580c"},
+  {key:"utility-slate",name:"Utility Slate",bg:"#f7f8fa",surface:"#ffffff",accent:"#1a56db"},
+];
+var FONTS_UI=[
+  {key:"clean-sans",name:"Clean Sans",preview:"Modern & Clear",style:"font-family:'Space Grotesk',sans-serif"},
+  {key:"grotesk-serif",name:"Grotesk Serif",preview:"Editorial Mix",style:"font-family:'Fraunces',serif"},
+  {key:"playfair-jakarta",name:"Playfair",preview:"Classic & Elegant",style:"font-family:'Playfair Display',serif"},
+  {key:"garamond-jost",name:"Garamond Jost",preview:"Refined & Light",style:"font-family:'Cormorant Garamond',serif"},
+  {key:"sports-sans",name:"Sports Sans",preview:"Bold & Condensed",style:"font-family:'Barlow Condensed',sans-serif;font-weight:700"},
+  {key:"display-mono",name:"Display Mono",preview:"Technical & Clean",style:"font-family:'DM Mono',monospace"},
+];
+
+function buildPaletteGrid(){
+  var grid=document.getElementById("paletteGrid"); if(!grid)return;
+  var current=(state.content&&state.content.theme&&state.content.theme.palette)||"";
+  grid.innerHTML=PALETTES_UI.map(function(p){
+    var active=p.key===current?" active":"";
+    var isDark=luminanceFromHex(p.bg)<0.18;
+    var dotBorder=isDark?"rgba(255,255,255,.15)":"rgba(0,0,0,.08)";
+    return '<div class="palette-swatch'+active+'" onclick="selectPalette(\''+p.key+'\')" style="background:'+p.bg+'">'
+      +'<div class="sw-dots"><div class="sw-dot" style="background:'+p.bg+';border-color:'+dotBorder+'"></div><div class="sw-dot" style="background:'+p.surface+';border-color:'+dotBorder+'"></div><div class="sw-dot" style="background:'+p.accent+';border-color:'+dotBorder+'"></div></div>'
+      +'<div class="sw-name" style="color:'+(isDark?"rgba(255,255,255,.85)":"var(--ink2)")+'">'+p.name+'</div>'
+      +'<span class="sw-check">✓</span></div>';
+  }).join("");
+}
+function buildFontGrid(){
+  var grid=document.getElementById("fontGrid"); if(!grid)return;
+  var current=(state.content&&state.content.theme&&state.content.theme.font_pair)||"";
+  grid.innerHTML=FONTS_UI.map(function(f){
+    var active=f.key===current?" active":"";
+    return '<div class="font-opt'+active+'" onclick="selectFont(\''+f.key+'\')">'
+      +'<div><div class="fo-name">'+f.name+'</div></div>'
+      +'<div class="fo-preview" style="'+f.style+'">'+f.preview+'</div>'
+      +'<span class="fo-check">✓</span></div>';
+  }).join("");
+}
+window.selectPalette=function(key){if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};state.content.theme.palette=key;markDirty();buildPaletteGrid();updateFaviconPreview();};
+window.selectFont=function(key){if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};state.content.theme.font_pair=key;markDirty();buildFontGrid();};
+window.onAccentPick=function(val){document.getElementById("f_custom_accent").value=val;applyAccent(val);};
+window.onAccentInput=function(val){if(/^#[0-9a-fA-F]{6}$/.test(val)){document.getElementById("f_custom_accent_picker").value=val;applyAccent(val);}};
+window.clearAccent=function(){document.getElementById("f_custom_accent").value="";document.getElementById("f_custom_accent_picker").value="#15924B";document.getElementById("clearAccentBtn").style.display="none";if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};delete state.content.theme.custom_accent;markDirty();updateFaviconPreview();};
+function applyAccent(val){if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};state.content.theme.custom_accent=val;document.getElementById("clearAccentBtn").style.display="";markDirty();updateFaviconPreview();}
+function updateFaviconPreview(){
+  var canvas=document.getElementById("faviconCanvas"); if(!canvas)return;
+  var ctx2=canvas.getContext("2d");
+  var name=g("f_name")||(state.site&&state.site.site_name)||"W";
+  var accent=(state.content&&state.content.theme&&state.content.theme.custom_accent)||currentPaletteAccent()||"#15924B";
+  var initials=name.trim().split(/\s+/).map(function(w){return w[0]||"";}).join("").toUpperCase().slice(0,2)||"W";
+  var lum=luminanceFromHex(accent);
+  var fg=lum>0.35?"#0d0f14":"#ffffff";
+  ctx2.clearRect(0,0,64,64);
+  ctx2.fillStyle=accent;
+  roundRect(ctx2,0,0,64,64,14); ctx2.fill();
+  ctx2.fillStyle=fg;
+  ctx2.font="700 "+(initials.length>1?"22":"28")+"px system-ui,sans-serif";
+  ctx2.textAlign="center"; ctx2.textBaseline="middle";
+  ctx2.fillText(initials,32,33);
+}
+function currentPaletteAccent(){var palette=(state.content&&state.content.theme&&state.content.theme.palette)||"";var found=PALETTES_UI.find(function(p){return p.key===palette;});return found?found.accent:"#15924B";}
+function roundRect(ctx2,x,y,w,h,r){ctx2.beginPath();ctx2.moveTo(x+r,y);ctx2.lineTo(x+w-r,y);ctx2.quadraticCurveTo(x+w,y,x+w,y+r);ctx2.lineTo(x+w,y+h-r);ctx2.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx2.lineTo(x+r,y+h);ctx2.quadraticCurveTo(x,y+h,x,y+h-r);ctx2.lineTo(x,y+r);ctx2.quadraticCurveTo(x,y,x+r,y);ctx2.closePath();}
+function luminanceFromHex(hex){if(!hex||hex.length<7)return 0;var r=parseInt(hex.slice(1,3),16)/255,gv=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;var toL=function(c){return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);};return 0.2126*toL(r)+0.7152*toL(gv)+0.0722*toL(b);}
+function initDesignTab(){
+  var savedAccent=(state.content&&state.content.theme&&state.content.theme.custom_accent)||"";
+  if(savedAccent){document.getElementById("f_custom_accent").value=savedAccent;document.getElementById("f_custom_accent_picker").value=savedAccent;document.getElementById("clearAccentBtn").style.display="";}
+  buildPaletteGrid(); buildFontGrid(); buildSectionsList(); updateFaviconPreview();
+}
+
+/* ── SECTIONS ── */
+var ALL_SECTIONS={
+  "bold-retail":        [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"testimonials",label:"Reviews"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
+  "grill-house":        [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
+  "beauty-salon":       [{key:"hero",label:"Hero banner"},{key:"services",label:"Services & prices"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
+  "school-institution": [{key:"hero",label:"Hero banner"},{key:"stats",label:"Key stats"},{key:"about",label:"About us"},{key:"services",label:"Programmes"},{key:"products",label:"Products"},{key:"team",label:"Leadership"},{key:"testimonials",label:"Reviews"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
+  "advisory-firm":      [{key:"hero",label:"Hero banner"},{key:"services",label:"Practice areas"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"team",label:"The team"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
+  "property-estate":    [{key:"hero",label:"Hero banner"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
+  "boutique-fashion":   [{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
+  "grocery-fmcg":       [{key:"hero",label:"Hero banner"},{key:"products",label:"Products"},{key:"about",label:"About us"},{key:"contact",label:"Contact"}],
+  "retail-hardware":    [{key:"hero",label:"Hero banner"},{key:"products",label:"Products & catalogue"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"contact",label:"Contact"}],
+};
+var REQUIRED_SECTIONS=["hero","contact"];
+function buildSectionsList(){
+  var list=document.getElementById("sectionsList"); if(!list)return;
+  var templateId=g("f_template")||"bold-retail";
+  var allSecs=ALL_SECTIONS[templateId]||ALL_SECTIONS["bold-retail"];
+  var activeSections=(state.content&&state.content.theme&&Array.isArray(state.content.theme.sections))?state.content.theme.sections:allSecs.map(function(s){return s.key;});
+  var activeKeys=activeSections.filter(function(k){return allSecs.some(function(s){return s.key===k;});});
+  var inactiveKeys=allSecs.map(function(s){return s.key;}).filter(function(k){return activeKeys.indexOf(k)<0;});
+  var orderedKeys=activeKeys.concat(inactiveKeys);
+  list.innerHTML=orderedKeys.map(function(key,idx){
+    var sec=allSecs.find(function(s){return s.key===key;}); if(!sec)return"";
+    var isActive=activeKeys.indexOf(key)>-1;
+    var isRequired=REQUIRED_SECTIONS.indexOf(key)>-1;
+    return '<div class="sec-row'+(isActive?" active":"")+'\" data-seckey="'+key+'">'
+      +'<label class="sec-toggle" title="'+(isRequired?"Required":"'')+'">'
+      +'<input type="checkbox"'+(isActive?" checked":"")+(isRequired?" disabled":"")+' onchange="toggleSection(\''+key+'\',this.checked)">'
+      +'<span class="sec-slider"></span></label>'
+      +'<span class="sec-label">'+sec.label+'</span>'
+      +'<div class="sec-arrows">'
+      +'<button class="sec-arr" onclick="moveSection(\''+key+'\',-1)" '+(idx===0?"disabled":"")+'>↑</button>'
+      +'<button class="sec-arr" onclick="moveSection(\''+key+'\',1)" '+(idx===orderedKeys.length-1?"disabled":"")+'>↓</button>'
+      +'</div></div>';
+  }).join("");
+}
+window.toggleSection=function(key,on){ensureThemeSections();var secs=state.content.theme.sections;if(on){if(secs.indexOf(key)<0)secs.push(key);}else{state.content.theme.sections=secs.filter(function(k){return k!==key;});}markDirty();buildSectionsList();};
+window.moveSection=function(key,dir){ensureThemeSections();var secs=state.content.theme.sections;var idx=secs.indexOf(key);if(idx<0)return;var newIdx=idx+dir;if(newIdx<0||newIdx>=secs.length)return;var tmp=secs[idx];secs[idx]=secs[newIdx];secs[newIdx]=tmp;markDirty();buildSectionsList();};
+function ensureThemeSections(){if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};if(!Array.isArray(state.content.theme.sections)){var templateId=g("f_template")||"bold-retail";var allSecs=ALL_SECTIONS[templateId]||ALL_SECTIONS["bold-retail"];state.content.theme.sections=allSecs.map(function(s){return s.key;});}}
+
+/* ── TOAST ── */
+function toast(msg,type){
+  var wrap=document.getElementById("toastWrap"),t=document.createElement("div");
+  t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);
+  requestAnimationFrame(function(){t.classList.add("show");});
+  setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);
+}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 
 })();
 </script>
+<style>
+.variant-chip{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);color:var(--green-dk);font-size:12.5px;font-weight:600;padding:3px 8px 3px 10px;border-radius:20px;border:1px solid rgba(21,146,75,.2)}
+.variant-chip button{background:none;border:none;color:var(--green-dk);font-size:14px;line-height:1;cursor:pointer;padding:0 0 0 2px;opacity:.7}
+.variant-chip button:hover{opacity:1}
+</style>
 </body>
 </html>
