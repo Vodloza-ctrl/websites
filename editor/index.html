@@ -692,11 +692,18 @@ async function api(path, opts){
 (async function init(){
   if(!getToken()){ location.href = DASH_URL; return; }
   if(!siteId){
-    // No site param — show a "create new site" prompt rather than a dead toast
-    document.getElementById("topSiteName").textContent = "New site";
+    // No ?site= param — user landed here directly. Send them to dashboard.
+    document.getElementById("topSiteName").textContent = "No site selected";
     document.getElementById("saveBtn").style.display = "none";
-    toast("Select a site from your dashboard, or create one below","err");
-    setTimeout(function(){ location.href = DASH_URL; }, 3000);
+    document.getElementById("generateBtn").disabled = true;
+    // Replace the main area with a clear prompt
+    document.getElementById("mainArea").innerHTML =
+      '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:20px;text-align:center;padding:40px 20px">' +
+        '<div style="font-size:48px">🏗️</div>' +
+        '<h2 style="font-family:var(--font-head);font-size:22px;color:var(--ink)">No site selected</h2>' +
+        '<p style="color:var(--ink3);max-width:340px;line-height:1.5">Go to your dashboard to select an existing site, or create a new one.</p>' +
+        '<a class="btn btn-green" href="'+DASH_URL+'">← Back to dashboard</a>' +
+      '</div>';
     return;
   }
 
