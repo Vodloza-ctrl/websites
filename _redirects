@@ -5,3 +5,5 @@
 /new/             /new/index.html           200
 /terms    /terms/index.html    200
 /terms/   /terms/index.html    200
+/checkout     /checkout/index.html    200
+/checkout/    /checkout/index.html    200
