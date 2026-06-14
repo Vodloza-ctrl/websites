@@ -310,6 +310,13 @@ button { font-family: inherit; cursor: pointer; }
 }
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.err { background: #2a1418; border-color: #5a2428; color: #f87171; }
+.tcard-demo {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 10px; font-size: 12px; font-weight: 600;
+  color: var(--green); text-decoration: none;
+  opacity: .8; transition: opacity .15s;
+}
+.tcard-demo:hover { opacity: 1; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -350,7 +357,7 @@ button { font-family: inherit; cursor: pointer; }
         <p id="confirmDesc"></p>
       </div>
     </div>
-    <div class="name-row">
+    <div class="name-row" id="nameRow">
       <span class="name-label">What's your business called?</span>
       <input
         class="name-input"
@@ -363,7 +370,7 @@ button { font-family: inherit; cursor: pointer; }
     </div>
     <div class="confirm-actions">
       <button class="btn-go" id="goBtn" onclick="startBuilding()" disabled>
-        <span class="go-label">Build my site →</span>
+        <span class="go-label" id="goLabel">Build my site →</span>
         <div class="spinner"></div>
       </button>
       <button class="btn-cancel" onclick="clearSelection()">Cancel</button>
@@ -383,15 +390,15 @@ var DASH    = APP + "/dashboard/customer.html";
 
 // ── Template data ──────────────────────────────────────────────────────────
 const TEMPLATES = [
-  { id:"bold-retail",        label:"General Business",      emoji:"🏢", desc:"Professional site for any business — services, staff, gallery, contact", goodFor:"Retail · Services · Any SME",                bg:"#ffffff", surface:"#f6f6f4", ink:"#1a1a1a", accent:"#1a1a1a", onAccent:"#ffffff", font:"'Space Grotesk', sans-serif",      dark:false },
-  { id:"grill-house",        label:"Restaurant & Food",     emoji:"🍽️", desc:"Warm, appetising layout with menu sections and reservation CTA",          goodFor:"Restaurant · Café · Grill · Takeaway",       bg:"#FBF4E9", surface:"#fff",     ink:"#2A211A", accent:"#D2541F", onAccent:"#fff",     font:"'Playfair Display', serif",        dark:false },
-  { id:"beauty-salon",       label:"Beauty & Wellness",     emoji:"💅", desc:"Elegant layout with service price list, team profiles, and booking CTA",  goodFor:"Salon · Spa · Clinic · Barber",              bg:"#ffffff", surface:"#F7ECEC", ink:"#2E2329", accent:"#B08D57", onAccent:"#fff",     font:"'Cormorant Garamond', serif",     dark:false },
-  { id:"school-institution", label:"School & Academy",      emoji:"🏫", desc:"Credible, structured layout with programmes, stats, and leadership",       goodFor:"School · Academy · Church · NGO",            bg:"#ffffff", surface:"#EAF1F9", ink:"#1C2733", accent:"#C99A2E", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
-  { id:"advisory-firm",      label:"Consultant & Legal",    emoji:"💼", desc:"Authoritative, minimal design for professional services and advisory",     goodFor:"Consultant · Law · Accounting · Finance",    bg:"#ffffff", surface:"#F4F6FA", ink:"#1A2236", accent:"#C08A2D", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
-  { id:"property-estate",    label:"Property & Real Estate",emoji:"🏠", desc:"Gallery-forward layout built to showcase listings and drive enquiries",    goodFor:"Real Estate · Architecture · Construction",  bg:"#F6F1E7", surface:"#fff",     ink:"#1E2A24", accent:"#B0852F", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
-  { id:"boutique-fashion",   label:"Fashion & Boutique",    emoji:"👗", desc:"Dark, editorial look with a product catalogue and WhatsApp shop link",     goodFor:"Boutique · Fashion · Cosmetics · Gifts",     bg:"#0e0b0d", surface:"#1a1318", ink:"#f7f0f2", accent:"#e8a0b0", onAccent:"#0e0b0d", font:"'Cormorant Garamond', serif",     dark:true  },
-  { id:"grocery-fmcg",       label:"Grocery & Spaza",       emoji:"🛒", desc:"Clean, bright product catalogue with WhatsApp order button built in",      goodFor:"Grocery · Supermarket · Spaza · FMCG",      bg:"#ffffff", surface:"#f4faf5", ink:"#1a2b1e", accent:"#1e8c3a", onAccent:"#ffffff", font:"'Space Grotesk', sans-serif",      dark:false },
-  { id:"retail-hardware",    label:"Hardware & Retail",     emoji:"🔧", desc:"Bold, catalogue-style layout with product grid, services, and quote CTA",  goodFor:"Hardware · Electronics · Tools · General Retail", bg:"#f7f8fa", surface:"#ffffff", ink:"#1c2130", accent:"#1a56db", onAccent:"#ffffff", font:"'DM Mono', monospace",            dark:false },
+  { id:"bold-retail",        label:"General Business",      emoji:"🏢", demo:"https://demo-business.websites.co.zw",   desc:"Professional site for any business — services, staff, gallery, contact", goodFor:"Retail · Services · Any SME",                bg:"#ffffff", surface:"#f6f6f4", ink:"#1a1a1a", accent:"#1a1a1a", onAccent:"#ffffff", font:"'Space Grotesk', sans-serif",      dark:false },
+  { id:"grill-house",        label:"Restaurant & Food",     emoji:"🍽️", demo:"https://demo-restaurant.websites.co.zw", desc:"Warm, appetising layout with menu sections and reservation CTA",          goodFor:"Restaurant · Café · Grill · Takeaway",       bg:"#FBF4E9", surface:"#fff",     ink:"#2A211A", accent:"#D2541F", onAccent:"#fff",     font:"'Playfair Display', serif",        dark:false },
+  { id:"beauty-salon",       label:"Beauty & Wellness",     emoji:"💅", demo:"https://demo-salon.websites.co.zw",      desc:"Elegant layout with service price list, team profiles, and booking CTA",  goodFor:"Salon · Spa · Clinic · Barber",              bg:"#ffffff", surface:"#F7ECEC", ink:"#2E2329", accent:"#B08D57", onAccent:"#fff",     font:"'Cormorant Garamond', serif",     dark:false },
+  { id:"school-institution", label:"School & Academy",      emoji:"🏫", demo:"https://elite.websites.co.zw",           desc:"Credible, structured layout with programmes, stats, and leadership",       goodFor:"School · Academy · Church · NGO",            bg:"#ffffff", surface:"#EAF1F9", ink:"#1C2733", accent:"#C99A2E", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
+  { id:"advisory-firm",      label:"Consultant & Legal",    emoji:"💼", demo:"https://demo-consultant.websites.co.zw", desc:"Authoritative, minimal design for professional services and advisory",     goodFor:"Consultant · Law · Accounting · Finance",    bg:"#ffffff", surface:"#F4F6FA", ink:"#1A2236", accent:"#C08A2D", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
+  { id:"property-estate",    label:"Property & Real Estate",emoji:"🏠", demo:"https://demo-realestate.websites.co.zw", desc:"Gallery-forward layout built to showcase listings and drive enquiries",    goodFor:"Real Estate · Architecture · Construction",  bg:"#F6F1E7", surface:"#fff",     ink:"#1E2A24", accent:"#B0852F", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
+  { id:"boutique-fashion",   label:"Fashion & Boutique",    emoji:"👗", demo:"https://demo-boutique.websites.co.zw",   desc:"Dark, editorial look with a product catalogue and WhatsApp shop link",     goodFor:"Boutique · Fashion · Cosmetics · Gifts",     bg:"#0e0b0d", surface:"#1a1318", ink:"#f7f0f2", accent:"#e8a0b0", onAccent:"#0e0b0d", font:"'Cormorant Garamond', serif",     dark:true  },
+  { id:"grocery-fmcg",       label:"Grocery & Spaza",       emoji:"🛒", demo:"https://demo-grocery.websites.co.zw",    desc:"Clean, bright product catalogue with WhatsApp order button built in",      goodFor:"Grocery · Supermarket · Spaza · FMCG",      bg:"#ffffff", surface:"#f4faf5", ink:"#1a2b1e", accent:"#1e8c3a", onAccent:"#ffffff", font:"'Space Grotesk', sans-serif",      dark:false },
+  { id:"retail-hardware",    label:"Hardware & Retail",     emoji:"🔧", demo:"https://demo-hardware.websites.co.zw",   desc:"Bold, catalogue-style layout with product grid, services, and quote CTA",  goodFor:"Hardware · Electronics · Tools · General Retail", bg:"#f7f8fa", surface:"#ffffff", ink:"#1c2130", accent:"#1a56db", onAccent:"#ffffff", font:"'DM Mono', monospace",            dark:false },
 ];
 
 var selected = null;
@@ -401,6 +408,29 @@ var selected = null;
 var token = localStorage.getItem("wcz_token");
 if (!token) {
   location.replace(DASH + "?next=" + encodeURIComponent(location.href));
+}
+
+// ── Switch mode detection ────────────────────────────────────────────────────
+var urlParams    = new URLSearchParams(location.search);
+var switchMode   = urlParams.get("switch") === "1";
+var switchSiteId = urlParams.get("site") || "";
+
+if (switchMode) {
+  var h1 = document.querySelector(".hero h1");
+  var sub = document.querySelector(".hero p");
+  var eyebrow = document.querySelector(".hero-eyebrow");
+  if (h1) h1.innerHTML = "Choose a new template";
+  if (sub) sub.textContent = "Your business name, contact details, logo, and photos will carry over. Only the visual design changes.";
+  if (eyebrow) { eyebrow.textContent = "Switching template — your content is safe"; eyebrow.style.background = "rgba(201,154,46,.15)"; eyebrow.style.color = "#c99a2e"; }
+}
+
+// ── Switch mode UI adjustments ──────────────────────────────────────────────
+if (switchMode) {
+  // In switch mode we don't need a name — just pick a template
+  document.addEventListener("DOMContentLoaded", function() {
+    var nameRow = document.getElementById("nameRow");
+    if (nameRow) nameRow.style.display = "none";
+  });
 }
 
 // ── Render grid ────────────────────────────────────────────────────────────
@@ -448,6 +478,7 @@ function renderGrid() {
         </div>
         <div class="tcard-desc">${t.desc}</div>
         <div class="tcard-tags">${t.goodFor}</div>
+        ${t.demo ? `<a class="tcard-demo" href="${t.demo}" target="_blank" rel="noopener" onclick="event.stopPropagation()">View live demo →</a>` : ''}
       </div>
     `;
 
@@ -479,6 +510,9 @@ function selectTemplate(t) {
 
   // Open drawer
   document.getElementById("confirmDrawer").classList.add("open");
+  // Update Go button label based on mode
+  var goLabel = document.getElementById("goLabel");
+  if (goLabel) goLabel.textContent = switchMode ? "Switch to this template →" : "Build my site →";
 
   // Focus name input
   var inp = document.getElementById("nameInput");
@@ -510,6 +544,10 @@ document.getElementById("nameInput").addEventListener("keydown", function (e) {
 });
 
 function validateGoBtn() {
+  if (switchMode) {
+    document.getElementById("goBtn").disabled = !selected;
+    return;
+  }
   var name = document.getElementById("nameInput").value.trim();
   document.getElementById("goBtn").disabled = !name || !selected;
 }
@@ -525,17 +563,21 @@ window.startBuilding = async function () {
   btn.disabled = true;
 
   try {
-    var resp = await fetch(API + "/sites", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + (localStorage.getItem("wcz_token") || ""),
-      },
-      body: JSON.stringify({
-        site_name:   name,
-        template_id: selected.id,
-      }),
-    });
+    // Switch mode: PUT /api/sites/:id/template instead of creating new site
+    var resp;
+    if (switchMode && switchSiteId) {
+      resp = await fetch(API + "/sites/" + encodeURIComponent(switchSiteId) + "/template", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + (localStorage.getItem("wcz_token") || "") },
+        body: JSON.stringify({ template_id: selected.id }),
+      });
+    } else {
+      resp = await fetch(API + "/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + (localStorage.getItem("wcz_token") || "") },
+        body: JSON.stringify({ site_name: name, template_id: selected.id }),
+      });
+    }
 
     if (resp.status === 401) {
       location.replace(DASH + "?next=" + encodeURIComponent(location.href));
@@ -557,8 +599,9 @@ window.startBuilding = async function () {
       return;
     }
 
-    // Success — go straight to the editor with the new site
-    location.href = APP + "/editor/?site=" + encodeURIComponent(data.site.id);
+    // Success — go straight to the editor
+    var targetId = (switchMode && switchSiteId) ? switchSiteId : (data.site && data.site.id);
+    location.href = APP + "/editor/?site=" + encodeURIComponent(targetId);
 
   } catch (e) {
     toast("Network error — check your connection and try again", "err");
