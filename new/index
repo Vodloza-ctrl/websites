@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Choose your template — websites.co.zw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --page-bg:  #0b0c10;
+  --card-bg:  #13151a;
+  --line:     #1e2028;
+  --ink:      #f0f1f4;
+  --ink2:     #9095a3;
+  --green:    #15924B;
+  --green-dk: #0f6e39;
+  --green-bg: rgba(21,146,75,.12);
+  --gold:     #c99a2e;
+  --r:        16px;
+  --r-sm:     10px;
+  --font-ui:  "Space Grotesk", system-ui, sans-serif;
+  --font-body:"Hanken Grotesk", system-ui, sans-serif;
+  --ease:     cubic-bezier(.22,1,.36,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  min-height: 100%;
+  background: var(--page-bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ── Top bar ── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(11,12,16,.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.logo {
+  font-family: var(--font-ui);
+  font-weight: 700; font-size: 18px; letter-spacing: -.02em;
+}
+.logo .tld { color: var(--green); }
+.topbar-right { font-size: 13px; color: var(--ink2); }
+.topbar-right a { color: var(--green); font-weight: 600; }
+
+/* ── Hero ── */
+.hero {
+  max-width: 680px; margin: 0 auto;
+  padding: 56px 24px 40px;
+  text-align: center;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--green); background: var(--green-bg);
+  padding: 5px 12px; border-radius: 20px; margin-bottom: 18px;
+}
+.hero h1 {
+  font-family: var(--font-ui);
+  font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+  font-weight: 700; letter-spacing: -.03em;
+  line-height: 1.1; margin-bottom: 14px;
+}
+.hero h1 span { color: var(--green); }
+.hero p {
+  color: var(--ink2); font-size: 1.02rem; line-height: 1.6;
+  max-width: 520px; margin: 0 auto 28px;
+}
+.step-row {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  flex-wrap: wrap; gap: 6px;
+}
+.step {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 600; color: var(--ink2);
+}
+.step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--line); color: var(--ink2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.step.done .step-num { background: var(--green); color: #fff; }
+.step.active .step-num { background: var(--gold); color: #fff; }
+.step.active { color: var(--ink); }
+.step-sep { color: var(--line); font-size: 18px; line-height: 1; margin: 0 2px; }
+
+/* ── Grid ── */
+.grid-wrap {
+  max-width: 1060px; margin: 0 auto;
+  padding: 0 20px 80px;
+}
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink2); margin-bottom: 16px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+@media (max-width: 380px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+/* ── Template card ── */
+.tcard {
+  border-radius: var(--r);
+  border: 1.5px solid var(--line);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .22s var(--ease), box-shadow .22s var(--ease), border-color .22s;
+  position: relative;
+  background: var(--card-bg);
+}
+.tcard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px -16px rgba(0,0,0,.5);
+}
+.tcard.selected {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(21,146,75,.2), 0 20px 50px -16px rgba(0,0,0,.4);
+}
+/* The visual preview area — uses the template's own colours */
+.tcard-preview {
+  height: 148px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+/* Tiny nav mockup */
+.mock-nav {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px;
+  background: rgba(0,0,0,.18);
+}
+.mock-logo { width: 36px; height: 7px; border-radius: 3px; opacity: .7; }
+.mock-links { display: flex; gap: 5px; }
+.mock-link { width: 22px; height: 5px; border-radius: 2px; opacity: .45; }
+.mock-btn { width: 32px; height: 14px; border-radius: 4px; opacity: .85; }
+/* Hero area */
+.mock-hero {
+  position: absolute; top: 28px; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 10px 12px;
+  background: linear-gradient(0deg, rgba(0,0,0,.55) 0%, transparent 60%);
+}
+.mock-h1 { height: 9px; border-radius: 4px; width: 60%; margin-bottom: 5px; background: rgba(255,255,255,.85); }
+.mock-sub { height: 5px; border-radius: 3px; width: 42%; background: rgba(255,255,255,.5); }
+.mock-cta { margin-top: 8px; width: 52px; height: 16px; border-radius: 5px; }
+/* Content rows below hero (visible peek) */
+.mock-content {
+  position: absolute; bottom: 6px; right: 10px;
+  display: flex; flex-direction: column; gap: 3px; align-items: flex-end;
+}
+.mock-row { height: 4px; border-radius: 2px; opacity: .3; }
+/* Selected tick */
+.tcard-tick {
+  position: absolute; top: 8px; right: 8px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--green); color: #fff;
+  display: none; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(21,146,75,.4);
+}
+.tcard.selected .tcard-tick { display: flex; }
+/* Card body */
+.tcard-body { padding: 13px 14px 14px; }
+.tcard-top {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.tcard-emoji { font-size: 17px; flex-shrink: 0; }
+.tcard-label {
+  font-family: var(--font-ui);
+  font-weight: 600; font-size: 14px; letter-spacing: -.01em; color: var(--ink);
+}
+.tcard-desc {
+  font-size: 12.5px; color: var(--ink2); line-height: 1.45; margin-bottom: 9px;
+}
+.tcard-tags {
+  font-size: 11px; font-weight: 600; color: var(--ink2);
+  letter-spacing: .03em;
+}
+/* Hover accent line at bottom */
+.tcard::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent, #15924B);
+  transform: scaleX(0);
+  transition: transform .22s var(--ease);
+  transform-origin: left;
+}
+.tcard:hover::after, .tcard.selected::after { transform: scaleX(1); }
+
+/* ── Confirm drawer ── */
+.confirm-drawer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(11,12,16,.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--line);
+  transform: translateY(100%);
+  transition: transform .32s var(--ease);
+  padding: env(safe-area-inset-bottom, 0) 0 0;
+}
+.confirm-drawer.open { transform: translateY(0); }
+.confirm-inner {
+  max-width: 620px; margin: 0 auto;
+  padding: 20px 24px 28px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.confirm-header {
+  display: flex; align-items: center; gap: 12px;
+}
+.confirm-swatch {
+  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.confirm-info h3 {
+  font-family: var(--font-ui); font-weight: 600; font-size: 16px; margin-bottom: 2px;
+}
+.confirm-info p { font-size: 13px; color: var(--ink2); }
+.name-row {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.name-label {
+  font-size: 12.5px; font-weight: 600; color: var(--ink2); letter-spacing: .02em;
+}
+.name-input {
+  width: 100%;
+  background: rgba(255,255,255,.06);
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 15px; font-family: var(--font-body); color: var(--ink);
+  transition: border-color .15s;
+  outline: none;
+}
+.name-input::placeholder { color: rgba(255,255,255,.25); }
+.name-input:focus { border-color: var(--green); }
+.confirm-actions {
+  display: flex; gap: 10px; align-items: center;
+}
+.btn-go {
+  flex: 1;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 14px 20px;
+  font-family: var(--font-ui);
+  font-weight: 600; font-size: 15px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .15s, transform .15s;
+}
+.btn-go:hover { background: var(--green-dk); transform: translateY(-1px); }
+.btn-go:disabled { opacity: .5; cursor: default; transform: none; }
+.btn-go .spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+.btn-go.loading .spinner { display: block; }
+.btn-go.loading .go-label { display: none; }
+.btn-cancel {
+  background: transparent; border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: var(--r-sm); padding: 13px 16px;
+  color: var(--ink2); font-size: 14px; font-weight: 600;
+  transition: border-color .15s, color .15s;
+}
+.btn-cancel:hover { border-color: rgba(255,255,255,.3); color: var(--ink); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Toast ── */
+.toast-wrap {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 200; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.toast {
+  background: #1e2028; color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 24px; padding: 10px 18px;
+  font-size: 13.5px; font-weight: 600;
+  opacity: 0; transform: translateY(8px);
+  transition: .25s; pointer-events: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.err { background: #2a1418; border-color: #5a2428; color: #f87171; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">websites<span class="tld">.co.zw</span></div>
+  <div class="topbar-right">Already have a site? <a href="/dashboard/customer.html">Dashboard →</a></div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#15924B" stroke-width="1.5"/><path d="M4 6l1.5 1.5L8 4" stroke="#15924B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Step 1 of 3
+  </div>
+  <h1>Pick the design that fits <span>your business</span></h1>
+  <p>Each template is built for a specific industry. Pick one, add your details, and your site is ready to preview in minutes.</p>
+  <div class="step-row">
+    <div class="step active"><div class="step-num">1</div> Choose template</div>
+    <div class="step-sep">›</div>
+    <div class="step"><div class="step-num">2</div> Fill in your details</div>
+    <div class="step-sep">›</div>
+    <div class="step"><div class="step-num">3</div> Preview &amp; publish</div>
+  </div>
+</section>
+
+<div class="grid-wrap">
+  <div class="section-label">9 templates — pick the closest to your business</div>
+  <div class="grid" id="templateGrid"></div>
+</div>
+
+<!-- Confirm drawer — slides up when a template is selected -->
+<div class="confirm-drawer" id="confirmDrawer">
+  <div class="confirm-inner">
+    <div class="confirm-header">
+      <div class="confirm-swatch" id="confirmSwatch"></div>
+      <div class="confirm-info">
+        <h3 id="confirmLabel"></h3>
+        <p id="confirmDesc"></p>
+      </div>
+    </div>
+    <div class="name-row">
+      <span class="name-label">What's your business called?</span>
+      <input
+        class="name-input"
+        id="nameInput"
+        type="text"
+        placeholder="e.g. Elite Sports Institute"
+        maxlength="80"
+        autocomplete="organization"
+      >
+    </div>
+    <div class="confirm-actions">
+      <button class="btn-go" id="goBtn" onclick="startBuilding()" disabled>
+        <span class="go-label">Build my site →</span>
+        <div class="spinner"></div>
+      </button>
+      <button class="btn-cancel" onclick="clearSelection()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(function () {
+"use strict";
+
+var APP     = "https://app.websites.co.zw";
+var API     = APP + "/api";
+var DASH    = APP + "/dashboard/customer.html";
+
+// ── Template data ──────────────────────────────────────────────────────────
+const TEMPLATES = [
+  { id:"bold-retail",        label:"General Business",      emoji:"🏢", desc:"Professional site for any business — services, staff, gallery, contact", goodFor:"Retail · Services · Any SME",                bg:"#ffffff", surface:"#f6f6f4", ink:"#1a1a1a", accent:"#1a1a1a", onAccent:"#ffffff", font:"'Space Grotesk', sans-serif",      dark:false },
+  { id:"grill-house",        label:"Restaurant & Food",     emoji:"🍽️", desc:"Warm, appetising layout with menu sections and reservation CTA",          goodFor:"Restaurant · Café · Grill · Takeaway",       bg:"#FBF4E9", surface:"#fff",     ink:"#2A211A", accent:"#D2541F", onAccent:"#fff",     font:"'Playfair Display', serif",        dark:false },
+  { id:"beauty-salon",       label:"Beauty & Wellness",     emoji:"💅", desc:"Elegant layout with service price list, team profiles, and booking CTA",  goodFor:"Salon · Spa · Clinic · Barber",              bg:"#ffffff", surface:"#F7ECEC", ink:"#2E2329", accent:"#B08D57", onAccent:"#fff",     font:"'Cormorant Garamond', serif",     dark:false },
+  { id:"school-institution", label:"School & Academy",      emoji:"🏫", desc:"Credible, structured layout with programmes, stats, and leadership",       goodFor:"School · Academy · Church · NGO",            bg:"#ffffff", surface:"#EAF1F9", ink:"#1C2733", accent:"#C99A2E", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
+  { id:"advisory-firm",      label:"Consultant & Legal",    emoji:"💼", desc:"Authoritative, minimal design for professional services and advisory",     goodFor:"Consultant · Law · Accounting · Finance",    bg:"#ffffff", surface:"#F4F6FA", ink:"#1A2236", accent:"#C08A2D", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
+  { id:"property-estate",    label:"Property & Real Estate",emoji:"🏠", desc:"Gallery-forward layout built to showcase listings and drive enquiries",    goodFor:"Real Estate · Architecture · Construction",  bg:"#F6F1E7", surface:"#fff",     ink:"#1E2A24", accent:"#B0852F", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
+  { id:"boutique-fashion",   label:"Fashion & Boutique",    emoji:"👗", desc:"Dark, editorial look with a product catalogue and WhatsApp shop link",     goodFor:"Boutique · Fashion · Cosmetics · Gifts",     bg:"#0e0b0d", surface:"#1a1318", ink:"#f7f0f2", accent:"#e8a0b0", onAccent:"#0e0b0d", font:"'Cormorant Garamond', serif",     dark:true  },
+  { id:"grocery-fmcg",       label:"Grocery & Spaza",       emoji:"🛒", desc:"Clean, bright product catalogue with WhatsApp order button built in",      goodFor:"Grocery · Supermarket · Spaza · FMCG",      bg:"#ffffff", surface:"#f4faf5", ink:"#1a2b1e", accent:"#1e8c3a", onAccent:"#ffffff", font:"'Space Grotesk', sans-serif",      dark:false },
+  { id:"retail-hardware",    label:"Hardware & Retail",     emoji:"🔧", desc:"Bold, catalogue-style layout with product grid, services, and quote CTA",  goodFor:"Hardware · Electronics · Tools · General Retail", bg:"#f7f8fa", surface:"#ffffff", ink:"#1c2130", accent:"#1a56db", onAccent:"#ffffff", font:"'DM Mono', monospace",            dark:false },
+];
+
+var selected = null;
+
+// ── Auth guard ─────────────────────────────────────────────────────────────
+// If user isn't logged in, send to dashboard (which redirects to login)
+var token = localStorage.getItem("wcz_token");
+if (!token) {
+  location.replace(DASH + "?next=" + encodeURIComponent(location.href));
+}
+
+// ── Render grid ────────────────────────────────────────────────────────────
+function renderGrid() {
+  var grid = document.getElementById("templateGrid");
+  grid.innerHTML = "";
+  TEMPLATES.forEach(function (t) {
+    var card = document.createElement("div");
+    card.className = "tcard";
+    card.dataset.id = t.id;
+    card.style.setProperty("--accent", t.accent);
+
+    // Determine contrasting colours for the mock UI elements
+    var mockBtnBg   = t.accent;
+    var mockLogoBg  = t.dark ? "rgba(255,255,255,.7)" : t.ink;
+    var mockLinkBg  = t.dark ? "rgba(255,255,255,.4)" : "rgba(0,0,0,.25)";
+    var mockRowBg   = t.dark ? "rgba(255,255,255,.6)" : t.ink;
+
+    card.innerHTML = `
+      <div class="tcard-preview" style="background:${t.bg}">
+        <div class="mock-nav" style="background:${t.dark ? 'rgba(0,0,0,.4)' : 'rgba(255,255,255,.7)'}">
+          <div class="mock-logo" style="background:${mockLogoBg}"></div>
+          <div class="mock-links">
+            <div class="mock-link" style="background:${mockLinkBg}"></div>
+            <div class="mock-link" style="background:${mockLinkBg}"></div>
+            <div class="mock-link" style="background:${mockLinkBg}"></div>
+          </div>
+          <div class="mock-btn" style="background:${mockBtnBg}"></div>
+        </div>
+        <div class="mock-hero" style="background:linear-gradient(to bottom, ${t.bg}00, ${t.bg}dd)">
+          <div style="font-family:${t.font};color:${t.ink};font-weight:700;font-size:13px;margin-bottom:4px;line-height:1.2;opacity:.9">
+            ${t.label}
+          </div>
+          <div style="font-size:9px;color:${t.ink};opacity:.55;margin-bottom:8px;font-family:system-ui">Your tagline goes here</div>
+          <div style="display:inline-flex;align-items:center;background:${t.accent};color:${t.onAccent};border-radius:5px;padding:4px 10px;font-size:9px;font-weight:700;font-family:system-ui">
+            Contact us
+          </div>
+        </div>
+        <div class="tcard-tick">✓</div>
+      </div>
+      <div class="tcard-body">
+        <div class="tcard-top">
+          <span class="tcard-emoji">${t.emoji}</span>
+          <span class="tcard-label">${t.label}</span>
+        </div>
+        <div class="tcard-desc">${t.desc}</div>
+        <div class="tcard-tags">${t.goodFor}</div>
+      </div>
+    `;
+
+    card.addEventListener("click", function () { selectTemplate(t); });
+    grid.appendChild(card);
+  });
+}
+
+// ── Select ─────────────────────────────────────────────────────────────────
+function selectTemplate(t) {
+  // Deselect previous
+  document.querySelectorAll(".tcard").forEach(function (c) {
+    c.classList.remove("selected");
+  });
+  // Mark selected
+  var card = document.querySelector('[data-id="' + t.id + '"]');
+  if (card) card.classList.add("selected");
+
+  selected = t;
+
+  // Populate confirm drawer
+  var swatch = document.getElementById("confirmSwatch");
+  swatch.style.background = t.bg;
+  swatch.style.border = "1.5px solid rgba(255,255,255,.12)";
+  swatch.textContent = t.emoji;
+
+  document.getElementById("confirmLabel").textContent = t.label;
+  document.getElementById("confirmDesc").textContent  = t.desc;
+
+  // Open drawer
+  document.getElementById("confirmDrawer").classList.add("open");
+
+  // Focus name input
+  var inp = document.getElementById("nameInput");
+  setTimeout(function () { inp.focus(); }, 300);
+
+  // Enable go button when name is filled
+  validateGoBtn();
+
+  // Scroll card into view on mobile
+  if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function clearSelection() {
+  selected = null;
+  document.querySelectorAll(".tcard").forEach(function (c) {
+    c.classList.remove("selected");
+  });
+  document.getElementById("confirmDrawer").classList.remove("open");
+  document.getElementById("nameInput").value = "";
+  document.getElementById("goBtn").disabled = true;
+}
+
+// ── Name input ─────────────────────────────────────────────────────────────
+document.getElementById("nameInput").addEventListener("input", validateGoBtn);
+document.getElementById("nameInput").addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && !document.getElementById("goBtn").disabled) {
+    startBuilding();
+  }
+});
+
+function validateGoBtn() {
+  var name = document.getElementById("nameInput").value.trim();
+  document.getElementById("goBtn").disabled = !name || !selected;
+}
+
+// ── Create site + redirect ─────────────────────────────────────────────────
+window.startBuilding = async function () {
+  if (!selected) return;
+  var name = document.getElementById("nameInput").value.trim();
+  if (!name) { document.getElementById("nameInput").focus(); return; }
+
+  var btn = document.getElementById("goBtn");
+  btn.classList.add("loading");
+  btn.disabled = true;
+
+  try {
+    var resp = await fetch(API + "/sites", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + (localStorage.getItem("wcz_token") || ""),
+      },
+      body: JSON.stringify({
+        site_name:   name,
+        template_id: selected.id,
+      }),
+    });
+
+    if (resp.status === 401) {
+      location.replace(DASH + "?next=" + encodeURIComponent(location.href));
+      return;
+    }
+
+    var data = {};
+    try { data = await resp.json(); } catch {}
+
+    if (!resp.ok || !data.site) {
+      if (data.error === "one_site_limit") {
+        toast("You already have an active site. Go to your dashboard to edit it.", "err");
+        setTimeout(function () { location.href = DASH; }, 2500);
+      } else {
+        toast("Couldn't create your site — please try again", "err");
+      }
+      btn.classList.remove("loading");
+      btn.disabled = false;
+      return;
+    }
+
+    // Success — go straight to the editor with the new site
+    location.href = APP + "/editor/?site=" + encodeURIComponent(data.site.id);
+
+  } catch (e) {
+    toast("Network error — check your connection and try again", "err");
+    btn.classList.remove("loading");
+    btn.disabled = false;
+  }
+};
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type) {
+  var wrap = document.getElementById("toastWrap");
+  var el   = document.createElement("div");
+  el.className = "toast" + (type ? " " + type : "");
+  el.textContent = msg;
+  wrap.appendChild(el);
+  requestAnimationFrame(function () { el.classList.add("show"); });
+  setTimeout(function () {
+    el.classList.remove("show");
+    setTimeout(function () { el.remove(); }, 300);
+  }, 4000);
+}
+
+// ── Close drawer on outside click ─────────────────────────────────────────
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") clearSelection();
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────
+renderGrid();
+
+})();
+</script>
+</body>
+</html>
