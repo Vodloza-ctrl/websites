@@ -144,23 +144,9 @@ if (location.hostname !== 'app.websites.co.zw') {
   function checkoutUrl(s,purpose){ return APP+"/checkout?site="+s.id+(purpose?"&purpose="+purpose:""); }
 
   // Creates a draft site via API then opens the editor with the new site id
-  window.createNewSite = async function(btnEl){
-    if(btnEl){ btnEl.textContent="Creating…"; btnEl.disabled=true; }
-    try {
-      var r = await api(API+"/sites", {
-        method:"POST",
-        body: JSON.stringify({ site_name:"My new site", template_id:"bold-retail" })
-      });
-      if(!r.ok || !r.data.site){
-        if(btnEl){ btnEl.textContent="New site"; btnEl.disabled=false; }
-        alert("Couldn't create site — please try again.");
-        return;
-      }
-      location.href = APP+"/editor/?site="+r.data.site.id;
-    } catch(e){
-      if(btnEl){ btnEl.textContent="New site"; btnEl.disabled=false; }
-      alert("Network error — please try again.");
-    }
+  // Sends customer to template picker — they choose a template and name their site there
+  window.createNewSite = function(){
+    location.href = APP + "/new/";
   }
 
   function statusInfo(s){
@@ -325,7 +311,7 @@ if (location.hostname !== 'app.websites.co.zw') {
       '</div></div>'+
       '<div class="wrap">'+
         '<div class="head"><div><h1>Your sites</h1><div class="sub" id="subcount">Loading…</div></div>'+
-          '<button class="btn btn-gold" onclick="createNewSite(this)">New site</button></div>'+
+          '<button class="btn btn-gold" onclick="createNewSite()">New site</button></div>'+
         '<div class="grid" id="grid">'+
           '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>'+
         '</div>'+
@@ -349,7 +335,7 @@ if (location.hostname !== 'app.websites.co.zw') {
         '<div class="empty">'+
           '<h2>Build your first website</h2>'+
           '<p>Create a site, generate it with AI, preview it, then publish for $30/year.</p>'+
-          '<button class="btn btn-gold" onclick="createNewSite(this)">Create a site</button>'+
+          '<button class="btn btn-gold" onclick="createNewSite()">Create a site</button>'+
         '</div>'
       ));
       return;
