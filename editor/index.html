@@ -667,7 +667,7 @@ img{display:block;max-width:100%}
 // API lives on app.websites.co.zw; auth uses Bearer token from localStorage
 // (same token the dashboard stores after login)
 var API_BASE = "https://app.websites.co.zw";
-var DASH_URL = "https://app.websites.co.zw/dashboard/";
+var DASH_URL = "https://app.websites.co.zw/dashboard/customer.html";
 
 var siteId = new URLSearchParams(location.search).get("site");
 var state = { site:null, content:null, dirty:false, products:[], images:{}, gallery:[], previewOpen:false };
@@ -691,7 +691,14 @@ async function api(path, opts){
 // ── Init ──────────────────────────────────────────────────────────────────────
 (async function init(){
   if(!getToken()){ location.href = DASH_URL; return; }
-  if(!siteId){ toast("No site selected","err"); return; }
+  if(!siteId){
+    // No site param — show a "create new site" prompt rather than a dead toast
+    document.getElementById("topSiteName").textContent = "New site";
+    document.getElementById("saveBtn").style.display = "none";
+    toast("Select a site from your dashboard, or create one below","err");
+    setTimeout(function(){ location.href = DASH_URL; }, 3000);
+    return;
+  }
 
   var r = await api("/api/sites/"+encodeURIComponent(siteId));
   if(!r.ok||!r.data.site){ toast("Site not found","err"); return; }
