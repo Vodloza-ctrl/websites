@@ -718,7 +718,7 @@ function renderTemplateAdmin() {
       +'<div class="tmpl-url">'+(cfg.previewUrl ? '🖼 Preview image set' : '⚠ No preview image')+'</div>'
       +'<div class="tmpl-url">'+(cfg.demoUrl ? '🔗 <a href="'+esc(cfg.demoUrl)+'" target="_blank">'+esc(cfg.demoUrl)+'</a>' : '⚠ No demo URL')+'</div>'
       +'<div class="tmpl-actions" style="margin-top:10px">'
-      +'<button class="btn btn-ghost btn-sm" onclick="openEditTemplate('+JSON.stringify(t.id)+')">Edit</button>'
+      +'<button class="btn btn-ghost btn-sm" onclick="openEditTemplate(this.dataset.id)" data-id="'+t.id+'">Edit</button>'
       +(cfg.demoUrl ? '<a class="btn btn-ghost btn-sm" href="'+esc(cfg.demoUrl)+'" target="_blank">View demo</a>' : '')
       +'</div>'
       +'</div>'
