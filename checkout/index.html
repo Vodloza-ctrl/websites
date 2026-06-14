@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publish your site — websites.co.zw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --surface: #eef0f3;
+  --card:    #ffffff;
+  --line:    #e3e5ea;
+  --ink:     #1a1b22;
+  --ink2:    #4a4d59;
+  --muted:   #868a96;
+  --gold:    #a87d1a;
+  --gold-dk: #876312;
+  --gold-bg: #f4ecd6;
+  --live:    #1d7a4d;
+  --live-bg: #e3f2ea;
+  --err:     #b23b30;
+  --err-bg:  #f7e3e0;
+  --r:       14px;
+  --r-sm:    9px;
+  --shadow:  0 1px 2px rgba(20,22,30,.04), 0 8px 24px rgba(20,22,30,.06);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--gold-dk); }
+button { font-family: inherit; cursor: pointer; }
+
+/* ── Top bar ── */
+.bar {
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  padding: 15px 22px;
+  display: flex; align-items: center; gap: 12px;
+}
+.logo {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700; font-size: 18px; letter-spacing: -.01em;
+}
+.logo .tld { color: var(--gold); }
+.bar-sep { color: var(--line); }
+.bar-label { font-size: 14px; color: var(--ink2); font-weight: 500; }
+
+/* ── Layout ── */
+.wrap {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 36px 20px 80px;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-head {
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.card-head h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 20px; font-weight: 600; letter-spacing: -.02em;
+  margin-bottom: 3px;
+}
+.card-head .sub { font-size: 13.5px; color: var(--muted); }
+.card-body { padding: 22px 24px; }
+
+/* ── Receipt rows ── */
+.receipt { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; }
+.receipt-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.receipt-row:last-child { border-bottom: none; }
+.receipt-row.total {
+  padding-top: 16px;
+  border-top: 2px solid var(--ink);
+  border-bottom: none;
+  margin-top: 4px;
+}
+.receipt-key { font-size: 13.5px; color: var(--ink2); }
+.receipt-key strong { display: block; font-size: 14.5px; color: var(--ink); font-weight: 600; margin-bottom: 1px; }
+.receipt-val {
+  font-size: 14px; font-weight: 600; color: var(--ink);
+  white-space: nowrap; text-align: right;
+}
+.receipt-row.total .receipt-key { font-size: 15px; font-weight: 700; color: var(--ink); }
+.receipt-row.total .receipt-val { font-size: 20px; font-weight: 700; color: var(--ink); }
+
+/* ── Includes list ── */
+.includes {
+  background: var(--gold-bg);
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.inc-row {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13px; color: var(--ink2);
+}
+.inc-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--gold); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; flex-shrink: 0;
+}
+
+/* ── Currency picker ── */
+.field-label {
+  font-size: 12.5px; font-weight: 600; color: var(--ink2);
+  letter-spacing: .02em; margin-bottom: 8px;
+}
+.seg {
+  display: flex; border: 1px solid var(--line);
+  border-radius: var(--r-sm); overflow: hidden; margin-bottom: 18px;
+}
+.seg button {
+  flex: 1; border: none; background: var(--card);
+  padding: 11px 10px; font-size: 14px; font-weight: 600;
+  color: var(--ink2); transition: background .12s, color .12s;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.seg button small { font-size: 11px; font-weight: 500; color: var(--muted); }
+.seg button[aria-pressed="true"] {
+  background: var(--ink); color: #fff;
+}
+.seg button[aria-pressed="true"] small { color: rgba(255,255,255,.6); }
+
+/* ── Pay button ── */
+.btn-pay {
+  width: 100%;
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 15px 20px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: background .15s, transform .12s;
+}
+.btn-pay:hover:not(:disabled) { background: var(--gold-dk); transform: translateY(-1px); }
+.btn-pay:disabled { opacity: .55; cursor: default; transform: none; }
+.spinner {
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+.btn-pay.loading .spinner { display: block; }
+.btn-pay.loading .pay-label { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.security-note {
+  text-align: center; font-size: 12px; color: var(--muted);
+  margin-top: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+
+/* ── Error / message box ── */
+.msg {
+  border-radius: var(--r-sm); padding: 12px 14px;
+  font-size: 13.5px; margin-bottom: 16px; display: none;
+  line-height: 1.45;
+}
+.msg.err  { display: block; background: var(--err-bg);  color: var(--err);  border: 1px solid #f3c4c0; }
+.msg.info { display: block; background: var(--gold-bg); color: var(--gold-dk); border: 1px solid #e8d5a8; }
+
+/* ── Polling state ── */
+.polling-card {
+  text-align: center;
+  padding: 40px 24px;
+}
+.polling-spinner {
+  width: 44px; height: 44px;
+  border: 4px solid var(--line);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .9s linear infinite;
+  margin: 0 auto 20px;
+}
+.polling-card h2 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 18px; font-weight: 600; margin-bottom: 6px;
+}
+.polling-card p { font-size: 14px; color: var(--muted); margin-bottom: 18px; }
+.btn-ghost {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r-sm); padding: 10px 18px;
+  font-size: 13.5px; font-weight: 600; color: var(--ink2);
+  transition: border-color .12s, color .12s;
+}
+.btn-ghost:hover { border-color: var(--ink2); color: var(--ink); }
+
+/* ── Success state ── */
+.success-card {
+  text-align: center;
+  padding: 44px 24px 36px;
+}
+.success-icon {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--live-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin: 0 auto 20px;
+}
+.success-card h2 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 22px; font-weight: 700; letter-spacing: -.02em;
+  margin-bottom: 8px; color: var(--live);
+}
+.success-card p { font-size: 14px; color: var(--ink2); margin-bottom: 6px; }
+.url-box {
+  background: var(--live-bg);
+  border-radius: var(--r-sm);
+  padding: 12px 16px;
+  font-size: 14px; font-weight: 600; color: var(--live);
+  margin: 18px 0 24px;
+  word-break: break-all;
+}
+.btn-dash {
+  background: var(--ink); color: #fff;
+  border: none; border-radius: var(--r-sm);
+  padding: 13px 24px;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600; font-size: 15px;
+  transition: background .12s;
+}
+.btn-dash:hover { background: #2d2f3a; }
+
+/* ── Failed state ── */
+.failed-card {
+  text-align: center;
+  padding: 40px 24px 32px;
+}
+.failed-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--err-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin: 0 auto 18px;
+}
+.failed-card h2 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 20px; font-weight: 600; margin-bottom: 6px; color: var(--err);
+}
+.failed-card p { font-size: 14px; color: var(--ink2); margin-bottom: 20px; }
+
+/* ── Skeleton ── */
+.skeleton {
+  height: 320px; border-radius: var(--r);
+  background: linear-gradient(90deg, #f0f1f4, #e8e9ed, #f0f1f4);
+  background-size: 200% 100%;
+  animation: sh 1.2s infinite;
+  border: 1px solid var(--line);
+}
+@keyframes sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+@media (max-width: 480px) {
+  .wrap { padding: 20px 14px 60px; }
+  .card-head, .card-body { padding: 18px 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span class="logo">websites<span class="tld">.co.zw</span></span>
+  <span class="bar-sep">›</span>
+  <span class="bar-label" id="barLabel">Checkout</span>
+</div>
+
+<div class="wrap">
+  <div id="app"><div class="skeleton"></div></div>
+</div>
+
+<script>
+(function () {
+"use strict";
+
+var APP        = "https://app.websites.co.zw";
+var DASH       = APP + "/dashboard/";
+var API_DASH   = APP + "/api";           // dashboard worker (sites)
+var API_PAY    = "https://api.websites.co.zw"; // payments worker
+
+var params  = new URLSearchParams(location.search);
+var siteId  = params.get("site") || "";
+var purpose = params.get("purpose") === "renewal" ? "renewal" : "publish";
+var ref     = params.get("ref") || "";   // set by Paynow on return
+
+var token = localStorage.getItem("wcz_token");
+if (!token) {
+  location.replace(DASH + "?next=" + encodeURIComponent(location.href));
+}
+
+var USD_PRICE = { starter: 30, pro: 60 };
+var currency  = "USD";
+var site      = null;
+
+var app = document.getElementById("app");
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+(async function init() {
+  // Returning from Paynow with a reference → show polling screen
+  if (ref) return startPolling(ref);
+
+  if (!siteId) return showError("No site specified. <a href='" + DASH + "'>Go to dashboard →</a>");
+
+  // Load site
+  var r;
+  try {
+    r = await apiFetch(API_DASH + "/sites/" + siteId);
+  } catch (e) {
+    return showError("Couldn't load your site. Check your connection and refresh.");
+  }
+  if (r.status === 401) { location.replace(DASH + "?next=" + encodeURIComponent(location.href)); return; }
+  if (!r.data.site)     return showError("Site not found. <a href='" + DASH + "'>Go to dashboard →</a>");
+
+  site = r.data.site;
+
+  // If already published and purpose is publish (not renewal), redirect to dashboard
+  if (site.status === "published" && purpose === "publish") {
+    location.replace(DASH);
+    return;
+  }
+
+  document.getElementById("barLabel").textContent =
+    purpose === "renewal" ? "Renew your site" : "Publish your site";
+
+  renderCheckout();
+})();
+
+// ── Render checkout form ──────────────────────────────────────────────────
+function renderCheckout() {
+  var plan       = site.plan === "pro" ? "pro" : "starter";
+  var planLabel  = plan === "pro" ? "Pro" : "Starter";
+  var usdAmount  = USD_PRICE[plan];
+  var siteUrl    = site.draft_subdomain
+    ? site.draft_subdomain + ".websites.co.zw"
+    : site.id + ".websites.co.zw";
+
+  var purposeLabel = purpose === "renewal" ? "Annual renewal" : "Annual subscription";
+
+  app.innerHTML = "";
+  var card = make(
+    '<div class="card">' +
+      '<div class="card-head">' +
+        '<h1>' + esc(purpose === "renewal" ? "Renew your site" : "Publish your site") + '</h1>' +
+        '<div class="sub">' + esc(site.site_name || "Your site") + ' &middot; ' + esc(siteUrl) + '</div>' +
+      '</div>' +
+      '<div class="card-body">' +
+
+        // Receipt
+        '<div class="receipt">' +
+          '<div class="receipt-row">' +
+            '<div class="receipt-key"><strong>' + esc(planLabel) + ' Plan</strong>' + esc(purposeLabel) + '</div>' +
+            '<div class="receipt-val" id="amountDisplay">$' + usdAmount + ' USD</div>' +
+          '</div>' +
+          '<div class="receipt-row">' +
+            '<div class="receipt-key"><strong>Your address</strong>.co.zw subdomain included</div>' +
+            '<div class="receipt-val">' + esc(siteUrl) + '</div>' +
+          '</div>' +
+          '<div class="receipt-row total">' +
+            '<div class="receipt-key">Total due today</div>' +
+            '<div class="receipt-val" id="totalDisplay">$' + usdAmount + '</div>' +
+          '</div>' +
+        '</div>' +
+
+        // Includes
+        '<div class="includes">' +
+          inc("12 months online") +
+          inc("Free .co.zw subdomain") +
+          inc("AI content generation (5 uses)") +
+          inc("Unlimited edits & saves") +
+          inc("Mobile-optimised site") +
+        '</div>' +
+
+        // Currency picker
+        '<div class="field-label">Pay with</div>' +
+        '<div class="seg" role="group" id="currencyPicker">' +
+          '<button type="button" data-cur="USD" aria-pressed="true">USD<small>US Dollars</small></button>' +
+          '<button type="button" data-cur="ZIG" aria-pressed="false">ZiG<small>Zimbabwe Gold</small></button>' +
+        '</div>' +
+
+        // Error box
+        '<div class="msg" id="errMsg"></div>' +
+
+        // Pay button
+        '<button class="btn-pay" id="payBtn" onclick="startPayment()">' +
+          '<span class="pay-label" id="payLabel">Pay & publish →</span>' +
+          '<div class="spinner"></div>' +
+        '</button>' +
+        '<div class="security-note">🔒 Secured by Paynow · Annual billing · Cancel anytime</div>' +
+      '</div>' +
+    '</div>'
+  );
+  app.appendChild(card);
+
+  // Currency toggle
+  document.querySelectorAll("#currencyPicker button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      currency = btn.dataset.cur;
+      document.querySelectorAll("#currencyPicker button").forEach(function (b) {
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
+      updateAmountDisplay();
+    });
+  });
+
+  updateAmountDisplay();
+}
+
+function inc(text) {
+  return '<div class="inc-row"><div class="inc-check">✓</div><span>' + esc(text) + '</span></div>';
+}
+
+function updateAmountDisplay() {
+  if (!site) return;
+  var plan      = site.plan === "pro" ? "pro" : "starter";
+  var usdAmount = USD_PRICE[plan];
+  var disp      = document.getElementById("amountDisplay");
+  var total     = document.getElementById("totalDisplay");
+  var label     = document.getElementById("payLabel");
+  if (currency === "ZIG") {
+    if (disp)  disp.textContent  = "ZiG (rate at checkout)";
+    if (total) total.textContent = "ZiG equivalent";
+    if (label) label.textContent = "Pay in ZiG & publish →";
+  } else {
+    if (disp)  disp.textContent  = "$" + usdAmount + " USD";
+    if (total) total.textContent = "$" + usdAmount;
+    if (label) label.textContent = "Pay $" + usdAmount + " & publish →";
+  }
+}
+
+// ── Initiate payment ───────────────────────────────────────────────────────
+window.startPayment = async function () {
+  var btn = document.getElementById("payBtn");
+  var err = document.getElementById("errMsg");
+  if (err) { err.className = "msg"; err.innerHTML = ""; }
+  btn.classList.add("loading");
+  btn.disabled = true;
+
+  var plan      = site.plan === "pro" ? "pro" : "starter";
+  var usdAmount = USD_PRICE[plan];
+  var body      = { site_id: siteId, currency: currency, purpose: purpose };
+  if (currency === "ZIG") body.amount = Math.round(usdAmount * 3600); // approx ZiG rate — adjust or fetch live
+
+  var r;
+  try {
+    r = await apiFetch(API_PAY + "/pay", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(body),
+    }, /*useAuth=*/false); // payments worker doesn't require Bearer — it reads site from DB
+  } catch (e) {
+    showFormError("Network error. Check your connection and try again.");
+    btn.classList.remove("loading"); btn.disabled = false;
+    return;
+  }
+
+  if (!r.data.redirect_url) {
+    var detail = r.data.detail || r.data.error || "Payment could not be initiated.";
+    showFormError(detail === "currency_unavailable"
+      ? "That currency isn't available yet. Please choose USD."
+      : "Couldn't start payment: " + detail + ". Try again.");
+    btn.classList.remove("loading"); btn.disabled = false;
+    return;
+  }
+
+  // Store ref in sessionStorage so polling screen can pick it up on return
+  sessionStorage.setItem("wcz_pay_ref", r.data.reference);
+
+  // Go to Paynow — Paynow will redirect back to this page with ?ref=<reference>
+  location.href = r.data.redirect_url;
+};
+
+// ── Polling screen (returned from Paynow) ─────────────────────────────────
+function startPolling(reference) {
+  document.getElementById("barLabel").textContent = "Confirming payment…";
+  app.innerHTML = "";
+  var card = make(
+    '<div class="card">' +
+      '<div class="polling-card">' +
+        '<div class="polling-spinner"></div>' +
+        '<h2>Confirming your payment…</h2>' +
+        '<p>This usually takes under 30 seconds.<br>Don\'t close this tab.</p>' +
+        '<button class="btn-ghost" id="manualCheck" style="display:none" onclick="pollNow(\'' + esc(reference) + '\')">Check again</button>' +
+      '</div>' +
+    '</div>'
+  );
+  app.appendChild(card);
+
+  var attempts = 0;
+  var maxAttempts = 12;
+  var interval = setInterval(async function () {
+    attempts++;
+    var result = await pollStatus(reference);
+    if (result === "paid") {
+      clearInterval(interval);
+      return showSuccess(reference);
+    }
+    if (result === "cancelled" || result === "failed") {
+      clearInterval(interval);
+      return showFailed(reference);
+    }
+    if (attempts >= maxAttempts) {
+      clearInterval(interval);
+      var btn = document.getElementById("manualCheck");
+      if (btn) {
+        btn.style.display = "inline-flex";
+        var p = btn.previousElementSibling;
+        if (p) p.textContent = "Taking longer than expected. Click below to check again.";
+      }
+    }
+  }, 3000);
+}
+
+window.pollNow = async function (reference) {
+  var btn = document.getElementById("manualCheck");
+  if (btn) { btn.disabled = true; btn.textContent = "Checking…"; }
+  var result = await pollStatus(reference);
+  if (result === "paid")   return showSuccess(reference);
+  if (result === "cancelled" || result === "failed") return showFailed(reference);
+  if (btn) { btn.disabled = false; btn.textContent = "Check again"; }
+};
+
+async function pollStatus(reference) {
+  try {
+    var r = await apiFetch(API_PAY + "/pay/status?ref=" + encodeURIComponent(reference), {}, false);
+    return r.data.status || "pending";
+  } catch (e) {
+    return "pending";
+  }
+}
+
+// ── Success screen ─────────────────────────────────────────────────────────
+async function showSuccess(reference) {
+  document.getElementById("barLabel").textContent = "Published!";
+
+  // Reload site to get updated subdomain
+  var siteUrl = "";
+  try {
+    var r = await apiFetch(API_DASH + "/sites/" + siteId);
+    if (r.data.site) {
+      var s = r.data.site;
+      siteUrl = s.custom_domain && s.custom_domain_status === "active"
+        ? "https://" + s.custom_domain
+        : "https://" + (s.draft_subdomain || s.id) + ".websites.co.zw";
+    }
+  } catch (e) {}
+
+  app.innerHTML = "";
+  var isRenewal = purpose === "renewal";
+  app.appendChild(make(
+    '<div class="card">' +
+      '<div class="success-card">' +
+        '<div class="success-icon">✓</div>' +
+        '<h2>' + (isRenewal ? "Renewed!" : "You\'re live!") + '</h2>' +
+        '<p>' + (isRenewal ? "Your site subscription has been renewed for another year." : "Your site is now published and live on the web.") + '</p>' +
+        (siteUrl ? '<div class="url-box"><a href="' + esc(siteUrl) + '" target="_blank" rel="noopener">' + esc(siteUrl) + '</a></div>' : '') +
+        '<p style="font-size:13px;color:var(--muted);margin-bottom:20px">Share this link with your customers.</p>' +
+        '<button class="btn-dash" onclick="location.href=\'' + DASH + '\'">Go to dashboard →</button>' +
+      '</div>' +
+    '</div>'
+  ));
+}
+
+// ── Failed screen ──────────────────────────────────────────────────────────
+function showFailed(reference) {
+  document.getElementById("barLabel").textContent = "Payment failed";
+  app.innerHTML = "";
+  app.appendChild(make(
+    '<div class="card">' +
+      '<div class="failed-card">' +
+        '<div class="failed-icon">✕</div>' +
+        '<h2>Payment not completed</h2>' +
+        '<p>Your payment was cancelled or failed. Your site has been saved as a draft — nothing was lost.</p>' +
+        '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
+          '<button class="btn-pay" style="max-width:200px" onclick="location.href=location.pathname+\'?site=' + esc(siteId) + '&purpose=' + esc(purpose) + '\'">Try again</button>' +
+          '<button class="btn-ghost" onclick="location.href=\'' + DASH + '\'">Dashboard</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  ));
+}
+
+// ── Generic error ─────────────────────────────────────────────────────────
+function showError(html) {
+  app.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;padding:40px 24px">' +
+    '<p style="color:var(--err);font-size:15px">' + html + '</p>' +
+    '<button class="btn-ghost" style="margin-top:16px" onclick="location.href=\'' + DASH + '\'">Go to dashboard</button>' +
+    '</div></div>';
+}
+
+function showFormError(msg) {
+  var err = document.getElementById("errMsg");
+  if (!err) return;
+  err.className = "msg err";
+  err.textContent = msg;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+async function apiFetch(url, opts, useAuth) {
+  var headers = Object.assign({ "Content-Type": "application/json" }, (opts && opts.headers) || {});
+  if (useAuth !== false) {
+    var t = localStorage.getItem("wcz_token");
+    if (t) headers["Authorization"] = "Bearer " + t;
+  }
+  var resp = await fetch(url, Object.assign({}, opts || {}, { headers: headers }));
+  var data = {};
+  try { data = await resp.json(); } catch (e) {}
+  return { status: resp.status, ok: resp.ok, data: data };
+}
+
+function make(html) {
+  var t = document.createElement("template");
+  t.innerHTML = html.trim();
+  return t.content.firstChild;
+}
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+})();
+</script>
+</body>
+</html>
