@@ -144,7 +144,7 @@ if (location.hostname !== 'app.websites.co.zw') {
   function checkoutUrl(s,purpose){ return APP+"/checkout?site="+s.id+(purpose?"&purpose="+purpose:""); }
 
   // Creates a draft site via API then opens the editor with the new site id
-  async function createNewSite(btnEl){
+  window.createNewSite = async function(btnEl){
     if(btnEl){ btnEl.textContent="Creating…"; btnEl.disabled=true; }
     try {
       var r = await api(API+"/sites", {
