@@ -1243,7 +1243,7 @@ function buildSectionsList(){
     var isActive=activeKeys.indexOf(key)>-1;
     var isRequired=REQUIRED_SECTIONS.indexOf(key)>-1;
     return '<div class="sec-row'+(isActive?" active":"")+'\" data-seckey="'+key+'">'
-      +'<label class="sec-toggle" title="'+(isRequired?"Required":"'')+'">'
+      +'<label class="sec-toggle" title="'+(isRequired?"Required":"")+'">'
       +'<input type="checkbox"'+(isActive?" checked":"")+(isRequired?" disabled":"")+' onchange="toggleSection(\''+key+'\',this.checked)">'
       +'<span class="sec-slider"></span></label>'
       +'<span class="sec-label">'+sec.label+'</span>'
