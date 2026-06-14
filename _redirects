@@ -3,3 +3,5 @@
 /edit         /editor/                   301
 /new              /new/index.html           200
 /new/             /new/index.html           200
+/terms    /terms/index.html    200
+/terms/   /terms/index.html    200
