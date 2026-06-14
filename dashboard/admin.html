@@ -394,10 +394,24 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 "use strict";
 
 // ── Config ───────────────────────────────────────────────────────────────────
-// Admin secret is stored in localStorage after login — set it here or prompt
+var APP        = "https://app.websites.co.zw";
+var API        = APP + "/api";
+var ADMIN_API  = APP + "/api/admin";
+
+// Admin secret — set in Worker secrets as ADMIN_SECRET.
+// Store your copy here in localStorage: localStorage.setItem("wcz_admin_secret","your-secret")
 var ADMIN_SECRET = localStorage.getItem("wcz_admin_secret") || "";
-var API          = "https://app.websites.co.zw/api";
-var APP          = "https://app.websites.co.zw";
+if (!ADMIN_SECRET) {
+  var entered = prompt("Enter admin secret (set in Cloudflare Worker secrets as ADMIN_SECRET):");
+  if (entered) { localStorage.setItem("wcz_admin_secret", entered); ADMIN_SECRET = entered; }
+}
+
+function adminHeaders() {
+  return {
+    "Content-Type":  "application/json",
+    "Authorization": "Bearer " + ADMIN_SECRET,
+  };
+}
 
 // ── Admin auth guard ──────────────────────────────────────────────────────────
 // Uses the same wcz_token as customer auth.
@@ -459,35 +473,40 @@ window.showPage = function(page, el) {
 // ── Overview ──────────────────────────────────────────────────────────────────
 window.loadOverview = async function() {
   try {
-    var r = await fetch(API+"/sites", { headers: headers() });
-    if (r.status === 401) { location.replace("/dashboard/customer.html"); return; }
-    var data = await r.json();
-    var sites = data.sites || [];
-    _allSites = sites;
+    // Use real admin stats endpoint
+    var [statsResp, sitesResp] = await Promise.all([
+      fetch(ADMIN_API+"/stats", { headers: adminHeaders() }),
+      fetch(ADMIN_API+"/sites?limit=20", { headers: adminHeaders() }),
+    ]);
 
-    var published  = sites.filter(function(s){ return s.status==="published"; }).length;
-    var draft      = sites.filter(function(s){ return s.status==="draft"; }).length;
-    var grace      = sites.filter(function(s){ return s.status==="grace"; }).length;
-    var totalGens  = sites.reduce(function(a,s){ return a+(s.ai_generations_used||0); }, 0);
+    if (statsResp.status === 401 || sitesResp.status === 401) {
+      toast("Admin access denied — check ADMIN_SECRET", "err");
+      return;
+    }
 
-    document.getElementById("statGrid").innerHTML = `
-      <div class="stat-card green"><div class="stat-label">Total sites</div><div class="stat-value">${sites.length}</div><div class="stat-sub">across all accounts</div></div>
-      <div class="stat-card green"><div class="stat-label">Published</div><div class="stat-value">${published}</div><div class="stat-sub">live on the web</div></div>
-      <div class="stat-card"><div class="stat-label">Draft</div><div class="stat-value">${draft}</div><div class="stat-sub">not yet published</div></div>
-      <div class="stat-card gold"><div class="stat-label">Grace period</div><div class="stat-value">${grace}</div><div class="stat-sub">subscription lapsed</div></div>
-      <div class="stat-card blue"><div class="stat-label">AI generations</div><div class="stat-value">${totalGens}</div><div class="stat-sub">total across platform</div></div>
-    `;
+    var stats = statsResp.ok ? await statsResp.json() : null;
+    var sitesData = sitesResp.ok ? await sitesResp.json() : { sites: [] };
+    var recentSites = sitesData.sites || [];
 
-    var recent = sites.slice(0, 20);
-    document.getElementById("recentCount").textContent = sites.length + " total";
-    document.getElementById("recentSitesTbl").innerHTML = recent.map(function(s){
+    if (stats) {
+      document.getElementById("statGrid").innerHTML =
+        '<div class="stat-card green"><div class="stat-label">Total sites</div><div class="stat-value">'+stats.sites.total+'</div><div class="stat-sub">across all accounts</div></div>'
+       +'<div class="stat-card green"><div class="stat-label">Published</div><div class="stat-value">'+stats.sites.published+'</div><div class="stat-sub">live on the web</div></div>'
+       +'<div class="stat-card"><div class="stat-label">Draft</div><div class="stat-value">'+stats.sites.draft+'</div><div class="stat-sub">not yet published</div></div>'
+       +'<div class="stat-card gold"><div class="stat-label">Grace period</div><div class="stat-value">'+stats.sites.grace+'</div><div class="stat-sub">subscription lapsed</div></div>'
+       +'<div class="stat-card blue"><div class="stat-label">Total customers</div><div class="stat-value">'+stats.owners.total+'</div><div class="stat-sub">registered owners</div></div>'
+       +'<div class="stat-card blue"><div class="stat-label">AI generations</div><div class="stat-value">'+stats.ai.total_generations+'</div><div class="stat-sub">cost: $'+Number(stats.ai.total_cost_usd||0).toFixed(2)+'</div></div>';
+    }
+
+    document.getElementById("recentCount").textContent = stats ? stats.sites.total + " total" : "";
+    document.getElementById("recentSitesTbl").innerHTML = recentSites.map(function(s){
       return siteRow(s);
     }).join("") || '<tr><td colspan="6" style="color:var(--ink3);padding:20px">No sites yet</td></tr>';
 
     document.getElementById("overviewSub").textContent =
       "Last refreshed " + new Date().toLocaleTimeString();
   } catch(e) {
-    toast("Failed to load data — check your connection", "err");
+    toast("Failed to load data — " + e.message, "err");
   }
 };
 
@@ -525,7 +544,8 @@ function tmplLabel(id) {
 // ── All sites page ─────────────────────────────────────────────────────────────
 window.loadAllSites = async function() {
   if (_allSites.length === 0) {
-    var r = await fetch(API+"/sites", { headers: headers() });
+    var r = await fetch(ADMIN_API+"/sites?limit=500", { headers: adminHeaders() });
+    if (!r.ok) { toast("Failed to load sites", "err"); return; }
     var data = await r.json();
     _allSites = data.sites || [];
   }
@@ -650,22 +670,26 @@ window.saveEditSite = async function() {
   // For now: update site_name via the normal PUT endpoint
   // Status/plan/expires changes need an admin-specific API route (to be added)
   try {
-    // Update name via normal PUT
-    if (name) {
-      var site = _allSites.find(function(s){ return s.id===id; });
-      var content = site ? site.content : "{}";
-      var r = await fetch(API+"/sites/"+encodeURIComponent(id), {
-        method: "PUT",
-        headers: headers(),
-        body: JSON.stringify({
-          site_name:   name,
-          template_id: site && site.template_id || "bold-retail",
-          content:     typeof content==="string" ? JSON.parse(content) : content,
-        }),
-      });
-      if (!r.ok) throw new Error("save failed");
+    // Use admin PUT endpoint — can update status, plan, expires_at, and name
+    var updateBody = {};
+    if (name)   updateBody.site_name  = name;
+    if (status) updateBody.status     = status;
+    if (plan)   updateBody.plan       = plan;
+    if (expires && !isNaN(parseInt(expires))) updateBody.expires_at = parseInt(expires);
+    // Auto-set expires_at to 1 year from now when publishing
+    if (status === "published" && !updateBody.expires_at) {
+      updateBody.expires_at = Math.floor(Date.now()/1000) + 31536000;
     }
-    toast("Site name updated. Status/plan/expiry changes need admin DB access.", "ok");
+    var r = await fetch(ADMIN_API+"/sites/"+encodeURIComponent(id), {
+      method: "PUT",
+      headers: adminHeaders(),
+      body: JSON.stringify(updateBody),
+    });
+    if (!r.ok) {
+      var errData = await r.json().catch(()=>({}));
+      throw new Error(errData.error || "save failed");
+    }
+    toast("Site updated ✓", "ok");
     closeModal("editSiteModal");
     _allSites = []; // clear cache
     if (currentPage==="overview") loadOverview();
