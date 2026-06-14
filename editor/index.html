@@ -561,6 +561,17 @@ img{display:block;max-width:100%}
 
     <!-- TAB: DESIGN -->
     <div class="tab-section" id="tab-design">
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:13.5px;font-weight:600;color:var(--ink)">Current template: <span id="currentTemplateLabel" style="color:var(--green)">Loading…</span></div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Switching template keeps your business info and images — only the visual design changes.</div>
+          </div>
+          <a class="btn btn-ghost btn-sm" id="changeTemplateBtn" href="#" onclick="changeTemplate();return false;">
+            ⊞ Change template
+          </a>
+        </div>
+      </div>
       <div class="panel">
         <div class="panel-head"><h2>Colour palette</h2></div>
         <div class="panel-body">
@@ -770,6 +781,16 @@ function populateForm(){
   }
 
   if(state.site.template_id) set("f_template", state.site.template_id);
+  // Update template label in Design tab
+  var templateNames = {
+    "bold-retail":"General Business","grill-house":"Restaurant & Food",
+    "beauty-salon":"Beauty & Wellness","school-institution":"School & Academy",
+    "advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate",
+    "boutique-fashion":"Fashion & Boutique","grocery-fmcg":"Grocery & Spaza",
+    "retail-hardware":"Hardware & Retail"
+  };
+  var tlabel = document.getElementById("currentTemplateLabel");
+  if(tlabel) tlabel.textContent = templateNames[state.site.template_id] || state.site.template_id || "General Business";
   set("f_phone",    ct.phone    || ""); set("f_whatsapp", ct.whatsapp || "");
   set("f_email",    ct.email    || ""); set("f_address",  ct.address  || "");
   set("f_hours",    c.hours     || ""); set("f_location", c.location  || "");
@@ -1345,6 +1366,21 @@ function toast(msg,type){
   requestAnimationFrame(function(){t.classList.add("show");});
   setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);
 }
+window.changeTemplate = function(){
+  // Go to template picker — it will create a new site with the chosen template.
+  // Note: changing template creates a NEW site. Current draft content is saved first.
+  if(state.dirty){
+    if(!confirm("Save your current changes first?\n\nClick OK to save now, then you can choose a new template.")){
+      return;
+    }
+    onSave().then(function(){
+      location.href = "https://app.websites.co.zw/new/?switch=1&from="+encodeURIComponent(siteId);
+    });
+    return;
+  }
+  location.href = "https://app.websites.co.zw/new/?switch=1&from="+encodeURIComponent(siteId);
+};
+
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 
 })();
