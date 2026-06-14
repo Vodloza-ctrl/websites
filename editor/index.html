@@ -515,7 +515,7 @@ img{display:block;max-width:100%}
         <div class="panel-head"><h2>Publish your site</h2></div>
         <div class="panel-body">
           <div style="font-size:14px;color:var(--ink2);margin-bottom:18px;line-height:1.6">
-            Your site will be live at <b id="pubUrl" style="color:var(--green)">yoursite.websites.co.zw</b>. You can update it anytime after publishing.
+            Your site will be live at <b id="pubUrl" style="color:var(--green)">yoursite.websites.co.zw</b>. Save your site first, then choose a plan below to publish.
           </div>
           <div class="panel" style="border:2px solid var(--green);box-shadow:none;margin-bottom:12px">
             <div class="panel-body">
@@ -525,7 +525,7 @@ img{display:block;max-width:100%}
                   <div style="font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1">$30<span style="font-size:14px;font-weight:500;color:var(--ink3)">/year</span></div>
                   <div style="font-size:12.5px;color:var(--ink3);margin-top:4px">Your .co.zw subdomain included</div>
                 </div>
-                <button class="btn btn-green" onclick="onPublish()">Publish now — $30/yr</button>
+                <button class="btn btn-green" onclick="onPublish()">Publish — $30/yr</button>
               </div>
               <div class="divider"></div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:var(--ink2)">
@@ -779,6 +779,9 @@ function populateForm(){
   set("f_video",    (c.video && c.video.embedUrl) || "");
 
   document.getElementById("imgCount").textContent = countImages()+" / "+STARTER_IMAGE_LIMIT+" uploaded";
+  // Keep topbar name in sync with the business name field
+  var nameFromForm = g("f_name");
+  if(nameFromForm) document.getElementById("topSiteName").textContent = nameFromForm;
 }
 
 function set(id,v){ var el=document.getElementById(id); if(el) el.value=v||""; }
@@ -840,13 +843,24 @@ function buildContent(brief){
 
 // ── Generate ──────────────────────────────────────────────────────────────────
 // Auth worker reads brief directly from request body (no wrapper needed)
+// Snapshot for undo — stored before each generation
+var _preGenerateSnapshot = null;
+
 window.onGenerate = async function(){
   var brief = readBrief();
   if(!brief.business_name){ toast("Add your business name first"); return; }
   var btn = document.getElementById("generateBtn");
   btn.classList.add("loading"); btn.disabled=true;
+
+  // Snapshot current state so user can undo
+  _preGenerateSnapshot = JSON.parse(JSON.stringify({
+    content: state.content,
+    products: state.products,
+    images: state.images,
+    gallery: state.gallery
+  }));
+
   try{
-    // Send brief DIRECTLY as the body — auth worker does: const brief = await readJson(request)
     var r = await api("/api/sites/"+encodeURIComponent(siteId)+"/generate", {
       method:"POST",
       body: JSON.stringify(brief)
@@ -858,27 +872,72 @@ window.onGenerate = async function(){
       } else {
         toast(r.data.error||r.data.message||"Couldn't generate, try again","err");
       }
+      _preGenerateSnapshot = null;
       return;
     }
-    // Auth worker returns: { ok, gen_count, cap, theme, content }
-    // Merge AI output into state — preserve products/images/gallery
+    // Auth worker returns merged content — AI copy + owner assets preserved
     var aiContent = r.data.content || {};
     var aiTheme   = r.data.theme   || {};
 
     if(!state.content) state.content = {};
     state.content.theme = aiTheme;
+    // Merge: AI content wins for copy fields, but preserve owner-supplied assets
     state.content.content = Object.assign({}, aiContent, {
-      products: state.products,
-      images:   Object.assign({}, state.images, { gallery: state.gallery }),
+      products:     state.products.length  ? state.products  : (aiContent.products  || []),
+      images:       Object.keys(state.images).length ? Object.assign({}, state.images, { gallery: state.gallery }) : (aiContent.images || {}),
     });
+    // Also re-stash the brief so form can be repopulated
+    state.content.content._brief = brief;
 
     state.dirty = true;
     updateBudget({ used: r.data.gen_count, limit: r.data.cap, remaining: r.data.cap - r.data.gen_count });
-    toast("Generated! Save to preview ✓","ok");
+
+    // Refresh form fields from the new merged content
+    populateForm();
+    renderProducts();
+    renderGallery();
+    renderImagePreviews();
+
+    // Show undo button
+    showUndoBar();
+
+    toast("Generated! Review below, then Save ✓","ok");
     refreshPreview();
-  } catch(e){ toast("Network error — try again","err"); }
+  } catch(e){ toast("Network error — try again","err"); _preGenerateSnapshot = null; }
   finally{ btn.classList.remove("loading"); btn.disabled=false; }
 };
+
+window.undoGenerate = function(){
+  if(!_preGenerateSnapshot) return;
+  state.content  = _preGenerateSnapshot.content;
+  state.products = _preGenerateSnapshot.products;
+  state.images   = _preGenerateSnapshot.images;
+  state.gallery  = _preGenerateSnapshot.gallery;
+  _preGenerateSnapshot = null;
+  state.dirty = true;
+  populateForm();
+  renderProducts();
+  renderGallery();
+  renderImagePreviews();
+  hideUndoBar();
+  toast("Generation undone — your previous content is restored","ok");
+};
+
+function showUndoBar(){
+  var bar = document.getElementById("undoBar");
+  if(bar){ bar.style.display="flex"; return; }
+  bar = document.createElement("div");
+  bar.id = "undoBar";
+  bar.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1a2e1a;color:#e8f5ee;padding:10px 16px;border-radius:var(--r-sm);margin-bottom:12px;font-size:13.5px;";
+  bar.innerHTML = '<span>✦ AI content generated — review and save when ready</span><button class="btn btn-ghost btn-sm" onclick="undoGenerate()" style="color:#e8f5ee;border-color:rgba(255,255,255,.3);white-space:nowrap">↩ Undo</button>';
+  var aiBox = document.querySelector(".ai-box");
+  if(aiBox) aiBox.insertAdjacentElement("afterend", bar);
+}
+
+function hideUndoBar(){
+  var bar = document.getElementById("undoBar");
+  if(bar) bar.style.display="none";
+}
 
 // ── Save ──────────────────────────────────────────────────────────────────────
 window.onSave = async function(){
@@ -892,13 +951,28 @@ window.onSave = async function(){
     if(!r.ok){ toast("Couldn't save — try again","err"); return; }
     state.dirty=false;
     if(r.data.site) state.site=r.data.site;
+    // Refresh topbar and URL display after save
+    var savedName = (state.site && state.site.site_name) || brief.business_name || "Your site";
+    var savedSlug = state.site && state.site.draft_subdomain;
+    document.getElementById("topSiteName").textContent = savedName;
+    if(savedSlug) document.getElementById("pubUrl").textContent = savedSlug+".websites.co.zw";
+    var badge = document.getElementById("statusBadge");
+    var st = state.site ? state.site.status : "draft";
+    badge.textContent = st==="published"?"Published":st==="pending_payment"?"Payment pending":"Draft";
+    badge.className = "status-badge "+(st==="published"?"status-published":st==="pending_payment"?"status-pending":"status-draft");
+    hideUndoBar();
     toast("Saved ✓","ok"); refreshPreview();
   } catch(e){ toast("Network error","err"); }
   finally{ btn.disabled=false; btn.textContent="Save"; }
 };
 
-window.onPublish    = function(){ location.href="https://app.websites.co.zw/checkout?site="+encodeURIComponent(siteId)+"&plan=starter"; };
-window.onPublishPro = function(){ location.href="https://app.websites.co.zw/checkout?site="+encodeURIComponent(siteId)+"&plan=pro"; };
+// Publish via Paynow — wired when payments worker is connected
+window.onPublish = function(){
+  toast("Payment coming soon — save your site and we'll notify you when payments are live","ok");
+};
+window.onPublishPro = function(){
+  toast("Pro plan coming soon — save your site and we'll notify you when payments are live","ok");
+};
 
 window.togglePreview = function(){
   var d=document.getElementById("previewDrawer");
