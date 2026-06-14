@@ -112,6 +112,12 @@
 <div id="app"></div>
 
 <script>
+// Origin guard: localStorage is origin-scoped.
+// Dashboard and editor must share the same origin (app.websites.co.zw)
+// so the wcz_token written here is readable by the editor.
+if (location.hostname !== 'app.websites.co.zw') {
+  location.replace('https://app.websites.co.zw/dashboard/customer.html' + location.search + location.hash);
+}
 (function(){
   "use strict";
   // All API and app URLs are absolute — dashboard HTML is served from Pages (www)
@@ -136,7 +142,7 @@
   function previewUrl(s){ return APP+"/preview/"+(s.draft_subdomain||s.id); }
   function editorUrl(s){ return APP+"/editor/?site="+s.id; }
   function checkoutUrl(s,purpose){ return APP+"/checkout?site="+s.id+(purpose?"&purpose="+purpose:""); }
-  function newSiteUrl(){ return APP+"/new"; }
+  function newSiteUrl(){ return APP+"/editor/"; }
 
   function statusInfo(s){
     var d = daysLeft(s);
