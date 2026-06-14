@@ -149,6 +149,11 @@ if (location.hostname !== 'app.websites.co.zw') {
     location.href = APP + "/new/";
   }
 
+  // Switch template for an existing site — goes to picker in switch mode
+  window.switchTemplate = function(siteId){
+    location.href = APP + "/new/?switch=1&site=" + encodeURIComponent(siteId);
+  }
+
   function statusInfo(s){
     var d = daysLeft(s);
     switch(s.status){
@@ -243,6 +248,8 @@ if (location.hostname !== 'app.websites.co.zw') {
         document.getElementById("email-wrap").style.display = state.channel==="email" ? "" : "none";
       });
     });
+    // Terms checkbox
+    wrap.innerHTML += '<label style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;cursor:pointer"><input type="checkbox" id="agreeTerms" style="width:17px;height:17px;margin-top:2px;flex-shrink:0;accent-color:var(--gold)"><span style="font-size:13px;color:var(--ink-soft);line-height:1.5">I agree to the <a href="https://websites.co.zw/terms" target="_blank" style="color:var(--gold);font-weight:600">Terms of Service</a> and Acceptable Use Policy</span></label>';
     var send = document.getElementById("send");
     send.addEventListener("click", requestCode);
     document.getElementById("phone").addEventListener("keydown", function(e){ if(e.key==="Enter") requestCode(); });
@@ -250,6 +257,8 @@ if (location.hostname !== 'app.websites.co.zw') {
 
   async function requestCode(){
     setMsg("");
+    var agreeBox = document.getElementById("agreeTerms");
+    if (agreeBox && !agreeBox.checked) { return setMsg("Please agree to the Terms of Service to continue."); }
     state.phone = document.getElementById("phone").value.trim();
     var email = (document.getElementById("email")||{}).value;
     if (!state.phone){ return setMsg("Enter your phone number."); }
@@ -334,8 +343,8 @@ if (location.hostname !== 'app.websites.co.zw') {
       grid.appendChild(el(
         '<div class="empty">'+
           '<h2>Build your first website</h2>'+
-          '<p>Create a site, generate it with AI, preview it, then publish for $30/year.</p>'+
-          '<button class="btn btn-gold" onclick="createNewSite()">Create a site</button>'+
+          '<p>Choose a template, add your details, generate with AI, then publish for $30/year.</p>'+
+          '<button class="btn btn-gold" onclick="createNewSite()">Choose a template →</button>'+
         '</div>'
       ));
       return;
@@ -370,7 +379,8 @@ if (location.hostname !== 'app.websites.co.zw') {
     // All action URLs are absolute pointing to app.websites.co.zw
     var actions =
       '<a class="btn btn-ghost" href="'+esc(previewUrl(s))+'" target="_blank" rel="noopener">Preview</a>'+
-      '<a class="btn btn-ghost" href="'+esc(editorUrl(s))+'">Edit</a>';
+      '<a class="btn btn-ghost" href="'+esc(editorUrl(s))+'">Edit</a>'+
+      '<button class="btn btn-quiet" onclick="switchTemplate('+JSON.stringify(s.id)+')" title="Change template">⊞</button>';
 
     if (s.status==="draft" || s.status==="pending_payment") {
       actions += '<a class="btn btn-gold" href="'+esc(checkoutUrl(s))+'">Publish</a>';
