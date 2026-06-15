@@ -17,6 +17,7 @@
     --grace:#a8741a; --grace-bg:#f7edd7;
     --suspend:#b23b30; --suspend-bg:#f7e3e0;
     --pay:#2f6fb0; --pay-bg:#e4eef8;
+    --demo:#6d28d9; --demo-bg:#ede9fe;
     --radius:14px; --r-sm:9px;
     --shadow:0 1px 2px rgba(20,22,30,.04), 0 8px 24px rgba(20,22,30,.05);
   }
@@ -60,11 +61,12 @@
   .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
   .card h2{font-family:"Space Grotesk";font-weight:600;font-size:18px;letter-spacing:-.01em;margin:0 0 2px}
   .pill{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.01em}
-  .t-live{color:var(--live);background:var(--live-bg)}
-  .t-draft{color:var(--draft);background:var(--draft-bg)}
-  .t-grace{color:var(--grace);background:var(--grace-bg)}
+  .t-live   {color:var(--live);   background:var(--live-bg)}
+  .t-draft  {color:var(--draft);  background:var(--draft-bg)}
+  .t-grace  {color:var(--grace);  background:var(--grace-bg)}
   .t-suspend{color:var(--suspend);background:var(--suspend-bg)}
-  .t-pay{color:var(--pay);background:var(--pay-bg)}
+  .t-pay    {color:var(--pay);    background:var(--pay-bg)}
+  .t-demo   {color:var(--demo);   background:var(--demo-bg)}
   .meaning{color:var(--ink-soft);font-size:13.5px;margin:9px 0 0;min-height:38px}
   .url{margin:13px 0 0;font-size:13px}
   .url a{color:var(--gold-strong);text-decoration:none;font-weight:600;word-break:break-all}
@@ -97,38 +99,34 @@
   .row-links{display:flex;justify-content:space-between;margin-top:14px}
   .msg{font-size:13px;margin-top:12px;padding:9px 11px;border-radius:8px;display:none}
   .msg.err{display:block;color:var(--suspend);background:var(--suspend-bg)}
-  .msg.ok{display:block;color:var(--live);background:var(--live-bg)}
+  .msg.ok {display:block;color:var(--live);   background:var(--live-bg)}
   .sent-to{font-size:13.5px;color:var(--ink-soft);margin:0 0 4px}
   .sent-to b{color:var(--ink)}
 
   .ribbon{background:var(--gold-soft);color:var(--gold-strong);text-align:center;font-size:12.5px;font-weight:600;padding:7px}
-  .skeleton{height:150px;border-radius:var(--radius);background:linear-gradient(90deg,#fff, #f3f4f6, #fff);background-size:200% 100%;animation:sh 1.2s infinite;border:1px solid var(--line)}
+  .skeleton{height:150px;border-radius:var(--radius);background:linear-gradient(90deg,#fff,#f3f4f6,#fff);background-size:200% 100%;animation:sh 1.2s infinite;border:1px solid var(--line)}
   @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  @media (prefers-reduced-motion:reduce){.skeleton{animation:none}*{transition:none!important}}
-  @media (max-width:520px){.head h1{font-size:23px}.who .nm{max-width:26vw}}
+  @media(prefers-reduced-motion:reduce){.skeleton{animation:none}*{transition:none!important}}
+  @media(max-width:520px){.head h1{font-size:23px}.who .nm{max-width:26vw}}
 </style>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
-// Origin guard: localStorage is origin-scoped.
-// Dashboard and editor must share the same origin (app.websites.co.zw)
-// so the wcz_token written here is readable by the editor.
 if (location.hostname !== 'app.websites.co.zw') {
   location.replace('https://app.websites.co.zw/dashboard/customer.html' + location.search + location.hash);
 }
 (function(){
   "use strict";
-  // All API and app URLs are absolute — dashboard HTML is served from Pages (www)
-  // but the app/auth/API live on app.websites.co.zw
-  var AUTH    = "https://app.websites.co.zw/auth";
-  var API     = "https://app.websites.co.zw/api";
-  var APP     = "https://app.websites.co.zw";
-  var now = Math.floor(Date.now()/1000);
+  var AUTH = "https://app.websites.co.zw/auth";
+  var API  = "https://app.websites.co.zw/api";
+  var APP  = "https://app.websites.co.zw";
+  var NEW  = APP + "/new/";
+  var now  = Math.floor(Date.now()/1000);
   var DEMO = false;
   var state = { owner:null, channel:"whatsapp", phone:"", step:"phone" };
-  var app = document.getElementById("app");
+  var app   = document.getElementById("app");
 
   /* ---------- helpers ---------- */
   function el(html){ var t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
@@ -140,33 +138,29 @@ if (location.hostname !== 'app.websites.co.zw') {
     return null;
   }
   function previewUrl(s){ return APP+"/preview/"+(s.draft_subdomain||s.id); }
-  function editorUrl(s){ return APP+"/editor/?site="+s.id; }
+  function editorUrl(s) { return APP+"/editor/?site="+s.id; }
   function checkoutUrl(s,purpose){ return APP+"/checkout?site="+s.id+(purpose?"&purpose="+purpose:""); }
+  function switchTemplateUrl(s){ return NEW+"?switch=1&site="+encodeURIComponent(s.id); }
 
-  // Creates a draft site via API then opens the editor with the new site id
-  // Sends customer to template picker — they choose a template and name their site there
-  window.createNewSite = function(){
-    location.href = APP + "/new/";
-  }
-
-  // Switch template for an existing site — goes to picker in switch mode
-  window.switchTemplate = function(siteId){
-    location.href = APP + "/new/?switch=1&site=" + encodeURIComponent(siteId);
-  }
+  window.createNewSite = function(){ location.href = NEW; };
+  window.switchTemplate = function(siteId){ location.href = NEW+"?switch=1&site="+encodeURIComponent(siteId); };
 
   function statusInfo(s){
+    // Demo sites — override display regardless of real status
+    if (s._is_demo) return {label:"Demo", tone:"demo", meaning:"This is a demo site used to showcase this template."};
     var d = daysLeft(s);
     switch(s.status){
       case "published":
         if (d!=null && d<=14) return {label:"Renewal due soon", tone:"grace", meaning:"Live now — "+d+" day"+(d===1?"":"s")+" left. Renew to stay online."};
         return {label:"Live", tone:"live", meaning:"Anyone can visit your site."};
-      case "draft": return {label:"Draft", tone:"draft", meaning:"Only you can see this. Publish to put it online."};
-      case "pending_payment": return {label:"Awaiting payment", tone:"pay", meaning:"Finish payment to publish your site."};
-      case "grace": return {label:"Renewal due", tone:"grace", meaning:"Your subscription lapsed — renew to stay online."};
-      case "suspended": return {label:"Offline", tone:"suspend", meaning:"Your site is offline. Renew to bring it back."};
+      case "draft":           return {label:"Draft",           tone:"draft",    meaning:"Only you can see this. Publish to put it online."};
+      case "pending_payment": return {label:"Awaiting payment",tone:"pay",      meaning:"Finish payment to publish your site."};
+      case "grace":           return {label:"Renewal due",     tone:"grace",    meaning:"Your subscription lapsed — renew to stay online."};
+      case "suspended":       return {label:"Offline",         tone:"suspend",  meaning:"Your site is offline. Renew to bring it back."};
       default: return {label:s.status||"—", tone:"draft", meaning:""};
     }
   }
+
   var errText = {
     invalid_phone:"Enter a valid phone number.",
     invalid_input:"Check the number and code, then try again.",
@@ -233,7 +227,7 @@ if (location.hostname !== 'app.websites.co.zw') {
       '<label class="fld">Send the code by</label>'+
       '<div class="seg" role="group" aria-label="Delivery channel">'+
         '<button type="button" data-ch="whatsapp" aria-pressed="'+(state.channel==="whatsapp")+'">WhatsApp</button>'+
-        '<button type="button" data-ch="email" aria-pressed="'+(state.channel==="email")+'">Email</button>'+
+        '<button type="button" data-ch="email"    aria-pressed="'+(state.channel==="email")+'">Email</button>'+
       '</div>'+
       '<div id="email-wrap" style="'+(state.channel==="email"?"":"display:none")+'">'+
         '<label class="fld" for="email">Email</label>'+
@@ -248,7 +242,6 @@ if (location.hostname !== 'app.websites.co.zw') {
         document.getElementById("email-wrap").style.display = state.channel==="email" ? "" : "none";
       });
     });
-    // Terms checkbox
     wrap.innerHTML += '<label style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;cursor:pointer"><input type="checkbox" id="agreeTerms" style="width:17px;height:17px;margin-top:2px;flex-shrink:0;accent-color:var(--gold)"><span style="font-size:13px;color:var(--ink-soft);line-height:1.5">I agree to the <a href="https://websites.co.zw/terms" target="_blank" style="color:var(--gold);font-weight:600">Terms of Service</a> and Acceptable Use Policy</span></label>';
     var send = document.getElementById("send");
     send.addEventListener("click", requestCode);
@@ -329,22 +322,28 @@ if (location.hostname !== 'app.websites.co.zw') {
     if (so) so.addEventListener("click", signOut);
 
     var sites = await getSites();
-    var grid = document.getElementById("grid");
-    var sub = document.getElementById("subcount");
+    var grid  = document.getElementById("grid");
+    var sub   = document.getElementById("subcount");
+
     if (!sites){
       grid.innerHTML="";
       grid.appendChild(el('<div class="empty"><h2>Couldn\u2019t load your sites</h2><p>Refresh the page to try again.</p></div>'));
       sub.textContent="";
       return;
     }
+
+    // Mark demo sites so siteCard can style them differently
+    sites = tagDemoSites(sites);
+
     sub.textContent = sites.length===0 ? "No sites yet" : sites.length+" site"+(sites.length===1?"":"s");
     grid.innerHTML = "";
+
     if (sites.length===0){
       grid.appendChild(el(
         '<div class="empty">'+
           '<h2>Build your first website</h2>'+
           '<p>Choose a template, add your details, generate with AI, then publish for $30/year.</p>'+
-          '<button class="btn btn-gold" onclick="createNewSite()">Choose a template →</button>'+
+          '<button class="btn btn-gold" onclick="createNewSite()">Choose a template \u2192</button>'+
         '</div>'
       ));
       return;
@@ -355,7 +354,7 @@ if (location.hostname !== 'app.websites.co.zw') {
   function displayName(){ return (state.owner && (state.owner.name || state.owner.phone)) || "Your account"; }
 
   async function getSites(){
-    if (DEMO) return demoSites();
+    if (DEMO) return tagDemoSites(demoSites());
     try {
       var r = await api(API+"/sites", { method:"GET" });
       if (r.status===401){ renderLogin(); return null; }
@@ -364,9 +363,21 @@ if (location.hostname !== 'app.websites.co.zw') {
     } catch(e){ return null; }
   }
 
+  // Detect demo sites by their subdomain prefix
+  function tagDemoSites(sites){
+    var DEMO_PREFIXES = ["demo-business","demo-restaurant","demo-salon","demo-academy",
+      "demo-consultant","demo-realestate","demo-boutique","demo-grocery","demo-hardware",
+      "demo-sports","demo-church"];
+    return sites.map(function(s){
+      var sub = s.draft_subdomain || "";
+      var isDemo = DEMO_PREFIXES.some(function(p){ return sub === p || sub.startsWith(p+"-"); });
+      return isDemo ? Object.assign({}, s, { _is_demo: true }) : s;
+    });
+  }
+
   function siteCard(s){
-    var st = statusInfo(s);
-    var pub = publicUrl(s);
+    var st   = statusInfo(s);
+    var pub  = publicUrl(s);
     var live = (s.status==="published" || s.status==="grace");
     var urlRow = live && pub
       ? '<a href="'+esc(pub)+'" target="_blank" rel="noopener">'+esc(pub.replace(/^https:\/\//,""))+'</a>'
@@ -374,18 +385,23 @@ if (location.hostname !== 'app.websites.co.zw') {
 
     var planLabel = s.plan==="pro" ? "Pro" : "Starter";
     var d = daysLeft(s);
-    var expiry = s.expires_at ? (d>0 ? "Renews in "+d+" day"+(d===1?"":"s") : "Expired") : "Not published";
+    var expiry = s._is_demo
+      ? "Demo site — no billing"
+      : (s.expires_at ? (d>0 ? "Renews in "+d+" day"+(d===1?"":"s") : "Expired") : "Not published");
 
-    // All action URLs are absolute pointing to app.websites.co.zw
+    // Build action buttons
     var actions =
       '<a class="btn btn-ghost" href="'+esc(previewUrl(s))+'" target="_blank" rel="noopener">Preview</a>'+
       '<a class="btn btn-ghost" href="'+esc(editorUrl(s))+'">Edit</a>'+
-      '<button class="btn btn-quiet" onclick="switchTemplate('+JSON.stringify(s.id)+')" title="Change template">⊞</button>';
+      '<a class="btn btn-quiet" href="'+esc(switchTemplateUrl(s))+'" title="Switch template">&#x229E;</a>';
 
-    if (s.status==="draft" || s.status==="pending_payment") {
-      actions += '<a class="btn btn-gold" href="'+esc(checkoutUrl(s))+'">Publish</a>';
-    } else if (s.status==="grace" || s.status==="suspended" || (s.status==="published" && d!=null && d<=14)) {
-      actions += '<a class="btn btn-gold" href="'+esc(checkoutUrl(s,"renewal"))+'">Renew</a>';
+    if (!s._is_demo) {
+      // Only show payment CTAs on real customer sites
+      if (s.status==="draft" || s.status==="pending_payment") {
+        actions += '<a class="btn btn-gold" href="'+esc(checkoutUrl(s))+'">Publish</a>';
+      } else if (s.status==="grace" || s.status==="suspended" || (s.status==="published" && d!=null && d<=14)) {
+        actions += '<a class="btn btn-gold" href="'+esc(checkoutUrl(s,"renewal"))+'">Renew</a>';
+      }
     }
 
     return el(
