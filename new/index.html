@@ -36,8 +36,6 @@ html, body {
 }
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; cursor: pointer; }
-
-/* ── Top bar ── */
 .topbar {
   position: sticky; top: 0; z-index: 50;
   background: rgba(11,12,16,.88);
@@ -46,15 +44,10 @@ button { font-family: inherit; cursor: pointer; }
   padding: 14px 24px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
-.logo {
-  font-family: var(--font-ui);
-  font-weight: 700; font-size: 18px; letter-spacing: -.02em;
-}
+.logo { font-family: var(--font-ui); font-weight: 700; font-size: 18px; letter-spacing: -.02em; }
 .logo .tld { color: var(--green); }
 .topbar-right { font-size: 13px; color: var(--ink2); }
 .topbar-right a { color: var(--green); font-weight: 600; }
-
-/* ── Hero ── */
 .hero {
   max-width: 680px; margin: 0 auto;
   padding: 56px 24px 40px;
@@ -73,34 +66,20 @@ button { font-family: inherit; cursor: pointer; }
   line-height: 1.1; margin-bottom: 14px;
 }
 .hero h1 span { color: var(--green); }
-.hero p {
-  color: var(--ink2); font-size: 1.02rem; line-height: 1.6;
-  max-width: 520px; margin: 0 auto 28px;
-}
-.step-row {
-  display: flex; align-items: center; justify-content: center; gap: 0;
-  flex-wrap: wrap; gap: 6px;
-}
-.step {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 12.5px; font-weight: 600; color: var(--ink2);
-}
+.hero p { color: var(--ink2); font-size: 1.02rem; line-height: 1.6; max-width: 520px; margin: 0 auto 28px; }
+.step-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; }
+.step { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--ink2); }
 .step-num {
   width: 22px; height: 22px; border-radius: 50%;
   background: var(--line); color: var(--ink2);
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
-.step.done .step-num { background: var(--green); color: #fff; }
-.step.active .step-num { background: var(--gold); color: #fff; }
+.step.done .step-num  { background: var(--green); color: #fff; }
+.step.active .step-num{ background: var(--gold);  color: #fff; }
 .step.active { color: var(--ink); }
 .step-sep { color: var(--line); font-size: 18px; line-height: 1; margin: 0 2px; }
-
-/* ── Grid ── */
-.grid-wrap {
-  max-width: 1060px; margin: 0 auto;
-  padding: 0 20px 80px;
-}
+.grid-wrap { max-width: 1060px; margin: 0 auto; padding: 0 20px 80px; }
 .section-label {
   font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
   color: var(--ink2); margin-bottom: 16px;
@@ -110,14 +89,8 @@ button { font-family: inherit; cursor: pointer; }
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: 16px;
 }
-@media (max-width: 640px) {
-  .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-}
-@media (max-width: 380px) {
-  .grid { grid-template-columns: 1fr; }
-}
-
-/* ── Template card ── */
+@media (max-width: 640px) { .grid { grid-template-columns: 1fr 1fr; gap: 10px; } }
+@media (max-width: 380px) { .grid { grid-template-columns: 1fr; } }
 .tcard {
   border-radius: var(--r);
   border: 1.5px solid var(--line);
@@ -127,50 +100,27 @@ button { font-family: inherit; cursor: pointer; }
   position: relative;
   background: var(--card-bg);
 }
-.tcard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 50px -16px rgba(0,0,0,.5);
-}
+.tcard:hover { transform: translateY(-4px); box-shadow: 0 20px 50px -16px rgba(0,0,0,.5); }
 .tcard.selected {
   border-color: var(--green);
   box-shadow: 0 0 0 3px rgba(21,146,75,.2), 0 20px 50px -16px rgba(0,0,0,.4);
 }
-/* The visual preview area — uses the template's own colours */
-.tcard-preview {
-  height: 148px;
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-/* Tiny nav mockup */
+.tcard-preview { height: 148px; position: relative; overflow: hidden; flex-shrink: 0; }
 .mock-nav {
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 28px;
+  position: absolute; top: 0; left: 0; right: 0; height: 28px;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 10px;
-  background: rgba(0,0,0,.18);
+  padding: 0 10px; background: rgba(0,0,0,.18);
 }
 .mock-logo { width: 36px; height: 7px; border-radius: 3px; opacity: .7; }
 .mock-links { display: flex; gap: 5px; }
 .mock-link { width: 22px; height: 5px; border-radius: 2px; opacity: .45; }
-.mock-btn { width: 32px; height: 14px; border-radius: 4px; opacity: .85; }
-/* Hero area */
+.mock-btn  { width: 32px; height: 14px; border-radius: 4px; opacity: .85; }
 .mock-hero {
   position: absolute; top: 28px; left: 0; right: 0; bottom: 0;
   display: flex; flex-direction: column; justify-content: flex-end;
   padding: 10px 12px;
   background: linear-gradient(0deg, rgba(0,0,0,.55) 0%, transparent 60%);
 }
-.mock-h1 { height: 9px; border-radius: 4px; width: 60%; margin-bottom: 5px; background: rgba(255,255,255,.85); }
-.mock-sub { height: 5px; border-radius: 3px; width: 42%; background: rgba(255,255,255,.5); }
-.mock-cta { margin-top: 8px; width: 52px; height: 16px; border-radius: 5px; }
-/* Content rows below hero (visible peek) */
-.mock-content {
-  position: absolute; bottom: 6px; right: 10px;
-  display: flex; flex-direction: column; gap: 3px; align-items: flex-end;
-}
-.mock-row { height: 4px; border-radius: 2px; opacity: .3; }
-/* Selected tick */
 .tcard-tick {
   position: absolute; top: 8px; right: 8px;
   width: 26px; height: 26px; border-radius: 50%;
@@ -180,39 +130,29 @@ button { font-family: inherit; cursor: pointer; }
   box-shadow: 0 2px 8px rgba(21,146,75,.4);
 }
 .tcard.selected .tcard-tick { display: flex; }
-/* Card body */
 .tcard-body { padding: 13px 14px 14px; }
-.tcard-top {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
-}
+.tcard-top  { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .tcard-emoji { font-size: 17px; flex-shrink: 0; }
-.tcard-label {
-  font-family: var(--font-ui);
-  font-weight: 600; font-size: 14px; letter-spacing: -.01em; color: var(--ink);
-}
-.tcard-desc {
-  font-size: 12.5px; color: var(--ink2); line-height: 1.45; margin-bottom: 9px;
-}
-.tcard-tags {
-  font-size: 11px; font-weight: 600; color: var(--ink2);
-  letter-spacing: .03em;
-}
-/* Hover accent line at bottom */
+.tcard-label { font-family: var(--font-ui); font-weight: 600; font-size: 14px; letter-spacing: -.01em; color: var(--ink); }
+.tcard-desc  { font-size: 12.5px; color: var(--ink2); line-height: 1.45; margin-bottom: 9px; }
+.tcard-tags  { font-size: 11px; font-weight: 600; color: var(--ink2); letter-spacing: .03em; }
 .tcard::after {
   content: '';
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 2px;
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
   background: var(--accent, #15924B);
   transform: scaleX(0);
   transition: transform .22s var(--ease);
   transform-origin: left;
 }
 .tcard:hover::after, .tcard.selected::after { transform: scaleX(1); }
-
-/* ── Confirm drawer ── */
+.tcard-demo {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 10px; font-size: 12px; font-weight: 600;
+  color: var(--green); text-decoration: none; opacity: .8; transition: opacity .15s;
+}
+.tcard-demo:hover { opacity: 1; text-decoration: underline; }
 .confirm-drawer {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  z-index: 100;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
   background: rgba(11,12,16,.95);
   backdrop-filter: blur(20px);
   border-top: 1px solid var(--line);
@@ -226,25 +166,16 @@ button { font-family: inherit; cursor: pointer; }
   padding: 20px 24px 28px;
   display: flex; flex-direction: column; gap: 14px;
 }
-.confirm-header {
-  display: flex; align-items: center; gap: 12px;
-}
+.confirm-header { display: flex; align-items: center; gap: 12px; }
 .confirm-swatch {
   width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
   border: 1.5px solid rgba(255,255,255,.1);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
 }
-.confirm-info h3 {
-  font-family: var(--font-ui); font-weight: 600; font-size: 16px; margin-bottom: 2px;
-}
-.confirm-info p { font-size: 13px; color: var(--ink2); }
-.name-row {
-  display: flex; flex-direction: column; gap: 6px;
-}
-.name-label {
-  font-size: 12.5px; font-weight: 600; color: var(--ink2); letter-spacing: .02em;
-}
+.confirm-info h3 { font-family: var(--font-ui); font-weight: 600; font-size: 16px; margin-bottom: 2px; }
+.confirm-info p  { font-size: 13px; color: var(--ink2); }
+.name-row  { display: flex; flex-direction: column; gap: 6px; }
+.name-label{ font-size: 12.5px; font-weight: 600; color: var(--ink2); letter-spacing: .02em; }
 .name-input {
   width: 100%;
   background: rgba(255,255,255,.06);
@@ -252,37 +183,26 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: var(--r-sm);
   padding: 12px 14px;
   font-size: 15px; font-family: var(--font-body); color: var(--ink);
-  transition: border-color .15s;
-  outline: none;
+  transition: border-color .15s; outline: none;
 }
 .name-input::placeholder { color: rgba(255,255,255,.25); }
 .name-input:focus { border-color: var(--green); }
-.confirm-actions {
-  display: flex; gap: 10px; align-items: center;
-}
+.confirm-actions { display: flex; gap: 10px; align-items: center; }
 .btn-go {
-  flex: 1;
-  background: var(--green);
-  color: #fff;
-  border: none;
-  border-radius: var(--r-sm);
-  padding: 14px 20px;
-  font-family: var(--font-ui);
-  font-weight: 600; font-size: 15px;
+  flex: 1; background: var(--green); color: #fff; border: none;
+  border-radius: var(--r-sm); padding: 14px 20px;
+  font-family: var(--font-ui); font-weight: 600; font-size: 15px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: background .15s, transform .15s;
 }
-.btn-go:hover { background: var(--green-dk); transform: translateY(-1px); }
+.btn-go:hover:not(:disabled) { background: var(--green-dk); transform: translateY(-1px); }
 .btn-go:disabled { opacity: .5; cursor: default; transform: none; }
 .btn-go .spinner {
   width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  display: none;
+  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin .7s linear infinite; display: none;
 }
-.btn-go.loading .spinner { display: block; }
+.btn-go.loading .spinner  { display: block; }
 .btn-go.loading .go-label { display: none; }
 .btn-cancel {
   background: transparent; border: 1.5px solid rgba(255,255,255,.12);
@@ -292,8 +212,6 @@ button { font-family: inherit; cursor: pointer; }
 }
 .btn-cancel:hover { border-color: rgba(255,255,255,.3); color: var(--ink); }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Toast ── */
 .toast-wrap {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   z-index: 200; pointer-events: none;
@@ -301,29 +219,20 @@ button { font-family: inherit; cursor: pointer; }
 }
 .toast {
   background: #1e2028; color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 24px; padding: 10px 18px;
+  border: 1px solid var(--line); border-radius: 24px; padding: 10px 18px;
   font-size: 13.5px; font-weight: 600;
-  opacity: 0; transform: translateY(8px);
-  transition: .25s; pointer-events: none;
+  opacity: 0; transform: translateY(8px); transition: .25s; pointer-events: none;
   display: flex; align-items: center; gap: 8px;
 }
 .toast.show { opacity: 1; transform: translateY(0); }
-.toast.err { background: #2a1418; border-color: #5a2428; color: #f87171; }
-.tcard-demo {
-  display: inline-flex; align-items: center; gap: 4px;
-  margin-top: 10px; font-size: 12px; font-weight: 600;
-  color: var(--green); text-decoration: none;
-  opacity: .8; transition: opacity .15s;
-}
-.tcard-demo:hover { opacity: 1; text-decoration: underline; }
+.toast.err  { background: #2a1418; border-color: #5a2428; color: #f87171; }
 </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="logo">websites<span class="tld">.co.zw</span></div>
-  <div class="topbar-right">Already have a site? <a href="/dashboard/customer.html">Dashboard →</a></div>
+  <div class="topbar-right">Already have a site? <a href="https://app.websites.co.zw/dashboard/">Dashboard →</a></div>
 </header>
 
 <section class="hero">
@@ -347,7 +256,6 @@ button { font-family: inherit; cursor: pointer; }
   <div class="grid" id="templateGrid"></div>
 </div>
 
-<!-- Confirm drawer — slides up when a template is selected -->
 <div class="confirm-drawer" id="confirmDrawer">
   <div class="confirm-inner">
     <div class="confirm-header">
@@ -359,14 +267,8 @@ button { font-family: inherit; cursor: pointer; }
     </div>
     <div class="name-row" id="nameRow">
       <span class="name-label">What's your business called?</span>
-      <input
-        class="name-input"
-        id="nameInput"
-        type="text"
-        placeholder="e.g. Elite Sports Institute"
-        maxlength="80"
-        autocomplete="organization"
-      >
+      <input class="name-input" id="nameInput" type="text"
+        placeholder="e.g. Elite Sports Institute" maxlength="80" autocomplete="organization">
     </div>
     <div class="confirm-actions">
       <button class="btn-go" id="goBtn" onclick="startBuilding()" disabled>
@@ -384,33 +286,96 @@ button { font-family: inherit; cursor: pointer; }
 (function () {
 "use strict";
 
-var APP     = "https://app.websites.co.zw";
-var API     = APP + "/api";
-var DASH    = APP + "/dashboard/customer.html";
+var APP  = "https://app.websites.co.zw";
+var API  = APP + "/api";
+var DASH = APP + "/dashboard/";
 
 // ── Template data ──────────────────────────────────────────────────────────
+// demo URLs map to the live published demo sites on your dashboard
 const TEMPLATES = [
-  { id:"bold-retail",        label:"General Business",      emoji:"🏢", demo:"https://demo-business.websites.co.zw",   desc:"Professional site for any business — services, staff, gallery, contact", goodFor:"Retail · Services · Any SME",                bg:"#ffffff", surface:"#f6f6f4", ink:"#1a1a1a", accent:"#1a1a1a", onAccent:"#ffffff", font:"'Space Grotesk', sans-serif",      dark:false },
-  { id:"grill-house",        label:"Restaurant & Food",     emoji:"🍽️", demo:"https://demo-restaurant.websites.co.zw", desc:"Warm, appetising layout with menu sections and reservation CTA",          goodFor:"Restaurant · Café · Grill · Takeaway",       bg:"#FBF4E9", surface:"#fff",     ink:"#2A211A", accent:"#D2541F", onAccent:"#fff",     font:"'Playfair Display', serif",        dark:false },
-  { id:"beauty-salon",       label:"Beauty & Wellness",     emoji:"💅", demo:"https://demo-salon.websites.co.zw",      desc:"Elegant layout with service price list, team profiles, and booking CTA",  goodFor:"Salon · Spa · Clinic · Barber",              bg:"#ffffff", surface:"#F7ECEC", ink:"#2E2329", accent:"#B08D57", onAccent:"#fff",     font:"'Cormorant Garamond', serif",     dark:false },
-  { id:"school-institution", label:"School & Academy",      emoji:"🏫", demo:"https://elite.websites.co.zw",           desc:"Credible, structured layout with programmes, stats, and leadership",       goodFor:"School · Academy · Church · NGO",            bg:"#ffffff", surface:"#EAF1F9", ink:"#1C2733", accent:"#C99A2E", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
-  { id:"advisory-firm",      label:"Consultant & Legal",    emoji:"💼", demo:"https://demo-consultant.websites.co.zw", desc:"Authoritative, minimal design for professional services and advisory",     goodFor:"Consultant · Law · Accounting · Finance",    bg:"#ffffff", surface:"#F4F6FA", ink:"#1A2236", accent:"#C08A2D", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
-  { id:"property-estate",    label:"Property & Real Estate",emoji:"🏠", demo:"https://demo-realestate.websites.co.zw", desc:"Gallery-forward layout built to showcase listings and drive enquiries",    goodFor:"Real Estate · Architecture · Construction",  bg:"#F6F1E7", surface:"#fff",     ink:"#1E2A24", accent:"#B0852F", onAccent:"#fff",     font:"'Fraunces', serif",               dark:false },
-  { id:"boutique-fashion",   label:"Fashion & Boutique",    emoji:"👗", demo:"https://demo-boutique.websites.co.zw",   desc:"Dark, editorial look with a product catalogue and WhatsApp shop link",     goodFor:"Boutique · Fashion · Cosmetics · Gifts",     bg:"#0e0b0d", surface:"#1a1318", ink:"#f7f0f2", accent:"#e8a0b0", onAccent:"#0e0b0d", font:"'Cormorant Garamond', serif",     dark:true  },
-  { id:"grocery-fmcg",       label:"Grocery & Spaza",       emoji:"🛒", demo:"https://demo-grocery.websites.co.zw",    desc:"Clean, bright product catalogue with WhatsApp order button built in",      goodFor:"Grocery · Supermarket · Spaza · FMCG",      bg:"#ffffff", surface:"#f4faf5", ink:"#1a2b1e", accent:"#1e8c3a", onAccent:"#ffffff", font:"'Space Grotesk', sans-serif",      dark:false },
-  { id:"retail-hardware",    label:"Hardware & Retail",     emoji:"🔧", demo:"https://demo-hardware.websites.co.zw",   desc:"Bold, catalogue-style layout with product grid, services, and quote CTA",  goodFor:"Hardware · Electronics · Tools · General Retail", bg:"#f7f8fa", surface:"#ffffff", ink:"#1c2130", accent:"#1a56db", onAccent:"#ffffff", font:"'DM Mono', monospace",            dark:false },
+  {
+    id:"bold-retail", label:"General Business", emoji:"🏢",
+    demo:"https://demo-business.websites.co.zw",
+    desc:"Professional site for any business — services, staff, gallery, contact",
+    goodFor:"Retail · Services · Any SME",
+    bg:"#ffffff", surface:"#f6f6f4", ink:"#1a1a1a", accent:"#1a1a1a", onAccent:"#ffffff",
+    font:"'Space Grotesk', sans-serif", dark:false
+  },
+  {
+    id:"grill-house", label:"Restaurant & Food", emoji:"🍽️",
+    demo:"https://demo-restaurant.websites.co.zw",
+    desc:"Warm, appetising layout with menu sections and reservation CTA",
+    goodFor:"Restaurant · Café · Grill · Takeaway",
+    bg:"#FBF4E9", surface:"#fff", ink:"#2A211A", accent:"#D2541F", onAccent:"#fff",
+    font:"'Playfair Display', serif", dark:false
+  },
+  {
+    id:"beauty-salon", label:"Beauty & Wellness", emoji:"💅",
+    demo:"https://demo-salon.websites.co.zw",
+    desc:"Elegant layout with service price list, team profiles, and booking CTA",
+    goodFor:"Salon · Spa · Clinic · Barber",
+    bg:"#ffffff", surface:"#F7ECEC", ink:"#2E2329", accent:"#B08D57", onAccent:"#fff",
+    font:"'Cormorant Garamond', serif", dark:false
+  },
+  {
+    id:"school-institution", label:"School & Academy", emoji:"🏫",
+    demo:"https://demo-academy.websites.co.zw",
+    desc:"Credible, structured layout with programmes, stats, and leadership",
+    goodFor:"School · Academy · Church · NGO",
+    bg:"#ffffff", surface:"#EAF1F9", ink:"#1C2733", accent:"#C99A2E", onAccent:"#fff",
+    font:"'Fraunces', serif", dark:false
+  },
+  {
+    id:"advisory-firm", label:"Consultant & Legal", emoji:"💼",
+    demo:"https://demo-consultant.websites.co.zw",
+    desc:"Authoritative, minimal design for professional services and advisory",
+    goodFor:"Consultant · Law · Accounting · Finance",
+    bg:"#ffffff", surface:"#F4F6FA", ink:"#1A2236", accent:"#C08A2D", onAccent:"#fff",
+    font:"'Fraunces', serif", dark:false
+  },
+  {
+    id:"property-estate", label:"Property & Real Estate", emoji:"🏠",
+    demo:"https://demo-realestate.websites.co.zw",
+    desc:"Gallery-forward layout built to showcase listings and drive enquiries",
+    goodFor:"Real Estate · Architecture · Construction",
+    bg:"#F6F1E7", surface:"#fff", ink:"#1E2A24", accent:"#B0852F", onAccent:"#fff",
+    font:"'Fraunces', serif", dark:false
+  },
+  {
+    id:"boutique-fashion", label:"Fashion & Boutique", emoji:"👗",
+    demo:"https://demo-boutique.websites.co.zw",
+    desc:"Dark, editorial look with a product catalogue and WhatsApp shop link",
+    goodFor:"Boutique · Fashion · Cosmetics · Gifts",
+    bg:"#0e0b0d", surface:"#1a1318", ink:"#f7f0f2", accent:"#e8a0b0", onAccent:"#0e0b0d",
+    font:"'Cormorant Garamond', serif", dark:true
+  },
+  {
+    id:"grocery-fmcg", label:"Grocery & Spaza", emoji:"🛒",
+    demo:"https://demo-grocery.websites.co.zw",
+    desc:"Clean, bright product catalogue with WhatsApp order button built in",
+    goodFor:"Grocery · Supermarket · Spaza · FMCG",
+    bg:"#ffffff", surface:"#f4faf5", ink:"#1a2b1e", accent:"#1e8c3a", onAccent:"#ffffff",
+    font:"'Space Grotesk', sans-serif", dark:false
+  },
+  {
+    id:"retail-hardware", label:"Hardware & Retail", emoji:"🔧",
+    demo:"https://demo-hardware.websites.co.zw",
+    desc:"Bold, catalogue-style layout with product grid, services, and quote CTA",
+    goodFor:"Hardware · Electronics · Tools · General Retail",
+    bg:"#f7f8fa", surface:"#ffffff", ink:"#1c2130", accent:"#1a56db", onAccent:"#ffffff",
+    font:"'DM Mono', monospace", dark:false
+  },
 ];
 
 var selected = null;
 
 // ── Auth guard ─────────────────────────────────────────────────────────────
-// If user isn't logged in, send to dashboard (which redirects to login)
 var token = localStorage.getItem("wcz_token");
 if (!token) {
   location.replace(DASH + "?next=" + encodeURIComponent(location.href));
 }
 
-// ── Switch mode detection ────────────────────────────────────────────────────
+// ── Switch mode detection ──────────────────────────────────────────────────
 var urlParams    = new URLSearchParams(location.search);
 var switchMode   = urlParams.get("switch") === "1";
 var switchSiteId = urlParams.get("site") || "";
@@ -421,13 +386,12 @@ if (switchMode) {
   var eyebrow = document.querySelector(".hero-eyebrow");
   if (h1) h1.innerHTML = "Choose a new template";
   if (sub) sub.textContent = "Your business name, contact details, logo, and photos will carry over. Only the visual design changes.";
-  if (eyebrow) { eyebrow.textContent = "Switching template — your content is safe"; eyebrow.style.background = "rgba(201,154,46,.15)"; eyebrow.style.color = "#c99a2e"; }
-}
-
-// ── Switch mode UI adjustments ──────────────────────────────────────────────
-if (switchMode) {
-  // In switch mode we don't need a name — just pick a template
-  document.addEventListener("DOMContentLoaded", function() {
+  if (eyebrow) {
+    eyebrow.textContent = "Switching template — your content is safe";
+    eyebrow.style.background = "rgba(201,154,46,.15)";
+    eyebrow.style.color = "#c99a2e";
+  }
+  document.addEventListener("DOMContentLoaded", function () {
     var nameRow = document.getElementById("nameRow");
     if (nameRow) nameRow.style.display = "none";
   });
@@ -443,44 +407,37 @@ function renderGrid() {
     card.dataset.id = t.id;
     card.style.setProperty("--accent", t.accent);
 
-    // Determine contrasting colours for the mock UI elements
-    var mockBtnBg   = t.accent;
-    var mockLogoBg  = t.dark ? "rgba(255,255,255,.7)" : t.ink;
-    var mockLinkBg  = t.dark ? "rgba(255,255,255,.4)" : "rgba(0,0,0,.25)";
-    var mockRowBg   = t.dark ? "rgba(255,255,255,.6)" : t.ink;
+    var mockBtnBg  = t.accent;
+    var mockLogoBg = t.dark ? "rgba(255,255,255,.7)" : t.ink;
+    var mockLinkBg = t.dark ? "rgba(255,255,255,.4)" : "rgba(0,0,0,.25)";
 
-    card.innerHTML = `
-      <div class="tcard-preview" style="background:${t.bg}">
-        <div class="mock-nav" style="background:${t.dark ? 'rgba(0,0,0,.4)' : 'rgba(255,255,255,.7)'}">
-          <div class="mock-logo" style="background:${mockLogoBg}"></div>
-          <div class="mock-links">
-            <div class="mock-link" style="background:${mockLinkBg}"></div>
-            <div class="mock-link" style="background:${mockLinkBg}"></div>
-            <div class="mock-link" style="background:${mockLinkBg}"></div>
-          </div>
-          <div class="mock-btn" style="background:${mockBtnBg}"></div>
-        </div>
-        <div class="mock-hero" style="background:linear-gradient(to bottom, ${t.bg}00, ${t.bg}dd)">
-          <div style="font-family:${t.font};color:${t.ink};font-weight:700;font-size:13px;margin-bottom:4px;line-height:1.2;opacity:.9">
-            ${t.label}
-          </div>
-          <div style="font-size:9px;color:${t.ink};opacity:.55;margin-bottom:8px;font-family:system-ui">Your tagline goes here</div>
-          <div style="display:inline-flex;align-items:center;background:${t.accent};color:${t.onAccent};border-radius:5px;padding:4px 10px;font-size:9px;font-weight:700;font-family:system-ui">
-            Contact us
-          </div>
-        </div>
-        <div class="tcard-tick">✓</div>
-      </div>
-      <div class="tcard-body">
-        <div class="tcard-top">
-          <span class="tcard-emoji">${t.emoji}</span>
-          <span class="tcard-label">${t.label}</span>
-        </div>
-        <div class="tcard-desc">${t.desc}</div>
-        <div class="tcard-tags">${t.goodFor}</div>
-        ${t.demo ? `<a class="tcard-demo" href="${t.demo}" target="_blank" rel="noopener" onclick="event.stopPropagation()">View live demo →</a>` : ''}
-      </div>
-    `;
+    card.innerHTML =
+      '<div class="tcard-preview" style="background:' + t.bg + '">' +
+        '<div class="mock-nav" style="background:' + (t.dark ? "rgba(0,0,0,.4)" : "rgba(255,255,255,.7)") + '">' +
+          '<div class="mock-logo" style="background:' + mockLogoBg + '"></div>' +
+          '<div class="mock-links">' +
+            '<div class="mock-link" style="background:' + mockLinkBg + '"></div>' +
+            '<div class="mock-link" style="background:' + mockLinkBg + '"></div>' +
+            '<div class="mock-link" style="background:' + mockLinkBg + '"></div>' +
+          '</div>' +
+          '<div class="mock-btn" style="background:' + mockBtnBg + '"></div>' +
+        '</div>' +
+        '<div class="mock-hero" style="background:linear-gradient(to bottom,' + t.bg + '00,' + t.bg + 'dd)">' +
+          '<div style="font-family:' + t.font + ';color:' + t.ink + ';font-weight:700;font-size:13px;margin-bottom:4px;line-height:1.2;opacity:.9">' + t.label + '</div>' +
+          '<div style="font-size:9px;color:' + t.ink + ';opacity:.55;margin-bottom:8px;font-family:system-ui">Your tagline goes here</div>' +
+          '<div style="display:inline-flex;align-items:center;background:' + t.accent + ';color:' + t.onAccent + ';border-radius:5px;padding:4px 10px;font-size:9px;font-weight:700;font-family:system-ui">Contact us</div>' +
+        '</div>' +
+        '<div class="tcard-tick">✓</div>' +
+      '</div>' +
+      '<div class="tcard-body">' +
+        '<div class="tcard-top">' +
+          '<span class="tcard-emoji">' + t.emoji + '</span>' +
+          '<span class="tcard-label">' + t.label + '</span>' +
+        '</div>' +
+        '<div class="tcard-desc">' + t.desc + '</div>' +
+        '<div class="tcard-tags">' + t.goodFor + '</div>' +
+        (t.demo ? '<a class="tcard-demo" href="' + t.demo + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">View live demo →</a>' : '') +
+      '</div>';
 
     card.addEventListener("click", function () { selectTemplate(t); });
     grid.appendChild(card);
@@ -489,47 +446,31 @@ function renderGrid() {
 
 // ── Select ─────────────────────────────────────────────────────────────────
 function selectTemplate(t) {
-  // Deselect previous
-  document.querySelectorAll(".tcard").forEach(function (c) {
-    c.classList.remove("selected");
-  });
-  // Mark selected
+  document.querySelectorAll(".tcard").forEach(function (c) { c.classList.remove("selected"); });
   var card = document.querySelector('[data-id="' + t.id + '"]');
   if (card) card.classList.add("selected");
-
   selected = t;
 
-  // Populate confirm drawer
   var swatch = document.getElementById("confirmSwatch");
   swatch.style.background = t.bg;
   swatch.style.border = "1.5px solid rgba(255,255,255,.12)";
   swatch.textContent = t.emoji;
-
   document.getElementById("confirmLabel").textContent = t.label;
   document.getElementById("confirmDesc").textContent  = t.desc;
-
-  // Open drawer
   document.getElementById("confirmDrawer").classList.add("open");
-  // Update Go button label based on mode
+
   var goLabel = document.getElementById("goLabel");
   if (goLabel) goLabel.textContent = switchMode ? "Switch to this template →" : "Build my site →";
 
-  // Focus name input
   var inp = document.getElementById("nameInput");
   setTimeout(function () { inp.focus(); }, 300);
-
-  // Enable go button when name is filled
   validateGoBtn();
-
-  // Scroll card into view on mobile
   if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function clearSelection() {
   selected = null;
-  document.querySelectorAll(".tcard").forEach(function (c) {
-    c.classList.remove("selected");
-  });
+  document.querySelectorAll(".tcard").forEach(function (c) { c.classList.remove("selected"); });
   document.getElementById("confirmDrawer").classList.remove("open");
   document.getElementById("nameInput").value = "";
   document.getElementById("goBtn").disabled = true;
@@ -538,32 +479,25 @@ function clearSelection() {
 // ── Name input ─────────────────────────────────────────────────────────────
 document.getElementById("nameInput").addEventListener("input", validateGoBtn);
 document.getElementById("nameInput").addEventListener("keydown", function (e) {
-  if (e.key === "Enter" && !document.getElementById("goBtn").disabled) {
-    startBuilding();
-  }
+  if (e.key === "Enter" && !document.getElementById("goBtn").disabled) startBuilding();
 });
 
 function validateGoBtn() {
-  if (switchMode) {
-    document.getElementById("goBtn").disabled = !selected;
-    return;
-  }
+  if (switchMode) { document.getElementById("goBtn").disabled = !selected; return; }
   var name = document.getElementById("nameInput").value.trim();
   document.getElementById("goBtn").disabled = !name || !selected;
 }
 
-// ── Create site + redirect ─────────────────────────────────────────────────
+// ── Create / switch site ───────────────────────────────────────────────────
 window.startBuilding = async function () {
   if (!selected) return;
   var name = document.getElementById("nameInput").value.trim();
-  if (!name) { document.getElementById("nameInput").focus(); return; }
+  if (!switchMode && !name) { document.getElementById("nameInput").focus(); return; }
 
   var btn = document.getElementById("goBtn");
-  btn.classList.add("loading");
-  btn.disabled = true;
+  btn.classList.add("loading"); btn.disabled = true;
 
   try {
-    // Switch mode: PUT /api/sites/:id/template instead of creating new site
     var resp;
     if (switchMode && switchSiteId) {
       resp = await fetch(API + "/sites/" + encodeURIComponent(switchSiteId) + "/template", {
@@ -579,34 +513,28 @@ window.startBuilding = async function () {
       });
     }
 
-    if (resp.status === 401) {
-      location.replace(DASH + "?next=" + encodeURIComponent(location.href));
-      return;
-    }
+    if (resp.status === 401) { location.replace(DASH + "?next=" + encodeURIComponent(location.href)); return; }
 
     var data = {};
     try { data = await resp.json(); } catch {}
 
-    if (!resp.ok || !data.site) {
+    if (!resp.ok || (!switchMode && !data.site)) {
       if (data.error === "one_site_limit") {
         toast("You already have an active site. Go to your dashboard to edit it.", "err");
         setTimeout(function () { location.href = DASH; }, 2500);
       } else {
         toast("Couldn't create your site — please try again", "err");
       }
-      btn.classList.remove("loading");
-      btn.disabled = false;
+      btn.classList.remove("loading"); btn.disabled = false;
       return;
     }
 
-    // Success — go straight to the editor
     var targetId = (switchMode && switchSiteId) ? switchSiteId : (data.site && data.site.id);
     location.href = APP + "/editor/?site=" + encodeURIComponent(targetId);
 
   } catch (e) {
     toast("Network error — check your connection and try again", "err");
-    btn.classList.remove("loading");
-    btn.disabled = false;
+    btn.classList.remove("loading"); btn.disabled = false;
   }
 };
 
@@ -618,20 +546,12 @@ function toast(msg, type) {
   el.textContent = msg;
   wrap.appendChild(el);
   requestAnimationFrame(function () { el.classList.add("show"); });
-  setTimeout(function () {
-    el.classList.remove("show");
-    setTimeout(function () { el.remove(); }, 300);
-  }, 4000);
+  setTimeout(function () { el.classList.remove("show"); setTimeout(function () { el.remove(); }, 300); }, 4000);
 }
 
-// ── Close drawer on outside click ─────────────────────────────────────────
-document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape") clearSelection();
-});
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") clearSelection(); });
 
-// ── Init ───────────────────────────────────────────────────────────────────
 renderGrid();
-
 })();
 </script>
 </body>
