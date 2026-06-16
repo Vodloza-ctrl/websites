@@ -215,10 +215,10 @@ img{display:block;max-width:100%}
 (function(){
 "use strict";
 
-var AUTH    = "https://app.websites.co.zw";
-var API     = "https://app.websites.co.zw";
+var AUTH    = "";  // relative — same origin as the page
+var API     = "";  // relative — same origin as the page
 var EDITOR  = "/editor/index.html";
-var PREVIEW = "https://app.websites.co.zw/preview/";
+var PREVIEW = "/preview/";
 
 var TPL_NAMES = {
   "bold-retail":        "General Business",
@@ -281,7 +281,7 @@ async function api(path, opts){
 (async function boot(){
   renderLoading();
   try{
-    var r = await api("/api/auth/me", {method:"GET"});
+    var r = await api("/auth/me", {method:"GET"});
     if(r.ok && r.data && r.data.authenticated){
       state.owner = r.data.owner;
       await loadSites();
@@ -380,7 +380,7 @@ window.requestOtp=async function(){
   var btn=q("auth-step").querySelector("button:last-of-type");
   if(btn){btn.disabled=true;btn.textContent="Sending…";}
   try{
-    var r=await api("/api/auth/request-otp",{method:"POST",body:JSON.stringify(body)});
+    var r=await api("/auth/request-otp",{method:"POST",body:JSON.stringify(body)});
     if(r.ok||r.status===200){
       renderOtpStep();
     } else {
@@ -417,7 +417,7 @@ window.verifyOtp=async function(){
   var btn=q("auth-step").querySelector("button:last-of-type");
   if(btn){btn.disabled=true;btn.textContent="Verifying…";}
   try{
-    var r=await api("/api/auth/verify-otp",{method:"POST",body:JSON.stringify({phone:state.phone,code:code})});
+    var r=await api("/auth/verify-otp",{method:"POST",body:JSON.stringify({phone:state.phone,code:code})});
     if(r.ok && r.data && r.data.token){
       localStorage.setItem("wcz_token",r.data.token);
       state.owner=r.data.owner;
@@ -601,7 +601,7 @@ window.previewSite=function(slug){
 };
 
 window.signOut=async function(){
-  try{ await api("/api/auth/logout",{method:"POST"}); }catch(e){}
+  try{ await api("/auth/logout",{method:"POST"}); }catch(e){}
   localStorage.removeItem("wcz_token");
   state.owner=null; state.sites=[];
   renderLogin();
