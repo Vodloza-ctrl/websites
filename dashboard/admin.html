@@ -27,11 +27,9 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 input,select,textarea{font-family:inherit}
 :focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:4px}
 
-/* ── Layout ── */
 .shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
 @media(max-width:800px){.shell{grid-template-columns:1fr}.sidebar{display:none}}
 
-/* ── Sidebar ── */
 .sidebar{background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 10px;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sidebar-logo{font-family:var(--font-ui);font-weight:800;font-size:17px;letter-spacing:-.02em;padding:6px 10px 20px;display:flex;align-items:center;gap:6px}
 .sidebar-logo .tld{color:var(--green)}
@@ -45,16 +43,13 @@ input,select,textarea{font-family:inherit}
 .sidebar-bottom{margin-top:auto;padding:12px 10px 0;border-top:1px solid var(--line);font-size:12px;color:var(--ink3)}
 .sidebar-bottom a{color:var(--ink2);font-weight:600}
 
-/* ── Main ── */
 main{overflow-x:hidden;padding:28px 28px 60px}
 @media(max-width:640px){main{padding:16px 16px 40px}}
 
-/* ── Page header ── */
 .page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .page-header h1{font-family:var(--font-ui);font-size:22px;font-weight:700;letter-spacing:-.02em}
 .page-header .sub{color:var(--ink2);font-size:13px;margin-top:2px}
 
-/* ── Stat cards ── */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
 .stat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
 .stat-label{font-size:11.5px;font-weight:600;color:var(--ink2);letter-spacing:.03em;margin-bottom:8px}
@@ -65,13 +60,11 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 .stat-card.red   .stat-value{color:var(--red)}
 .stat-card.blue  .stat-value{color:var(--blue)}
 
-/* ── Panels ── */
 .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:20px;overflow:hidden}
-.panel-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .panel-head h2{font-family:var(--font-ui);font-size:14px;font-weight:600;letter-spacing:-.01em}
 .panel-body{padding:18px}
 
-/* ── Table ── */
 .tbl{width:100%;border-collapse:collapse}
 .tbl th{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:0 12px 10px}
 .tbl td{padding:11px 12px;font-size:13px;border-top:1px solid var(--line);vertical-align:middle}
@@ -80,7 +73,6 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 .tbl td.url{font-size:12px;color:var(--ink2);font-family:monospace}
 .tbl td.url a{color:var(--green)}
 
-/* ── Badges ── */
 .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.02em;white-space:nowrap}
 .badge-green{background:var(--green-bg);color:var(--green)}
 .badge-gold{background:var(--gold-bg);color:var(--gold)}
@@ -89,7 +81,6 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 .badge-grey{background:var(--card2);color:var(--ink3)}
 .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 
-/* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-xs);font-weight:600;font-size:12.5px;padding:7px 12px;transition:.12s;border:1.5px solid transparent;white-space:nowrap;cursor:pointer}
 .btn-green{background:var(--green);color:#fff;border-color:var(--green)}
 .btn-green:hover{background:var(--green-dk)}
@@ -99,7 +90,6 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 .btn-red:hover{background:rgba(229,72,77,.2)}
 .btn-sm{padding:5px 10px;font-size:11.5px}
 
-/* ── Form elements ── */
 .fld{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
 .input{width:100%;background:var(--card2);border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:9px 12px;font-size:13.5px;color:var(--ink);transition:border-color .15s}
 .input:focus{outline:none;border-color:var(--green)}
@@ -108,15 +98,6 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 .select:focus{outline:none;border-color:var(--green)}
 .fld-group{margin-bottom:14px}
 
-/* ── Tabs ── */
-.tab-bar{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 18px;margin-bottom:0}
-.tab-btn{padding:10px 14px;font-size:13px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;transition:.12s;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;margin-bottom:-1px}
-.tab-btn:hover{color:var(--ink)}
-.tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
-.tab-panel{display:none;padding:18px}
-.tab-panel.active{display:block}
-
-/* ── Template cards (admin) ── */
 .tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
 .tmpl-card{background:var(--card2);border:1.5px solid var(--line2);border-radius:var(--r-sm);overflow:hidden}
 .tmpl-preview{height:100px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:8px 10px}
@@ -126,7 +107,6 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 .tmpl-url{font-size:11.5px;color:var(--ink2);margin-bottom:8px;word-break:break-all}
 .tmpl-actions{display:flex;gap:6px;flex-wrap:wrap}
 
-/* ── Modal ── */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
 .modal-backdrop.open{display:flex}
 .modal{background:var(--card);border:1px solid var(--line2);border-radius:var(--r);width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
@@ -136,18 +116,15 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 .modal-body{padding:18px}
 .modal-foot{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
 
-/* ── Loading ── */
 .skeleton{background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:skel 1.4s infinite;border-radius:6px;height:14px}
 @keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* ── Toast ── */
 .toast-wrap{position:fixed;bottom:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
 .toast{background:var(--card2);border:1px solid var(--line2);color:var(--ink);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;opacity:0;transform:translateX(20px);transition:.25s;pointer-events:none;max-width:320px}
 .toast.show{opacity:1;transform:none}
 .toast.ok{background:var(--green-bg);border-color:var(--green);color:var(--green)}
 .toast.err{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 
-/* ── Search ── */
 .search-row{display:flex;gap:8px;margin-bottom:14px}
 .search-input{flex:1;background:var(--card2);border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:8px 12px;font-size:13px;color:var(--ink)}
 .search-input:focus{outline:none;border-color:var(--green)}
@@ -157,8 +134,6 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 <body>
 
 <div class="shell">
-
-  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       websites<span class="tld">.co.zw</span>
@@ -184,6 +159,10 @@ main{overflow-x:hidden;padding:28px 28px 60px}
       <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5c1.5 2 2.5 5.5 0 13M1.5 8h13M2 5h12M2 11h12" stroke="currentColor" stroke-width="1.2"/></svg>
       Domain Queue
     </div>
+    <div class="nav-item" onclick="showPage('email',this)">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M1 6l7 4 7-4" stroke="currentColor" stroke-width="1.2"/></svg>
+      Email Routes
+    </div>
 
     <div class="nav-section">Platform</div>
     <div class="nav-item" onclick="showPage('templates',this)">
@@ -197,34 +176,27 @@ main{overflow-x:hidden;padding:28px 28px 60px}
     </div>
   </aside>
 
-  <!-- Main content -->
   <main id="mainContent">
 
     <!-- PAGE: OVERVIEW -->
     <div id="page-overview" class="page">
       <div class="page-header">
-        <div>
-          <h1>Operations overview</h1>
-          <div class="sub" id="overviewSub">Loading live data…</div>
-        </div>
+        <div><h1>Operations overview</h1><div class="sub" id="overviewSub">Loading live data…</div></div>
         <button class="btn btn-ghost" onclick="loadOverview()">↺ Refresh</button>
       </div>
-
       <div class="stat-grid" id="statGrid">
-        <div class="stat-card"><div class="stat-label">Active sites</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
-        <div class="stat-card"><div class="stat-label">Total customers</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
-        <div class="stat-card"><div class="stat-label">Published sites</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
-        <div class="stat-card"><div class="stat-label">Draft sites</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
+        <div class="stat-card"><div class="stat-label">Total sites</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
+        <div class="stat-card"><div class="stat-label">Published</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
+        <div class="stat-card"><div class="stat-label">Draft</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
+        <div class="stat-card"><div class="stat-label">Grace period</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
+        <div class="stat-card"><div class="stat-label">Customers</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
         <div class="stat-card"><div class="stat-label">AI generations</div><div class="stat-value skeleton" style="width:60px;height:28px"></div></div>
       </div>
-
       <div class="panel">
         <div class="panel-head"><h2>Recent sites</h2><span id="recentCount" style="font-size:12px;color:var(--ink2)"></span></div>
         <div style="overflow-x:auto">
           <table class="tbl">
-            <thead><tr>
-              <th>Business</th><th>Owner</th><th>Template</th><th>Status</th><th>Created</th><th>Actions</th>
-            </tr></thead>
+            <thead><tr><th>Business</th><th>Subdomain</th><th>Template</th><th>Status</th><th>Published</th><th>Actions</th></tr></thead>
             <tbody id="recentSitesTbl"><tr><td colspan="6" style="color:var(--ink3);padding:20px">Loading…</td></tr></tbody>
           </table>
         </div>
@@ -239,7 +211,7 @@ main{overflow-x:hidden;padding:28px 28px 60px}
       <div class="panel">
         <div class="panel-head">
           <div class="search-row" style="margin:0;flex:1">
-            <input class="search-input" id="siteSearch" placeholder="Search by name, subdomain, or owner phone…" oninput="filterSites()">
+            <input class="search-input" id="siteSearch" placeholder="Search by name or subdomain…" oninput="filterSites()">
             <select class="select" id="siteStatusFilter" onchange="filterSites()">
               <option value="">All statuses</option>
               <option value="published">Published</option>
@@ -251,9 +223,7 @@ main{overflow-x:hidden;padding:28px 28px 60px}
         </div>
         <div style="overflow-x:auto">
           <table class="tbl">
-            <thead><tr>
-              <th>Site name</th><th>Subdomain</th><th>Owner</th><th>Template</th><th>Status</th><th>AI gens</th><th>Actions</th>
-            </tr></thead>
+            <thead><tr><th>Site name</th><th>Subdomain</th><th>Owner ID</th><th>Template</th><th>Status</th><th>AI gens</th><th>Actions</th></tr></thead>
             <tbody id="allSitesTbl"><tr><td colspan="7" style="color:var(--ink3);padding:20px">Loading…</td></tr></tbody>
           </table>
         </div>
@@ -267,11 +237,11 @@ main{overflow-x:hidden;padding:28px 28px 60px}
       </div>
       <div class="panel">
         <div class="panel-head">
-          <input class="search-input" id="custSearch" placeholder="Search by phone or name…" oninput="filterCustomers()" style="max-width:340px">
+          <input class="search-input" id="custSearch" placeholder="Search by owner ID…" oninput="filterCustomers()" style="max-width:340px">
         </div>
         <div style="overflow-x:auto">
           <table class="tbl">
-            <thead><tr><th>Phone</th><th>Name</th><th>Sites</th><th>Joined</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Owner ID</th><th>Phone</th><th>Sites</th><th>Demo?</th><th>Actions</th></tr></thead>
             <tbody id="customersTbl"><tr><td colspan="5" style="color:var(--ink3);padding:20px">Loading…</td></tr></tbody>
           </table>
         </div>
@@ -281,17 +251,40 @@ main{overflow-x:hidden;padding:28px 28px 60px}
     <!-- PAGE: DOMAIN QUEUE -->
     <div id="page-domains" class="page" style="display:none">
       <div class="page-header">
-        <div><h1>Domain queue</h1><div class="sub">Pending .co.zw registrations to submit to ZISPA</div></div>
-        <button class="btn btn-green" onclick="openAddDomain()">+ Add pending domain</button>
+        <div><h1>Domain queue</h1><div class="sub">Customer domain registrations — submit pending to ZISPA or registrar</div></div>
+        <div style="display:flex;gap:8px">
+          <select class="select" id="domainStatusFilter" onchange="loadDomainQueue()">
+            <option value="pending">Pending</option>
+            <option value="all">All statuses</option>
+            <option value="checking">Checking</option>
+            <option value="registered">Registered</option>
+            <option value="active">Active</option>
+            <option value="failed">Failed</option>
+          </select>
+          <button class="btn btn-ghost" onclick="loadDomainQueue()">↺ Refresh</button>
+        </div>
       </div>
-
       <div class="panel">
         <div style="overflow-x:auto">
           <table class="tbl">
-            <thead><tr><th>Domain</th><th>Site</th><th>Customer</th><th>Requested</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="domainQueueTbl">
-              <tr><td colspan="6" style="color:var(--ink3);padding:20px">No pending domains — they'll appear here when customers request .co.zw registration.</td></tr>
-            </tbody>
+            <thead><tr><th>Domain choices</th><th>Site</th><th>Owner</th><th>Plan</th><th>Requested</th><th>Status / Assigned</th><th>Actions</th></tr></thead>
+            <tbody id="domainQueueTbl"><tr><td colspan="7" style="color:var(--ink3);padding:20px">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: EMAIL ROUTES -->
+    <div id="page-email" class="page" style="display:none">
+      <div class="page-header">
+        <div><h1>Email routes</h1><div class="sub">Cloudflare Email Routing forwarding rules across all sites</div></div>
+        <button class="btn btn-ghost" onclick="loadEmailRoutes()">↺ Refresh</button>
+      </div>
+      <div class="panel">
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Address</th><th>Forwards to</th><th>Site</th><th>Verified</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="emailRoutesTbl"><tr><td colspan="6" style="color:var(--ink3);padding:20px">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -302,16 +295,12 @@ main{overflow-x:hidden;padding:28px 28px 60px}
       <div class="page-header">
         <div><h1>Template library</h1><div class="sub">Manage preview images and demo URLs for each template</div></div>
       </div>
-
       <div class="panel" style="margin-bottom:20px">
         <div class="panel-head"><h2>How template assets work</h2></div>
         <div class="panel-body" style="color:var(--ink2);font-size:13.5px;line-height:1.7">
-          Each template card on the customer picker shows a <strong style="color:var(--ink)">preview image</strong> and links to a <strong style="color:var(--ink)">live demo URL</strong>.
-          Set the preview image by uploading a screenshot to R2 at <code style="background:var(--card2);padding:2px 6px;border-radius:4px;font-size:12px">platform/templates/{id}/preview.jpg</code>
-          and entering the public URL below. The demo URL is a real published site using that template — ideally the Elite Sports Institute or a seeded demo site.
+          Upload a screenshot to R2 at <code style="background:var(--card2);padding:2px 6px;border-radius:4px;font-size:12px">platform/templates/{id}/preview.jpg</code>, paste the URL below. The demo URL is a real live site using that template.
         </div>
       </div>
-
       <div class="tmpl-grid" id="templateAdminGrid"></div>
     </div>
 
@@ -321,17 +310,10 @@ main{overflow-x:hidden;padding:28px 28px 60px}
 <!-- Edit site modal -->
 <div class="modal-backdrop" id="editSiteModal">
   <div class="modal">
-    <div class="modal-head">
-      <h3>Edit site</h3>
-      <button class="modal-close" onclick="closeModal('editSiteModal')">✕</button>
-    </div>
+    <div class="modal-head"><h3>Edit site</h3><button class="modal-close" onclick="closeModal('editSiteModal')">✕</button></div>
     <div class="modal-body">
-      <div class="fld-group">
-        <label class="fld">Site name</label>
-        <input class="input" id="editSiteName">
-      </div>
-      <div class="fld-group">
-        <label class="fld">Status</label>
+      <div class="fld-group"><label class="fld">Site name</label><input class="input" id="editSiteName"></div>
+      <div class="fld-group"><label class="fld">Status</label>
         <select class="select" id="editSiteStatus" style="width:100%">
           <option value="draft">Draft</option>
           <option value="published">Published</option>
@@ -339,17 +321,13 @@ main{overflow-x:hidden;padding:28px 28px 60px}
           <option value="suspended">Suspended</option>
         </select>
       </div>
-      <div class="fld-group">
-        <label class="fld">Plan</label>
+      <div class="fld-group"><label class="fld">Plan</label>
         <select class="select" id="editSitePlan" style="width:100%">
-          <option value="starter">Starter</option>
-          <option value="pro">Pro</option>
+          <option value="starter">Starter — $30/yr</option>
+          <option value="pro">Pro — $60/yr</option>
         </select>
       </div>
-      <div class="fld-group">
-        <label class="fld">Expires at (Unix timestamp)</label>
-        <input class="input" id="editSiteExpires" type="number" placeholder="Leave blank to keep current">
-      </div>
+      <div class="fld-group"><label class="fld">Expires at (Unix timestamp — leave blank to auto-set)</label><input class="input" id="editSiteExpires" type="number" placeholder="e.g. 1780000000"></div>
       <input type="hidden" id="editSiteId">
     </div>
     <div class="modal-foot">
@@ -359,23 +337,44 @@ main{overflow-x:hidden;padding:28px 28px 60px}
   </div>
 </div>
 
+<!-- Assign domain modal -->
+<div class="modal-backdrop" id="assignDomainModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Assign domain</h3><button class="modal-close" onclick="closeModal('assignDomainModal')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink2);margin-bottom:14px">Enter the domain that was successfully registered and is ready to point at the site.</p>
+      <div class="fld-group"><label class="fld">Registered domain</label><input class="input" id="assignDomainValue" placeholder="e.g. elitesports.co.zw"></div>
+      <div class="fld-group"><label class="fld">Notes (optional)</label><input class="input" id="assignDomainNotes" placeholder="e.g. Registered via ZISPA ref #12345"></div>
+      <div class="fld-group"><label class="fld">Status</label>
+        <select class="select" id="assignDomainStatus" style="width:100%">
+          <option value="checking">Checking availability</option>
+          <option value="registered">Submitted to registrar</option>
+          <option value="active">Active (domain live)</option>
+          <option value="failed">Failed / unavailable</option>
+        </select>
+      </div>
+      <input type="hidden" id="assignDomainWishId">
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('assignDomainModal')">Cancel</button>
+      <button class="btn btn-green" onclick="saveAssignDomain()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- Edit template modal -->
 <div class="modal-backdrop" id="editTemplateModal">
   <div class="modal">
-    <div class="modal-head">
-      <h3 id="editTmplTitle">Edit template</h3>
-      <button class="modal-close" onclick="closeModal('editTemplateModal')">✕</button>
-    </div>
+    <div class="modal-head"><h3 id="editTmplTitle">Edit template</h3><button class="modal-close" onclick="closeModal('editTemplateModal')">✕</button></div>
     <div class="modal-body">
       <div class="fld-group">
         <label class="fld">Preview image URL</label>
         <input class="input" id="editTmplPreview" placeholder="https://assets.websites.co.zw/platform/templates/bold-retail/preview.jpg">
-        <div style="font-size:11.5px;color:var(--ink3);margin-top:5px">Upload a screenshot to R2 first, then paste the public URL here.</div>
+        <div style="font-size:11.5px;color:var(--ink3);margin-top:5px">Upload screenshot to R2 first, paste the public URL here.</div>
       </div>
       <div class="fld-group">
         <label class="fld">Live demo URL</label>
         <input class="input" id="editTmplDemo" placeholder="https://elite.websites.co.zw">
-        <div style="font-size:11.5px;color:var(--ink3);margin-top:5px">A real published site using this template — shown as "View demo" on the picker.</div>
       </div>
       <input type="hidden" id="editTmplId">
     </div>
@@ -386,275 +385,402 @@ main{overflow-x:hidden;padding:28px 28px 60px}
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
 (function(){
 "use strict";
 
-// ── Config ───────────────────────────────────────────────────────────────────
-var APP        = "https://app.websites.co.zw";
-var API        = APP + "/api";
-var ADMIN_API  = APP + "/api/admin";
+var APP       = "https://app.websites.co.zw";
+var API       = APP + "/api";
+var ADMIN_API = APP + "/api/admin";
 
-// Admin secret — set in Worker secrets as ADMIN_SECRET.
-// Store your copy here in localStorage: localStorage.setItem("wcz_admin_secret","your-secret")
+// Admin secret — stored in localStorage after first prompt
 var ADMIN_SECRET = localStorage.getItem("wcz_admin_secret") || "";
 if (!ADMIN_SECRET) {
-  var entered = prompt("Enter admin secret (set in Cloudflare Worker secrets as ADMIN_SECRET):");
+  var entered = prompt("Enter admin secret (ADMIN_SECRET from Cloudflare Worker secrets):");
   if (entered) { localStorage.setItem("wcz_admin_secret", entered); ADMIN_SECRET = entered; }
 }
 
 function adminHeaders() {
-  return {
-    "Content-Type":  "application/json",
-    "Authorization": "Bearer " + ADMIN_SECRET,
-  };
+  return { "Content-Type":"application/json", "Authorization":"Bearer "+ADMIN_SECRET };
+}
+function userHeaders() {
+  return { "Content-Type":"application/json", "Authorization":"Bearer "+(localStorage.getItem("wcz_token")||"") };
 }
 
-// ── Admin auth guard ──────────────────────────────────────────────────────────
-// Uses the same wcz_token as customer auth.
-// Admin routes in the worker are protected by checking if owner has admin flag.
-// For now: if no token at all, redirect to customer dashboard for login.
 var token = localStorage.getItem("wcz_token");
 if (!token) {
-  location.replace("/dashboard/customer.html?next=" + encodeURIComponent(location.href));
+  location.replace("/dashboard/customer.html?next="+encodeURIComponent(location.href));
 }
 
-function headers() {
-  return {
-    "Content-Type":  "application/json",
-    "Authorization": "Bearer " + (localStorage.getItem("wcz_token") || ""),
-  };
-}
-
-// ── Template metadata (local — no backend needed for this) ────────────────────
+// ── Template metadata ─────────────────────────────────────────────────────────
 var TEMPLATES = [
-  { id:"bold-retail",        label:"General Business",       emoji:"🏢",  bg:"#ffffff", accent:"#1a1a1a" },
-  { id:"grill-house",        label:"Restaurant & Food",      emoji:"🍽️", bg:"#FBF4E9", accent:"#D2541F" },
-  { id:"beauty-salon",       label:"Beauty & Wellness",      emoji:"💅",  bg:"#ffffff", accent:"#B08D57" },
-  { id:"school-institution", label:"School & Academy",       emoji:"🏫",  bg:"#ffffff", accent:"#C99A2E" },
-  { id:"advisory-firm",      label:"Consultant & Legal",     emoji:"💼",  bg:"#ffffff", accent:"#C08A2D" },
-  { id:"property-estate",    label:"Property & Real Estate", emoji:"🏠",  bg:"#F6F1E7", accent:"#B0852F" },
-  { id:"boutique-fashion",   label:"Fashion & Boutique",     emoji:"👗",  bg:"#0e0b0d", accent:"#e8a0b0" },
-  { id:"grocery-fmcg",       label:"Grocery & Spaza",        emoji:"🛒",  bg:"#ffffff", accent:"#1e8c3a" },
-  { id:"retail-hardware",    label:"Hardware & Retail",      emoji:"🔧",  bg:"#f7f8fa", accent:"#1a56db" },
+  { id:"bold-retail",        label:"General Business",       emoji:"🏢",  bg:"#1a1a2e" },
+  { id:"grill-house",        label:"Restaurant & Food",      emoji:"🍽️", bg:"#2d1200" },
+  { id:"beauty-salon",       label:"Beauty & Wellness",      emoji:"💅",  bg:"#3d0030" },
+  { id:"school-institution", label:"School & Academy",       emoji:"🏫",  bg:"#0a1628" },
+  { id:"advisory-firm",      label:"Consultant & Legal",     emoji:"💼",  bg:"#1a1400" },
+  { id:"property-estate",    label:"Property & Real Estate", emoji:"🏠",  bg:"#0a1f0a" },
+  { id:"boutique-fashion",   label:"Fashion & Boutique",     emoji:"👗",  bg:"#1a0010" },
+  { id:"grocery-fmcg",       label:"Grocery & Spaza",        emoji:"🛒",  bg:"#0a2a0a" },
+  { id:"retail-hardware",    label:"Hardware & Retail",      emoji:"🔧",  bg:"#0d1a2e" },
 ];
+function getTmplConfig(id) { try { return JSON.parse(localStorage.getItem("tmpl_cfg_"+id)||"{}"); } catch { return {}; } }
+function setTmplConfig(id, data) { localStorage.setItem("tmpl_cfg_"+id, JSON.stringify(data)); }
 
-// Template config stored in localStorage (persists across sessions)
-// In a full build this would be a D1 table: platform_config
-function getTmplConfig(id) {
-  try { return JSON.parse(localStorage.getItem("tmpl_cfg_"+id)||"{}"); } catch { return {}; }
-}
-function setTmplConfig(id, data) {
-  localStorage.setItem("tmpl_cfg_"+id, JSON.stringify(data));
-}
-
-// ── Cached data ───────────────────────────────────────────────────────────────
+// ── Caches ────────────────────────────────────────────────────────────────────
 var _allSites     = [];
 var _allCustomers = [];
+var _domainQueue  = [];
+var _emailRoutes  = [];
+var currentPage   = "overview";
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-var currentPage = "overview";
 window.showPage = function(page, el) {
   document.querySelectorAll(".page").forEach(function(p){ p.style.display="none"; });
   var pageEl = document.getElementById("page-"+page);
-  if (pageEl) pageEl.style.display="block";
+  if (pageEl) pageEl.style.display = "block";
   document.querySelectorAll(".nav-item").forEach(function(n){ n.classList.remove("active"); });
   if (el) el.classList.add("active");
   currentPage = page;
   if (page==="overview")  loadOverview();
   if (page==="sites")     loadAllSites();
   if (page==="customers") loadCustomers();
+  if (page==="domains")   loadDomainQueue();
+  if (page==="email")     loadEmailRoutes();
   if (page==="templates") renderTemplateAdmin();
 };
 
 // ── Overview ──────────────────────────────────────────────────────────────────
 window.loadOverview = async function() {
   try {
-    // Use real admin stats endpoint
     var [statsResp, sitesResp] = await Promise.all([
       fetch(ADMIN_API+"/stats", { headers: adminHeaders() }),
       fetch(ADMIN_API+"/sites?limit=20", { headers: adminHeaders() }),
     ]);
-
-    if (statsResp.status === 401 || sitesResp.status === 401) {
-      toast("Admin access denied — check ADMIN_SECRET", "err");
-      return;
-    }
-
-    var stats = statsResp.ok ? await statsResp.json() : null;
+    if (statsResp.status===401) { toast("Admin access denied — check ADMIN_SECRET", "err"); return; }
+    var stats     = statsResp.ok ? await statsResp.json() : null;
     var sitesData = sitesResp.ok ? await sitesResp.json() : { sites: [] };
-    var recentSites = sitesData.sites || [];
 
     if (stats) {
       document.getElementById("statGrid").innerHTML =
-        '<div class="stat-card green"><div class="stat-label">Total sites</div><div class="stat-value">'+stats.sites.total+'</div><div class="stat-sub">across all accounts</div></div>'
-       +'<div class="stat-card green"><div class="stat-label">Published</div><div class="stat-value">'+stats.sites.published+'</div><div class="stat-sub">live on the web</div></div>'
-       +'<div class="stat-card"><div class="stat-label">Draft</div><div class="stat-value">'+stats.sites.draft+'</div><div class="stat-sub">not yet published</div></div>'
-       +'<div class="stat-card gold"><div class="stat-label">Grace period</div><div class="stat-value">'+stats.sites.grace+'</div><div class="stat-sub">subscription lapsed</div></div>'
-       +'<div class="stat-card blue"><div class="stat-label">Total customers</div><div class="stat-value">'+stats.owners.total+'</div><div class="stat-sub">registered owners</div></div>'
-       +'<div class="stat-card blue"><div class="stat-label">AI generations</div><div class="stat-value">'+stats.ai.total_generations+'</div><div class="stat-sub">cost: $'+Number(stats.ai.total_cost_usd||0).toFixed(2)+'</div></div>';
+        statCard("green","Total sites",stats.sites.total,"across all accounts")+
+        statCard("green","Published",stats.sites.published,"live on the web")+
+        statCard("","Draft",stats.sites.draft,"not yet published")+
+        statCard("gold","Grace period",stats.sites.grace,"subscription lapsed")+
+        statCard("blue","Customers",stats.owners.total,"registered owners")+
+        statCard("blue","AI generations",stats.ai.total_generations,"cost: $"+Number(stats.ai.total_cost_usd||0).toFixed(2));
     }
-
-    document.getElementById("recentCount").textContent = stats ? stats.sites.total + " total" : "";
-    document.getElementById("recentSitesTbl").innerHTML = recentSites.map(function(s){
-      return siteRow(s);
-    }).join("") || '<tr><td colspan="6" style="color:var(--ink3);padding:20px">No sites yet</td></tr>';
-
-    document.getElementById("overviewSub").textContent =
-      "Last refreshed " + new Date().toLocaleTimeString();
-  } catch(e) {
-    toast("Failed to load data — " + e.message, "err");
-  }
+    document.getElementById("recentCount").textContent = stats ? stats.sites.total+" total" : "";
+    document.getElementById("recentSitesTbl").innerHTML =
+      (sitesData.sites||[]).map(siteRow).join("") ||
+      '<tr><td colspan="6" style="color:var(--ink3);padding:20px">No sites yet</td></tr>';
+    document.getElementById("overviewSub").textContent = "Last refreshed "+new Date().toLocaleTimeString();
+  } catch(e) { toast("Failed to load: "+e.message,"err"); }
 };
 
-function siteRow(s) {
-  var statusBadge = {
-    published: '<span class="badge badge-green">● Published</span>',
-    draft:     '<span class="badge badge-grey">● Draft</span>',
-    grace:     '<span class="badge badge-gold">● Grace</span>',
-    suspended: '<span class="badge badge-red">● Suspended</span>',
-    active:    '<span class="badge badge-green">● Active</span>',
-  }[s.status] || '<span class="badge badge-grey">'+esc(s.status)+'</span>';
-
-  var slug = s.draft_subdomain || "";
-  var pubUrl = slug ? "https://"+slug+".websites.co.zw" : "—";
-  var created = s.published_at ? new Date(s.published_at*1000).toLocaleDateString() : "—";
-
-  return '<tr>'
-    +'<td class="name">'+esc(s.site_name||"Untitled")+'</td>'
-    +'<td class="url"><a href="'+esc(pubUrl)+'" target="_blank" rel="noopener">'+esc(slug||"—")+'</a></td>'
-    +'<td style="color:var(--ink2);font-size:12px">'+esc(tmplLabel(s.template_id))+'</td>'
-    +'<td>'+statusBadge+'</td>'
-    +'<td style="color:var(--ink3);font-size:12px">'+created+'</td>'
-    +'<td><div style="display:flex;gap:5px">'
-    +'<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(s.id)+')">Edit</button>'
-    +'<a class="btn btn-ghost btn-sm" href="'+APP+'/editor/?site='+esc(s.id)+'" target="_blank">Open editor</a>'
-    +'</div></td>'
-    +'</tr>';
+function statCard(color, label, value, sub) {
+  return '<div class="stat-card'+(color?" "+color:"")+'">'+
+    '<div class="stat-label">'+esc(label)+'</div>'+
+    '<div class="stat-value">'+esc(String(value))+'</div>'+
+    '<div class="stat-sub">'+esc(sub)+'</div>'+
+  '</div>';
 }
 
+function siteRow(s) {
+  var badge = statusBadge(s.status);
+  var slug  = s.draft_subdomain || "";
+  var pub   = s.published_at ? new Date(s.published_at*1000).toLocaleDateString() : "—";
+  return '<tr>'+
+    '<td class="name">'+esc(s.site_name||"Untitled")+'</td>'+
+    '<td class="url"><a href="https://'+esc(slug)+'.websites.co.zw" target="_blank">'+esc(slug||"—")+'</a></td>'+
+    '<td style="color:var(--ink2);font-size:12px">'+esc(tmplLabel(s.template_id))+'</td>'+
+    '<td>'+badge+'</td>'+
+    '<td style="color:var(--ink3);font-size:12px">'+pub+'</td>'+
+    '<td><div style="display:flex;gap:5px">'+
+      '<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(s.id)+')">Edit</button>'+
+      '<a class="btn btn-ghost btn-sm" href="'+APP+'/editor/?site='+esc(s.id)+'" target="_blank">Editor</a>'+
+    '</div></td>'+
+  '</tr>';
+}
+
+function statusBadge(st) {
+  var m = { published:"badge-green", active:"badge-green", draft:"badge-grey", grace:"badge-gold", suspended:"badge-red", pending_payment:"badge-blue" };
+  return '<span class="badge '+(m[st]||"badge-grey")+'">'+esc(st||"—")+'</span>';
+}
 function tmplLabel(id) {
   var m = {"bold-retail":"General","grill-house":"Restaurant","beauty-salon":"Salon","school-institution":"School","advisory-firm":"Consultant","property-estate":"Property","boutique-fashion":"Boutique","grocery-fmcg":"Grocery","retail-hardware":"Hardware"};
   return m[id] || id || "—";
 }
 
-// ── All sites page ─────────────────────────────────────────────────────────────
+// ── All sites ─────────────────────────────────────────────────────────────────
 window.loadAllSites = async function() {
-  if (_allSites.length === 0) {
+  if (!_allSites.length) {
     var r = await fetch(ADMIN_API+"/sites?limit=500", { headers: adminHeaders() });
-    if (!r.ok) { toast("Failed to load sites", "err"); return; }
-    var data = await r.json();
-    _allSites = data.sites || [];
+    if (!r.ok) { toast("Failed to load sites","err"); return; }
+    _allSites = (await r.json()).sites || [];
   }
   renderSiteTable(_allSites);
 };
 
 window.filterSites = function() {
-  var q      = document.getElementById("siteSearch").value.toLowerCase();
-  var status = document.getElementById("siteStatusFilter").value;
-  var filtered = _allSites.filter(function(s){
-    var matchQ = !q || (s.site_name||"").toLowerCase().includes(q)
-                    || (s.draft_subdomain||"").toLowerCase().includes(q);
-    var matchS = !status || s.status === status;
-    return matchQ && matchS;
-  });
-  renderSiteTable(filtered);
+  var q = document.getElementById("siteSearch").value.toLowerCase();
+  var st = document.getElementById("siteStatusFilter").value;
+  renderSiteTable(_allSites.filter(function(s){
+    return (!q || (s.site_name||"").toLowerCase().includes(q) || (s.draft_subdomain||"").toLowerCase().includes(q)) &&
+           (!st || s.status===st);
+  }));
 };
 
 function renderSiteTable(sites) {
   var tbody = document.getElementById("allSitesTbl");
-  if (!sites.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--ink3);padding:20px">No sites match your filter</td></tr>';
-    return;
-  }
-  tbody.innerHTML = sites.map(function(s){
-    var slug = s.draft_subdomain || "";
-    var statusBadge = {
-      published: '<span class="badge badge-green">Published</span>',
-      draft:     '<span class="badge badge-grey">Draft</span>',
-      grace:     '<span class="badge badge-gold">Grace</span>',
-      suspended: '<span class="badge badge-red">Suspended</span>',
-      active:    '<span class="badge badge-green">Active</span>',
-    }[s.status] || '<span class="badge badge-grey">'+esc(s.status)+'</span>';
-    return '<tr>'
-      +'<td class="name">'+esc(s.site_name||"Untitled")+'</td>'
-      +'<td class="url"><a href="https://'+esc(slug)+'.websites.co.zw" target="_blank">'+esc(slug||"—")+'</a></td>'
-      +'<td style="color:var(--ink2);font-size:12px;font-family:monospace">'+esc(s.owner_id||"")+'</td>'
-      +'<td style="color:var(--ink2);font-size:12px">'+esc(tmplLabel(s.template_id))+'</td>'
-      +'<td>'+statusBadge+'</td>'
-      +'<td style="color:var(--ink2);text-align:center">'+esc(String(s.ai_generations_used||0))+'</td>'
-      +'<td><div style="display:flex;gap:5px">'
-      +'<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(s.id)+')">Edit</button>'
-      +'<a class="btn btn-ghost btn-sm" href="'+APP+'/preview/'+esc(slug)+'" target="_blank">Preview</a>'
-      +'</div></td>'
-      +'</tr>';
-  }).join("");
+  tbody.innerHTML = !sites.length
+    ? '<tr><td colspan="7" style="color:var(--ink3);padding:20px">No sites match your filter</td></tr>'
+    : sites.map(function(s){
+      var slug = s.draft_subdomain || "";
+      return '<tr>'+
+        '<td class="name">'+esc(s.site_name||"Untitled")+'</td>'+
+        '<td class="url"><a href="https://'+esc(slug)+'.websites.co.zw" target="_blank">'+esc(slug||"—")+'</a></td>'+
+        '<td style="color:var(--ink2);font-size:11px;font-family:monospace;max-width:120px;overflow:hidden;text-overflow:ellipsis">'+esc(s.owner_id||"")+'</td>'+
+        '<td style="color:var(--ink2);font-size:12px">'+esc(tmplLabel(s.template_id))+'</td>'+
+        '<td>'+statusBadge(s.status)+'</td>'+
+        '<td style="color:var(--ink2);text-align:center">'+esc(String(s.ai_generations_used||0))+'</td>'+
+        '<td><div style="display:flex;gap:5px">'+
+          '<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(s.id)+')">Edit</button>'+
+          '<a class="btn btn-ghost btn-sm" href="'+APP+'/preview/'+esc(slug)+'" target="_blank">Preview</a>'+
+        '</div></td>'+
+      '</tr>';
+    }).join("");
 }
 
 // ── Customers ─────────────────────────────────────────────────────────────────
 window.loadCustomers = async function() {
-  // No /api/owners endpoint yet — derive from sites list as approximation
-  if (_allSites.length === 0) {
-    var r = await fetch(API+"/sites", { headers: headers() });
-    var data = await r.json();
-    _allSites = data.sites || [];
+  if (!_allSites.length) {
+    var r = await fetch(ADMIN_API+"/sites?limit=500", { headers: adminHeaders() });
+    if (r.ok) _allSites = (await r.json()).sites || [];
   }
-  // Group sites by owner_id
   var byOwner = {};
   _allSites.forEach(function(s){
     if (!byOwner[s.owner_id]) byOwner[s.owner_id] = [];
     byOwner[s.owner_id].push(s);
   });
-  _allCustomers = Object.entries(byOwner).map(function(e){
-    return { owner_id: e[0], sites: e[1] };
-  });
+  _allCustomers = Object.entries(byOwner).map(function(e){ return { owner_id:e[0], sites:e[1] }; });
   renderCustomerTable(_allCustomers);
 };
 
 window.filterCustomers = function() {
   var q = document.getElementById("custSearch").value.toLowerCase();
-  var filtered = _allCustomers.filter(function(c){
-    return !q || c.owner_id.toLowerCase().includes(q);
-  });
-  renderCustomerTable(filtered);
+  renderCustomerTable(_allCustomers.filter(function(c){ return !q||c.owner_id.toLowerCase().includes(q); }));
 };
 
 function renderCustomerTable(customers) {
   var tbody = document.getElementById("customersTbl");
-  if (!customers.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--ink3);padding:20px">No customers yet</td></tr>';
+  tbody.innerHTML = !customers.length
+    ? '<tr><td colspan="5" style="color:var(--ink3);padding:20px">No customers yet</td></tr>'
+    : customers.map(function(c){
+      var live = c.sites.filter(function(s){return s.status==="published"||s.status==="grace";}).length;
+      return '<tr>'+
+        '<td class="name" style="font-family:monospace;font-size:12px">'+esc(c.owner_id)+'</td>'+
+        '<td style="color:var(--ink2)">—</td>'+
+        '<td>'+c.sites.length+' site'+(c.sites.length!==1?"s":"")+' · '+live+' live</td>'+
+        '<td style="color:var(--ink3)">—</td>'+
+        '<td><div style="display:flex;gap:5px">'+
+          '<button class="btn btn-ghost btn-sm" onclick="viewOwnerSites('+JSON.stringify(c.owner_id)+')">Sites</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="toggleDemoFlag('+JSON.stringify(c.owner_id)+')">Toggle demo</button>'+
+        '</div></td>'+
+      '</tr>';
+    }).join("");
+}
+
+window.viewOwnerSites = function(ownerId) {
+  document.getElementById("siteSearch").value = ownerId;
+  showPage("sites", document.querySelector('[onclick*="\'sites\'"]'));
+  setTimeout(filterSites, 100);
+};
+
+window.toggleDemoFlag = async function(ownerId) {
+  var isDemo = confirm("Set this owner as a demo account? (OK = demo, Cancel = regular)");
+  try {
+    var r = await fetch(ADMIN_API+"/owners/"+encodeURIComponent(ownerId), {
+      method:"PUT", headers:adminHeaders(),
+      body:JSON.stringify({ is_demo: isDemo ? 1 : 0 })
+    });
+    if (!r.ok) throw new Error("failed");
+    toast("Owner updated — is_demo="+(isDemo?1:0), "ok");
+  } catch(e) { toast("Failed: "+e.message,"err"); }
+};
+
+// ── Domain queue (live D1 via /api/admin/domain-queue) ────────────────────────
+window.loadDomainQueue = async function() {
+  var tbody = document.getElementById("domainQueueTbl");
+  tbody.innerHTML = '<tr><td colspan="7" style="color:var(--ink3);padding:16px">Loading…</td></tr>';
+  var statusFilter = (document.getElementById("domainStatusFilter")||{}).value || "pending";
+  try {
+    var url = ADMIN_API+"/domain-queue?limit=200&status="+(statusFilter==="all"?"all":statusFilter);
+    var r = await fetch(url, { headers: adminHeaders() });
+    if (!r.ok) { toast("Couldn't load domain queue — check ADMIN_SECRET","err"); return; }
+    _domainQueue = (await r.json()).wishes || [];
+    renderDomainQueueTable(_domainQueue);
+  } catch(e) { toast("Domain queue error: "+e.message,"err"); }
+};
+
+function renderDomainQueueTable(wishes) {
+  var tbody = document.getElementById("domainQueueTbl");
+  if (!wishes.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--ink3);padding:20px">No domain requests in this filter. Customer domain choices appear here after they go through the publish flow.</td></tr>';
     return;
   }
-  tbody.innerHTML = customers.map(function(c){
-    var siteCount = c.sites.length;
-    var siteNames = c.sites.map(function(s){ return esc(s.site_name); }).join(", ");
-    return '<tr>'
-      +'<td class="name" style="font-family:monospace;font-size:12px">'+esc(c.owner_id)+'</td>'
-      +'<td style="color:var(--ink2)">—</td>'
-      +'<td><span title="'+siteNames+'" style="cursor:help">'+siteCount+' site'+(siteCount!==1?"s":"")+'</span></td>'
-      +'<td style="color:var(--ink3)">—</td>'
-      +'<td><button class="btn btn-ghost btn-sm" onclick="viewCustomerSites('+JSON.stringify(c.owner_id)+')">View sites</button></td>'
-      +'</tr>';
+  tbody.innerHTML = wishes.map(function(w){
+    var badge = {
+      pending:    '<span class="badge badge-gold">Pending</span>',
+      checking:   '<span class="badge badge-blue">Checking</span>',
+      registered: '<span class="badge badge-blue">Submitted</span>',
+      active:     '<span class="badge badge-green">Active</span>',
+      failed:     '<span class="badge badge-red">Failed</span>',
+    }[w.status] || '<span class="badge badge-grey">'+esc(w.status)+'</span>';
+
+    var choices = [
+      w.choice_1 ? w.choice_1+w.tld : null,
+      w.choice_2 ? w.choice_2+w.tld : null,
+      w.choice_3 ? w.choice_3+w.tld : null,
+    ].filter(Boolean);
+
+    var date = w.created_at ? new Date(w.created_at*1000).toLocaleDateString() : "—";
+    var assigned = w.assigned ? '<div style="color:var(--green);font-size:11px;margin-top:3px;font-weight:600">→ '+esc(w.assigned)+'</div>' : "";
+    var notes    = w.notes ? '<div style="color:var(--ink3);font-size:11px;margin-top:2px">'+esc(w.notes)+'</div>' : "";
+
+    return '<tr>'+
+      '<td><div>'+choices.map(function(c,i){
+        return '<div style="font-size:'+(i===0?'13':'11.5')+'px;font-weight:'+(i===0?'600':'400')+';opacity:'+(i===0?'1':'.55')+'">'+esc(c)+'</div>';
+      }).join('')+'</div></td>'+
+      '<td style="font-size:12px;color:var(--ink2)">'+esc(w.site_name||w.site_id||"—")+'</td>'+
+      '<td style="font-size:11px;color:var(--ink3);font-family:monospace;max-width:100px;overflow:hidden;text-overflow:ellipsis">'+esc(w.owner_id)+'</td>'+
+      '<td><span class="badge badge-grey">'+esc((w.plan||"starter").toUpperCase())+'</span></td>'+
+      '<td style="color:var(--ink3);font-size:12px">'+date+'</td>'+
+      '<td>'+badge+assigned+notes+'</td>'+
+      '<td><div style="display:flex;gap:5px;flex-wrap:wrap">'+
+        '<button class="btn btn-green btn-sm" onclick="openAssignDomain('+JSON.stringify(w.id)+','+JSON.stringify(w.choice_1+(w.tld||'.co.zw'))+')">Assign</button>'+
+        (w.status!=="active" ? '<button class="btn btn-ghost btn-sm" onclick="quickUpdateDomain('+JSON.stringify(w.id)+',\'checking\')">Checking</button>' : '')+
+        (w.status!=="failed" ? '<button class="btn btn-red btn-sm" onclick="quickUpdateDomain('+JSON.stringify(w.id)+',\'failed\')">Failed</button>' : '')+
+      '</div></td>'+
+    '</tr>';
   }).join("");
 }
 
-window.viewCustomerSites = function(ownerId) {
-  document.getElementById("siteSearch").value = ownerId;
-  showPage("sites", document.querySelector('[onclick*="sites"]'));
-  setTimeout(filterSites, 100);
+window.openAssignDomain = function(wishId, suggested) {
+  document.getElementById("assignDomainWishId").value = wishId;
+  document.getElementById("assignDomainValue").value  = suggested || "";
+  document.getElementById("assignDomainNotes").value  = "";
+  document.getElementById("assignDomainStatus").value = "active";
+  document.getElementById("assignDomainModal").classList.add("open");
+};
+
+window.saveAssignDomain = async function() {
+  var wishId   = document.getElementById("assignDomainWishId").value;
+  var assigned = document.getElementById("assignDomainValue").value.trim();
+  var notes    = document.getElementById("assignDomainNotes").value.trim();
+  var status   = document.getElementById("assignDomainStatus").value;
+  try {
+    var body = { status: status };
+    if (assigned) body.assigned = assigned;
+    if (notes)    body.notes    = notes;
+    var r = await fetch(ADMIN_API+"/domain-queue/"+encodeURIComponent(wishId), {
+      method:"PUT", headers:adminHeaders(), body:JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error || "failed");
+    toast(status==="active" ? "Domain marked active — owner notified via WhatsApp ✓" : "Domain status updated ✓","ok");
+    closeModal("assignDomainModal");
+    loadDomainQueue();
+  } catch(e) { toast("Error: "+e.message,"err"); }
+};
+
+window.quickUpdateDomain = async function(wishId, status) {
+  try {
+    await fetch(ADMIN_API+"/domain-queue/"+encodeURIComponent(wishId), {
+      method:"PUT", headers:adminHeaders(), body:JSON.stringify({ status: status })
+    });
+    toast("Status → "+status,"ok");
+    loadDomainQueue();
+  } catch(e) { toast("Error: "+e.message,"err"); }
+};
+
+// ── Email routes ──────────────────────────────────────────────────────────────
+window.loadEmailRoutes = async function() {
+  var tbody = document.getElementById("emailRoutesTbl");
+  tbody.innerHTML = '<tr><td colspan="6" style="color:var(--ink3);padding:16px">Loading…</td></tr>';
+  try {
+    // Load all sites, then fetch email routes for each — batched
+    if (!_allSites.length) {
+      var sr = await fetch(ADMIN_API+"/sites?limit=500", { headers: adminHeaders() });
+      if (sr.ok) _allSites = (await sr.json()).sites || [];
+    }
+    // Collect routes from all sites (quick approach: fetch for published/grace sites only)
+    var activeSites = _allSites.filter(function(s){ return s.status==="published"||s.status==="grace"; });
+    var allRoutes = [];
+    for (var i = 0; i < Math.min(activeSites.length, 50); i++) {
+      try {
+        var r = await fetch(API+"/sites/"+encodeURIComponent(activeSites[i].id)+"/email-routes", { headers: userHeaders() });
+        if (r.ok) {
+          var data = await r.json();
+          (data.routes||[]).forEach(function(route){
+            route._site_name = activeSites[i].site_name || activeSites[i].id;
+            route._site_id   = activeSites[i].id;
+            allRoutes.push(route);
+          });
+        }
+      } catch(e) { /* skip */ }
+    }
+    _emailRoutes = allRoutes;
+    renderEmailRoutesTable(allRoutes);
+  } catch(e) { toast("Email routes error: "+e.message,"err"); }
+};
+
+function renderEmailRoutesTable(routes) {
+  var tbody = document.getElementById("emailRoutesTbl");
+  if (!routes.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--ink3);padding:20px">No email routes yet. Customers set these up after publishing their site.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = routes.map(function(r){
+    var verifiedBadge = r.verified
+      ? '<span class="badge badge-green">Verified</span>'
+      : '<span class="badge badge-gold">Pending verification</span>';
+    var statusBadge2 = r.status==="active"
+      ? '<span class="badge badge-green">Active</span>'
+      : '<span class="badge badge-grey">'+esc(r.status)+'</span>';
+    return '<tr>'+
+      '<td class="name" style="font-family:monospace;font-size:12px">'+esc(r.local_part)+'@websites.co.zw</td>'+
+      '<td style="font-size:12px;color:var(--ink2)">'+esc(r.destination)+'</td>'+
+      '<td style="font-size:12px;color:var(--ink2)">'+esc(r._site_name||"—")+'</td>'+
+      '<td>'+verifiedBadge+'</td>'+
+      '<td>'+statusBadge2+'</td>'+
+      '<td><div style="display:flex;gap:5px">'+
+        (!r.verified ? '<button class="btn btn-green btn-sm" onclick="adminVerifyEmail('+JSON.stringify(r.id)+','+JSON.stringify(r._site_id)+')">Mark verified</button>' : '')+
+      '</div></td>'+
+    '</tr>';
+  }).join("");
+}
+
+window.adminVerifyEmail = async function(routeId, siteId) {
+  try {
+    var r = await fetch(ADMIN_API+"/email-routes/"+encodeURIComponent(routeId)+"/verify", {
+      method:"PUT", headers:adminHeaders()
+    });
+    if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error || "failed");
+    toast("Email route marked as verified and active ✓","ok");
+    loadEmailRoutes();
+  } catch(e) { toast("Error: "+e.message,"err"); }
 };
 
 // ── Edit site modal ────────────────────────────────────────────────────────────
 window.openEditSite = function(siteId) {
   var site = _allSites.find(function(s){ return s.id===siteId; });
   if (!site) return;
-  document.getElementById("editSiteId").value   = site.id;
-  document.getElementById("editSiteName").value  = site.site_name || "";
-  document.getElementById("editSiteStatus").value= site.status || "draft";
-  document.getElementById("editSitePlan").value  = site.plan || "starter";
+  document.getElementById("editSiteId").value     = site.id;
+  document.getElementById("editSiteName").value   = site.site_name || "";
+  document.getElementById("editSiteStatus").value = site.status || "draft";
+  document.getElementById("editSitePlan").value   = site.plan || "starter";
   document.getElementById("editSiteExpires").value = site.expires_at || "";
   document.getElementById("editSiteModal").classList.add("open");
 };
@@ -665,74 +791,60 @@ window.saveEditSite = async function() {
   var status  = document.getElementById("editSiteStatus").value;
   var plan    = document.getElementById("editSitePlan").value;
   var expires = document.getElementById("editSiteExpires").value;
-
-  // Admin status + plan override — uses direct D1 update via admin API
-  // For now: update site_name via the normal PUT endpoint
-  // Status/plan/expires changes need an admin-specific API route (to be added)
+  var updateBody = {};
+  if (name)   updateBody.site_name = name;
+  if (status) updateBody.status    = status;
+  if (plan)   updateBody.plan      = plan;
+  if (expires && !isNaN(parseInt(expires))) updateBody.expires_at = parseInt(expires);
+  if (status === "published" && !updateBody.expires_at) {
+    updateBody.expires_at = Math.floor(Date.now()/1000) + 31536000;
+  }
   try {
-    // Use admin PUT endpoint — can update status, plan, expires_at, and name
-    var updateBody = {};
-    if (name)   updateBody.site_name  = name;
-    if (status) updateBody.status     = status;
-    if (plan)   updateBody.plan       = plan;
-    if (expires && !isNaN(parseInt(expires))) updateBody.expires_at = parseInt(expires);
-    // Auto-set expires_at to 1 year from now when publishing
-    if (status === "published" && !updateBody.expires_at) {
-      updateBody.expires_at = Math.floor(Date.now()/1000) + 31536000;
-    }
     var r = await fetch(ADMIN_API+"/sites/"+encodeURIComponent(id), {
-      method: "PUT",
-      headers: adminHeaders(),
-      body: JSON.stringify(updateBody),
+      method:"PUT", headers:adminHeaders(), body:JSON.stringify(updateBody)
     });
-    if (!r.ok) {
-      var errData = await r.json().catch(()=>({}));
-      throw new Error(errData.error || "save failed");
-    }
-    toast("Site updated ✓", "ok");
+    if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error || "save failed");
+    toast("Site updated ✓","ok");
     closeModal("editSiteModal");
-    _allSites = []; // clear cache
+    _allSites = [];
     if (currentPage==="overview") loadOverview();
     if (currentPage==="sites")    loadAllSites();
-  } catch(e) {
-    toast("Failed to save — "+e.message, "err");
-  }
+  } catch(e) { toast("Failed: "+e.message,"err"); }
 };
 
-// ── Template admin ─────────────────────────────────────────────────────────────
+// ── Templates ─────────────────────────────────────────────────────────────────
 function renderTemplateAdmin() {
   var grid = document.getElementById("templateAdminGrid");
   grid.innerHTML = TEMPLATES.map(function(t){
     var cfg = getTmplConfig(t.id);
     var previewStyle = cfg.previewUrl
-      ? 'background-image:url('+JSON.stringify(cfg.previewUrl)+');background-size:cover;background-position:center'
-      : 'background:'+t.bg;
-
-    return '<div class="tmpl-card">'
-      +'<div class="tmpl-preview" style="'+previewStyle+'">'
-      +'<span style="font-size:22px;position:absolute;top:8px;left:10px">'+t.emoji+'</span>'
-      +'<span class="tmpl-preview-label">'+esc(t.label)+'</span>'
-      +'</div>'
-      +'<div class="tmpl-body">'
-      +'<div class="tmpl-name">'+esc(t.label)+'</div>'
-      +'<div class="tmpl-url">'+(cfg.previewUrl ? '🖼 Preview image set' : '⚠ No preview image')+'</div>'
-      +'<div class="tmpl-url">'+(cfg.demoUrl ? '🔗 <a href="'+esc(cfg.demoUrl)+'" target="_blank">'+esc(cfg.demoUrl)+'</a>' : '⚠ No demo URL')+'</div>'
-      +'<div class="tmpl-actions" style="margin-top:10px">'
-      +'<button class="btn btn-ghost btn-sm" onclick="openEditTemplate(this.dataset.id)" data-id="'+t.id+'">Edit</button>'
-      +(cfg.demoUrl ? '<a class="btn btn-ghost btn-sm" href="'+esc(cfg.demoUrl)+'" target="_blank">View demo</a>' : '')
-      +'</div>'
-      +'</div>'
-      +'</div>';
+      ? "background-image:url("+JSON.stringify(cfg.previewUrl)+");background-size:cover;background-position:center"
+      : "background:"+t.bg;
+    return '<div class="tmpl-card">'+
+      '<div class="tmpl-preview" style="'+previewStyle+'">'+
+        '<span style="font-size:22px;position:absolute;top:8px;left:10px">'+t.emoji+'</span>'+
+        '<span class="tmpl-preview-label">'+esc(t.label)+'</span>'+
+      '</div>'+
+      '<div class="tmpl-body">'+
+        '<div class="tmpl-name">'+esc(t.label)+'</div>'+
+        '<div class="tmpl-url">'+(cfg.previewUrl?'🖼 Preview set':'⚠ No preview image')+'</div>'+
+        '<div class="tmpl-url">'+(cfg.demoUrl?'🔗 <a href="'+esc(cfg.demoUrl)+'" target="_blank">'+esc(cfg.demoUrl)+'</a>':'⚠ No demo URL')+'</div>'+
+        '<div class="tmpl-actions" style="margin-top:10px">'+
+          '<button class="btn btn-ghost btn-sm" onclick="openEditTemplate('+JSON.stringify(t.id)+')">Edit</button>'+
+          (cfg.demoUrl?'<a class="btn btn-ghost btn-sm" href="'+esc(cfg.demoUrl)+'" target="_blank">View demo</a>':'')+
+        '</div>'+
+      '</div>'+
+    '</div>';
   }).join("");
 }
 
 window.openEditTemplate = function(id) {
   var t   = TEMPLATES.find(function(x){ return x.id===id; });
   var cfg = getTmplConfig(id);
-  document.getElementById("editTmplId").value       = id;
+  document.getElementById("editTmplId").value    = id;
   document.getElementById("editTmplTitle").textContent = "Edit — "+(t?t.label:id);
-  document.getElementById("editTmplPreview").value   = cfg.previewUrl || "";
-  document.getElementById("editTmplDemo").value      = cfg.demoUrl    || "";
+  document.getElementById("editTmplPreview").value = cfg.previewUrl || "";
+  document.getElementById("editTmplDemo").value    = cfg.demoUrl    || "";
   document.getElementById("editTemplateModal").classList.add("open");
 };
 
@@ -743,74 +855,13 @@ window.saveTemplateConfig = function() {
   setTmplConfig(id, { previewUrl: preview, demoUrl: demo });
   closeModal("editTemplateModal");
   renderTemplateAdmin();
-  toast("Template config saved ✓", "ok");
-  // TODO: persist to D1 platform_config table when admin API routes are added
-};
-
-// ── Domain queue ───────────────────────────────────────────────────────────────
-// Stored in localStorage for now — moves to D1 when admin API is added
-function getDomainQueue() {
-  try { return JSON.parse(localStorage.getItem("wcz_domain_queue")||"[]"); } catch { return []; }
-}
-function saveDomainQueue(q) { localStorage.setItem("wcz_domain_queue", JSON.stringify(q)); }
-
-window.openAddDomain = function() {
-  var domain = prompt("Enter the .co.zw domain requested:");
-  if (!domain) return;
-  var customer = prompt("Customer phone or site ID:");
-  if (!customer) return;
-  var q = getDomainQueue();
-  q.push({ domain, customer, requested: Math.floor(Date.now()/1000), status: "pending" });
-  saveDomainQueue(q);
-  renderDomainQueue();
-  toast("Domain added to queue", "ok");
-};
-
-function renderDomainQueue() {
-  var q    = getDomainQueue();
-  var tbody = document.getElementById("domainQueueTbl");
-  if (!q.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--ink3);padding:20px">No pending domains</td></tr>';
-    return;
-  }
-  tbody.innerHTML = q.map(function(d, i){
-    var badge = {
-      pending:    '<span class="badge badge-gold">Pending</span>',
-      submitted:  '<span class="badge badge-blue">Submitted to ZISPA</span>',
-      active:     '<span class="badge badge-green">Active</span>',
-      rejected:   '<span class="badge badge-red">Rejected</span>',
-    }[d.status] || '<span class="badge badge-grey">'+esc(d.status)+'</span>';
-    var date = d.requested ? new Date(d.requested*1000).toLocaleDateString() : "—";
-    return '<tr>'
-      +'<td class="name">'+esc(d.domain)+'</td>'
-      +'<td style="color:var(--ink2);font-size:12px">—</td>'
-      +'<td style="color:var(--ink2);font-size:12px">'+esc(d.customer)+'</td>'
-      +'<td style="color:var(--ink3);font-size:12px">'+date+'</td>'
-      +'<td>'+badge+'</td>'
-      +'<td><div style="display:flex;gap:5px">'
-      +'<button class="btn btn-ghost btn-sm" onclick="updateDomainStatus('+i+',\'submitted\')">Mark submitted</button>'
-      +'<button class="btn btn-ghost btn-sm" onclick="updateDomainStatus('+i+',\'active\')">Mark active</button>'
-      +'</div></td>'
-      +'</tr>';
-  }).join("");
-}
-
-window.updateDomainStatus = function(idx, status) {
-  var q = getDomainQueue();
-  if (q[idx]) { q[idx].status = status; saveDomainQueue(q); renderDomainQueue(); }
-  toast("Domain status updated to: "+status, "ok");
+  toast("Template config saved ✓","ok");
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
-window.closeModal = function(id) {
-  document.getElementById(id).classList.remove("open");
-};
-document.addEventListener("keydown", function(e){
-  if (e.key==="Escape") document.querySelectorAll(".modal-backdrop.open").forEach(function(m){ m.classList.remove("open"); });
-});
-document.querySelectorAll(".modal-backdrop").forEach(function(m){
-  m.addEventListener("click", function(e){ if(e.target===m) m.classList.remove("open"); });
-});
+window.closeModal = function(id) { document.getElementById(id).classList.remove("open"); };
+document.addEventListener("keydown", function(e){ if(e.key==="Escape") document.querySelectorAll(".modal-backdrop.open").forEach(function(m){ m.classList.remove("open"); }); });
+document.querySelectorAll(".modal-backdrop").forEach(function(m){ m.addEventListener("click", function(e){ if(e.target===m) m.classList.remove("open"); }); });
 
 function toast(msg, type) {
   var wrap = document.getElementById("toastWrap");
@@ -821,16 +872,10 @@ function toast(msg, type) {
   requestAnimationFrame(function(){ el.classList.add("show"); });
   setTimeout(function(){ el.classList.remove("show"); setTimeout(function(){ el.remove(); },300); }, 4000);
 }
-
-function esc(s) {
-  return String(s==null?"":s)
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-}
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 
 // ── Boot ───────────────────────────────────────────────────────────────────────
 loadOverview();
-
 })();
 </script>
 </body>
