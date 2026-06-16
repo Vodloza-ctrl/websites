@@ -161,24 +161,22 @@ if (location.hostname !== 'app.websites.co.zw') {
   }
   function previewUrl(s){ return APP+"/preview/"+(s.draft_subdomain||s.id); }
   function editorUrl(s) { return APP+"/editor/?site="+s.id; }
-  function checkoutUrl(s,purpose){ return APP+"/checkout?site="+s.id+(purpose?"&purpose="+purpose:""); }
   function switchTemplateUrl(s){ return NEW+"?switch=1&site="+encodeURIComponent(s.id); }
 
   window.createNewSite = function(){ location.href = NEW; };
   window.switchTemplate = function(siteId){ location.href = NEW+"?switch=1&site="+encodeURIComponent(siteId); };
 
   function statusInfo(s){
-    // Demo sites — override display regardless of real status
     if (s._is_demo) return {label:"Demo", tone:"demo", meaning:"This is a demo site used to showcase this template."};
     var d = daysLeft(s);
     switch(s.status){
       case "published":
         if (d!=null && d<=14) return {label:"Renewal due soon", tone:"grace", meaning:"Live now — "+d+" day"+(d===1?"":"s")+" left. Renew to stay online."};
         return {label:"Live", tone:"live", meaning:"Anyone can visit your site."};
-      case "draft":           return {label:"Draft",           tone:"draft",    meaning:"Only you can see this. Publish to put it online."};
-      case "pending_payment": return {label:"Awaiting payment",tone:"pay",      meaning:"Finish payment to publish your site."};
-      case "grace":           return {label:"Renewal due",     tone:"grace",    meaning:"Your subscription lapsed — renew to stay online."};
-      case "suspended":       return {label:"Offline",         tone:"suspend",  meaning:"Your site is offline. Renew to bring it back."};
+      case "draft":           return {label:"Draft",           tone:"draft",   meaning:"Only you can see this. Publish to put it online."};
+      case "pending_payment": return {label:"Awaiting payment",tone:"pay",     meaning:"Finish payment to publish your site."};
+      case "grace":           return {label:"Renewal due",     tone:"grace",   meaning:"Your subscription lapsed — renew to stay online."};
+      case "suspended":       return {label:"Offline",         tone:"suspend", meaning:"Your site is offline. Renew to bring it back."};
       default: return {label:s.status||"—", tone:"draft", meaning:""};
     }
   }
@@ -255,7 +253,8 @@ if (location.hostname !== 'app.websites.co.zw') {
         '<label class="fld" for="email">Email</label>'+
         '<input class="input" id="email" inputmode="email" autocomplete="email" placeholder="you@example.com">'+
       '</div>'+
-      '<button class="btn btn-gold" id="send">Send code</button>';
+      '<button class="btn btn-gold" id="send">Send code</button>'+
+      '<label style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;cursor:pointer"><input type="checkbox" id="agreeTerms" style="width:17px;height:17px;margin-top:2px;flex-shrink:0;accent-color:var(--gold)"><span style="font-size:13px;color:var(--ink-soft);line-height:1.5">I agree to the <a href="https://websites.co.zw/terms" target="_blank" style="color:var(--gold);font-weight:600">Terms of Service</a> and Acceptable Use Policy</span></label>';
 
     wrap.querySelectorAll(".seg button").forEach(function(b){
       b.addEventListener("click", function(){
@@ -264,7 +263,6 @@ if (location.hostname !== 'app.websites.co.zw') {
         document.getElementById("email-wrap").style.display = state.channel==="email" ? "" : "none";
       });
     });
-    wrap.innerHTML += '<label style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;cursor:pointer"><input type="checkbox" id="agreeTerms" style="width:17px;height:17px;margin-top:2px;flex-shrink:0;accent-color:var(--gold)"><span style="font-size:13px;color:var(--ink-soft);line-height:1.5">I agree to the <a href="https://websites.co.zw/terms" target="_blank" style="color:var(--gold);font-weight:600">Terms of Service</a> and Acceptable Use Policy</span></label>';
     var send = document.getElementById("send");
     send.addEventListener("click", requestCode);
     document.getElementById("phone").addEventListener("keydown", function(e){ if(e.key==="Enter") requestCode(); });
@@ -354,9 +352,7 @@ if (location.hostname !== 'app.websites.co.zw') {
       return;
     }
 
-    // Mark demo sites so siteCard can style them differently
     sites = tagDemoSites(sites);
-
     sub.textContent = sites.length===0 ? "No sites yet" : sites.length+" site"+(sites.length===1?"":"s");
     grid.innerHTML = "";
 
@@ -385,7 +381,6 @@ if (location.hostname !== 'app.websites.co.zw') {
     } catch(e){ return null; }
   }
 
-  // Detect demo sites by their subdomain prefix
   function tagDemoSites(sites){
     var DEMO_PREFIXES = ["demo-business","demo-restaurant","demo-salon","demo-academy",
       "demo-consultant","demo-realestate","demo-boutique","demo-grocery","demo-hardware",
@@ -398,10 +393,8 @@ if (location.hostname !== 'app.websites.co.zw') {
   }
 
   function siteCard(s){
-    var st   = statusInfo(s);
-    var tpl  = s.template_id || "bold-retail";
-    var init = (s.site_name||"W").trim().split(/\s+/).map(function(w){return w[0]||"";}).join("").toUpperCase().slice(0,2)||"W";
-    var pub  = publicUrl(s);
+    var st  = statusInfo(s);
+    var pub = publicUrl(s);
     var live = (s.status==="published" || s.status==="grace");
     var urlRow = live && pub
       ? '<a href="'+esc(pub)+'" target="_blank" rel="noopener">'+esc(pub.replace(/^https:\/\//,""))+'</a>'
@@ -413,18 +406,16 @@ if (location.hostname !== 'app.websites.co.zw') {
       ? "Demo site — no billing"
       : (s.expires_at ? (d>0 ? "Renews in "+d+" day"+(d===1?"":"s") : "Expired") : "Not published");
 
-    // Build action buttons
     var actions =
       '<a class="btn btn-ghost" href="'+esc(previewUrl(s))+'" target="_blank" rel="noopener">Preview</a>'+
       '<a class="btn btn-ghost" href="'+esc(editorUrl(s))+'">Edit</a>'+
       '<a class="btn btn-quiet" href="'+esc(switchTemplateUrl(s))+'" title="Switch template">&#x229E;</a>';
 
     if (!s._is_demo) {
-      // Only show payment CTAs on real customer sites
       if (s.status==="draft" || s.status==="pending_payment") {
-        actions += '<button class="btn btn-gold" onclick="startPublish(\''+esc(s.id)+'\',\''+esc(s.site_name||s.id)+'\')">🚀 Publish</button>';
+        actions += '<button class="btn btn-gold" onclick="startPublish(\''+esc(s.id)+'\',\''+esc(s.site_name||s.id)+'\',\''+esc(s.status)+'\')">🚀 Publish</button>';
       } else if (s.status==="grace" || s.status==="suspended" || (s.status==="published" && d!=null && d<=14)) {
-        actions += '<button class="btn btn-gold" onclick="startPublish(\''+esc(s.id)+'\',\''+esc(s.site_name||s.id)+'\')">↺ Renew</button>';
+        actions += '<button class="btn btn-gold" onclick="startPublish(\''+esc(s.id)+'\',\''+esc(s.site_name||s.id)+'\',\''+esc(s.status)+'\')">↺ Renew</button>';
       }
     }
 
@@ -444,7 +435,6 @@ if (location.hostname !== 'app.websites.co.zw') {
       '</div>');
   }
 
-
   window.doRefresh = async function(){
     var grid = document.getElementById("grid");
     if(grid){ grid.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div>'; }
@@ -460,6 +450,7 @@ if (location.hostname !== 'app.websites.co.zw') {
     sites = tagDemoSites(sites);
     if(grid) sites.forEach(function(s){ grid.appendChild(siteCard(s)); });
   };
+
   async function signOut(){
     if (DEMO){ DEMO=false; state.owner=null; return renderLogin(); }
     try { await api(AUTH+"/logout", { method:"POST" }); } catch(e){}
@@ -480,91 +471,276 @@ if (location.hostname !== 'app.websites.co.zw') {
 })();
 </script>
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+  PUBLISH / DOMAIN WISH / EMAIL ROUTING MODAL
+  Prices: $30 Starter · $60 Pro — mirrored from server PLAN_PRICES constant.
+  Amount is NOT sent to server — server derives it from plan name.
+  Flow: Plan picker → Domain wish (3 choices) → Paynow → Email routing setup
+════════════════════════════════════════════════════════════════════════ -->
 <div id="pub-overlay" style="display:none;position:fixed;inset:0;background:rgba(13,15,20,.55);z-index:200;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#fff;border-radius:16px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18)">
-    <div style="padding:18px 20px;border-bottom:1px solid #e3e5ea;display:flex;align-items:center;justify-content:space-between">
-      <strong style="font-size:16px;font-family:'Space Grotesk'">Publish your site</strong>
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18);max-height:92vh;display:flex;flex-direction:column">
+    <div style="padding:16px 20px;border-bottom:1px solid #e3e5ea;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <strong id="pub-modal-title" style="font-size:16px;font-family:'Space Grotesk'">Publish your site</strong>
       <button onclick="closePubModal()" style="background:none;border:none;font-size:20px;color:#868a96;cursor:pointer;line-height:1">×</button>
     </div>
-    <div id="pub-body" style="padding:20px"></div>
+    <div id="pub-body" style="padding:20px;overflow-y:auto;flex:1"></div>
   </div>
 </div>
+
 <script>
 (function(){
+  "use strict";
   var API = "https://app.websites.co.zw/api";
-  var pubSiteId = null;
 
-  window.startPublish = function(id, name){
-    pubSiteId = id;
-    var ov = document.getElementById("pub-overlay");
-    var body = document.getElementById("pub-body");
-    ov.style.display = "flex";
-    body.innerHTML =
-      '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 18px;line-height:1.6">Publishing <strong>'+esc(name)+'</strong>. Choose your plan:</p>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
-        '<div style="border:2px solid #15924B;border-radius:12px;padding:14px">'+
-          '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#15924B;margin-bottom:4px">Starter</div>'+
-          '<div style="font-family:Space Grotesk;font-size:24px;font-weight:800">$30<span style="font-size:12px;font-weight:400;color:#868a96">/yr</span></div>'+
-          '<div style="font-size:12px;color:#868a96;margin:4px 0 10px">yoursite.websites.co.zw</div>'+
-          '<div style="font-size:12px;color:#4a4d59;display:flex;flex-direction:column;gap:3px;margin-bottom:12px">'+
-            '<span>✓ AI content generation</span><span>✓ Up to 6 products</span>'+
-            '<span>✓ 10 image uploads</span><span>✓ WhatsApp button</span>'+
-          '</div>'+
-          '<button class="btn btn-gold" style="width:100%;justify-content:center" onclick="doPay('starter',30)">Select — $30/yr</button>'+
-        '</div>'+
-        '<div style="border:2px solid #7c3aed;border-radius:12px;padding:14px">'+
-          '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;margin-bottom:4px">Pro ⭐</div>'+
-          '<div style="font-family:Space Grotesk;font-size:24px;font-weight:800">$60<span style="font-size:12px;font-weight:400;color:#868a96">/yr</span></div>'+
-          '<div style="font-size:12px;color:#868a96;margin:4px 0 10px">Your own .com domain</div>'+
-          '<div style="font-size:12px;color:#4a4d59;display:flex;flex-direction:column;gap:3px;margin-bottom:12px">'+
-            '<span>✓ Everything in Starter</span><span>✓ Custom domain</span>'+
-            '<span>✓ Unlimited products</span><span>✓ Priority support</span>'+
-          '</div>'+
-          '<button class="btn" style="width:100%;justify-content:center;background:#f3eeff;color:#7c3aed;border:none" onclick="doPay('pro',60)">Select — $60/yr</button>'+
-        '</div>'+
-      '</div>';
+  // ── Prices — single source of truth, mirrors server PLAN_PRICES ──
+  var PLAN_PRICES = { starter: 30, pro: 60 };
+
+  var pubSiteId   = null;
+  var pubSiteName = null;
+  var pubPlan     = null;
+  var pubIsRenew  = false;
+
+  // ── Open modal ──────────────────────────────────────────────────────
+  window.startPublish = function(id, name, status) {
+    pubSiteId   = id;
+    pubSiteName = name;
+    pubPlan     = null;
+    pubIsRenew  = (status === "grace" || status === "suspended");
+    document.getElementById("pub-modal-title").textContent = pubIsRenew ? "Renew your site" : "Publish your site";
+    document.getElementById("pub-overlay").style.display = "flex";
+    renderStep1_Plan();
   };
 
-  window.closePubModal = function(){
+  window.closePubModal = function() {
     document.getElementById("pub-overlay").style.display = "none";
   };
 
-  window.doPay = async function(plan, amount){
-    if(!pubSiteId) return;
-    var body = document.getElementById("pub-body");
-    body.innerHTML = '<div style="text-align:center;padding:30px 20px"><div style="font-size:28px;margin-bottom:12px">⏳</div><p style="color:#4a4d59">Connecting to Paynow…</p></div>';
+  document.getElementById("pub-overlay").addEventListener("click", function(e) {
+    if (e.target === this) closePubModal();
+  });
+
+  // ── STEP 1: Plan picker ─────────────────────────────────────────────
+  function renderStep1_Plan() {
+    var action = pubIsRenew ? "Renewing" : "Publishing";
+    setBody(
+      '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 18px;line-height:1.6">'+action+' <strong>'+esc(pubSiteName)+'</strong>. Choose your plan:</p>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+
+        // Starter
+        '<div style="border:2px solid #15924B;border-radius:12px;padding:14px">'+
+          '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#15924B;margin-bottom:4px">Starter</div>'+
+          '<div style="font-family:Space Grotesk,sans-serif;font-size:24px;font-weight:800">$'+PLAN_PRICES.starter+'<span style="font-size:12px;font-weight:400;color:#868a96">/yr</span></div>'+
+          '<div style="font-size:12px;color:#868a96;margin:4px 0 10px">yoursite.websites.co.zw</div>'+
+          '<div style="font-size:12px;color:#4a4d59;display:flex;flex-direction:column;gap:3px;margin-bottom:12px">'+
+            '<span>✓ AI content generation</span>'+
+            '<span>✓ Products &amp; gallery</span>'+
+            '<span>✓ Up to 3 email forwards</span>'+
+            '<span>✓ WhatsApp button</span>'+
+          '</div>'+
+          '<button class="btn btn-gold" style="width:100%;justify-content:center" onclick="_selectPlan(\'starter\')">Choose Starter — $'+PLAN_PRICES.starter+'/yr</button>'+
+        '</div>'+
+
+        // Pro
+        '<div style="border:2px solid #7c3aed;border-radius:12px;padding:14px">'+
+          '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;margin-bottom:4px">Pro ⭐</div>'+
+          '<div style="font-family:Space Grotesk,sans-serif;font-size:24px;font-weight:800">$'+PLAN_PRICES.pro+'<span style="font-size:12px;font-weight:400;color:#868a96">/yr</span></div>'+
+          '<div style="font-size:12px;color:#868a96;margin:4px 0 10px">Your own .com domain</div>'+
+          '<div style="font-size:12px;color:#4a4d59;display:flex;flex-direction:column;gap:3px;margin-bottom:12px">'+
+            '<span>✓ Everything in Starter</span>'+
+            '<span>✓ Custom .com domain</span>'+
+            '<span>✓ Up to 10 email forwards</span>'+
+            '<span>✓ Priority support</span>'+
+          '</div>'+
+          '<button style="width:100%;justify-content:center;background:#f3eeff;color:#7c3aed;border:none;font-family:inherit;font-weight:600;font-size:14px;padding:10px 16px;border-radius:var(--r-sm,9px);cursor:pointer;display:inline-flex;align-items:center" onclick="_selectPlan(\'pro\')">Choose Pro — $'+PLAN_PRICES.pro+'/yr</button>'+
+        '</div>'+
+      '</div>'+
+      '<p style="font-size:12px;color:#868a96;text-align:center;margin-top:12px">All prices in USD · Annual · Secure payment via Paynow</p>'
+    );
+  }
+
+  window._selectPlan = function(plan) {
+    pubPlan = plan;
+    renderStep2_Domain();
+  };
+
+  // ── STEP 2: Domain wish (3 choices) ────────────────────────────────
+  function renderStep2_Domain() {
+    var tld  = pubPlan === "pro" ? ".com" : ".co.zw";
+    var reg  = pubPlan === "pro" ? "an international registrar" : "ZISPA";
+    setBody(
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">'+
+        '<button onclick="_backToPlan()" style="background:none;border:1px solid #e3e5ea;border-radius:6px;padding:4px 10px;font-size:12px;color:#868a96;cursor:pointer;font-family:inherit">← Back</button>'+
+        '<span style="font-size:14px;font-weight:600;color:#1a1b22">Choose your domain name</span>'+
+      '</div>'+
+      '<p style="font-size:13px;color:#4a4d59;margin:0 0 16px;line-height:1.6">'+
+        'Enter up to <strong>3 name preferences</strong> in order. We\'ll check availability with '+reg+' and register your best available choice within <strong>1–2 business days</strong>.'+
+      '</p>'+
+      _domainField("dw_c1","1st choice (required)","e.g. elitesports",tld)+
+      _domainField("dw_c2","2nd choice (optional)","alternative name",tld)+
+      _domainField("dw_c3","3rd choice (optional)","fallback name",tld)+
+      '<p style="font-size:12px;color:#868a96;margin:8px 0 16px">Letters, numbers and hyphens only. We add <strong>'+tld+'</strong> for you.</p>'+
+      '<div style="display:flex;gap:10px">'+
+        '<button onclick="_backToPlan()" style="flex:1;padding:11px;border:1px solid #e3e5ea;border-radius:9px;background:#fff;font-size:14px;font-weight:600;color:#4a4d59;cursor:pointer;font-family:inherit">← Back</button>'+
+        '<button onclick="_submitDomainAndPay()" class="btn btn-gold" style="flex:2;justify-content:center">Continue to payment →</button>'+
+      '</div>'
+    );
+  }
+
+  function _domainField(id, label, placeholder, tld) {
+    return '<div style="margin-bottom:10px">'+
+      '<label style="font-size:12px;font-weight:600;color:#4a4d59;display:block;margin-bottom:5px">'+label+'</label>'+
+      '<div style="display:flex;align-items:stretch;border:1px solid #e3e5ea;border-radius:9px;overflow:hidden;background:#fff">'+
+        '<input id="'+id+'" type="text" placeholder="'+placeholder+'"'+
+          ' style="flex:1;border:none;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;min-width:0"'+
+          ' oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,\'\').slice(0,63)">'+
+        '<span style="background:#f3f4f6;padding:11px 14px;font-size:13px;font-weight:600;color:#868a96;border-left:1px solid #e3e5ea;white-space:nowrap;flex-shrink:0">'+tld+'</span>'+
+      '</div>'+
+    '</div>';
+  }
+
+  window._backToPlan = function() { renderStep1_Plan(); };
+
+  window._submitDomainAndPay = async function() {
+    var c1 = (document.getElementById("dw_c1")||{}).value || "";
+    var c2 = (document.getElementById("dw_c2")||{}).value || "";
+    var c3 = (document.getElementById("dw_c3")||{}).value || "";
+    c1 = c1.trim(); c2 = c2.trim(); c3 = c3.trim();
+    if (!c1) { alert("Please enter at least one domain name preference."); return; }
+
+    renderStep_Loading("Saving your domain preferences and connecting to Paynow…");
+
+    var token = localStorage.getItem("wcz_token");
+    var headers = { "Content-Type": "application/json", "Authorization": "Bearer " + (token || "") };
+
+    // 1. Save domain wish (don't block payment if this fails)
     try {
-      var token = localStorage.getItem("wcz_token");
-      var r = await fetch(API+"/sites/"+encodeURIComponent(pubSiteId)+"/publish", {
-        method: "POST",
-        headers: { "Content-Type":"application/json", "Authorization":"Bearer "+(token||"") },
-        body: JSON.stringify({ plan: plan, amount: amount, currency: "USD" })
+      await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/domain-wish", {
+        method: "POST", headers: headers,
+        body: JSON.stringify({ choice_1: c1, choice_2: c2 || null, choice_3: c3 || null })
       });
-      var data = {}; try{ data = await r.json(); }catch(e){}
-      if(r.ok && data.payment_url){
-        body.innerHTML = '<div style="text-align:center;padding:24px 20px"><div style="font-size:28px;margin-bottom:10px">✅</div><p style="margin:0 0 14px;color:#4a4d59">Redirecting to Paynow to complete payment…</p></div>';
-        setTimeout(function(){ location.href = data.payment_url; }, 800);
+    } catch(e) { /* non-fatal */ }
+
+    // 2. Initiate payment — server derives amount from plan, we only send plan name
+    try {
+      var r = await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/publish", {
+        method: "POST", headers: headers,
+        body: JSON.stringify({ plan: pubPlan, currency: "USD" })
+        // NOTE: no 'amount' field — server uses PLAN_PRICES[plan] internally
+      });
+      var data = {}; try { data = await r.json(); } catch(e) {}
+
+      if (r.ok && data.payment_url) {
+        var tld = pubPlan === "pro" ? ".com" : ".co.zw";
+        setBody(
+          '<div style="text-align:center;padding:10px 0 16px">'+
+            '<div style="font-size:36px;margin-bottom:10px">✅</div>'+
+            '<p style="font-weight:600;margin:0 0 6px">Domain preference saved!</p>'+
+            '<p style="font-size:13px;color:#868a96;margin:0 0 16px">We noted <strong>'+esc(c1)+tld+'</strong>'+(c2 ? ' and '+esc(c2)+tld : '')+'. Redirecting to Paynow…</p>'+
+          '</div>'
+        );
+        setTimeout(function() { location.href = data.payment_url; }, 1000);
       } else {
-        body.innerHTML = '<div style="padding:16px;background:#fee2e2;border-radius:10px;color:#c0392b;font-size:14px"><strong>Payment couldn\'t be started</strong><br>'+(data.error||data.message||"Try again.")+'</div>'+
-          '<button class="btn btn-ghost" style="margin-top:12px" onclick="closePubModal()">Close</button>';
+        setBody(
+          '<div style="padding:16px;background:#fee2e2;border-radius:10px;color:#c0392b;font-size:14px;margin-bottom:12px">'+
+            '<strong>Payment couldn\'t be started</strong><br>'+(data.error || data.message || "Try again.")+
+          '</div>'+
+          '<button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="closePubModal()">Close</button>'
+        );
       }
     } catch(e) {
-      body.innerHTML = '<div style="padding:16px;background:#fee2e2;border-radius:10px;color:#c0392b;font-size:14px"><strong>Network error</strong><br>Check your connection and try again.</div>'+
-        '<button class="btn btn-ghost" style="margin-top:12px" onclick="closePubModal()">Close</button>';
+      setBody(
+        '<div style="padding:16px;background:#fee2e2;border-radius:10px;color:#c0392b;font-size:14px;margin-bottom:12px">'+
+          '<strong>Network error</strong><br>Check your connection and try again.'+
+        '</div>'+
+        '<button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="closePubModal()">Close</button>'
+      );
     }
   };
 
-  // Close on overlay click
-  document.getElementById("pub-overlay").addEventListener("click", function(e){
-    if(e.target === this) closePubModal();
-  });
+  // ── STEP 3: Post-payment success + email routing prompt ─────────────
+  function renderStep3_PostPayment(siteId) {
+    document.getElementById("pub-modal-title").textContent = "🎉 Site published!";
+    setBody(
+      '<div style="text-align:center;padding:4px 0 16px">'+
+        '<div style="font-size:44px;margin-bottom:10px">🎉</div>'+
+        '<h2 style="font-family:Space Grotesk,sans-serif;font-size:19px;margin:0 0 6px;color:#1a1b22">Your site is live!</h2>'+
+        '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 20px">Payment confirmed. Your domain will be registered within 1–2 business days and you\'ll get a WhatsApp notification.</p>'+
+      '</div>'+
 
-  // Handle return from Paynow (?paid=1&site=xxx)
+      // Email routing setup
+      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin-bottom:16px">'+
+        '<div style="font-weight:700;font-size:14px;color:#15924B;margin-bottom:6px">📧 Set up professional email forwarding</div>'+
+        '<p style="font-size:13px;color:#4a4d59;margin:0 0 12px">Get an address like <strong>info@yoursite.co.zw</strong> that forwards to your Gmail — free, included in your plan.</p>'+
+        '<label style="font-size:12px;font-weight:600;color:#4a4d59;display:block;margin-bottom:5px">Email prefix</label>'+
+        '<div style="display:flex;align-items:stretch;border:1px solid #d1fae5;border-radius:8px;overflow:hidden;background:#fff;margin-bottom:8px">'+
+          '<input id="er_local" type="text" placeholder="info"'+
+            ' style="flex:1;border:none;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;min-width:0"'+
+            ' oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9._+-]/g,\'\').slice(0,64)">'+
+          '<span style="background:#f0fdf4;padding:10px 12px;font-size:13px;font-weight:600;color:#15924B;border-left:1px solid #d1fae5;white-space:nowrap;flex-shrink:0">@yoursite.co.zw</span>'+
+        '</div>'+
+        '<label style="font-size:12px;font-weight:600;color:#4a4d59;display:block;margin-bottom:5px">Forwards to</label>'+
+        '<input id="er_dest" type="email" placeholder="your@gmail.com"'+
+          ' style="width:100%;border:1px solid #d1fae5;border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:10px">'+
+        '<button onclick="_setupEmailRoute(\''+esc(siteId)+'\')" style="width:100%;background:#15924B;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Set up email forwarding</button>'+
+        '<div id="er_msg" style="font-size:12px;margin-top:8px;min-height:16px"></div>'+
+      '</div>'+
+
+      '<button onclick="closePubModal()" class="btn btn-ghost" style="width:100%;justify-content:center">Done</button>'
+    );
+  }
+
+  window._setupEmailRoute = async function(siteId) {
+    var local = ((document.getElementById("er_local")||{}).value || "").trim().toLowerCase().replace(/[^a-z0-9._+-]/g,"");
+    var dest  = ((document.getElementById("er_dest")||{}).value || "").trim();
+    var msgEl = document.getElementById("er_msg");
+    if (!local)             { msgEl.style.color="#c0392b"; msgEl.textContent="Enter an email prefix (e.g. info)"; return; }
+    if (!dest||!dest.includes("@")) { msgEl.style.color="#c0392b"; msgEl.textContent="Enter a valid destination email"; return; }
+    msgEl.style.color="#15924B"; msgEl.textContent="Setting up…";
+    try {
+      var token = localStorage.getItem("wcz_token");
+      var r = await fetch(API + "/sites/" + encodeURIComponent(siteId) + "/email-routes", {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization":"Bearer "+(token||"") },
+        body: JSON.stringify({ local_part: local, destination: dest })
+      });
+      var data = {}; try { data = await r.json(); } catch(e) {}
+      if (r.ok) {
+        msgEl.style.color="#15924B";
+        msgEl.textContent = "✓ Check your inbox at "+dest+" for a verification link from Cloudflare to activate "+local+"@websites.co.zw.";
+        document.querySelector("#er_msg").closest("div").querySelector("button").disabled = true;
+      } else {
+        msgEl.style.color="#c0392b";
+        msgEl.textContent = data.message || data.error || "Something went wrong. Try again.";
+      }
+    } catch(e) {
+      msgEl.style.color="#c0392b"; msgEl.textContent = "Network error. Try later from your dashboard.";
+    }
+  };
+
+  // ── Loading state ──────────────────────────────────────────────────
+  function renderStep_Loading(msg) {
+    setBody('<div style="text-align:center;padding:30px 20px"><div style="font-size:28px;margin-bottom:12px">⏳</div><p style="color:#4a4d59;font-size:14px">'+esc(msg)+'</p></div>');
+  }
+
+  function setBody(html) {
+    document.getElementById("pub-body").innerHTML = html;
+  }
+
+  // ── Handle return from Paynow (?paid=1&site=xxx) ────────────────────
   (function checkReturn(){
     var p = new URLSearchParams(location.search);
-    if(p.get("paid") === "1"){
+    if (p.get("paid") === "1") {
       history.replaceState({}, "", location.pathname);
-      setTimeout(function(){ doRefresh && doRefresh(); }, 500);
+      var siteId = p.get("site") || "";
+      setTimeout(function() {
+        if (siteId) {
+          // Show post-payment success with email routing setup
+          document.getElementById("pub-modal-title").textContent = "Publish your site";
+          document.getElementById("pub-overlay").style.display = "flex";
+          renderStep3_PostPayment(siteId);
+        }
+        if (typeof doRefresh === "function") doRefresh();
+      }, 400);
     }
   })();
 
