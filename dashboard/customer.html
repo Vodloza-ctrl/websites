@@ -106,24 +106,11 @@
   .ribbon{background:var(--gold-soft);color:var(--gold-strong);text-align:center;font-size:12.5px;font-weight:600;padding:7px}
   .skeleton{height:150px;border-radius:var(--radius);background:linear-gradient(90deg,#fff,#f3f4f6,#fff);background-size:200% 100%;animation:sh 1.2s infinite;border:1px solid var(--line)}
 
-  /* ── template thumbnails ── */
-  .card-thumb{width:52px;height:52px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:"Space Grotesk";font-weight:700;font-size:18px;color:#fff;letter-spacing:-.03em}
-  .tpl-bold-retail{background:linear-gradient(135deg,#1a1a2e,#16213e)}
-  .tpl-grill-house{background:linear-gradient(135deg,#2d1200,#7a2e00)}
-  .tpl-beauty-salon{background:linear-gradient(135deg,#3d0030,#8b005d)}
-  .tpl-school-institution{background:linear-gradient(135deg,#0a1628,#1a3a6b)}
-  .tpl-advisory-firm{background:linear-gradient(135deg,#1a1400,#4a3800)}
-  .tpl-property-estate{background:linear-gradient(135deg,#0a1f0a,#1a4a1a)}
-  .tpl-boutique-fashion{background:linear-gradient(135deg,#1a0010,#3d0025)}
-  .tpl-grocery-fmcg{background:linear-gradient(135deg,#0a2a0a,#1a5a1a)}
-  .tpl-retail-hardware{background:linear-gradient(135deg,#0d1a2e,#1a3366)}
-  /* ── flag dot logo ── */
   .logo-flag{display:inline-flex;flex-direction:column;gap:2px;margin-left:6px;vertical-align:middle}
   .logo-flag i{display:block;width:4px;height:4px;border-radius:50%;list-style:none}
   .logo-flag i:nth-child(1){background:#15924B}
   .logo-flag i:nth-child(2){background:#a87d1a}
   .logo-flag i:nth-child(3){background:#c0392b}
-  /* ── refresh btn ── */
   .btn-refresh{background:none;border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 13px;font-size:13px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
   .btn-refresh:hover{border-color:var(--ink-soft);color:var(--ink)}
 
@@ -136,11 +123,9 @@
 <div id="app"></div>
 
 <script>
-if (location.hostname !== 'app.websites.co.zw') {
-  location.replace('https://app.websites.co.zw/dashboard/customer.html' + location.search + location.hash);
-}
 (function(){
   "use strict";
+  // ── API endpoints — always the custom domain, never workers.dev ──────────────
   var AUTH = "https://app.websites.co.zw/auth";
   var API  = "https://app.websites.co.zw/api";
   var APP  = "https://app.websites.co.zw";
@@ -492,7 +477,6 @@ if (location.hostname !== 'app.websites.co.zw') {
   "use strict";
   var API = "https://app.websites.co.zw/api";
 
-  // ── Prices — single source of truth, mirrors server PLAN_PRICES ──
   var PLAN_PRICES = { starter: 30, pro: 60 };
 
   var pubSiteId   = null;
@@ -500,7 +484,6 @@ if (location.hostname !== 'app.websites.co.zw') {
   var pubPlan     = null;
   var pubIsRenew  = false;
 
-  // ── Open modal ──────────────────────────────────────────────────────
   window.startPublish = function(id, name, status) {
     pubSiteId   = id;
     pubSiteName = name;
@@ -519,14 +502,11 @@ if (location.hostname !== 'app.websites.co.zw') {
     if (e.target === this) closePubModal();
   });
 
-  // ── STEP 1: Plan picker ─────────────────────────────────────────────
   function renderStep1_Plan() {
     var action = pubIsRenew ? "Renewing" : "Publishing";
     setBody(
       '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 18px;line-height:1.6">'+action+' <strong>'+esc(pubSiteName)+'</strong>. Choose your plan:</p>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
-
-        // Starter
         '<div style="border:2px solid #15924B;border-radius:12px;padding:14px">'+
           '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#15924B;margin-bottom:4px">Starter</div>'+
           '<div style="font-family:Space Grotesk,sans-serif;font-size:24px;font-weight:800">$'+PLAN_PRICES.starter+'<span style="font-size:12px;font-weight:400;color:#868a96">/yr</span></div>'+
@@ -539,8 +519,6 @@ if (location.hostname !== 'app.websites.co.zw') {
           '</div>'+
           '<button class="btn btn-gold" style="width:100%;justify-content:center" onclick="_selectPlan(\'starter\')">Choose Starter — $'+PLAN_PRICES.starter+'/yr</button>'+
         '</div>'+
-
-        // Pro
         '<div style="border:2px solid #7c3aed;border-radius:12px;padding:14px">'+
           '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;margin-bottom:4px">Pro ⭐</div>'+
           '<div style="font-family:Space Grotesk,sans-serif;font-size:24px;font-weight:800">$'+PLAN_PRICES.pro+'<span style="font-size:12px;font-weight:400;color:#868a96">/yr</span></div>'+
@@ -563,7 +541,6 @@ if (location.hostname !== 'app.websites.co.zw') {
     renderStep2_Domain();
   };
 
-  // ── STEP 2: Domain wish (3 choices) ────────────────────────────────
   function renderStep2_Domain() {
     var tld  = pubPlan === "pro" ? ".com" : ".co.zw";
     var reg  = pubPlan === "pro" ? "an international registrar" : "ZISPA";
@@ -612,7 +589,7 @@ if (location.hostname !== 'app.websites.co.zw') {
     var token = localStorage.getItem("wcz_token");
     var headers = { "Content-Type": "application/json", "Authorization": "Bearer " + (token || "") };
 
-    // 1. Save domain wish (don't block payment if this fails)
+    // 1. Save domain wish (non-fatal if fails)
     try {
       await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/domain-wish", {
         method: "POST", headers: headers,
@@ -620,7 +597,7 @@ if (location.hostname !== 'app.websites.co.zw') {
       });
     } catch(e) { /* non-fatal */ }
 
-    // 2. Initiate payment — server derives amount from plan, we only send plan name
+    // 2. Initiate payment — server derives amount from plan
     try {
       var r = await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/publish", {
         method: "POST", headers: headers,
@@ -657,7 +634,6 @@ if (location.hostname !== 'app.websites.co.zw') {
     }
   };
 
-  // ── STEP 3: Post-payment success + email routing prompt ─────────────
   function renderStep3_PostPayment(siteId) {
     document.getElementById("pub-modal-title").textContent = "🎉 Site published!";
     setBody(
@@ -666,8 +642,6 @@ if (location.hostname !== 'app.websites.co.zw') {
         '<h2 style="font-family:Space Grotesk,sans-serif;font-size:19px;margin:0 0 6px;color:#1a1b22">Your site is live!</h2>'+
         '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 20px">Payment confirmed. Your domain will be registered within 1–2 business days and you\'ll get a WhatsApp notification.</p>'+
       '</div>'+
-
-      // Email routing setup
       '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin-bottom:16px">'+
         '<div style="font-weight:700;font-size:14px;color:#15924B;margin-bottom:6px">📧 Set up professional email forwarding</div>'+
         '<p style="font-size:13px;color:#4a4d59;margin:0 0 12px">Get an address like <strong>info@yoursite.co.zw</strong> that forwards to your Gmail — free, included in your plan.</p>'+
@@ -684,7 +658,6 @@ if (location.hostname !== 'app.websites.co.zw') {
         '<button onclick="_setupEmailRoute(\''+esc(siteId)+'\')" style="width:100%;background:#15924B;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Set up email forwarding</button>'+
         '<div id="er_msg" style="font-size:12px;margin-top:8px;min-height:16px"></div>'+
       '</div>'+
-
       '<button onclick="closePubModal()" class="btn btn-ghost" style="width:100%;justify-content:center">Done</button>'
     );
   }
@@ -717,7 +690,6 @@ if (location.hostname !== 'app.websites.co.zw') {
     }
   };
 
-  // ── Loading state ──────────────────────────────────────────────────
   function renderStep_Loading(msg) {
     setBody('<div style="text-align:center;padding:30px 20px"><div style="font-size:28px;margin-bottom:12px">⏳</div><p style="color:#4a4d59;font-size:14px">'+esc(msg)+'</p></div>');
   }
@@ -726,7 +698,7 @@ if (location.hostname !== 'app.websites.co.zw') {
     document.getElementById("pub-body").innerHTML = html;
   }
 
-  // ── Handle return from Paynow (?paid=1&site=xxx) ────────────────────
+  // Handle return from Paynow (?paid=1&site=xxx)
   (function checkReturn(){
     var p = new URLSearchParams(location.search);
     if (p.get("paid") === "1") {
@@ -734,7 +706,6 @@ if (location.hostname !== 'app.websites.co.zw') {
       var siteId = p.get("site") || "";
       setTimeout(function() {
         if (siteId) {
-          // Show post-payment success with email routing setup
           document.getElementById("pub-modal-title").textContent = "Publish your site";
           document.getElementById("pub-overlay").style.display = "flex";
           renderStep3_PostPayment(siteId);
