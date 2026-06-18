@@ -126,10 +126,17 @@
 (function(){
   "use strict";
   // ── API endpoints — always the custom domain, never workers.dev ──────────────
+  // AUTH/API are fetch() targets (cross-origin reads, governed by CORS) so they
+  // stay on app.websites.co.zw where the Worker lives.
   var AUTH = "https://app.websites.co.zw/auth";
   var API  = "https://app.websites.co.zw/api";
-  var APP  = "https://app.websites.co.zw";
-  var NEW  = APP + "/new/";
+  // PAGES is for page NAVIGATION (Edit, Preview, New site, Switch template).
+  // This dashboard runs on www.websites.co.zw and the session token lives in
+  // localStorage there, which is origin-scoped — so any link the user clicks
+  // must stay on www, not app, or the destination page won't see the token.
+  var PAGES = "https://www.websites.co.zw";
+  var APP   = "https://app.websites.co.zw"; // kept for preview iframe URLs (server-rendered, no token needed)
+  var NEW   = PAGES + "/new/";
   var now  = Math.floor(Date.now()/1000);
   var DEMO = false;
   var state = { owner:null, channel:"whatsapp", phone:"", step:"phone" };
@@ -144,8 +151,13 @@
     if (s.draft_subdomain) return "https://"+s.draft_subdomain+".websites.co.zw";
     return null;
   }
+  // Preview is served by the auth Worker on app.websites.co.zw and is gated by
+  // an HMAC-signed cookie minted at login, not by the localStorage token — so
+  // this one is fine to stay on APP.
   function previewUrl(s){ return APP+"/preview/"+(s.draft_subdomain||s.id); }
-  function editorUrl(s) { return APP+"/editor/?site="+s.id; }
+  // Edit and template-switch are full-page navigations into pages that read
+  // localStorage.getItem("wcz_token") — these must stay on PAGES (www).
+  function editorUrl(s) { return PAGES+"/editor/?site="+s.id; }
   function switchTemplateUrl(s){ return NEW+"?switch=1&site="+encodeURIComponent(s.id); }
 
   window.createNewSite = function(){ location.href = NEW; };
