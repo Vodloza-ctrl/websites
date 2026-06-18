@@ -2,664 +2,570 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>Build your website — websites.co.zw</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --green:#15924B; --green-dk:#0f6e39; --green-bg:#e8f5ee; --green-mid:#d1ead9;
-  --gold:#a87d1a; --gold-bg:#fdf3dc;
-  --ink:#0d0f14; --ink2:#3d4251; --ink3:#6b7180;
-  --surface:#f0f2f6; --card:#ffffff;
-  --line:#e2e5eb; --line2:#d0d4dc;
-  --red:#c0392b;
-  --r:16px; --r-sm:10px; --r-xs:7px;
+  --green:#15924B;--green-dk:#0f6e39;--green-bg:#e8f5ee;--green-mid:#c6e8d4;
+  --gold:#a87d1a;--gold-bg:#fdf3dc;
+  --ink:#0d0f14;--ink2:#3d4251;--ink3:#6b7180;
+  --surface:#f0f2f6;--card:#ffffff;
+  --line:#e2e5eb;--line2:#d0d4dc;--red:#c0392b;
+  --r:16px;--r-sm:10px;--r-xs:7px;
   --shadow:0 1px 3px rgba(13,15,20,.06),0 6px 20px rgba(13,15,20,.07);
-  --shadow-lg:0 4px 8px rgba(13,15,20,.08),0 20px 48px rgba(13,15,20,.14);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%;background:var(--surface);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html,body{min-height:100%;background:var(--surface);color:var(--ink);
+  font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none}
 button,input,select{font-family:inherit}
 button{cursor:pointer;border:none;background:none}
 a{color:inherit;text-decoration:none}
-img{display:block;max-width:100%}
 :focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:4px}
-
-/* ── BAR ── */
-.bar{background:var(--card);border-bottom:1px solid var(--line);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{font-family:"Space Grotesk";font-weight:800;font-size:18px;letter-spacing:-.02em;display:flex;align-items:center;gap:3px}
+.bar{background:var(--card);border-bottom:1px solid var(--line);padding:0 20px;
+  height:52px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100}
+.logo{font-family:"Space Grotesk";font-weight:800;font-size:17px;letter-spacing:-.02em}
 .logo .tld{color:var(--green)}
-.logo-flag{display:inline-flex;flex-direction:column;gap:2px;margin-left:5px}
+.logo-flag{display:inline-flex;flex-direction:column;gap:2px;margin-left:4px;vertical-align:middle}
 .logo-flag i{display:block;width:3px;height:3px;border-radius:50%}
 .logo-flag i:nth-child(1){background:var(--green)}
 .logo-flag i:nth-child(2){background:var(--gold)}
 .logo-flag i:nth-child(3){background:var(--red)}
-.bar-back{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--ink3);padding:6px 10px;border-radius:var(--r-xs);border:1.5px solid var(--line);transition:.12s}
+.bar-back{font-size:13px;font-weight:600;color:var(--ink3);padding:6px 10px;
+  border-radius:var(--r-xs);border:1.5px solid var(--line);display:flex;
+  align-items:center;gap:5px;transition:.12s}
 .bar-back:hover{border-color:var(--ink3);color:var(--ink)}
-
-/* ── STEPS ── */
-.steps{display:flex;align-items:center;justify-content:center;gap:0;padding:20px 24px 0}
-.step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink3)}
-.step.active{color:var(--green)}
-.step.done{color:var(--green-dk)}
-.step-num{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;background:transparent;transition:.2s}
-.step.active .step-num{background:var(--green);border-color:var(--green);color:#fff}
-.step.done .step-num{background:var(--green-dk);border-color:var(--green-dk);color:#fff}
-.step-connector{width:40px;height:2px;background:var(--line2);margin:0 6px;border-radius:1px;flex-shrink:0}
-.step-connector.done{background:var(--green)}
-@media(max-width:480px){.step span{display:none}.step-connector{width:20px}}
-
-/* ── PAGE SCREENS ── */
-.screen{display:none;padding:28px 24px 60px;max-width:900px;margin:0 auto}
+.progress-wrap{height:4px;background:var(--line);position:sticky;top:52px;z-index:99}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--green),#22c55e);
+  transition:width .4s cubic-bezier(.4,0,.2,1);border-radius:0 2px 2px 0}
+.step-label{text-align:center;padding:14px 20px 0;font-size:12.5px;font-weight:600;
+  color:var(--ink3);letter-spacing:.04em;text-transform:uppercase}
+.step-label span{color:var(--green)}
+.screen{display:none;padding:20px 18px 80px;max-width:860px;margin:0 auto}
 .screen.active{display:block}
-.screen-head{margin-bottom:28px}
-.screen-head h1{font-family:"Space Grotesk";font-size:clamp(22px,4vw,30px);font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
-.screen-head p{color:var(--ink2);font-size:15px;max-width:540px;line-height:1.6}
-
-/* ── INDUSTRY GRID ── */
-.industry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.ind-card{border:2px solid var(--line);border-radius:var(--r);padding:16px 14px;cursor:pointer;transition:border-color .15s,background .15s,transform .12s;background:var(--card);display:flex;flex-direction:column;align-items:flex-start;gap:8px;position:relative}
-.ind-card:hover{border-color:var(--green);transform:translateY(-2px);box-shadow:var(--shadow)}
-.ind-card.selected{border-color:var(--green);background:var(--green-bg)}
-.ind-card .ind-icon{font-size:28px;line-height:1}
-.ind-card .ind-name{font-family:"Space Grotesk";font-size:14px;font-weight:600;color:var(--ink);line-height:1.3}
-.ind-card .ind-desc{font-size:12px;color:var(--ink3);line-height:1.4}
-.ind-card .ind-check{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;display:none;align-items:center;justify-content:center;font-size:11px;font-weight:700}
-.ind-card.selected .ind-check{display:flex}
-
-/* ── TEMPLATE GRID ── */
-.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-.tpl-card{border:2.5px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s,transform .12s,box-shadow .15s;background:var(--card)}
-.tpl-card:hover{border-color:var(--green);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-.tpl-card.selected{border-color:var(--green);box-shadow:0 0 0 4px var(--green-mid)}
-.tpl-preview{height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0}
-.tpl-preview-inner{width:100%;height:100%;display:flex;flex-direction:column}
-/* Mini site previews — rendered inline via CSS */
-.tpl-bar{height:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;gap:4px;padding:0 6px;flex-shrink:0}
-.tpl-bar-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.4)}
-.tpl-hero{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:8px 10px 10px;gap:4px}
-.tpl-h{height:7px;border-radius:3px;background:rgba(255,255,255,.9);width:70%}
-.tpl-p{height:4px;border-radius:2px;background:rgba(255,255,255,.45);width:85%}
-.tpl-btn-preview{height:10px;border-radius:3px;width:45px;margin-top:3px}
-.tpl-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35)}
-.tpl-badge{position:absolute;top:8px;right:8px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.04em}
-.tpl-check-mark{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;display:none;align-items:center;justify-content:center;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.tpl-card.selected .tpl-check-mark{display:flex}
-.tpl-body{padding:12px 14px}
-.tpl-name{font-family:"Space Grotesk";font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px}
-.tpl-desc{font-size:12px;color:var(--ink3);line-height:1.4}
-.tpl-tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:10px;margin-top:6px;letter-spacing:.03em}
-
-/* ── BUSINESS NAME STEP ── */
-.name-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:28px 24px;box-shadow:var(--shadow);max-width:560px}
-.name-input{width:100%;border:2px solid var(--line2);border-radius:var(--r-sm);padding:14px 16px;font-size:18px;font-weight:600;font-family:"Space Grotesk";color:var(--ink);transition:border-color .15s;background:#fff}
-.name-input:focus{outline:none;border-color:var(--green)}
-.name-input::placeholder{color:#c0c4d0;font-weight:500}
-.preview-slug{font-size:13px;color:var(--ink3);margin-top:8px;min-height:20px}
-.preview-slug b{color:var(--green-dk);font-weight:600}
-
-/* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--r-sm);font-weight:700;font-size:14px;padding:12px 22px;transition:.15s;border:2px solid transparent;white-space:nowrap;letter-spacing:-.01em}
-.btn-primary{background:var(--green);color:#fff;border-color:var(--green)}
-.btn-primary:hover{background:var(--green-dk);border-color:var(--green-dk)}
-.btn-primary:disabled{opacity:.45;cursor:default;transform:none}
-.btn-ghost{background:transparent;color:var(--ink2);border-color:var(--line2)}
+.screen-head{margin-bottom:22px}
+.screen-head h1{font-family:"Space Grotesk";font-size:clamp(20px,5vw,28px);
+  font-weight:800;letter-spacing:-.025em;line-height:1.2;margin-bottom:6px}
+.screen-head p{color:var(--ink2);font-size:14px;line-height:1.6;max-width:500px}
+.ai-tag{display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,#0d2818,#0f3d22);color:#4ade80;
+  font-size:11.5px;font-weight:700;letter-spacing:.05em;padding:4px 10px;
+  border-radius:20px;margin-bottom:10px}
+.ind-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+@media(min-width:520px){.ind-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:720px){.ind-grid{grid-template-columns:repeat(5,1fr)}}
+.ind-card{border:2px solid var(--line);border-radius:var(--r-sm);padding:13px 10px 11px;
+  cursor:pointer;transition:border-color .14s,background .14s,transform .1s;
+  background:var(--card);display:flex;flex-direction:column;align-items:center;
+  gap:6px;text-align:center;position:relative;-webkit-tap-highlight-color:transparent}
+.ind-card:active{transform:scale(.96)}
+.ind-card.sel{border-color:var(--green);background:var(--green-bg)}
+.ind-card .ic{font-size:26px;line-height:1}
+.ind-card .il{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.ind-card .ck{position:absolute;top:6px;right:6px;width:17px;height:17px;
+  border-radius:50%;background:var(--green);color:#fff;display:none;
+  align-items:center;justify-content:center;font-size:9px;font-weight:800}
+.ind-card.sel .ck{display:flex}
+.tpl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:600px){.tpl-grid{grid-template-columns:repeat(3,1fr)}}
+.tpl-card{border:2.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;
+  cursor:pointer;transition:border-color .14s,transform .1s,box-shadow .14s;
+  background:var(--card);-webkit-tap-highlight-color:transparent}
+.tpl-card:active{transform:scale(.97)}
+.tpl-card.sel{border-color:var(--green);box-shadow:0 0 0 3px var(--green-mid)}
+.tpl-prev{height:100px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.tpl-nav-bar{height:10px;background:rgba(0,0,0,.25);display:flex;align-items:center;
+  gap:3px;padding:0 6px;flex-shrink:0}
+.tpl-nav-dot{width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.5)}
+.tpl-hero-area{flex:1;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:7px 9px 9px;gap:3px}
+.tpl-h{height:6px;border-radius:2px;background:rgba(255,255,255,.88);width:65%}
+.tpl-p{height:3.5px;border-radius:2px;background:rgba(255,255,255,.42);width:80%}
+.tpl-cta{height:9px;border-radius:2px;width:38px;margin-top:3px}
+.tpl-rec{position:absolute;top:7px;right:7px;font-size:9.5px;font-weight:700;
+  padding:2px 6px;border-radius:10px;background:rgba(255,255,255,.2);color:#fff}
+.tpl-sel-mark{position:absolute;top:7px;left:7px;width:20px;height:20px;
+  border-radius:50%;background:var(--green);color:#fff;display:none;
+  align-items:center;justify-content:center;font-size:12px;font-weight:800;
+  box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tpl-card.sel .tpl-sel-mark{display:flex}
+.tpl-body{padding:10px 12px 11px}
+.tpl-name{font-family:"Space Grotesk";font-size:13px;font-weight:700;margin-bottom:2px}
+.tpl-desc{font-size:11.5px;color:var(--ink3);line-height:1.35}
+.brief-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 18px;box-shadow:var(--shadow);max-width:520px;margin-top:12px}
+.fld-label{display:block;font-size:12px;font-weight:700;color:var(--ink3);
+  letter-spacing:.05em;text-transform:uppercase;margin-bottom:7px}
+.fld-input{width:100%;border:2px solid var(--line2);border-radius:var(--r-sm);
+  padding:13px 15px;font-size:16px;font-weight:600;color:var(--ink);
+  transition:border-color .15s;background:#fff}
+.fld-input:focus{outline:none;border-color:var(--green)}
+.fld-input::placeholder{color:#c0c4d0;font-weight:400}
+.slug-preview{font-size:13px;color:var(--ink3);margin-top:7px;min-height:18px}
+.slug-preview b{color:var(--green-dk);font-weight:600}
+.city-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.city-chip{border:1.5px solid var(--line2);border-radius:20px;padding:7px 13px;
+  font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;
+  transition:border-color .12s,background .12s,color .12s;background:var(--card)}
+.city-chip.sel,.city-chip:hover{border-color:var(--green);background:var(--green-bg);color:var(--green-dk)}
+.sel-bar{display:flex;align-items:center;gap:10px;background:var(--card);
+  border:1.5px solid var(--green-mid);border-radius:var(--r-sm);
+  padding:10px 14px;margin-bottom:18px}
+.sel-bar-icon{font-size:20px;flex-shrink:0}
+.sel-bar-text{font-size:13.5px;font-weight:600;color:var(--ink);flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel-bar-change{font-size:12px;font-weight:700;color:var(--green);cursor:pointer;
+  flex-shrink:0;padding:4px 8px;border-radius:5px}
+.sel-bar-change:hover{background:var(--green-bg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border-radius:var(--r-sm);font-weight:700;font-size:14.5px;padding:13px 24px;
+  transition:.15s;border:2px solid transparent;white-space:nowrap}
+.btn-primary{background:var(--green);color:#fff;border-color:var(--green);width:100%}
+.btn-primary:hover{background:var(--green-dk)}
+.btn-primary:disabled{opacity:.4;cursor:default}
+.btn-ghost{background:transparent;color:var(--ink2);border-color:var(--line2);
+  font-size:13.5px;padding:10px 16px}
 .btn-ghost:hover{border-color:var(--ink3);color:var(--ink)}
-.btn-lg{padding:14px 28px;font-size:15px}
-
-.actions{display:flex;align-items:center;gap:12px;margin-top:24px;flex-wrap:wrap}
-
-/* ── LOADING ── */
-.creating-overlay{display:none;position:fixed;inset:0;background:rgba(13,15,20,.6);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:16px}
-.creating-overlay.open{display:flex}
-.creating-card{background:var(--card);border-radius:var(--r);padding:36px 40px;text-align:center;box-shadow:var(--shadow-lg);max-width:320px;width:90%}
-.creating-ring{width:48px;height:48px;border:4px solid var(--green-mid);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
-.creating-card h3{font-family:"Space Grotesk";font-size:18px;font-weight:700;margin-bottom:6px}
-.creating-card p{font-size:13.5px;color:var(--ink3);line-height:1.5}
+.actions{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.actions-row{display:flex;gap:10px;align-items:center}
+.ai-overlay{display:none;position:fixed;inset:0;z-index:300;
+  background:linear-gradient(160deg,#051209 0%,#0a2015 50%,#071a10 100%);
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;text-align:center}
+.ai-overlay.open{display:flex}
+.ai-logo{font-family:"Space Grotesk";font-weight:800;font-size:18px;
+  color:rgba(255,255,255,.35);margin-bottom:32px;letter-spacing:-.01em}
+.ai-logo .tld{color:rgba(74,222,128,.5)}
+.ai-spinner-wrap{position:relative;width:72px;height:72px;margin:0 auto 28px}
+.ai-ring{position:absolute;inset:0;border-radius:50%;
+  border:3px solid rgba(74,222,128,.15);border-top-color:#4ade80;
+  animation:spin .9s linear infinite}
+.ai-ring-2{position:absolute;inset:6px;border-radius:50%;
+  border:2px solid rgba(74,222,128,.08);border-bottom-color:rgba(74,222,128,.4);
+  animation:spin 1.4s linear infinite reverse}
+.ai-icon{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:24px;color:#4ade80}
+.ai-status-wrap{min-height:56px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px}
+.ai-status{font-family:"Space Grotesk";font-size:18px;font-weight:700;
+  color:#fff;opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+.ai-status.show{opacity:1;transform:none}
+.ai-status-sub{font-size:13px;color:rgba(255,255,255,.45);opacity:0;
+  transition:opacity .4s .15s}
+.ai-status-sub.show{opacity:1}
+.ai-steps-list{margin-top:28px;display:flex;flex-direction:column;gap:8px;
+  width:100%;max-width:320px}
+.ai-step-row{display:flex;align-items:center;gap:10px;font-size:13.5px;
+  font-weight:600;color:rgba(255,255,255,.3);transition:color .3s}
+.ai-step-row.done{color:rgba(74,222,128,.7)}
+.ai-step-row.active{color:rgba(255,255,255,.85)}
+.ai-step-dot{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:9px;transition:.3s}
+.ai-step-row.done .ai-step-dot{background:#4ade80;border-color:#4ade80;color:#051209}
+.ai-step-row.active .ai-step-dot{border-color:rgba(255,255,255,.6);
+  animation:pulse-dot 1.2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── MISC ── */
-.divider{height:1px;background:var(--line);margin:20px 0}
-.hint-bar{background:var(--gold-bg);border:1px solid #e6c96a;border-radius:var(--r-xs);padding:10px 14px;font-size:13px;color:#7a5c0a;margin-bottom:20px;display:flex;align-items:flex-start;gap:8px}
-.hint-bar .hi{flex-shrink:0;font-size:16px}
-.selected-summary{display:flex;align-items:center;gap:12px;background:var(--card);border:1.5px solid var(--green-mid);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:20px}
-.selected-summary .ss-icon{font-size:22px;flex-shrink:0}
-.selected-summary .ss-text{font-size:13.5px;font-weight:600;color:var(--ink)}
-.selected-summary .ss-change{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--green);cursor:pointer;flex-shrink:0}
-.selected-summary .ss-change:hover{text-decoration:underline}
-
-@media(max-width:480px){
-  .tpl-grid{grid-template-columns:1fr 1fr}
-  .industry-grid{grid-template-columns:1fr 1fr}
-  .actions{flex-direction:column}
-  .actions .btn{width:100%}
-}
+.ai-success{display:none;flex-direction:column;align-items:center;gap:12px}
+.ai-success.show{display:flex}
+.ai-success-ring{width:64px;height:64px;border-radius:50%;background:#4ade80;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.ai-success h2{font-family:"Space Grotesk";font-size:22px;font-weight:800;
+  color:#fff;text-align:center}
+.ai-success p{font-size:14px;color:rgba(255,255,255,.6);text-align:center;
+  max-width:260px;line-height:1.5}
 </style>
 </head>
 <body>
 
 <header class="bar">
   <div class="logo">websites<span class="tld">.co.zw</span><span class="logo-flag"><i></i><i></i><i></i></span></div>
-  <a class="bar-back" href="/dashboard/customer.html">← Dashboard</a>
+  <a class="bar-back" id="backBtn" href="/dashboard/customer.html">&larr; My sites</a>
 </header>
+<div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+<div class="step-label" id="stepLabel">Step <span id="stepNum">1</span> of 3</div>
 
-<!-- Steps indicator -->
-<div class="steps" id="stepsBar">
-  <div class="step active" id="step1-ind">
-    <div class="step-num">1</div>
-    <span>Industry</span>
+<div class="screen active" id="s-industry">
+  <div class="screen-head">
+    <div class="ai-tag">&#10022; AI-Powered Website Builder</div>
+    <h1>What kind of business are you?</h1>
+    <p>Tap once &mdash; AI writes your whole website automatically.</p>
   </div>
-  <div class="step-connector" id="conn1"></div>
-  <div class="step" id="step2-ind">
-    <div class="step-num">2</div>
-    <span>Template</span>
-  </div>
-  <div class="step-connector" id="conn2"></div>
-  <div class="step" id="step3-ind">
-    <div class="step-num">3</div>
-    <span>Business name</span>
-  </div>
+  <div class="ind-grid" id="industryGrid"></div>
 </div>
 
-<!-- ═══ SCREEN 1: INDUSTRY ═══ -->
-<div class="screen active" id="screen-industry">
+<div class="screen" id="s-template">
   <div class="screen-head">
-    <h1>What kind of business are you building a site for?</h1>
-    <p>We'll show you the right templates for your industry.</p>
+    <h1>Choose your look</h1>
+    <p>All designs work on mobile. You can switch any time from the editor.</p>
   </div>
-  <div class="industry-grid" id="industryGrid"></div>
-  <div class="actions">
-    <button class="btn btn-primary btn-lg" id="btn-to-templates" disabled onclick="goToTemplates()">
-      Choose templates →
-    </button>
-  </div>
-</div>
-
-<!-- ═══ SCREEN 2: TEMPLATE ═══ -->
-<div class="screen" id="screen-template">
-  <div class="screen-head">
-    <h1>Choose your template</h1>
-    <p>All templates are fully customisable — you're not locked in. You can switch any time.</p>
-  </div>
-  <div id="selected-industry-bar" class="selected-summary" style="display:none">
-    <span class="ss-icon" id="sel-ind-icon"></span>
-    <span class="ss-text" id="sel-ind-name"></span>
-    <span class="ss-change" onclick="goBack('industry')">Change industry</span>
+  <div class="sel-bar" id="indSelBar">
+    <span class="sel-bar-icon" id="indSelIcon"></span>
+    <span class="sel-bar-text" id="indSelName"></span>
+    <span class="sel-bar-change" onclick="goTo('industry')">Change</span>
   </div>
   <div class="tpl-grid" id="templateGrid"></div>
   <div class="actions">
-    <button class="btn btn-ghost" onclick="goBack('industry')">← Back</button>
-    <button class="btn btn-primary btn-lg" id="btn-to-name" disabled onclick="goToName()">
-      Continue →
-    </button>
-  </div>
-</div>
-
-<!-- ═══ SCREEN 3: BUSINESS NAME ═══ -->
-<div class="screen" id="screen-name">
-  <div class="screen-head">
-    <h1>What's your business called?</h1>
-    <p>This goes on your site and sets your web address. You can change it later.</p>
-  </div>
-
-  <div id="selected-template-bar" class="selected-summary">
-    <span class="ss-icon" id="sel-tpl-icon"></span>
-    <span class="ss-text" id="sel-tpl-name"></span>
-    <span class="ss-change" onclick="goBack('template')">Change template</span>
-  </div>
-
-  <div class="name-card">
-    <label style="display:block;font-size:12.5px;font-weight:700;color:var(--ink3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px">Business name</label>
-    <input class="name-input" id="businessName" type="text" placeholder="e.g. Elite Sports Institute" autocomplete="organization" maxlength="100" oninput="onNameInput()">
-    <div class="preview-slug" id="slugPreview"></div>
-
-    <div class="divider"></div>
-
-    <div class="hint-bar">
-      <span class="hi">💡</span>
-      <span>After creating your site, you'll fill in your details and optionally generate all your content with AI — takes about 15 seconds.</span>
+    <div class="actions-row">
+      <button class="btn btn-ghost" onclick="goTo('industry')">&larr; Back</button>
+      <button class="btn btn-primary" id="btnToDetails" disabled onclick="goTo('details')" style="flex:1">Next &rarr;</button>
     </div>
   </div>
+</div>
 
+<div class="screen" id="s-details">
+  <div class="screen-head">
+    <h1>Three things and you&rsquo;re done</h1>
+    <p>Our AI fills in the rest &mdash; your about section, services, and design.</p>
+  </div>
+  <div class="sel-bar" id="tplSelBar">
+    <span class="sel-bar-icon" id="tplSelIcon"></span>
+    <span class="sel-bar-text" id="tplSelName"></span>
+    <span class="sel-bar-change" onclick="goTo('template')">Change</span>
+  </div>
+  <div class="brief-card" style="margin-top:0">
+    <label class="fld-label" for="f-name">Business name</label>
+    <input class="fld-input" id="f-name" type="text" placeholder="e.g. Elite Sports Institute"
+      autocomplete="organization" maxlength="100" oninput="onBriefChange()">
+    <div class="slug-preview" id="slugPreview"></div>
+  </div>
+  <div class="brief-card">
+    <label class="fld-label" for="f-phone">WhatsApp / phone number</label>
+    <input class="fld-input" id="f-phone" type="tel" placeholder="077 123 4567"
+      autocomplete="tel" maxlength="20" oninput="onBriefChange()"
+      style="font-size:18px;letter-spacing:.02em">
+    <div style="font-size:12px;color:var(--ink3);margin-top:6px">
+      &#x2705; Adds a WhatsApp button so customers can message you directly
+    </div>
+  </div>
+  <div class="brief-card">
+    <label class="fld-label">Your city</label>
+    <div class="city-row" id="cityRow"></div>
+    <input class="fld-input" id="f-city" type="text" placeholder="Other city or town"
+      style="font-size:14px" oninput="onCityInput()">
+  </div>
   <div class="actions">
-    <button class="btn btn-ghost" onclick="goBack('template')">← Back</button>
-    <button class="btn btn-primary btn-lg" id="btn-create" disabled onclick="createSite()">
-      Create my site →
+    <button class="btn btn-primary" id="btnCreate" disabled onclick="onCreateSite()"
+      style="font-size:16px;padding:16px;gap:10px">
+      &#10022; Build my site with AI
     </button>
+    <div class="actions-row" style="justify-content:center">
+      <button class="btn btn-ghost" onclick="goTo('template')">&larr; Back</button>
+    </div>
   </div>
 </div>
 
-<!-- Creating overlay -->
-<div class="creating-overlay" id="creatingOverlay">
-  <div class="creating-card">
-    <div class="creating-ring"></div>
-    <h3>Setting up your site…</h3>
-    <p>Creating your <span id="creating-tpl-name">website</span> — just a moment.</p>
+<div class="ai-overlay" id="aiOverlay">
+  <div class="ai-logo">websites<span class="tld">.co.zw</span></div>
+  <div id="aiSpinnerSection">
+    <div class="ai-spinner-wrap">
+      <div class="ai-ring"></div><div class="ai-ring-2"></div>
+      <div class="ai-icon">&#10022;</div>
+    </div>
+    <div class="ai-status-wrap">
+      <div class="ai-status" id="aiStatus"></div>
+      <div class="ai-status-sub" id="aiStatusSub"></div>
+    </div>
+    <div class="ai-steps-list" id="aiStepsList"></div>
+  </div>
+  <div class="ai-success" id="aiSuccessSection">
+    <div class="ai-success-ring">&#10003;</div>
+    <h2>Your site is ready!</h2>
+    <p id="aiSuccessDesc">Opening your editor now&hellip;</p>
   </div>
 </div>
 
 <script>
 (function(){
 "use strict";
-
-var API  = "https://app.websites.co.zw";
-var DASH = "https://app.websites.co.zw/dashboard/customer.html";
-var EDIT = "https://app.websites.co.zw/editor/";
-
-// ── Auth ──────────────────────────────────────────────────────────────────────
-function getToken(){ return localStorage.getItem("wcz_token") || ""; }
-if(!getToken()){ location.replace(DASH); }
-
-// Check if this is a template switch from the editor
-var params     = new URLSearchParams(location.search);
-var isSwitching = params.get("switch") === "1";
-var fromSiteId  = params.get("from") || params.get("site") || "";
-
-// ── State ─────────────────────────────────────────────────────────────────────
-var state = { industry: null, template: null };
-
-// ── Industry data ─────────────────────────────────────────────────────────────
-var INDUSTRIES = [
-  { id:"food",         icon:"🍽️",  name:"Food & Dining",        desc:"Restaurant, café, takeaway, grill" },
-  { id:"beauty",       icon:"💅",  name:"Beauty & Wellness",     desc:"Salon, spa, clinic, barber" },
-  { id:"education",    icon:"🎓",  name:"Education & Sport",     desc:"School, academy, coaching, church, NGO" },
-  { id:"professional", icon:"💼",  name:"Professional Services", desc:"Consultant, law, accounting, finance" },
-  { id:"property",     icon:"🏘️", name:"Property & Real Estate",desc:"Agent, developer, lettings" },
-  { id:"fashion",      icon:"👗",  name:"Fashion & Boutique",    desc:"Clothing, accessories, cosmetics" },
-  { id:"grocery",      icon:"🛒",  name:"Grocery & Retail",      desc:"Supermarket, spaza, FMCG, general store" },
-  { id:"hardware",     icon:"🔧",  name:"Hardware & Trade",      desc:"Hardware, tools, electronics, auto" },
-  { id:"general",      icon:"🏢",  name:"General Business",      desc:"Any SME that doesn't fit above" },
+var API="https://app.websites.co.zw",DASH="/dashboard/customer.html",EDIT="/editor/";
+function tok(){return localStorage.getItem("wcz_token")||"";}
+if(!tok()){location.replace(DASH);}
+var p=new URLSearchParams(location.search);
+var isSwitching=p.get("switch")==="1",fromSiteId=p.get("from")||p.get("site")||"";
+var st={industry:null,template:null,name:"",phone:"",city:"Bulawayo"};
+var INDS=[
+  {id:"food",ic:"&#127869;&#65039;",lb:"Food & Dining"},
+  {id:"beauty",ic:"&#128133;",lb:"Beauty & Wellness"},
+  {id:"education",ic:"&#127891;",lb:"School & Sport"},
+  {id:"professional",ic:"&#128188;",lb:"Professional Services"},
+  {id:"property",ic:"&#127960;&#65039;",lb:"Property"},
+  {id:"fashion",ic:"&#128087;",lb:"Fashion & Boutique"},
+  {id:"grocery",ic:"&#128722;",lb:"Grocery & Retail"},
+  {id:"hardware",ic:"&#128295;",lb:"Hardware & Trade"},
+  {id:"general",ic:"&#127962;",lb:"General Business"},
 ];
-
-// ── Template data ─────────────────────────────────────────────────────────────
-// Each template has bg colours for the mini-preview, an industry list,
-// and a "recommended" flag for the top pick per industry
-var TEMPLATES = [
-  {
-    id:"grill-house", icon:"🍖", name:"Grill House",
-    desc:"Full-bleed dark hero, menu tabs, live open/closed indicator",
-    tag:"Restaurant", tagColor:"#ff6b35",
-    bg:"linear-gradient(160deg,#1a0800 0%,#7a2e00 100%)",
-    btnColor:"#ff6b35",
-    industries:["food"],
-    recommended:["food"],
-  },
-  {
-    id:"beauty-salon", icon:"💅", name:"Beauty Salon",
-    desc:"Elegant gradient hero, price list services, before/after slider",
-    tag:"Salon & Spa", tagColor:"#c9a96e",
-    bg:"linear-gradient(160deg,#3d0030 0%,#8b005d 100%)",
-    btnColor:"#c9a96e",
-    industries:["beauty"],
-    recommended:["beauty"],
-  },
-  {
-    id:"school-institution", icon:"🎓", name:"School & Institution",
-    desc:"Stats bar with count-up, programme cards, events timeline",
-    tag:"Education", tagColor:"#c99a2e",
-    bg:"linear-gradient(160deg,#0a1628 0%,#1a3a6b 100%)",
-    btnColor:"#c99a2e",
-    industries:["education"],
-    recommended:["education"],
-  },
-  {
-    id:"advisory-firm", icon:"⚖️", name:"Advisory Firm",
-    desc:"Minimal text-led hero, accordion practice areas, pull-quote testimonials",
-    tag:"Professional", tagColor:"#c9a84c",
-    bg:"linear-gradient(160deg,#0d1f33 0%,#1a3a5c 100%)",
-    btnColor:"#c9a84c",
-    industries:["professional","general"],
-    recommended:["professional"],
-  },
-  {
-    id:"property-estate", icon:"🏘️", name:"Property Estate",
-    desc:"Listings-first layout, filter by type, sold ticker, agent cards",
-    tag:"Real Estate", tagColor:"#1a6b3c",
-    bg:"linear-gradient(160deg,#0a1f0a 0%,#1a4a1a 100%)",
-    btnColor:"#4ade80",
-    industries:["property"],
-    recommended:["property"],
-  },
-  {
-    id:"boutique-fashion", icon:"👗", name:"Boutique Fashion",
-    desc:"Dark editorial layout, masonry product grid, quick-view overlay",
-    tag:"Fashion", tagColor:"#c9a96e",
-    bg:"linear-gradient(160deg,#1a0010 0%,#3d0025 100%)",
-    btnColor:"#c9a96e",
-    industries:["fashion"],
-    recommended:["fashion"],
-  },
-  {
-    id:"grocery-fmcg", icon:"🛒", name:"Grocery & Spaza",
-    desc:"Category navigation, stock badges, WhatsApp cart with item count",
-    tag:"Grocery", tagColor:"#1e8c3a",
-    bg:"linear-gradient(160deg,#0a2a0a 0%,#1a5a1a 100%)",
-    btnColor:"#4ade80",
-    industries:["grocery"],
-    recommended:["grocery"],
-  },
-  {
-    id:"retail-hardware", icon:"🔧", name:"Hardware & Retail",
-    desc:"Dense product catalogue, quote builder, brand ticker",
-    tag:"Retail", tagColor:"#3b82f6",
-    bg:"linear-gradient(160deg,#0d1a2e 0%,#1a3366 100%)",
-    btnColor:"#60a5fa",
-    industries:["hardware","grocery","general"],
-    recommended:["hardware"],
-  },
-  {
-    id:"bold-retail", icon:"🏢", name:"General Business",
-    desc:"Split hero, icon-card services, team flip cards, client ticker",
-    tag:"All industries", tagColor:"#e94560",
-    bg:"linear-gradient(160deg,#1a1a2e 0%,#16213e 100%)",
-    btnColor:"#e94560",
-    industries:["food","beauty","education","professional","property","fashion","grocery","hardware","general"],
-    recommended:["general"],
-  },
+var TPLS=[
+  {id:"grill-house",ic:"&#127830;",nm:"Grill House",ds:"Menu tabs, live hours",bg:"linear-gradient(160deg,#1a0800,#7a2e00)",ct:"#ff6b35",inds:["food"],rec:["food"]},
+  {id:"beauty-salon",ic:"&#128133;",nm:"Beauty Salon",ds:"Price list, before/after slider",bg:"linear-gradient(160deg,#3d0030,#8b005d)",ct:"#e8b4d0",inds:["beauty"],rec:["beauty"]},
+  {id:"school-institution",ic:"&#127891;",nm:"School & Academy",ds:"Stats bar, programmes, events",bg:"linear-gradient(160deg,#0a1628,#1a3a6b)",ct:"#c99a2e",inds:["education"],rec:["education"]},
+  {id:"advisory-firm",ic:"&#9878;&#65039;",nm:"Advisory Firm",ds:"Minimal hero, accordion services",bg:"linear-gradient(160deg,#0d1f33,#1a3a5c)",ct:"#c9a84c",inds:["professional","general"],rec:["professional"]},
+  {id:"property-estate",ic:"&#127960;&#65039;",nm:"Property Estate",ds:"Listings first, sold ticker",bg:"linear-gradient(160deg,#0a1f0a,#1a4a1a)",ct:"#4ade80",inds:["property"],rec:["property"]},
+  {id:"boutique-fashion",ic:"&#128087;",nm:"Boutique Fashion",ds:"Dark editorial, masonry grid",bg:"linear-gradient(160deg,#1a0010,#3d0025)",ct:"#e8c9a0",inds:["fashion"],rec:["fashion"]},
+  {id:"grocery-fmcg",ic:"&#128722;",nm:"Grocery & Spaza",ds:"Category nav, stock badges",bg:"linear-gradient(160deg,#0a2a0a,#1a5a1a)",ct:"#4ade80",inds:["grocery"],rec:["grocery"]},
+  {id:"retail-hardware",ic:"&#128295;",nm:"Hardware & Retail",ds:"Dense catalogue, quote builder",bg:"linear-gradient(160deg,#0d1a2e,#1a3366)",ct:"#60a5fa",inds:["hardware","grocery","general"],rec:["hardware"]},
+  {id:"bold-retail",ic:"&#127962;",nm:"General Business",ds:"Split hero, service cards, team",bg:"linear-gradient(160deg,#1a1a2e,#16213e)",ct:"#e94560",inds:["food","beauty","education","professional","property","fashion","grocery","hardware","general"],rec:["general"]},
 ];
+var CITIES=["Bulawayo","Harare","Gweru","Mutare","Masvingo","Kwekwe","Kadoma","Vic Falls"];
+var AI_STEPS=[
+  {l:"Understanding your industry",s:"Reading your business type"},
+  {l:"Writing your about section",s:"Crafting your story"},
+  {l:"Building your services",s:"Creating your offerings"},
+  {l:"Adding your contact details",s:"Setting up WhatsApp button"},
+  {l:"Finalising your site",s:"Almost there..."},
+];
+var SCREENS=["industry","template","details"];
+var _statusTimer=null;
 
-// ── Render industry grid ───────────────────────────────────────────────────────
-function renderIndustries(){
-  var grid = document.getElementById("industryGrid");
-  grid.innerHTML = INDUSTRIES.map(function(ind){
-    return '<div class="ind-card" data-id="'+ind.id+'" onclick="selectIndustry(\''+ind.id+'\')">'
-      +'<div class="ind-icon">'+ind.icon+'</div>'
-      +'<div class="ind-name">'+ind.name+'</div>'
-      +'<div class="ind-desc">'+ind.desc+'</div>'
-      +'<div class="ind-check">✓</div>'
-      +'</div>';
+(function renderInds(){
+  var g=document.getElementById("industryGrid");
+  g.innerHTML=INDS.map(function(i){
+    return'<div class="ind-card" data-id="'+i.id+'" onclick="pickInd(''+i.id+'')">'
+      +'<div class="ic">'+i.ic+'</div><div class="il">'+i.lb+'</div>'
+      +'<div class="ck">&#10003;</div></div>';
+  }).join("");
+})();
+
+window.pickInd=function(id){
+  st.industry=id;
+  document.querySelectorAll(".ind-card").forEach(function(c){c.classList.toggle("sel",c.dataset.id===id);});
+  setTimeout(function(){goTo("template");},200);
+};
+
+function buildTplCard(t,isRec){
+  return'<div class="tpl-card" data-id="'+t.id+'" onclick="pickTpl(''+t.id+'')">'
+    +'<div class="tpl-prev" style="background:'+t.bg+'">'
+      +'<div class="tpl-nav-bar"><div class="tpl-nav-dot"></div><div class="tpl-nav-dot"></div><div class="tpl-nav-dot"></div></div>'
+      +'<div class="tpl-hero-area"><div class="tpl-h"></div><div class="tpl-p"></div>'
+        +'<div class="tpl-cta" style="background:'+t.ct+'"></div></div>'
+      +(isRec?'<div class="tpl-rec">&#9733; Best match</div>':'')
+      +'<div class="tpl-sel-mark">&#10003;</div>'
+    +'</div>'
+    +'<div class="tpl-body"><div class="tpl-name">'+t.nm+'</div>'
+      +'<div class="tpl-desc">'+t.ds+'</div></div>'
+    +'</div>';
+}
+
+function renderTpls(indId){
+  var relevant=TPLS.filter(function(t){return t.inds.indexOf(indId)>-1;});
+  relevant.sort(function(a,b){return(b.rec.indexOf(indId)>-1?1:0)-(a.rec.indexOf(indId)>-1?1:0);});
+  document.getElementById("templateGrid").innerHTML=relevant.map(function(t){
+    return buildTplCard(t,t.rec.indexOf(indId)>-1);
   }).join("");
 }
 
-window.selectIndustry = function(id){
-  state.industry = id;
-  document.querySelectorAll(".ind-card").forEach(function(c){
-    c.classList.toggle("selected", c.dataset.id === id);
-  });
-  document.getElementById("btn-to-templates").disabled = false;
-};
-
-// ── Render template grid for selected industry ────────────────────────────────
-function renderTemplates(industryId){
-  // Primary: templates for this industry. Always include bold-retail as fallback.
-  var relevant = TEMPLATES.filter(function(t){
-    return t.industries.indexOf(industryId) > -1;
-  });
-  // Sort: recommended first
-  relevant.sort(function(a,b){
-    var aRec = a.recommended.indexOf(industryId) > -1 ? 0 : 1;
-    var bRec = b.recommended.indexOf(industryId) > -1 ? 0 : 1;
-    return aRec - bRec;
-  });
-
-  var grid = document.getElementById("templateGrid");
-  grid.innerHTML = relevant.map(function(t){
-    var isRec = t.recommended.indexOf(industryId) > -1;
-    return '<div class="tpl-card" data-id="'+t.id+'" onclick="selectTemplate(\''+t.id+'\')">'
-      // Mini site preview
-      +'<div class="tpl-preview" style="background:'+t.bg+'">'
-        +'<div class="tpl-preview-inner">'
-          +'<div class="tpl-bar"><div class="tpl-bar-dot"></div><div class="tpl-bar-dot"></div><div class="tpl-bar-dot"></div></div>'
-          +'<div class="tpl-hero">'
-            +'<div class="tpl-h"></div>'
-            +'<div class="tpl-p"></div>'
-            +'<div class="tpl-btn-preview" style="background:'+t.btnColor+';border-radius:3px"></div>'
-          +'</div>'
-        +'</div>'
-        +(isRec ? '<div class="tpl-badge" style="background:rgba(255,255,255,.18);color:#fff">⭐ Recommended</div>' : '')
-        +'<div class="tpl-check-mark">✓</div>'
-      +'</div>'
-      // Body
-      +'<div class="tpl-body">'
-        +'<div class="tpl-name">'+t.name+'</div>'
-        +'<div class="tpl-desc">'+t.desc+'</div>'
-        +'<div class="tpl-tag" style="background:'+t.tagColor+'22;color:'+t.tagColor+'">'+t.tag+'</div>'
-      +'</div>'
-      +'</div>';
+function renderAllTpls(){
+  document.getElementById("templateGrid").innerHTML=TPLS.map(function(t){
+    return buildTplCard(t,false);
   }).join("");
 }
 
-window.selectTemplate = function(id){
-  state.template = id;
-  document.querySelectorAll(".tpl-card").forEach(function(c){
-    c.classList.toggle("selected", c.dataset.id === id);
+window.pickTpl=function(id){
+  st.template=id;
+  document.querySelectorAll(".tpl-card").forEach(function(c){c.classList.toggle("sel",c.dataset.id===id);});
+  document.getElementById("btnToDetails").disabled=false;
+  if(!isSwitching) setTimeout(function(){goTo("details");},200);
+};
+
+(function renderCities(){
+  var row=document.getElementById("cityRow");
+  row.innerHTML=CITIES.map(function(c){
+    return'<div class="city-chip'+(c==="Bulawayo"?" sel":"")+'" onclick="pickCity(''+c+'')" data-city="'+c+'">'+c+'</div>';
+  }).join("");
+  document.getElementById("f-city").value="Bulawayo";
+})();
+
+window.pickCity=function(city){
+  st.city=city;
+  document.querySelectorAll(".city-chip").forEach(function(c){c.classList.toggle("sel",c.dataset.city===city);});
+  document.getElementById("f-city").value=city;
+  onBriefChange();
+};
+window.onCityInput=function(){
+  var v=document.getElementById("f-city").value.trim();
+  if(v)st.city=v;
+  document.querySelectorAll(".city-chip").forEach(function(c){c.classList.remove("sel");});
+};
+
+window.goTo=function(id){
+  var idx=SCREENS.indexOf(id);
+  SCREENS.forEach(function(s){document.getElementById("s-"+s).classList.toggle("active",s===id);});
+  document.getElementById("progressBar").style.width=((idx+1)/SCREENS.length*100)+"%";
+  document.getElementById("stepNum").textContent=idx+1;
+  if(id==="template"&&st.industry){
+    var ind=INDS.find(function(i){return i.id===st.industry;});
+    document.getElementById("indSelIcon").innerHTML=ind?ind.ic:"";
+    document.getElementById("indSelName").textContent=ind?ind.lb:"";
+    renderTpls(st.industry);
+  }
+  if(id==="details"&&st.template){
+    var tpl=TPLS.find(function(t){return t.id===st.template;});
+    document.getElementById("tplSelIcon").innerHTML=tpl?tpl.ic:"";
+    document.getElementById("tplSelName").textContent=tpl?tpl.nm:"";
+    setTimeout(function(){document.getElementById("f-name").focus();},300);
+  }
+  var bb=document.getElementById("backBtn");
+  bb.textContent=idx>0?"Back":"My sites";
+  bb.href=idx>0?"#":DASH;
+  bb.onclick=idx>0?function(e){e.preventDefault();goTo(SCREENS[idx-1]);}:null;
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+window.onBriefChange=function(){
+  st.name=document.getElementById("f-name").value.trim();
+  st.phone=document.getElementById("f-phone").value.trim();
+  var ci=document.getElementById("f-city").value.trim();
+  if(ci)st.city=ci;
+  document.getElementById("slugPreview").innerHTML=st.name
+    ?'Your site: <b>'+esc(slugify(st.name))+'.websites.co.zw</b>':"";
+  document.getElementById("btnCreate").disabled=st.name.length<2;
+};
+
+document.getElementById("f-name").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("f-phone").focus();});
+document.getElementById("f-phone").addEventListener("keydown",function(e){if(e.key==="Enter"&&!document.getElementById("btnCreate").disabled)onCreateSite();});
+
+function buildStepsList(){
+  document.getElementById("aiStepsList").innerHTML=AI_STEPS.map(function(s,i){
+    return'<div class="ai-step-row" id="aistep-'+i+'">'
+      +'<div class="ai-step-dot" id="aistep-dot-'+i+'">&middot;</div>'
+      +'<span>'+s.l+'</span></div>';
+  }).join("");
+}
+function setAIStep(idx){
+  AI_STEPS.forEach(function(_,i){
+    var r=document.getElementById("aistep-"+i);if(!r)return;
+    r.classList.remove("active","done");
+    if(i<idx)r.classList.add("done");
+    if(i===idx)r.classList.add("active");
+    var d=document.getElementById("aistep-dot-"+i);
+    if(d)d.innerHTML=i<idx?"&#10003;":(i===idx?"&#9673;":" &middot;");
   });
-  document.getElementById("btn-to-name").disabled = false;
-};
-
-// ── Navigation ────────────────────────────────────────────────────────────────
-window.goToTemplates = function(){
-  if(!state.industry) return;
-  var ind = INDUSTRIES.find(function(i){return i.id===state.industry;});
-  if(ind){
-    document.getElementById("selected-industry-bar").style.display = "flex";
-    document.getElementById("sel-ind-icon").textContent = ind.icon;
-    document.getElementById("sel-ind-name").textContent = ind.name;
-  }
-  renderTemplates(state.industry);
-  showScreen("template");
-  setStep(2);
-};
-
-window.goToName = function(){
-  if(!state.template) return;
-  var tpl = TEMPLATES.find(function(t){return t.id===state.template;});
-  if(tpl){
-    document.getElementById("sel-tpl-icon").textContent = tpl.icon;
-    document.getElementById("sel-tpl-name").textContent = tpl.name;
-    document.getElementById("creating-tpl-name").textContent = tpl.name + " site";
-  }
-  showScreen("name");
-  setStep(3);
-  document.getElementById("businessName").focus();
-};
-
-window.goBack = function(to){
-  showScreen(to);
-  if(to === "industry") setStep(1);
-  if(to === "template") setStep(2);
-};
-
-function showScreen(id){
-  document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
-  document.getElementById("screen-"+id).classList.add("active");
-  window.scrollTo({top:0, behavior:"smooth"});
+  var s=AI_STEPS[idx]||AI_STEPS[AI_STEPS.length-1];
+  setStatus(s.l,s.s);
+}
+function setStatus(main,sub){
+  var ms=document.getElementById("aiStatus"),ss=document.getElementById("aiStatusSub");
+  ms.classList.remove("show");ss.classList.remove("show");
+  clearTimeout(_statusTimer);
+  _statusTimer=setTimeout(function(){ms.textContent=main;ss.textContent=sub||"";ms.classList.add("show");ss.classList.add("show");},120);
+}
+function showSuccess(nm){
+  document.getElementById("aiSpinnerSection").style.display="none";
+  var sec=document.getElementById("aiSuccessSection");sec.classList.add("show");
+  document.getElementById("aiSuccessDesc").textContent=(nm?nm+" is ":"Your site is ")+"ready - opening your editor now...";
 }
 
-function setStep(n){
-  [1,2,3].forEach(function(i){
-    var el = document.getElementById("step"+i+"-ind");
-    el.classList.remove("active","done");
-    if(i < n) el.classList.add("done");
-    if(i === n) el.classList.add("active");
-  });
-  [1,2].forEach(function(i){
-    var c = document.getElementById("conn"+i);
-    c.classList.toggle("done", i < n);
-  });
-}
+window.onCreateSite=async function(){
+  if(st.name.length<2&&!isSwitching)return;
+  document.getElementById("aiOverlay").classList.add("open");
+  buildStepsList();
 
-// ── Name input ────────────────────────────────────────────────────────────────
-window.onNameInput = function(){
-  var val = document.getElementById("businessName").value.trim();
-  var slug = slugify(val);
-  var preview = document.getElementById("slugPreview");
-  preview.innerHTML = val
-    ? 'Your site: <b>'+escHtml(slug)+'.websites.co.zw</b>'
-    : '';
-  document.getElementById("btn-create").disabled = val.length < 2;
-};
-
-function slugify(s){
-  return String(s||"").toLowerCase().trim()
-    .replace(/[^a-z0-9]+/g,"-")
-    .replace(/^-+|-+$/g,"")
-    .slice(0,40) || "my-site";
-}
-function escHtml(s){ return String(s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
-
-// Enter key on name field
-document.getElementById("businessName").addEventListener("keydown", function(e){
-  if(e.key==="Enter" && !document.getElementById("btn-create").disabled) createSite();
-});
-
-// ── Create site ───────────────────────────────────────────────────────────────
-window.createSite = async function(){
-  var name = document.getElementById("businessName").value.trim();
-  if(name.length < 2) return;
-
-  // If switching template on existing site, use the switch API instead
-  if(isSwitching && fromSiteId){
-    return switchExistingSiteTemplate(fromSiteId, name);
+  if(isSwitching&&fromSiteId){
+    setStatus("Switching your template...","Keeping all your content");
+    try{
+      var sr=await fetch(API+"/api/sites/"+encodeURIComponent(fromSiteId)+"/template",{
+        method:"PUT",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok()},
+        body:JSON.stringify({template_id:st.template})
+      });
+      if(!sr.ok){location.replace(DASH);return;}
+      showSuccess("");
+      setTimeout(function(){location.href=EDIT+"?site="+encodeURIComponent(fromSiteId);},1500);
+    }catch(e){location.replace(DASH);}
+    return;
   }
 
-  document.getElementById("creatingOverlay").classList.add("open");
-  document.getElementById("btn-create").disabled = true;
+  setAIStep(0);
+  var siteId=null;
+  try{
+    var cr=await fetch(API+"/api/sites",{
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok()},
+      body:JSON.stringify({site_name:st.name,template_id:st.template})
+    });
+    var cd={};try{cd=await cr.json();}catch(e){}
+    if(cr.status===401){location.replace(DASH);return;}
+    if(cr.status===403&&cd.error==="one_site_limit"){
+      showSuccess(cd.site_name||st.name);
+      setTimeout(function(){location.href=EDIT+"?site="+encodeURIComponent(cd.site_id||"");},1500);
+      return;
+    }
+    if(!cr.ok||!cd.site){location.replace(DASH);return;}
+    siteId=cd.site.id;
+  }catch(e){location.replace(DASH);return;}
+
+  setAIStep(1);
+  var indObj=INDS.find(function(i){return i.id===st.industry;})||{lb:""};
+  var phone=normPhone(st.phone);
+  var brief={business_name:st.name,industry:indObj.lb,city:st.city||"Bulawayo",
+    phone:phone,contact:{phone:phone,whatsapp:phone},
+    socials:{whatsapp:phone?"https://wa.me/"+phone:""}};
+
+  var stepIdx=1,stepTimer=null;
+  function bumpStep(){stepIdx++;if(stepIdx<=3)setAIStep(stepIdx);if(stepIdx<3)stepTimer=setTimeout(bumpStep,3000);}
+  stepTimer=setTimeout(bumpStep,2800);
 
   try{
-    var r = await fetch(API+"/api/sites", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + getToken()
-      },
-      body: JSON.stringify({
-        site_name:   name,
-        template_id: state.template,
-      })
+    await fetch(API+"/api/sites/"+encodeURIComponent(siteId)+"/generate",{
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok()},
+      body:JSON.stringify(brief)
     });
-    var data = {};
-    try{ data = await r.json(); }catch(e){}
+  }catch(e){}
+  clearTimeout(stepTimer);
+  setAIStep(4);
 
-    if(r.status === 401){
-      location.replace(DASH);
-      return;
+  // Patch phone/city into content regardless of AI result
+  try{
+    var siteR=await fetch(API+"/api/sites/"+encodeURIComponent(siteId),{headers:{"Authorization":"Bearer "+tok()}});
+    if(siteR.ok){
+      var sd=await siteR.json();
+      var raw={};
+      try{raw=typeof(sd.site||{}).content==="string"?JSON.parse(sd.site.content):(sd.site.content||{});}catch(e){}
+      var inner=raw.content||{};
+      inner.contact=Object.assign({},inner.contact||{},{phone:phone||st.phone,whatsapp:phone||st.phone});
+      inner.location=st.city;
+      if(!inner.business_name)inner.business_name=st.name;
+      raw.content=inner;
+      await fetch(API+"/api/sites/"+encodeURIComponent(siteId),{
+        method:"PUT",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok()},
+        body:JSON.stringify({site_name:st.name,template_id:st.template,content:raw})
+      });
     }
-    if(r.status === 403 && data.error === "one_site_limit"){
-      // Already has a site — send them to edit it
-      document.getElementById("creatingOverlay").classList.remove("open");
-      document.getElementById("btn-create").disabled = false;
-      showExistingSiteError(data.site_id, data.site_name);
-      return;
-    }
-    if(!r.ok || !data.site){
-      document.getElementById("creatingOverlay").classList.remove("open");
-      document.getElementById("btn-create").disabled = false;
-      alert("Something went wrong creating your site. Please try again.");
-      return;
-    }
+  }catch(e){}
 
-    // Success — go to editor
-    var siteId = data.site.id;
-    // Stash industry for the editor to use as a hint
-    try{ sessionStorage.setItem("wcz_new_industry", state.industry||""); }catch(e){}
-    location.href = EDIT + "?site=" + encodeURIComponent(siteId) + "&new=1";
-
-  } catch(e){
-    document.getElementById("creatingOverlay").classList.remove("open");
-    document.getElementById("btn-create").disabled = false;
-    alert("Network error. Check your connection and try again.");
-  }
+  try{sessionStorage.setItem("wcz_industry",st.industry||"");}catch(e){}
+  showSuccess(st.name);
+  setTimeout(function(){location.href=EDIT+"?site="+encodeURIComponent(siteId)+"&new=1";},1600);
 };
 
-// ── Switch template on existing site ─────────────────────────────────────────
-async function switchExistingSiteTemplate(siteId, newName){
-  document.getElementById("creatingOverlay").classList.add("open");
-  try{
-    var r = await fetch(API+"/api/sites/"+encodeURIComponent(siteId)+"/template", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + getToken()
-      },
-      body: JSON.stringify({ template_id: state.template })
-    });
-    if(!r.ok){
-      document.getElementById("creatingOverlay").classList.remove("open");
-      alert("Couldn't switch template. Try again.");
-      return;
-    }
-    location.href = EDIT + "?site=" + encodeURIComponent(siteId);
-  } catch(e){
-    document.getElementById("creatingOverlay").classList.remove("open");
-    alert("Network error. Try again.");
-  }
+if(isSwitching&&fromSiteId){
+  document.getElementById("stepLabel").style.display="none";
+  document.getElementById("progressBar").parentElement.style.display="none";
+  st.industry="general";
+  renderAllTpls();
+  goTo("template");
+  var btn=document.getElementById("btnToDetails");
+  btn.textContent="Switch template";
+  btn.onclick=function(){if(!st.template)return;st.name="switch";onCreateSite();};
+  document.getElementById("s-details").style.display="none";
 }
 
-// ── One-site limit error ──────────────────────────────────────────────────────
-function showExistingSiteError(siteId, siteName){
-  var screen = document.getElementById("screen-name");
-  var existing = document.getElementById("existing-site-msg");
-  if(!existing){
-    existing = document.createElement("div");
-    existing.id = "existing-site-msg";
-    existing.style.cssText = "background:#fdf3dc;border:1.5px solid #e6c96a;border-radius:var(--r-sm);padding:16px 18px;margin-top:16px;font-size:14px;color:#7a5c0a;line-height:1.6";
-    existing.innerHTML = '<strong>You already have an active site</strong><br>'
-      + 'Your plan includes one site at a time. '
-      + '<a href="'+EDIT+'?site='+escHtml(siteId||'')+'" style="color:var(--green-dk);font-weight:600;text-decoration:underline">Edit "'+escHtml(siteName||"your existing site")+'" →</a>';
-    screen.appendChild(existing);
-  }
-  existing.style.display = "";
+function slugify(s){return String(s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40)||"my-site";}
+function esc(s){return String(s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function normPhone(raw){
+  if(!raw)return"";
+  var p=String(raw).replace(/[^\d]/g,"");
+  if(!p||p.length<7)return raw;
+  if(p.startsWith("263")&&p.length>=12)return p;
+  if(p.startsWith("0")&&p.length>=10)return"263"+p.slice(1);
+  if(p.length===9&&(p.startsWith("7")||p.startsWith("8")))return"263"+p;
+  return p;
 }
-
-// ── Handle ?switch=1 mode ─────────────────────────────────────────────────────
-if(isSwitching && fromSiteId){
-  // In switch mode: user is coming from the editor to change their template.
-  // Skip industry step, go straight to template picker showing all templates.
-  // Pre-select their industry based on session storage if available.
-  var savedIndustry = "general";
-  try{ savedIndustry = sessionStorage.getItem("wcz_new_industry") || "general"; }catch(e){}
-  state.industry = savedIndustry;
-
-  // Show all templates (not filtered by industry)
-  document.getElementById("stepsBar").style.display = "none";
-  var h = document.querySelector("#screen-industry .screen-head h1");
-  if(h) h.textContent = "Switch your template";
-  var p = document.querySelector("#screen-industry .screen-head p");
-  if(p) p.textContent = "Your content and images are preserved — only the visual design changes.";
-
-  // Skip to template screen
-  renderTemplates("general"); // show all (bold-retail is in "general" which covers all)
-  // Actually render ALL templates for switch mode
-  (function renderAllTemplates(){
-    var grid = document.getElementById("templateGrid");
-    grid.innerHTML = TEMPLATES.map(function(t){
-      return '<div class="tpl-card" data-id="'+t.id+'" onclick="selectTemplate(\''+t.id+'\')">'
-        +'<div class="tpl-preview" style="background:'+t.bg+'">'
-          +'<div class="tpl-preview-inner">'
-            +'<div class="tpl-bar"><div class="tpl-bar-dot"></div><div class="tpl-bar-dot"></div><div class="tpl-bar-dot"></div></div>'
-            +'<div class="tpl-hero">'
-              +'<div class="tpl-h"></div>'
-              +'<div class="tpl-p"></div>'
-              +'<div class="tpl-btn-preview" style="background:'+t.btnColor+';border-radius:3px"></div>'
-            +'</div>'
-          +'</div>'
-          +'<div class="tpl-check-mark">✓</div>'
-        +'</div>'
-        +'<div class="tpl-body">'
-          +'<div class="tpl-name">'+t.name+'</div>'
-          +'<div class="tpl-desc">'+t.desc+'</div>'
-          +'<div class="tpl-tag" style="background:'+t.tagColor+'22;color:'+t.tagColor+'">'+t.tag+'</div>'
-        +'</div>'
-        +'</div>';
-    }).join("");
-  })();
-
-  // Override btn-to-name to skip name step in switch mode
-  document.getElementById("btn-to-name").textContent = "Switch template →";
-  document.getElementById("btn-to-name").onclick = function(){
-    if(!state.template) return;
-    switchExistingSiteTemplate(fromSiteId, "");
-  };
-
-  showScreen("template");
-}
-
-// ── Boot ──────────────────────────────────────────────────────────────────────
-renderIndustries();
-
 })();
 </script>
 </body>
