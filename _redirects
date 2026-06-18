@@ -1,6 +1,8 @@
 /edit  /editor/  301
 /dashboard/   /dashboard/customer.html   301
 /edit         /editor/                   301
+/editor       /editor/index.html         200
+/editor/      /editor/index.html         200
 /new              /new/index.html           200
 /new/             /new/index.html           200
 /terms    /terms/index.html    200
