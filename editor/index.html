@@ -229,9 +229,6 @@ img{display:block;max-width:100%}
 .sec-arr{background:var(--card);border:1.5px solid var(--line);border-radius:5px;width:26px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:var(--ink3);transition:border-color .12s,color .12s}
 .sec-arr:hover{border-color:var(--green);color:var(--green)}
 .sec-arr:disabled{opacity:.3;cursor:default}
-
-/* ── V3 ADDITIONS ── */
-/* Improved Preview with device toggle */
 .preview-device-btns{display:flex;gap:3px;margin:0 4px}
 .preview-device-btn{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:13px;cursor:pointer;transition:.12s;background:#fff}
 .preview-device-btn.active{border-color:var(--green);color:var(--green);background:var(--green-bg)}
@@ -240,10 +237,8 @@ img{display:block;max-width:100%}
 .preview-frame-outer.dv-desktop{width:100%;height:100%;border-radius:0;box-shadow:none}
 .preview-frame-outer.dv-tablet{width:768px;max-width:95%;height:96%;border-radius:10px}
 .preview-frame-outer.dv-mobile{width:375px;max-width:88%;height:92%;border-radius:20px;border:7px solid #1a1a2e}
-/* New nav items for extra sections */
 .nav-tpl-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;margin:1px 5px;border:1.5px dashed var(--line2);border-radius:var(--r-xs);cursor:pointer;font-size:13.5px;font-weight:500;color:var(--ink2);transition:.15s}
 .nav-tpl-chip:hover{border-color:var(--green);color:var(--green);background:var(--green-bg)}
-/* Hours grid */
 .hours-grid-wrap{display:grid;grid-template-columns:60px 1fr 1fr auto;gap:6px;align-items:center}
 .hours-hdr{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;padding-bottom:5px;border-bottom:1px solid var(--line)}
 .hours-day-lbl{font-size:13px;font-weight:600;color:var(--ink2)}
@@ -251,7 +246,6 @@ img{display:block;max-width:100%}
 .hours-grid-wrap input[type=time]:focus{outline:none;border-color:var(--green)}
 .hours-closed-lbl{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer;white-space:nowrap}
 .hours-closed-lbl input[type=checkbox]{accent-color:var(--green)}
-/* Rep items (services, team, testimonials etc) */
 .rep-list{display:flex;flex-direction:column;gap:8px}
 .rep-item{border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
 .rep-item-head{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#fff;cursor:pointer;border-bottom:1px solid transparent;transition:.12s}
@@ -264,9 +258,7 @@ img{display:block;max-width:100%}
 .rep-item.open .rep-item-body{display:block}
 .rep-add{display:flex;align-items:center;gap:6px;color:var(--green);font-size:12.5px;font-weight:600;padding:7px 10px;border:1.5px dashed var(--line2);border-radius:var(--r-sm);transition:.15s;width:100%;cursor:pointer;background:transparent;margin-top:6px;font-family:inherit}
 .rep-add:hover{border-color:var(--green);background:var(--green-bg)}
-/* Listing type badge */
 .listing-type-sel{border:1.5px solid var(--line);border-radius:6px;padding:7px 9px;font-size:13px;width:100%;background:#fff}
-/* Template modal */
 .tpl-modal-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(13,15,20,.6);align-items:center;justify-content:center;padding:1rem}
 .tpl-modal-overlay.open{display:flex}
 .tpl-modal-box{background:var(--card);border-radius:var(--r);width:100%;max-width:680px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
@@ -279,7 +271,6 @@ img{display:block;max-width:100%}
 .tpl-card-icon{font-size:1.5rem;margin-bottom:5px}
 .tpl-card-name{font-size:13px;font-weight:700;margin-bottom:3px}
 .tpl-card-desc{font-size:11.5px;color:var(--ink3);line-height:1.4}
-/* Open in new tab preview action */
 .preview-actions{display:flex;gap:4px;align-items:center}
 
 </style>
@@ -335,7 +326,6 @@ img{display:block;max-width:100%}
 
   <main class="main" id="mainArea">
 
-    <!-- TAB: BASICS -->
     <div class="tab-section active" id="tab-basics">
       <div class="ai-box">
         <div class="ai-box-eyebrow">✦ AI Site Builder</div>
@@ -420,7 +410,6 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
-    <!-- TAB: IMAGES -->
     <div class="tab-section" id="tab-images">
       <div class="panel">
         <div class="panel-head"><h2>Logo &amp; Hero image</h2><span class="tag" id="imgCount">0 / 10 uploaded</span></div>
@@ -475,7 +464,6 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
-    <!-- TAB: PRODUCTS -->
     <div class="tab-section" id="tab-products">
       <div class="panel">
         <div class="panel-head">
@@ -506,7 +494,6 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
-    <!-- TAB: CONTACT -->
     <div class="tab-section" id="tab-contact">
       <div class="panel">
         <div class="panel-head"><h2>Contact details</h2></div>
@@ -549,7 +536,6 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
-    <!-- TAB: SOCIAL -->
     <div class="tab-section" id="tab-social">
       <div class="panel">
         <div class="panel-head"><h2>Social media &amp; links</h2></div>
@@ -564,7 +550,6 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
-    <!-- TAB: PUBLISH -->
     <div class="tab-section" id="tab-publish">
       <div class="panel">
         <div class="panel-head"><h2>Publish your site</h2></div>
@@ -614,7 +599,6 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
-    <!-- TAB: DESIGN -->
     <div class="tab-section" id="tab-design">
       <div class="panel" style="margin-bottom:16px">
         <div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
@@ -677,8 +661,6 @@ img{display:block;max-width:100%}
       </div>
     </div>
 
-  
-    <!-- TAB: SERVICES (v3 repeater) -->
     <div class="tab-section" id="tab-services">
       <div class="panel">
         <div class="panel-head">
@@ -690,7 +672,6 @@ img{display:block;max-width:100%}
         </div>
       </div>
     </div>
-    <!-- TAB: MENU (restaurant) -->
     <div class="tab-section" id="tab-menu">
       <div class="panel">
         <div class="panel-head">
@@ -702,7 +683,6 @@ img{display:block;max-width:100%}
         </div>
       </div>
     </div>
-    <!-- TAB: LISTINGS (property) -->
     <div class="tab-section" id="tab-listings">
       <div class="panel">
         <div class="panel-head">
@@ -714,7 +694,6 @@ img{display:block;max-width:100%}
         </div>
       </div>
     </div>
-    <!-- TAB: TEAM -->
     <div class="tab-section" id="tab-team">
       <div class="panel">
         <div class="panel-head">
@@ -726,7 +705,6 @@ img{display:block;max-width:100%}
         </div>
       </div>
     </div>
-    <!-- TAB: HOURS -->
     <div class="tab-section" id="tab-hours">
       <div class="panel">
         <div class="panel-head"><h2>Opening Hours</h2></div>
@@ -738,7 +716,6 @@ img{display:block;max-width:100%}
         </div>
       </div>
     </div>
-    <!-- TAB: STATS -->
     <div class="tab-section" id="tab-stats">
       <div class="panel">
         <div class="panel-head">
@@ -750,7 +727,6 @@ img{display:block;max-width:100%}
         </div>
       </div>
     </div>
-    <!-- TAB: EVENTS -->
     <div class="tab-section" id="tab-events">
       <div class="panel">
         <div class="panel-head">
@@ -762,7 +738,6 @@ img{display:block;max-width:100%}
         </div>
       </div>
     </div>
-    <!-- TAB: TESTIMONIALS -->
     <div class="tab-section" id="tab-testimonials">
       <div class="panel">
         <div class="panel-head">
@@ -823,7 +798,6 @@ img{display:block;max-width:100%}
 <div class="toast-wrap" id="toastWrap"></div>
 
 
-<!-- TEMPLATE MODAL -->
 <div class="tpl-modal-overlay" id="tplModal" onclick="closeTplModalOutside(event)">
   <div class="tpl-modal-box">
     <div class="tpl-modal-head">
@@ -834,15 +808,11 @@ img{display:block;max-width:100%}
   </div>
 </div>
 
-<div class="toast-wrap" id="toastWrap"></div>
 <script>
 
 (function(){
 "use strict";
 
-// ── Config ────────────────────────────────────────────────────────────────────
-// API lives on app.websites.co.zw; auth uses Bearer token from localStorage
-// (same token the dashboard stores after login)
 var API_BASE = "https://app.websites.co.zw";
 var DASH_URL = "https://app.websites.co.zw/dashboard/customer.html";
 
@@ -851,7 +821,6 @@ var state = { site:null, content:null, dirty:false, products:[], images:{}, gall
 var STARTER_PRODUCT_LIMIT = 6;
 var STARTER_IMAGE_LIMIT   = 10;
 
-// ── Auth helper ───────────────────────────────────────────────────────────────
 function getToken(){ return localStorage.getItem("wcz_token") || ""; }
 
 async function api(path, opts){
@@ -865,15 +834,12 @@ async function api(path, opts){
   return { ok:r.ok, status:r.status, data:data };
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
 (async function init(){
   if(!getToken()){ location.href = DASH_URL; return; }
   if(!siteId){
-    // No ?site= param — user landed here directly. Send them to dashboard.
     document.getElementById("topSiteName").textContent = "No site selected";
     document.getElementById("saveBtn").style.display = "none";
     document.getElementById("generateBtn").disabled = true;
-    // Replace the main area with a clear prompt
     document.getElementById("mainArea").innerHTML =
       '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:20px;text-align:center;padding:40px 20px">' +
         '<div style="font-size:48px">🏗️</div>' +
@@ -889,7 +855,6 @@ async function api(path, opts){
 
   state.site = r.data.site;
 
-  // content is stored as JSON string in D1 — parse it
   var raw = {};
   try{
     var stored = state.site.content;
@@ -897,7 +862,6 @@ async function api(path, opts){
   }catch(e){ raw={}; }
 
   state.content  = raw;
-  // The DB stores { theme:{...}, content:{...} } wrapper
   var inner = (raw.content) || {};
   state.products = Array.isArray(inner.products) ? inner.products : [];
   state.images   = (inner.images && typeof inner.images==="object") ? inner.images : {};
@@ -920,9 +884,7 @@ async function api(path, opts){
 })();
 
 function populateForm(){
-  // content is stored as { theme, content } — get the inner content
   var c = (state.content && state.content.content) || {};
-  // _brief stores the last intake form values for repopulation
   var b = c._brief || state.content._brief || null;
   var s = c.socials || {};
   var ct = c.contact || {};
@@ -947,7 +909,6 @@ function populateForm(){
   }
 
   if(state.site.template_id) set("f_template", state.site.template_id);
-  // Update template label in Design tab
   var templateNames = {
     "bold-retail":"General Business","grill-house":"Restaurant & Food",
     "beauty-salon":"Beauty & Wellness","school-institution":"School & Academy",
@@ -966,7 +927,6 @@ function populateForm(){
   set("f_video",    (c.video && c.video.embedUrl) || "");
 
   document.getElementById("imgCount").textContent = countImages()+" / "+STARTER_IMAGE_LIMIT+" uploaded";
-  // Keep topbar name in sync with the business name field
   var nameFromForm = g("f_name");
   if(nameFromForm) document.getElementById("topSiteName").textContent = nameFromForm;
 }
@@ -1028,9 +988,6 @@ function buildContent(brief){
   };
 }
 
-// ── Generate ──────────────────────────────────────────────────────────────────
-// Auth worker reads brief directly from request body (no wrapper needed)
-// Snapshot for undo — stored before each generation
 var _preGenerateSnapshot = null;
 
 window.onGenerate = async function(){
@@ -1039,7 +996,6 @@ window.onGenerate = async function(){
   var btn = document.getElementById("generateBtn");
   btn.classList.add("loading"); btn.disabled=true;
 
-  // Snapshot current state so user can undo
   _preGenerateSnapshot = JSON.parse(JSON.stringify({
     content: state.content,
     products: state.products,
@@ -1062,30 +1018,25 @@ window.onGenerate = async function(){
       _preGenerateSnapshot = null;
       return;
     }
-    // Auth worker returns merged content — AI copy + owner assets preserved
     var aiContent = r.data.content || {};
     var aiTheme   = r.data.theme   || {};
 
     if(!state.content) state.content = {};
     state.content.theme = aiTheme;
-    // Merge: AI content wins for copy fields, but preserve owner-supplied assets
     state.content.content = Object.assign({}, aiContent, {
       products:     state.products.length  ? state.products  : (aiContent.products  || []),
       images:       Object.keys(state.images).length ? Object.assign({}, state.images, { gallery: state.gallery }) : (aiContent.images || {}),
     });
-    // Also re-stash the brief so form can be repopulated
     state.content.content._brief = brief;
 
     state.dirty = true;
     updateBudget({ used: r.data.gen_count, limit: r.data.cap, remaining: r.data.cap - r.data.gen_count });
 
-    // Refresh form fields from the new merged content
     populateForm();
     renderProducts();
     renderGallery();
     renderImagePreviews();
 
-    // Show undo button
     showUndoBar();
 
     toast("Generated! Review below, then Save ✓","ok");
@@ -1126,7 +1077,6 @@ function hideUndoBar(){
   if(bar) bar.style.display="none";
 }
 
-// ── Save ──────────────────────────────────────────────────────────────────────
 window.onSave = async function(){
   var btn=document.getElementById("saveBtn"); btn.disabled=true; btn.textContent="Saving…";
   var brief=readBrief(), content=buildContent(brief);
@@ -1138,7 +1088,6 @@ window.onSave = async function(){
     if(!r.ok){ toast("Couldn't save — try again","err"); return; }
     state.dirty=false;
     if(r.data.site) state.site=r.data.site;
-    // Refresh topbar and URL display after save
     var savedName = (state.site && state.site.site_name) || brief.business_name || "Your site";
     var savedSlug = state.site && state.site.draft_subdomain;
     document.getElementById("topSiteName").textContent = savedName;
@@ -1153,7 +1102,6 @@ window.onSave = async function(){
   finally{ btn.disabled=false; btn.textContent="Save"; }
 };
 
-// Publish via Paynow — wired when payments worker is connected
 window.onPublish = function(){
   toast("Payment coming soon — save your site and we'll notify you when payments are live","ok");
 };
@@ -1180,7 +1128,6 @@ function loadPreview(){
 }
 if(window.innerWidth>=900){ setTimeout(function(){state.previewOpen=true;loadPreview();},400); }
 
-/* ── PRODUCTS ── */
 window.addProduct = function(){
   if(state.products.length>=STARTER_PRODUCT_LIMIT){ document.getElementById("productLimitMsg").style.display="block"; toast("6 product limit on Starter. Upgrade to Pro for unlimited.","err"); return; }
   state.products.push({ id:"p_"+Date.now(), name:"", description:"", price:"", image:"", category:"", variants:[], stock:"in" });
@@ -1322,7 +1269,6 @@ function renderProducts(){
   });
 }
 
-/* ── IMAGES ── */
 window.triggerUpload = function(type){ var el=document.getElementById(type+"File"); if(el)el.click(); };
 window.handleUpload = async function(type,input){
   var file=input.files[0]; if(!file)return;
@@ -1364,7 +1310,6 @@ window.handleGalleryUpload = async function(input){
 };
 window.removeGalleryImg = function(i){ state.gallery.splice(i,1); renderGallery(); updateImgCount(); markDirty(); };
 
-/* ── R2 UPLOAD ── */
 async function uploadToR2(file,type){
   var allowed=["image/jpeg","image/png","image/webp","image/gif","image/svg+xml"];
   if(allowed.indexOf(file.type)<0){toast("Only JPG, PNG, WebP or SVG allowed","err");return null;}
@@ -1378,11 +1323,9 @@ async function uploadToR2(file,type){
   }catch(e){return null;}
 }
 
-/* ── BUDGET ── */
 function updateBudget(b){
   var el=document.getElementById("aiBudget");
   if(!b){
-    // Read gen count from the site row (ai_generations_used column)
     var used=Number((state.site&&state.site.ai_generations_used)||0);
     el.innerHTML="Generations used: <b>"+used+" / 10</b> on this site.";
     if(used>=10){ document.getElementById("generateBtn").disabled=true; }
@@ -1396,11 +1339,9 @@ function updateBudget(b){
   }
 }
 
-/* ── PALETTE / FONT helpers ── */
 function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","grocery-fmcg":"market-fresh","grocery":"market-fresh","retail-hardware":"utility-slate","hardware":"utility-slate"};return m[t]||"clean-white";}
 function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","retail-hardware":"display-mono"};return m[t]||"grotesk-serif";}
 
-/* ── DESIGN TAB ── */
 var PALETTES_UI=[
   {key:"black-white-gold",name:"Dark Gold",bg:"#0c0c0c",surface:"#161616",accent:"#c8a24a"},
   {key:"midnight-purple",name:"Midnight Purple",bg:"#0d0a14",surface:"#17121f",accent:"#a855f7"},
@@ -1485,7 +1426,6 @@ function initDesignTab(){
   buildPaletteGrid(); buildFontGrid(); buildSectionsList(); updateFaviconPreview();
 }
 
-/* ── SECTIONS ── */
 var ALL_SECTIONS={
   "bold-retail":        [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"testimonials",label:"Reviews"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
   "grill-house":        [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
@@ -1510,7 +1450,7 @@ function buildSectionsList(){
     var sec=allSecs.find(function(s){return s.key===key;}); if(!sec)return"";
     var isActive=activeKeys.indexOf(key)>-1;
     var isRequired=REQUIRED_SECTIONS.indexOf(key)>-1;
-    return '<div class="sec-row'+(isActive?" active":"")+'\" data-seckey="'+key+'">'
+    return '<div class="sec-row'+(isActive?" active":"")+'" data-seckey="'+key+'">'
       +'<label class="sec-toggle" title="'+(isRequired?"Required":"")+'">'
       +'<input type="checkbox"'+(isActive?" checked":"")+(isRequired?" disabled":"")+' onchange="toggleSection(\''+key+'\',this.checked)">'
       +'<span class="sec-slider"></span></label>'
@@ -1525,7 +1465,6 @@ window.toggleSection=function(key,on){ensureThemeSections();var secs=state.conte
 window.moveSection=function(key,dir){ensureThemeSections();var secs=state.content.theme.sections;var idx=secs.indexOf(key);if(idx<0)return;var newIdx=idx+dir;if(newIdx<0||newIdx>=secs.length)return;var tmp=secs[idx];secs[idx]=secs[newIdx];secs[newIdx]=tmp;markDirty();buildSectionsList();};
 function ensureThemeSections(){if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};if(!Array.isArray(state.content.theme.sections)){var templateId=g("f_template")||"bold-retail";var allSecs=ALL_SECTIONS[templateId]||ALL_SECTIONS["bold-retail"];state.content.theme.sections=allSecs.map(function(s){return s.key;});}}
 
-/* ── TOAST ── */
 function toast(msg,type){
   var wrap=document.getElementById("toastWrap"),t=document.createElement("div");
   t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);
@@ -1533,8 +1472,6 @@ function toast(msg,type){
   setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);
 }
 window.changeTemplate = function(){
-  // Go to template picker — it will create a new site with the chosen template.
-  // Note: changing template creates a NEW site. Current draft content is saved first.
   if(state.dirty){
     if(!confirm("Save your current changes first?\n\nClick OK to save now, then you can choose a new template.")){
       return;
@@ -1552,17 +1489,12 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return
 })();
 
 
-/* ── Ctrl+S / Cmd+S keyboard save ── */
 document.addEventListener("keydown",function(e){
   if((e.ctrlKey||e.metaKey)&&e.key==="s"){e.preventDefault();if(window.onSave)onSave();}
 });
 </script>
 <script>
 
-// ══════════════════════════════════════════════════════════
-// EDITOR V3 EXTENSIONS — template awareness, new repeaters,
-// hours grid, improved preview with device toggle
-// ══════════════════════════════════════════════════════════
 (function(){
 "use strict";
 
@@ -1592,31 +1524,24 @@ var TPL_CFG = {
 
 var v3state = { services:[], menu:[], listings:[], team:[], stats:[], events:[], testimonials:[], hours:{}, previewDevice:"desktop" };
 
-// ── HOOK INTO OLD INIT ──────────────────────────────────────
-// Patch old init to also load v3 data after site loads
 var _origSwitchTab = window.switchTab;
 
-// Inject v3 nav items into sidebar
 function injectV3Nav(){
   var sidebar = document.querySelector(".sidebar");
   if(!sidebar || document.getElementById("v3-nav-injected")) return;
-  // Find the "Publish" nav item and inject before it
   var publishItem = sidebar.querySelector('[data-tab="publish"]');
   var insertBefore = publishItem || null;
 
-  // Build template chip  
   var tplChip = document.createElement("div");
   tplChip.className = "nav-tpl-chip";
   tplChip.id = "v3-nav-injected";
   tplChip.innerHTML = '<span id="v3-tpl-icon" style="font-size:1.1rem">🏢</span><span id="v3-tpl-name" style="flex:1;font-weight:600">General Business</span><span style="font-size:11.5px;color:var(--ink3)">Change</span>';
   tplChip.onclick = openTplModalV3;
 
-  // Nav section label "Template"
   var tplLabel = document.createElement("div");
   tplLabel.className = "nav-section";
   tplLabel.textContent = "Template";
 
-  // Extra nav items
   var extraNavs = [
     {id:"nav-v3-services",  tab:"services",     label:"Services", icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M4 6h10l-1.2 7H5.2L4 6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>'},
     {id:"nav-v3-menu",      tab:"menu",         label:"Menu Items",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M3 5h12M3 9h12M3 13h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'},
@@ -1628,7 +1553,6 @@ function injectV3Nav(){
     {id:"nav-v3-testis",    tab:"testimonials", label:"Reviews",   icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M2 3h14a1 1 0 011 1v8a1 1 0 01-1 1H5l-4 3V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4"/></svg>'},
   ];
 
-  // Insert before publish
   var navSection = document.createElement("div");
   navSection.className = "nav-section";
   navSection.textContent = "Content";
@@ -1643,7 +1567,7 @@ function injectV3Nav(){
     div.className = "nav-item";
     div.id = n.id;
     div.dataset.tab = n.tab;
-    div.style.display = "none"; // shown by applyTemplateConfigV3
+    div.style.display = "none";
     div.innerHTML = n.icon + " <span>" + n.label + "</span>";
     div.onclick = function(){ switchTabV3(n.tab, div); };
     sidebar.insertBefore(div, insertBefore);
@@ -1660,29 +1584,24 @@ function switchTabV3(tab, clickEl){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-// Override switchTab to also handle v3 tabs
 window.switchTab = function(tab, el){
   var v3Tabs = ["services","menu","listings","team","hours","stats","events","testimonials"];
   if(v3Tabs.indexOf(tab) > -1){ switchTabV3(tab, el); return; }
   if(_origSwitchTab) _origSwitchTab(tab, el);
 };
 
-// ── TEMPLATE CONFIG V3 ────────────────────────────────────
 function applyTemplateConfigV3(tpl){
   var cfg = TPL_CFG[tpl] || TPL_CFG["bold-retail"];
   var tmeta = TEMPLATES_V3.find(function(t){return t.id===tpl;}) || {};
 
-  // Update chip
   var iconEl = document.getElementById("v3-tpl-icon");
   var nameEl = document.getElementById("v3-tpl-name");
   if(iconEl) iconEl.textContent = tmeta.icon || "🏢";
   if(nameEl) nameEl.textContent = tmeta.name || tpl;
 
-  // Update design tab label
   var ctLabel = document.getElementById("currentTemplateLabel");
   if(ctLabel) ctLabel.textContent = tmeta.name || tpl;
 
-  // Show/hide nav items
   showNavItem("nav-v3-services", !!cfg.services);
   showNavItem("nav-v3-menu",     !!cfg.menu);
   showNavItem("nav-v3-listings", !!cfg.listings);
@@ -1690,9 +1609,8 @@ function applyTemplateConfigV3(tpl){
   showNavItem("nav-v3-hours",    !!cfg.hours);
   showNavItem("nav-v3-stats",    !!cfg.stats);
   showNavItem("nav-v3-events",   !!cfg.events);
-  showNavItem("nav-v3-testis",   true); // always visible
+  showNavItem("nav-v3-testis",   true);
 
-  // Update labels
   if(cfg.services){
     var st = document.getElementById("services-tab-title");
     var ss = document.getElementById("services-tab-sub");
@@ -1710,14 +1628,12 @@ function applyTemplateConfigV3(tpl){
 
 function showNavItem(id, show){ var el=document.getElementById(id); if(el)el.style.display=show?"":"none"; }
 
-// ── TEMPLATE MODAL V3 ────────────────────────────────────
 window.openTplModalV3 = function(){
-  // Sync current template from old state
   var curTpl = g("f_template") || "bold-retail";
   var mbody = document.getElementById("tplModalBody");
   if(!mbody) return;
   mbody.innerHTML = TEMPLATES_V3.map(function(t){
-    return '<div class="tpl-card'+(t.id===curTpl?" current":"")+'" onclick="selectTemplateV3(''+t.id+'')">'+
+    return '<div class="tpl-card'+(t.id===curTpl?" current":"")+'" onclick="selectTemplateV3(\''+t.id+'\')">'+
       '<div class="tpl-card-icon">'+t.icon+'</div>'+
       '<div class="tpl-card-name">'+t.name+'</div>'+
       '<div class="tpl-card-desc">'+t.desc+'</div></div>';
@@ -1739,7 +1655,6 @@ window.selectTemplateV3 = function(tpl){
   toast("Template switched — save to apply","ok");
 };
 
-// ── HOURS GRID ───────────────────────────────────────────
 var DAYS_V3=[{k:"mon",l:"Mon"},{k:"tue",l:"Tue"},{k:"wed",l:"Wed"},{k:"thu",l:"Thu"},{k:"fri",l:"Fri"},{k:"sat",l:"Sat"},{k:"sun",l:"Sun"}];
 function renderHoursGrid(){
   var grid = document.getElementById("hours-grid-wrap"); if(!grid) return;
@@ -1749,9 +1664,9 @@ function renderHoursGrid(){
     var grp = document.createElement("div"); grp.className="hr-row"; grp.style.display="contents";
     grp.innerHTML=
       '<div class="hours-day-lbl">'+d.l+'</div>'+
-      '<input type="time" id="hv3_'+d.k+'_open" value="'+(h.open||"08:00")+'" '+(h.closed?"disabled":"")+' onchange="updateHoursV3(''+d.k+'')">'+
-      '<input type="time" id="hv3_'+d.k+'_close" value="'+(h.close||"17:00")+'" '+(h.closed?"disabled":"")+' onchange="updateHoursV3(''+d.k+'')">'+
-      '<label class="hours-closed-lbl"><input type="checkbox" '+(h.closed?"checked":"")+' onchange="toggleDayClosedV3(''+d.k+'',this.checked)"> Closed</label>';
+      '<input type="time" id="hv3_'+d.k+'_open" value="'+(h.open||"08:00")+'" '+(h.closed?"disabled":"")+' onchange="updateHoursV3(\''+d.k+'\')">'+
+      '<input type="time" id="hv3_'+d.k+'_close" value="'+(h.close||"17:00")+'" '+(h.closed?"disabled":"")+' onchange="updateHoursV3(\''+d.k+'\')">'+
+      '<label class="hours-closed-lbl"><input type="checkbox" '+(h.closed?"checked":"")+' onchange="toggleDayClosedV3(\''+d.k+'\',this.checked)"> Closed</label>';
     grid.appendChild(grp);
   });
 }
@@ -1769,7 +1684,6 @@ window.updateHoursV3=function(day){
   window.markDirty();
 };
 
-// ── GENERIC REPEATER V3 ──────────────────────────────────
 function renderRepListV3(listId, arr, renderFn, emptyId){
   var container=document.getElementById(listId); if(!container)return;
   var empty=document.getElementById(emptyId);
@@ -1780,7 +1694,7 @@ function renderRepListV3(listId, arr, renderFn, emptyId){
 function makeRepItemV3(title,bodyHTML,onDel){
   var div=document.createElement("div"); div.className="rep-item";
   div.innerHTML=
-    '<div class="rep-item-head" onclick="this.closest('.rep-item').classList.toggle('open')">'+
+    '<div class="rep-item-head" onclick="this.parentElement.classList.toggle(\'open\')">'+
       '<span class="rep-item-title">'+escV3(title||"(untitled)")+'</span>'+
       '<button type="button" class="rep-item-del" onclick="event.stopPropagation();'+onDel+'">Remove</button>'+
     '</div>'+
@@ -1795,7 +1709,6 @@ function taV3(label,cls,val,ph,oninput,rows){
 }
 function row2V3(a,b){return '<div class="two">'+a+b+'</div>';}
 
-// ── SERVICES ─────────────────────────────────────────────
 function renderServiceItemV3(s,idx){
   var body=row2V3(
     fldV3("Service Name","",s.name||s.title,"e.g. Haircut","updateServiceV3("+idx+",'name',this.value)"),
@@ -1811,7 +1724,6 @@ window.updateServiceV3=function(idx,key,val){
   if(key==="name"){var item=document.querySelectorAll("#services-rep-list .rep-item")[idx];if(item){var t=item.querySelector(".rep-item-title");if(t)t.textContent=val||"Service";}}
 };
 
-// ── MENU ─────────────────────────────────────────────────
 function renderMenuRowV3(m,idx){
   var body=row2V3(fldV3("Item Name","",m.name,"e.g. Grilled Chicken","updateMenuV3("+idx+",'name',this.value)"),fldV3("Category","",m.category,"e.g. Grills","updateMenuV3("+idx+",'category',this.value)"))+
     row2V3(fldV3("Price","",m.price,"$8","updateMenuV3("+idx+",'price',this.value)"),fldV3("Photo URL","",m.photo,"https://…","updateMenuV3("+idx+",'photo',this.value)"))+
@@ -1822,13 +1734,12 @@ window.addMenuItem=function(){v3state.menu.push({name:"",category:"",price:"",ph
 window.removeMenuV3=function(idx){v3state.menu.splice(idx,1);renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");window.markDirty();};
 window.updateMenuV3=function(idx,key,val){if(v3state.menu[idx]){v3state.menu[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#menu-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Menu Item";}}};
 
-// ── LISTINGS ─────────────────────────────────────────────
 function renderListingRowV3(l,idx){
   var typeOpts='<option value="For Sale"'+(l.type==="For Sale"?" selected":"")+'>For Sale</option><option value="To Rent"'+(l.type==="To Rent"?" selected":"")+'>To Rent</option><option value="Land"'+(l.type==="Land"?" selected":"")+'>Land</option>';
   var statusOpts='<option value="available"'+((!l.status||l.status==="available")?" selected":"")+'>Available</option><option value="sold"'+(l.status==="sold"?" selected":"")+'>Sold</option><option value="let"'+(l.status==="let"?" selected":"")+'>Let</option>';
   var body=
-    row2V3(fldV3("Address / Title","",l.name||l.title||l.address,"e.g. 3-bed, Suburbs","updateListingV3("+idx+",'name',this.value)"),'<div class="fld-group"><label class="fld-label">Type</label><select class="listing-type-sel" onchange="updateListingV3('+idx+','type',this.value)">'+typeOpts+'</select></div>')+
-    row2V3(fldV3("Price","",l.price,"USD 85,000","updateListingV3("+idx+",'price',this.value)"),'<div class="fld-group"><label class="fld-label">Status</label><select class="listing-type-sel" onchange="updateListingV3('+idx+','status',this.value)">'+statusOpts+'</select></div>')+
+    row2V3(fldV3("Address / Title","",l.name||l.title||l.address,"e.g. 3-bed, Suburbs","updateListingV3("+idx+",'name',this.value)"),'<div class="fld-group"><label class="fld-label">Type</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'type\',this.value)">'+typeOpts+'</select></div>')+
+    row2V3(fldV3("Price","",l.price,"USD 85,000","updateListingV3("+idx+",'price',this.value)"),'<div class="fld-group"><label class="fld-label">Status</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'status\',this.value)">'+statusOpts+'</select></div>')+
     '<div class="two"><div class="two">'+
     fldV3("Beds","",l.beds,"3","updateListingV3("+idx+",'beds',this.value)",' type="number" style="width:72px"')+
     fldV3("Baths","",l.bathrooms,"2","updateListingV3("+idx+",'bathrooms',this.value)",' type="number" style="width:72px"')+
@@ -1840,7 +1751,6 @@ window.addListing=function(){v3state.listings.push({name:"",type:"For Sale",pric
 window.removeListingV3=function(idx){v3state.listings.splice(idx,1);renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");window.markDirty();};
 window.updateListingV3=function(idx,key,val){if(v3state.listings[idx]){v3state.listings[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#listings-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Listing";}}};
 
-// ── TEAM ────────────────────────────────────────────────
 function renderTeamRowV3(p,idx){
   var body=row2V3(fldV3("Full Name","",p.name,"e.g. Tendai Moyo","updateTeamV3("+idx+",'name',this.value)"),fldV3("Role","",p.role||p.title,"e.g. Head Coach","updateTeamV3("+idx+",'role',this.value)"))+
     taV3("Bio","",p.bio,"Short bio shown on hover","updateTeamV3("+idx+",'bio',this.value)")+
@@ -1851,11 +1761,10 @@ window.addTeamMember=function(){v3state.team.push({name:"",role:"",bio:"",photo:
 window.removeTeamV3=function(idx){v3state.team.splice(idx,1);renderRepListV3("team-rep-list",v3state.team,renderTeamRowV3,"team-rep-empty");window.markDirty();};
 window.updateTeamV3=function(idx,key,val){if(v3state.team[idx]){v3state.team[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#team-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Person";}}};
 
-// ── STATS ───────────────────────────────────────────────
 function renderStatRowV3(s,idx){
   var body='<div style="display:grid;grid-template-columns:80px 55px 1fr;gap:8px">'+
-    '<div class="fld-group"><label class="fld-label">Number</label><input class="fld-input" type="number" value="'+escV3(String(s.value||s.number||0))+'" oninput="updateStatV3('+idx+','value',parseInt(this.value)||0)"></div>'+
-    '<div class="fld-group"><label class="fld-label">Suffix</label><input class="fld-input" value="'+escV3(s.suffix||'')+'" placeholder="+" maxlength="5" oninput="updateStatV3('+idx+','suffix',this.value)"></div>'+
+    '<div class="fld-group"><label class="fld-label">Number</label><input class="fld-input" type="number" value="'+escV3(String(s.value||s.number||0))+'" oninput="updateStatV3('+idx+',\'value\',parseInt(this.value)||0)"></div>'+
+    '<div class="fld-group"><label class="fld-label">Suffix</label><input class="fld-input" value="'+escV3(s.suffix||'')+'" placeholder="+" maxlength="5" oninput="updateStatV3('+idx+',\'suffix\',this.value)"></div>'+
     '<div class="fld-group"><label class="fld-label">Label</label><input class="fld-input" value="'+escV3(s.label||'')+'" placeholder="Years experience" oninput="updateStatLabelV3('+idx+',this)"></div></div>';
   return makeRepItemV3(s.label||(s.value+"+")||"Stat",body,"removeStatV3("+idx+")");
 }
@@ -1864,9 +1773,8 @@ window.removeStatV3=function(idx){v3state.stats.splice(idx,1);renderRepListV3("s
 window.updateStatV3=function(idx,key,val){if(v3state.stats[idx]){v3state.stats[idx][key]=val;window.markDirty();}};
 window.updateStatLabelV3=function(idx,input){if(v3state.stats[idx]){v3state.stats[idx].label=input.value;window.markDirty();}var items=document.querySelectorAll("#stats-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=input.value||"Stat";}};
 
-// ── EVENTS ──────────────────────────────────────────────
 function renderEventRowV3(e,idx){
-  var body=row2V3(fldV3("Title","",e.title||e.name,"e.g. Term 3 Starts","updateEventV3("+idx+",'title',this.value)"),'<div class="fld-group"><label class="fld-label">Date</label><input class="fld-input" type="date" value="'+escV3(e.date||'')+'" oninput="updateEventV3('+idx+','date',this.value)"></div>')+
+  var body=row2V3(fldV3("Title","",e.title||e.name,"e.g. Term 3 Starts","updateEventV3("+idx+",'title',this.value)"),'<div class="fld-group"><label class="fld-label">Date</label><input class="fld-input" type="date" value="'+escV3(e.date||'')+'" oninput="updateEventV3('+idx+',\'date\',this.value)"></div>')+
     fldV3("Details","",e.description||e.details,"Brief details","updateEventV3("+idx+",'description',this.value)");
   return makeRepItemV3(e.title||e.name||"Event",body,"removeEventV3("+idx+")");
 }
@@ -1874,9 +1782,8 @@ window.addEvent=function(){v3state.events.push({title:"",date:"",description:""}
 window.removeEventV3=function(idx){v3state.events.splice(idx,1);renderRepListV3("events-rep-list",v3state.events,renderEventRowV3,"events-rep-empty");window.markDirty();};
 window.updateEventV3=function(idx,key,val){if(v3state.events[idx]){v3state.events[idx][key]=val;window.markDirty();}if(key==="title"){var items=document.querySelectorAll("#events-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Event";}}};
 
-// ── TESTIMONIALS ─────────────────────────────────────────
 function renderTestiRowV3(t,idx){
-  var body=taV3("What they said","",t.text||t.quote,""Their service was outstanding…"","updateTestiV3("+idx+",'text',this.value)",3)+
+  var body=taV3("What they said","",t.text||t.quote,"Their service was outstanding…","updateTestiV3("+idx+",'text',this.value)",3)+
     row2V3(fldV3("Name","",t.name,"e.g. Amai Ncube","updateTestiV3("+idx+",'name',this.value)"),fldV3("Role / Company","",t.role||t.title,"e.g. Parent","updateTestiV3("+idx+",'role',this.value)"));
   return makeRepItemV3(t.name||"Review",body,"removeTestiV3("+idx+")");
 }
@@ -1884,21 +1791,18 @@ window.addTestimonial=function(){v3state.testimonials.push({text:"",name:"",role
 window.removeTestiV3=function(idx){v3state.testimonials.splice(idx,1);renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty");window.markDirty();};
 window.updateTestiV3=function(idx,key,val){if(v3state.testimonials[idx]){v3state.testimonials[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#testimonials-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Review";}}};
 
-// ── IMPROVED PREVIEW WITH DEVICE TOGGLE ─────────────────
 function upgradePreviewDrawer(){
   var bar = document.querySelector(".preview-bar");
   if(!bar || document.getElementById("preview-dev-btns")) return;
 
-  // Add device toggle buttons before the close button
   var devBtns = document.createElement("div");
   devBtns.className = "preview-device-btns";
   devBtns.id = "preview-dev-btns";
   devBtns.innerHTML =
-    '<button class="preview-device-btn active" id="dev-desktop" title="Desktop" onclick="setPreviewDevice('desktop')">🖥</button>'+
-    '<button class="preview-device-btn" id="dev-tablet" title="Tablet" onclick="setPreviewDevice('tablet')">📱</button>'+
-    '<button class="preview-device-btn" id="dev-mobile" title="Mobile" onclick="setPreviewDevice('mobile')">📲</button>';
+    '<button class="preview-device-btn active" id="dev-desktop" title="Desktop" onclick="setPreviewDevice(\'desktop\')">🖥</button>'+
+    '<button class="preview-device-btn" id="dev-tablet" title="Tablet" onclick="setPreviewDevice(\'tablet\')">📱</button>'+
+    '<button class="preview-device-btn" id="dev-mobile" title="Mobile" onclick="setPreviewDevice(\'mobile\')">📲</button>';
 
-  // Add open-in-new-tab button
   var newTabBtn = document.createElement("button");
   newTabBtn.className = "btn btn-ghost btn-sm";
   newTabBtn.title = "Open in new tab";
@@ -1909,7 +1813,6 @@ function upgradePreviewDrawer(){
   bar.insertBefore(devBtns, closeBtn);
   bar.insertBefore(newTabBtn, closeBtn);
 
-  // Wrap the iframe in the device container
   var frameWrap = document.querySelector(".preview-frame-wrap");
   if(!frameWrap) return;
   var frame = document.getElementById("previewFrame");
@@ -1940,12 +1843,8 @@ function openPreviewInNewTab(){
   if(frame && frame.src && frame.src !== window.location.href) window.open(frame.src, "_blank");
 }
 
-// ── PATCH OLD SAVE TO INCLUDE V3 DATA ───────────────────
-var _origBuildContent = window.buildContent;
-// We don't have direct access to old buildContent so we patch via onSave override
 var _origOnSave = window.onSave;
 window.onSave = async function(){
-  // Inject v3 data into old state before saving
   if(window.state && window.state.content){
     var inner = window.state.content.content || {};
     inner.services     = v3state.services;
@@ -1961,7 +1860,6 @@ window.onSave = async function(){
   if(_origOnSave) return _origOnSave.apply(this, arguments);
 };
 
-// ── LOAD V3 DATA FROM SITE ───────────────────────────────
 function loadV3DataFromSite(){
   var raw = window.state && window.state.content;
   if(!raw) return;
@@ -1985,7 +1883,6 @@ function loadV3DataFromSite(){
   renderHoursGrid();
 }
 
-// ── SECTIONS LIST (Design tab) ────────────────────────────
 var ALL_SECS_V3 = {
   "bold-retail":        [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"team",label:"Team"},{key:"testimonials",label:"Reviews"},{key:"gallery",label:"Gallery"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
   "grill-house":        [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
@@ -2013,11 +1910,11 @@ window.buildSectionsList = function(){
     var isActive=activeKeys.indexOf(key)>-1;
     var isReq=REQUIRED_V3.indexOf(key)>-1;
     return '<div class="sec-row'+(isActive?" active":"")+'">'+
-      '<label class="sec-toggle"><input type="checkbox"'+(isActive?" checked":"")+(isReq?" disabled":"")+' onchange="toggleSectionV3(''+key+'',this.checked)"><span class="sec-slider"></span></label>'+
+      '<label class="sec-toggle"><input type="checkbox"'+(isActive?" checked":"")+(isReq?" disabled":"")+' onchange="toggleSectionV3(\''+key+'\',this.checked)"><span class="sec-slider"></span></label>'+
       '<span class="sec-label">'+sec.label+'</span>'+
       '<div class="sec-arrows">'+
-        '<button class="sec-arr" onclick="moveSectionV3(''+key+'',−1)" '+(idx===0?"disabled":"")+'>↑</button>'+
-        '<button class="sec-arr" onclick="moveSectionV3(''+key+'',1)" '+(idx===ordered.length-1?"disabled":"")+'>↓</button>'+
+        '<button class="sec-arr" onclick="moveSectionV3(\''+key+'\',-1)" '+(idx===0?"disabled":"")+'>↑</button>'+
+        '<button class="sec-arr" onclick="moveSectionV3(\''+key+'\',1)" '+(idx===ordered.length-1?"disabled":"")+'>↓</button>'+
       '</div></div>';
   }).join("");
 };
@@ -2037,7 +1934,6 @@ window.moveSectionV3=function(key,dir){
   window.markDirty(); buildSectionsList();
 };
 
-// ── UTILITIES ────────────────────────────────────────────
 function g(id){var e=document.getElementById(id);return e?e.value.trim():"";}
 function set(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}
 function escV3(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
@@ -2048,12 +1944,9 @@ function toast(msg,type){
   setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);
 }
 
-// ── BOOT ─────────────────────────────────────────────────
-// Wait for old init to complete, then layer v3 on top
 function bootV3(){
   injectV3Nav();
   upgradePreviewDrawer();
-  // Poll for state being populated by old init
   var attempts = 0;
   var poll = setInterval(function(){
     attempts++;
@@ -2062,11 +1955,10 @@ function bootV3(){
       var tpl = (window.state.site&&window.state.site.template_id) || g("f_template") || "bold-retail";
       applyTemplateConfigV3(tpl);
       loadV3DataFromSite();
-      // Override template dropdown change
       var sel = document.getElementById("f_template");
-      if(sel){ var origOnChange=sel.onchange; sel.addEventListener("change",function(){ applyTemplateConfigV3(this.value); }); }
+      if(sel){ sel.addEventListener("change",function(){ applyTemplateConfigV3(this.value); }); }
     }
-    if(attempts > 50) clearInterval(poll); // timeout after 5s
+    if(attempts > 50) clearInterval(poll);
   }, 100);
 }
 
@@ -2075,8 +1967,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 })();
 
 </script>
-<style>/* variant chips */
-
+<style>
 .variant-chip{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);color:var(--green-dk);font-size:12.5px;font-weight:600;padding:3px 8px 3px 10px;border-radius:20px;border:1px solid rgba(21,146,75,.2)}
 .variant-chip button{background:none;border:none;color:var(--green-dk);font-size:14px;line-height:1;cursor:pointer;padding:0 0 0 2px;opacity:.7}
 .variant-chip button:hover{opacity:1}
