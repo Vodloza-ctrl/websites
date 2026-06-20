@@ -332,7 +332,7 @@ var _statusTimer=null;
 (function renderInds(){
   var g=document.getElementById("industryGrid");
   g.innerHTML=INDS.map(function(i){
-    return'<div class="ind-card" data-id="'+i.id+'" onclick="pickInd(''+i.id+'')">'
+    return'<div class="ind-card" data-id="'+i.id+'" onclick="pickInd(\''+i.id+'\')">'
       +'<div class="ic">'+i.ic+'</div><div class="il">'+i.lb+'</div>'
       +'<div class="ck">&#10003;</div></div>';
   }).join("");
@@ -347,7 +347,7 @@ window.pickInd=function(id){
 };
 
 function buildTplCard(t,isRec){
-  return'<div class="tpl-card" data-id="'+t.id+'" onclick="pickTpl(''+t.id+'')">'
+  return'<div class="tpl-card" data-id="'+t.id+'" onclick="pickTpl(\''+t.id+'\')">'
     +'<div class="tpl-prev" style="background:'+t.bg+'">'
       +'<div class="tpl-nav-bar"><div class="tpl-nav-dot"></div><div class="tpl-nav-dot"></div><div class="tpl-nav-dot"></div></div>'
       +'<div class="tpl-hero-area"><div class="tpl-h"></div><div class="tpl-p"></div>'
@@ -443,7 +443,7 @@ window.pickTpl=function(id){
 (function renderCities(){
   var row=document.getElementById("cityRow");
   row.innerHTML=CITIES.map(function(c){
-    return'<div class="city-chip'+(c==="Bulawayo"?" sel":"")+'" onclick="pickCity(''+c+'')" data-city="'+c+'">'+c+'</div>';
+    return'<div class="city-chip'+(c==="Bulawayo"?" sel":"")+'" onclick="pickCity(\''+c+'\')" data-city="'+c+'">'+c+'</div>';
   }).join("");
   document.getElementById("f-city").value="Bulawayo";
 })();
