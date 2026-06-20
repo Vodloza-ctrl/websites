@@ -282,6 +282,10 @@ img{display:block;max-width:100%}
   <div class="topbar-logo">websites<span class="tld">.co.zw</span><span class="flag"><i></i><i></i><i></i></span></div>
   <div class="topbar-site" id="topSiteName">Loading…</div>
   <div class="topbar-actions">
+    <button class="btn btn-ghost btn-sm" onclick="exitEditor()" title="Back to dashboard">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M9.5 3L4.5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Dashboard
+    </button>
     <button class="btn btn-ghost btn-sm" onclick="togglePreview()">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3C4.5 3 1.5 8 1.5 8s3 5 6.5 5 6.5-5 6.5-5-3-5-6.5-5zm0 8a3 3 0 100-6 3 3 0 000 6z" fill="currentColor"/></svg>
       Preview
@@ -1107,6 +1111,11 @@ window.onPublish = function(){
 };
 window.onPublishPro = function(){
   toast("Pro plan coming soon — save your site and we'll notify you when payments are live","ok");
+};
+
+window.exitEditor = function(){
+  if (state.dirty && !confirm("You have unsaved changes. Leave without saving?")) return;
+  location.href = DASH_URL;
 };
 
 window.togglePreview = function(){
