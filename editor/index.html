@@ -1144,6 +1144,19 @@ window.updateProduct = function(id,key,val){
     if(pr&&key==="price")pr.textContent=val;
   }
 };
+window.onTuneProduct = async function(id){
+  var ta = document.getElementById("pdesc_"+id);
+  var btn = document.getElementById("ptune_"+id);
+  if (!ta) return;
+  var original = ta.value;
+  if (btn){ btn.disabled = true; btn.textContent = "Tuning…"; }
+  var improved = await tuneText("product_description", original);
+  if (btn){ btn.disabled = false; btn.textContent = "✦ Tune with AI"; }
+  if (!improved) return;
+  ta.value = improved;
+  updateProduct(id, "description", improved);
+  toast("Description tuned ✓ — edit further or save","ok");
+};
 window.setStock = function(id,stock,btn){
   updateProduct(id,"stock",stock);
   var row=btn.closest(".stock-row");
@@ -1245,7 +1258,10 @@ function renderProducts(){
           '<div class="fld-group"><label class="fld-label">Price</label><input class="fld-input" placeholder="$20" value="'+esc(p.price||'')+'" oninput="updateProduct(\''+p.id+'\',\'price\',this.value)"></div>'+
           '<div class="fld-group"><label class="fld-label">Photo</label>'+uploadZoneHtml+'</div>'+
         '</div>'+
-        '<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label><textarea class="fld-textarea" style="min-height:52px" placeholder="Brief description…" oninput="updateProduct(\''+p.id+'\',\'description\',this.value)">'+esc(p.description||'')+'</textarea></div>'+
+        '<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'+
+        '<textarea class="fld-textarea" id="pdesc_'+p.id+'" style="min-height:52px" placeholder="Brief description…" oninput="updateProduct(\''+p.id+'\',\'description\',this.value)">'+esc(p.description||'')+'</textarea>'+
+        '<button type="button" onclick="onTuneProduct(\''+p.id+'\')" id="ptune_'+p.id+'" style="margin-top:6px;font-size:12px;font-weight:600;color:var(--green-dk);background:var(--green-bg);border:none;border-radius:6px;padding:5px 10px;display:inline-flex;align-items:center;gap:5px">✦ Tune with AI</button>'+
+        '</div>'+
         '<div class="fld-group">'+
           '<label class="fld-label">Variants <span class="fld-hint">— tap to add, tap again to remove</span></label>'+
           '<div class="variant-chips-wrap" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:4px">'+varChips+'</div>'+
@@ -1309,6 +1325,31 @@ window.handleGalleryUpload = async function(input){
   state.gallery.push(url); renderGallery(); updateImgCount(); markDirty(); toast("Photo added ✓","ok");
 };
 window.removeGalleryImg = function(i){ state.gallery.splice(i,1); renderGallery(); updateImgCount(); markDirty(); };
+
+async function tuneText(fieldType, currentText, opts){
+  opts = opts || {};
+  if (!currentText || !currentText.trim()) { toast("Add some text first","err"); return null; }
+  try{
+    var r = await api("/api/ai/tune", {
+      method: "POST",
+      body: JSON.stringify({
+        field_type: fieldType,
+        current_text: currentText,
+        business_name: (state.content && state.content.content && state.content.content.business_name) || "",
+        industry: (document.getElementById("f_industry")||{}).value || "",
+        site_id: siteId,
+      })
+    });
+    if (!r.ok || !r.data.text){
+      toast(r.data && r.data.error === "tune_limit_reached" ? "AI tune-up limit reached for this site" : "Couldn't improve that text — try again","err");
+      return null;
+    }
+    return r.data.text;
+  } catch(e){
+    toast("Network error — try again","err");
+    return null;
+  }
+}
 
 async function uploadToR2(file,type){
   var allowed=["image/jpeg","image/png","image/webp","image/gif","image/svg+xml"];
