@@ -211,6 +211,11 @@ a{color:inherit;text-decoration:none}
     <span class="sel-bar-text" id="indSelName"></span>
     <span class="sel-bar-change" onclick="goTo('industry')">Change</span>
   </div>
+  <div class="brief-card" id="descCard" style="margin-top:0;margin-bottom:16px;padding:14px 16px">
+    <label class="fld-label" for="f-desc">What do you sell or do? <span style="text-transform:none;font-weight:500;color:var(--ink3)">&mdash; optional, helps AI pick better</span></label>
+    <input class="fld-input" id="f-desc" type="text" maxlength="160" style="font-size:14px"
+      placeholder="e.g. wood-fired pizza, kids' coding lessons, plumbing repairs" oninput="onDescInput()">
+  </div>
   <div class="tpl-grid" id="templateGrid"></div>
   <div class="actions">
     <div class="actions-row">
@@ -290,7 +295,7 @@ function tok(){return localStorage.getItem("wcz_token")||"";}
 if(!tok()){location.replace(DASH);}
 var p=new URLSearchParams(location.search);
 var isSwitching=p.get("switch")==="1",fromSiteId=p.get("from")||p.get("site")||"";
-var st={industry:null,template:null,name:"",phone:"",city:"Bulawayo"};
+var st={industry:null,template:null,name:"",phone:"",city:"Bulawayo",description:""};
 var INDS=[
   {id:"food",ic:"&#127869;&#65039;",lb:"Food & Dining"},
   {id:"beauty",ic:"&#128133;",lb:"Beauty & Wellness"},
@@ -335,6 +340,8 @@ var _statusTimer=null;
 
 window.pickInd=function(id){
   st.industry=id;
+  st.description="";
+  var df=document.getElementById("f-desc");if(df)df.value="";
   document.querySelectorAll(".ind-card").forEach(function(c){c.classList.toggle("sel",c.dataset.id===id);});
   setTimeout(function(){goTo("template");},200);
 };
@@ -365,6 +372,65 @@ function renderAllTpls(){
   document.getElementById("templateGrid").innerHTML=TPLS.map(function(t){
     return buildTplCard(t,false);
   }).join("");
+}
+
+// ── AI template recommendation (real AI, not the static `rec` array) ─────
+// The static sort above renders INSTANTLY so there's never a loading delay
+// the user has to wait through. This call then asks the AI Worker's
+// /recommend-template endpoint (via the auth Worker's proxy route) for its
+// actual pick, and if it answers in time, silently re-sorts the grid and
+// swaps the generic "Best match" label for the AI's own one-line reason.
+// Any failure, timeout, or unconfigured route changes nothing — the
+// static fallback already on screen simply stands as-is.
+var _aiRecAbortController=null;
+function fetchAiRecommendation(industryId,industryLabel,description){
+  if(_aiRecAbortController)_aiRecAbortController.abort();
+  _aiRecAbortController=new AbortController();
+  var name=document.getElementById("f-name")?document.getElementById("f-name").value.trim():"";
+  fetch(API+"/api/recommend-template",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok()},
+    body:JSON.stringify({industry:industryLabel||industryId,business_name:name||undefined,description:description||undefined}),
+    signal:_aiRecAbortController.signal,
+  }).then(function(r){return r.ok?r.json():null;})
+    .then(function(data){
+      if(!data||!data.template_id)return; // silent fallback — static order already showing
+      reorderTplsWithAiPick(industryId,data.template_id,data.reason);
+    })
+    .catch(function(){ /* network error or abort — static fallback stands, no UI disruption */ });
+}
+
+// Debounced — fires ~600ms after the user stops typing, so a recommendation
+// call isn't sent on every keystroke. Reuses the same abort logic as the
+// initial call, so a fast typer can't pile up stale in-flight requests.
+var _descDebounce=null;
+window.onDescInput=function(){
+  st.description=document.getElementById("f-desc").value.trim();
+  clearTimeout(_descDebounce);
+  if(!st.industry)return;
+  _descDebounce=setTimeout(function(){
+    var ind=INDS.find(function(i){return i.id===st.industry;});
+    fetchAiRecommendation(st.industry,ind?ind.lb:"",st.description);
+  },600);
+};
+
+function reorderTplsWithAiPick(indId,pickedId,reason){
+  var relevant=TPLS.filter(function(t){return t.inds.indexOf(indId)>-1;});
+  var has=relevant.some(function(t){return t.id===pickedId;});
+  if(!has)return; // AI picked something not offered for this industry — ignore, keep static order
+  relevant.sort(function(a,b){
+    if(a.id===pickedId)return -1;
+    if(b.id===pickedId)return 1;
+    return(b.rec.indexOf(indId)>-1?1:0)-(a.rec.indexOf(indId)>-1?1:0);
+  });
+  document.getElementById("templateGrid").innerHTML=relevant.map(function(t){
+    return buildTplCard(t,t.id===pickedId);
+  }).join("");
+  // Swap the generic badge for the AI's actual one-line reason, when given.
+  if(reason){
+    var card=document.querySelector('.tpl-card[data-id="'+pickedId+'"] .tpl-rec');
+    if(card)card.textContent="\u2605 "+reason;
+  }
 }
 
 window.pickTpl=function(id){
@@ -399,11 +465,13 @@ window.goTo=function(id){
   SCREENS.forEach(function(s){document.getElementById("s-"+s).classList.toggle("active",s===id);});
   document.getElementById("progressBar").style.width=((idx+1)/SCREENS.length*100)+"%";
   document.getElementById("stepNum").textContent=idx+1;
-  if(id==="template"&&st.industry){
+  if(id==="template"&&st.industry&&!isSwitching){
     var ind=INDS.find(function(i){return i.id===st.industry;});
     document.getElementById("indSelIcon").innerHTML=ind?ind.ic:"";
     document.getElementById("indSelName").textContent=ind?ind.lb:"";
-    renderTpls(st.industry);
+    document.getElementById("f-desc").value=st.description||"";
+    renderTpls(st.industry); // immediate render with the static fallback order
+    fetchAiRecommendation(st.industry, ind ? ind.lb : "", st.description);
   }
   if(id==="details"&&st.template){
     var tpl=TPLS.find(function(t){return t.id===st.template;});
@@ -503,6 +571,7 @@ window.onCreateSite=async function(){
   var indObj=INDS.find(function(i){return i.id===st.industry;})||{lb:""};
   var phone=normPhone(st.phone);
   var brief={business_name:st.name,industry:indObj.lb,city:st.city||"Bulawayo",
+    description:st.description||undefined,
     phone:phone,contact:{phone:phone,whatsapp:phone},
     socials:{whatsapp:phone?"https://wa.me/"+phone:""}};
 
@@ -546,6 +615,8 @@ window.onCreateSite=async function(){
 if(isSwitching&&fromSiteId){
   document.getElementById("stepLabel").style.display="none";
   document.getElementById("progressBar").parentElement.style.display="none";
+  document.getElementById("indSelBar").style.display="none";
+  document.getElementById("descCard").style.display="none";
   st.industry="general";
   renderAllTpls();
   goTo("template");
