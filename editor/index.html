@@ -822,6 +822,12 @@ var DASH_URL = "https://www.websites.co.zw/dashboard/customer.html";
 
 var siteId = new URLSearchParams(location.search).get("site");
 var state = { site:null, content:null, dirty:false, products:[], images:{}, gallery:[], previewOpen:false };
+// FIX: expose state on window so the second <script> block (the V3 tabs
+// patch — Services/Menu/Listings/Team/Hours/Stats/Events/Testimonials) can
+// actually read and write it. Without this line window.state is undefined
+// everywhere it's referenced, which silently breaks loading AND saving for
+// every one of those tabs.
+window.state = state;
 var STARTER_PRODUCT_LIMIT = 6;
 var STARTER_IMAGE_LIMIT   = 10;
 
@@ -885,6 +891,19 @@ async function api(path, opts){
   var s = state.site.status;
   badge.textContent = s==="published"?"Published":s==="pending_payment"?"Payment pending":"Draft";
   badge.className = "status-badge "+(s==="published"?"status-published":s==="pending_payment"?"status-pending":"status-draft");
+
+  // FIX: the old version opened the preview drawer via a fire-and-forget
+  // setTimeout(...,400) declared outside this async function, racing
+  // against the site fetch above. Now that state.site is guaranteed loaded
+  // by this point, open (and start auto-refreshing) the preview here
+  // instead — no race, and it uses the corrected token-based loadPreview().
+  if(window.innerWidth>=900){
+    state.previewOpen = true;
+    var pd = document.getElementById("previewDrawer");
+    if(pd) pd.classList.add("open");
+    loadPreview();
+    startPreviewAutoRefresh();
+  }
 })();
 
 function populateForm(){
@@ -976,6 +995,20 @@ function buildContent(brief){
     { palette:paletteFor(g("f_template")), font_pair:fontFor(g("f_template")), sections:["hero","about","services","products","gallery","contact"] },
     existingTheme
   );
+  // FIX: previously the Design tab's palette picker only ever wrote
+  // theme.palette (a key like "navy-gold") and theme.custom_accent. Nothing
+  // translated that into the actual theme.accent/bg/dark/gold hex values
+  // the render Worker's templates read (c.theme?.accent, c.theme?.bg,
+  // c.theme?.dark) — so no matter what a client picked here, every site on
+  // a given template rendered with that template's hardcoded default
+  // colours. Resolve real colours from the chosen palette (or the custom
+  // accent override) on every save, so palette choice actually reaches the
+  // live site.
+  var resolvedColors = resolvePaletteColors(theme.palette, theme.custom_accent);
+  theme.accent = resolvedColors.accent;
+  theme.bg     = resolvedColors.bg;
+  theme.dark   = resolvedColors.dark;
+  theme.gold   = resolvedColors.gold;
   return {
     theme: theme,
     content: Object.assign({}, existing, {
@@ -1026,10 +1059,21 @@ window.onGenerate = async function(){
     var aiTheme   = r.data.theme   || {};
 
     if(!state.content) state.content = {};
-    state.content.theme = aiTheme;
-    state.content.content = Object.assign({}, aiContent, {
-      products:     state.products.length  ? state.products  : (aiContent.products  || []),
-      images:       Object.keys(state.images).length ? Object.assign({}, state.images, { gallery: state.gallery }) : (aiContent.images || {}),
+    // FIX: this used to be a wholesale Object.assign({}, aiContent, {...})
+    // which replaced state.content.content entirely. Anything the AI
+    // Worker's response doesn't include — services, team, stats, events,
+    // testimonials, menu, listings, hours, video — was silently deleted the
+    // moment someone clicked "Generate with AI" again on a site that
+    // already had it manually filled in. Spreading the previous content
+    // first means the AI's fresh copy still wins for whatever it *does*
+    // return, but nothing is wiped just because the AI didn't echo it back.
+    // Same fix applied to theme, so a manually-picked custom accent colour
+    // or section order doesn't get reset by a regenerate either.
+    var existingContentBeforeGen = state.content.content || {};
+    state.content.theme = Object.assign({}, state.content.theme || {}, aiTheme);
+    state.content.content = Object.assign({}, existingContentBeforeGen, aiContent, {
+      products:     state.products.length  ? state.products  : (aiContent.products  || existingContentBeforeGen.products || []),
+      images:       Object.keys(state.images).length ? Object.assign({}, state.images, { gallery: state.gallery }) : (aiContent.images || existingContentBeforeGen.images || {}),
     });
     state.content.content._brief = brief;
 
@@ -1126,16 +1170,63 @@ window.togglePreview = function(){
 };
 window.refreshPreview = function(){ if(state.previewOpen||window.innerWidth>=900)loadPreview(); };
 
-function loadPreview(){
-  var slug=state.site&&state.site.draft_subdomain;
-  if(!slug){ document.getElementById("previewLoading").querySelector("p").textContent="Save first to preview"; return; }
-  var url="https://app.websites.co.zw/preview/"+encodeURIComponent(slug);
-  document.getElementById("previewUrlLabel").textContent=slug+".websites.co.zw";
-  var frame=document.getElementById("previewFrame"),loading=document.getElementById("previewLoading");
-  loading.style.display="flex"; frame.style.display="none"; frame.src=url;
-  frame.onload=function(){loading.style.display="none";frame.style.display="block";};
+var _previewTokenTimer = null;
+function startPreviewAutoRefresh(){
+  // Preview tokens are short-lived (5 min) by design on the auth Worker
+  // side. Re-mint quietly every 4 minutes while the drawer is open so a
+  // long editing session doesn't end with a dead iframe and no obvious
+  // explanation why.
+  if(_previewTokenTimer) clearInterval(_previewTokenTimer);
+  _previewTokenTimer = setInterval(function(){
+    if(state.previewOpen) loadPreview();
+  }, 4*60*1000);
 }
-if(window.innerWidth>=900){ setTimeout(function(){state.previewOpen=true;loadPreview();},400); }
+
+// FIX: this used to build "https://app.websites.co.zw/preview/"+slug by
+// hand — a route the render Worker's v6.0 rewrite removed entirely (see
+// the render Worker's header comment). Preview now goes through the
+// auth Worker's GET /api/sites/:id/preview-token, which mints a short-lived
+// D1-backed token and returns a ready-to-use preview_url pointing at
+// <slug>.websites.co.zw/?preview_token=..., hitting the render Worker's
+// normal public wildcard route — the exact same renderer that serves
+// published sites, so preview can never drift from production.
+async function loadPreview(){
+  var slug = state.site && state.site.draft_subdomain;
+  var loading = document.getElementById("previewLoading");
+  var frame   = document.getElementById("previewFrame");
+  var loadingP = loading ? loading.querySelector("p") : null;
+
+  if(!siteId || !slug){
+    if(loadingP) loadingP.textContent = "Save your site first to preview it";
+    if(loading) loading.style.display = "flex";
+    if(frame) frame.style.display = "none";
+    return;
+  }
+
+  if(loading) loading.style.display = "flex";
+  if(frame) frame.style.display = "none";
+  if(loadingP) loadingP.textContent = "Loading preview…";
+
+  var r = await api("/api/sites/"+encodeURIComponent(siteId)+"/preview-token");
+  if(!r.ok || !r.data || !r.data.preview_url){
+    var msg = (r.data && r.data.error === "no_subdomain")
+      ? "Save your site first to preview it"
+      : "Couldn't load preview — tap Refresh to try again";
+    if(loadingP) loadingP.textContent = msg;
+    return;
+  }
+
+  var urlLabel = document.getElementById("previewUrlLabel");
+  if(urlLabel) urlLabel.textContent = slug+".websites.co.zw";
+
+  if(frame){
+    frame.onload = function(){
+      if(loading) loading.style.display = "none";
+      frame.style.display = "block";
+    };
+    frame.src = r.data.preview_url;
+  }
+}
 
 window.addProduct = function(){
   if(state.products.length>=STARTER_PRODUCT_LIMIT){ document.getElementById("productLimitMsg").style.display="block"; toast("6 product limit on Starter. Upgrade to Pro for unlimited.","err"); return; }
@@ -1392,25 +1483,30 @@ function updateBudget(b){
 function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","grocery-fmcg":"market-fresh","grocery":"market-fresh","retail-hardware":"utility-slate","hardware":"utility-slate"};return m[t]||"clean-white";}
 function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","retail-hardware":"display-mono"};return m[t]||"grotesk-serif";}
 
+// FIX: every palette now also carries a "dark" hex — used for hero/footer
+// sections on most templates — so resolvePaletteColors() below has a real
+// colour to hand the render Worker instead of leaving c.theme.dark
+// undefined (which is what silently kept every site on its template's
+// hardcoded default, regardless of palette choice).
 var PALETTES_UI=[
-  {key:"black-white-gold",name:"Dark Gold",bg:"#0c0c0c",surface:"#161616",accent:"#c8a24a"},
-  {key:"midnight-purple",name:"Midnight Purple",bg:"#0d0a14",surface:"#17121f",accent:"#a855f7"},
-  {key:"deep-teal",name:"Deep Teal",bg:"#061a1a",surface:"#0d2828",accent:"#14b8a6"},
-  {key:"sky-blue",name:"Sky Blue",bg:"#0f1b2d",surface:"#16263d",accent:"#3da5e0"},
-  {key:"elite-sports",name:"Sports Green",bg:"#0a0a0a",surface:"#151515",accent:"#16a34a"},
-  {key:"rose-noir",name:"Rose Noir",bg:"#0e0b0d",surface:"#1a1318",accent:"#e8a0b0"},
-  {key:"clean-white",name:"Clean White",bg:"#ffffff",surface:"#f6f6f4",accent:"#1a1a1a"},
-  {key:"warm-terracotta",name:"Terracotta",bg:"#fdf6f0",surface:"#fff",accent:"#c0440e"},
-  {key:"ember-cream",name:"Ember Cream",bg:"#FBF4E9",surface:"#fff",accent:"#D2541F"},
-  {key:"blush-plum",name:"Blush Plum",bg:"#ffffff",surface:"#F7ECEC",accent:"#B08D57"},
-  {key:"soft-pink",name:"Soft Pink",bg:"#fff9fb",surface:"#fdeef3",accent:"#e91e8c"},
-  {key:"navy-gold",name:"Navy Gold",bg:"#ffffff",surface:"#EAF1F9",accent:"#C99A2E"},
-  {key:"slate-gold",name:"Slate Gold",bg:"#ffffff",surface:"#F4F6FA",accent:"#C08A2D"},
-  {key:"medical-teal",name:"Medical Teal",bg:"#f4fbfb",surface:"#e8f6f6",accent:"#0891b2"},
-  {key:"forest-cream",name:"Forest Cream",bg:"#F6F1E7",surface:"#fff",accent:"#B0852F"},
-  {key:"market-fresh",name:"Market Fresh",bg:"#ffffff",surface:"#f4faf5",accent:"#1e8c3a"},
-  {key:"bright-orange",name:"Bright Orange",bg:"#ffffff",surface:"#fff8f3",accent:"#ea580c"},
-  {key:"utility-slate",name:"Utility Slate",bg:"#f7f8fa",surface:"#ffffff",accent:"#1a56db"},
+  {key:"black-white-gold",name:"Dark Gold",bg:"#0c0c0c",surface:"#161616",accent:"#c8a24a",dark:"#0c0c0c"},
+  {key:"midnight-purple",name:"Midnight Purple",bg:"#0d0a14",surface:"#17121f",accent:"#a855f7",dark:"#0d0a14"},
+  {key:"deep-teal",name:"Deep Teal",bg:"#061a1a",surface:"#0d2828",accent:"#14b8a6",dark:"#061a1a"},
+  {key:"sky-blue",name:"Sky Blue",bg:"#0f1b2d",surface:"#16263d",accent:"#3da5e0",dark:"#0f1b2d"},
+  {key:"elite-sports",name:"Sports Green",bg:"#0a0a0a",surface:"#151515",accent:"#16a34a",dark:"#0a0a0a"},
+  {key:"rose-noir",name:"Rose Noir",bg:"#0e0b0d",surface:"#1a1318",accent:"#e8a0b0",dark:"#0e0b0d"},
+  {key:"clean-white",name:"Clean White",bg:"#ffffff",surface:"#f6f6f4",accent:"#1a1a1a",dark:"#141414"},
+  {key:"warm-terracotta",name:"Terracotta",bg:"#fdf6f0",surface:"#fff",accent:"#c0440e",dark:"#3a1606"},
+  {key:"ember-cream",name:"Ember Cream",bg:"#FBF4E9",surface:"#fff",accent:"#D2541F",dark:"#3a1708"},
+  {key:"blush-plum",name:"Blush Plum",bg:"#ffffff",surface:"#F7ECEC",accent:"#B08D57",dark:"#2d1620"},
+  {key:"soft-pink",name:"Soft Pink",bg:"#fff9fb",surface:"#fdeef3",accent:"#e91e8c",dark:"#3a0f24"},
+  {key:"navy-gold",name:"Navy Gold",bg:"#ffffff",surface:"#EAF1F9",accent:"#C99A2E",dark:"#0a2540"},
+  {key:"slate-gold",name:"Slate Gold",bg:"#ffffff",surface:"#F4F6FA",accent:"#C08A2D",dark:"#20262f"},
+  {key:"medical-teal",name:"Medical Teal",bg:"#f4fbfb",surface:"#e8f6f6",accent:"#0891b2",dark:"#063a3f"},
+  {key:"forest-cream",name:"Forest Cream",bg:"#F6F1E7",surface:"#fff",accent:"#B0852F",dark:"#1f3320"},
+  {key:"market-fresh",name:"Market Fresh",bg:"#ffffff",surface:"#f4faf5",accent:"#1e8c3a",dark:"#0f3d1a"},
+  {key:"bright-orange",name:"Bright Orange",bg:"#ffffff",surface:"#fff8f3",accent:"#ea580c",dark:"#2b1400"},
+  {key:"utility-slate",name:"Utility Slate",bg:"#f7f8fa",surface:"#ffffff",accent:"#1a56db",dark:"#0f1729"},
 ];
 var FONTS_UI=[
   {key:"clean-sans",name:"Clean Sans",preview:"Modern & Clear",style:"font-family:'Space Grotesk',sans-serif"},
@@ -1420,6 +1516,20 @@ var FONTS_UI=[
   {key:"sports-sans",name:"Sports Sans",preview:"Bold & Condensed",style:"font-family:'Barlow Condensed',sans-serif;font-weight:700"},
   {key:"display-mono",name:"Display Mono",preview:"Technical & Clean",style:"font-family:'DM Mono',monospace"},
 ];
+
+// FIX: new helper — resolves a palette key (+ optional custom accent
+// override) into the literal accent/bg/dark/gold hex values the render
+// Worker's templates actually read off c.theme. Called from buildContent()
+// on every save so the Design tab's choices reach the live site.
+function resolvePaletteColors(paletteKey, customAccent){
+  var p = PALETTES_UI.find(function(x){return x.key===paletteKey;}) || PALETTES_UI.find(function(x){return x.key==="clean-white";}) || PALETTES_UI[0];
+  return {
+    accent: customAccent || p.accent,
+    bg:     p.bg,
+    dark:   p.dark || p.bg,
+    gold:   customAccent || p.accent,
+  };
+}
 
 function buildPaletteGrid(){
   var grid=document.getElementById("paletteGrid"); if(!grid)return;
@@ -1473,47 +1583,21 @@ function luminanceFromHex(hex){if(!hex||hex.length<7)return 0;var r=parseInt(hex
 function initDesignTab(){
   var savedAccent=(state.content&&state.content.theme&&state.content.theme.custom_accent)||"";
   if(savedAccent){document.getElementById("f_custom_accent").value=savedAccent;document.getElementById("f_custom_accent_picker").value=savedAccent;document.getElementById("clearAccentBtn").style.display="";}
-  buildPaletteGrid(); buildFontGrid(); buildSectionsList(); updateFaviconPreview();
+  // FIX: this used to call a LOCAL buildSectionsList() defined in this same
+  // file — a second, independent implementation of the section list with
+  // its own ALL_SECTIONS map, toggleSection() and moveSection(), separate
+  // from the (more complete, per-template-aware) one the V3 tabs script
+  // defines on window. Because of how inline onchange="" attributes resolve
+  // identifiers globally, the template dropdown's onchange was *already*
+  // calling the window-level (V3) version while this initial load was
+  // calling the local one — two different section lists depending on how
+  // you got to the Design tab. The local duplicate (ALL_SECTIONS,
+  // buildSectionsList, toggleSection, moveSection, ensureThemeSections) has
+  // been removed entirely; this now falls through to the single global
+  // window.buildSectionsList() the second <script> block defines, which is
+  // also what every inline onchange/onclick in the page actually calls.
+  buildSectionsList(); buildPaletteGrid(); buildFontGrid(); updateFaviconPreview();
 }
-
-var ALL_SECTIONS={
-  "bold-retail":        [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"testimonials",label:"Reviews"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
-  "grill-house":        [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
-  "beauty-salon":       [{key:"hero",label:"Hero banner"},{key:"services",label:"Services & prices"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
-  "school-institution": [{key:"hero",label:"Hero banner"},{key:"stats",label:"Key stats"},{key:"about",label:"About us"},{key:"services",label:"Programmes"},{key:"products",label:"Products"},{key:"team",label:"Leadership"},{key:"testimonials",label:"Reviews"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
-  "advisory-firm":      [{key:"hero",label:"Hero banner"},{key:"services",label:"Practice areas"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"team",label:"The team"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
-  "property-estate":    [{key:"hero",label:"Hero banner"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"products",label:"Products"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
-  "boutique-fashion":   [{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
-  "grocery-fmcg":       [{key:"hero",label:"Hero banner"},{key:"products",label:"Products"},{key:"about",label:"About us"},{key:"contact",label:"Contact"}],
-  "retail-hardware":    [{key:"hero",label:"Hero banner"},{key:"products",label:"Products & catalogue"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"contact",label:"Contact"}],
-};
-var REQUIRED_SECTIONS=["hero","contact"];
-function buildSectionsList(){
-  var list=document.getElementById("sectionsList"); if(!list)return;
-  var templateId=g("f_template")||"bold-retail";
-  var allSecs=ALL_SECTIONS[templateId]||ALL_SECTIONS["bold-retail"];
-  var activeSections=(state.content&&state.content.theme&&Array.isArray(state.content.theme.sections))?state.content.theme.sections:allSecs.map(function(s){return s.key;});
-  var activeKeys=activeSections.filter(function(k){return allSecs.some(function(s){return s.key===k;});});
-  var inactiveKeys=allSecs.map(function(s){return s.key;}).filter(function(k){return activeKeys.indexOf(k)<0;});
-  var orderedKeys=activeKeys.concat(inactiveKeys);
-  list.innerHTML=orderedKeys.map(function(key,idx){
-    var sec=allSecs.find(function(s){return s.key===key;}); if(!sec)return"";
-    var isActive=activeKeys.indexOf(key)>-1;
-    var isRequired=REQUIRED_SECTIONS.indexOf(key)>-1;
-    return '<div class="sec-row'+(isActive?" active":"")+'" data-seckey="'+key+'">'
-      +'<label class="sec-toggle" title="'+(isRequired?"Required":"")+'">'
-      +'<input type="checkbox"'+(isActive?" checked":"")+(isRequired?" disabled":"")+' onchange="toggleSection(\''+key+'\',this.checked)">'
-      +'<span class="sec-slider"></span></label>'
-      +'<span class="sec-label">'+sec.label+'</span>'
-      +'<div class="sec-arrows">'
-      +'<button class="sec-arr" onclick="moveSection(\''+key+'\',-1)" '+(idx===0?"disabled":"")+'>↑</button>'
-      +'<button class="sec-arr" onclick="moveSection(\''+key+'\',1)" '+(idx===orderedKeys.length-1?"disabled":"")+'>↓</button>'
-      +'</div></div>';
-  }).join("");
-}
-window.toggleSection=function(key,on){ensureThemeSections();var secs=state.content.theme.sections;if(on){if(secs.indexOf(key)<0)secs.push(key);}else{state.content.theme.sections=secs.filter(function(k){return k!==key;});}markDirty();buildSectionsList();};
-window.moveSection=function(key,dir){ensureThemeSections();var secs=state.content.theme.sections;var idx=secs.indexOf(key);if(idx<0)return;var newIdx=idx+dir;if(newIdx<0||newIdx>=secs.length)return;var tmp=secs[idx];secs[idx]=secs[newIdx];secs[newIdx]=tmp;markDirty();buildSectionsList();};
-function ensureThemeSections(){if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};if(!Array.isArray(state.content.theme.sections)){var templateId=g("f_template")||"bold-retail";var allSecs=ALL_SECTIONS[templateId]||ALL_SECTIONS["bold-retail"];state.content.theme.sections=allSecs.map(function(s){return s.key;});}}
 
 function toast(msg,type){
   var wrap=document.getElementById("toastWrap"),t=document.createElement("div");
