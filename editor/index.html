@@ -391,7 +391,7 @@ img{display:block;max-width:100%}
           <div class="two"><div class="fld-group"><label class="fld-label" for="f_phone">Phone number</label><input class="fld-input" id="f_phone" placeholder="0772 000 000" oninput="markDirty()"></div><div class="fld-group"><label class="fld-label" for="f_whatsapp">WhatsApp number</label><input class="fld-input" id="f_whatsapp" placeholder="0772 000 000" oninput="markDirty()"></div></div>
           <div class="fld-group"><label class="fld-label" for="f_email">Email address</label><input class="fld-input" id="f_email" placeholder="hello@yourbusiness.co.zw" oninput="markDirty()"></div>
           <div class="fld-group"><label class="fld-label" for="f_address">Physical address <span class="fld-hint">optional</span></label><input class="fld-input" id="f_address" placeholder="15 Main Street, Bulawayo" oninput="markDirty()"></div>
-          <div class="fld-group"><label class="fld-label" for="f_hours">Business hours <span class="fld-hint">optional</span></label><input class="fld-input" id="f_hours" placeholder="Mon–Fri 8am–5pm, Sat 9am–1pm" oninput="markDirty()"></div>
+          <div class="fld-group"><label class="fld-label">Business hours <span class="fld-hint">— set in the Hours tab</span></label><div style="background:var(--surface);border-radius:var(--r-sm);padding:9px 12px;font-size:13px;color:var(--ink3);border:1.5px solid var(--line)">Open the <strong>Hours</strong> tab on the left to set open &amp; close times per day. A live Open/Closed badge will show on your site.</div></div><div class="fld-group"><label class="fld-label" for="f_map_embed_url">Google Maps embed URL <span class="fld-hint">optional — shows a map on your site</span></label><input class="fld-input" id="f_map_embed_url" placeholder="Paste the URL from inside src=&quot;…&quot; in Google Maps embed code" oninput="markDirty()"><div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Google Maps → Share → Embed a map → copy the URL inside <code style="background:#f0f2f6;padding:1px 4px;border-radius:3px">src="..."</code></div></div>
           <div class="fld-group"><label class="fld-label" for="f_location">City / Area</label><input class="fld-input" id="f_location" placeholder="Bulawayo" oninput="markDirty()"></div>
         </div>
       </div>
@@ -521,7 +521,7 @@ function populateForm(){
   if(tlabel)tlabel.textContent=templateNames[state.site.template_id]||state.site.template_id||"General Business";
   set("f_phone",ct.phone||"");set("f_whatsapp",ct.whatsapp||"");
   set("f_email",ct.email||"");set("f_address",ct.address||"");
-  set("f_hours",c.hours||"");set("f_location",c.location||"");
+  set("f_location",c.location||"");set("f_map_embed_url",c.map_embed_url||inner.map_embed_url||"");
   set("s_whatsapp",s.whatsapp||"");set("s_facebook",s.facebook||"");
   set("s_instagram",s.instagram||"");set("s_tiktok",s.tiktok||"");
   set("s_twitter",s.twitter||"");set("s_linkedin",s.linkedin||"");
@@ -559,7 +559,7 @@ function buildContent(brief){
   var theme=Object.assign({palette:paletteFor(g("f_template")),font_pair:fontFor(g("f_template")),sections:["hero","about","services","products","gallery","contact"]},existingTheme);
   var resolvedColors=resolvePaletteColors(theme.palette,theme.custom_accent);
   theme.accent=resolvedColors.accent;theme.bg=resolvedColors.bg;theme.dark=resolvedColors.dark;theme.gold=resolvedColors.gold;
-  return{theme:theme,content:Object.assign({},existing,{business_name:brief.business_name,tagline:g("f_tagline"),location:g("f_location")||brief.city,hours:g("f_hours"),contact:brief.contact,socials:brief.social,products:state.products,images:Object.assign({},state.images,{gallery:state.gallery}),video:g("f_video")?{embedUrl:g("f_video")}:(existing.video||null)})};
+  return{theme:theme,content:Object.assign({},existing,{business_name:brief.business_name,tagline:g("f_tagline"),location:g("f_location")||brief.city,contact:brief.contact,map_embed_url:g("f_map_embed_url")||null,socials:brief.social,products:state.products,images:Object.assign({},state.images,{gallery:state.gallery}),video:g("f_video")?{embedUrl:g("f_video")}:(existing.video||null)})};
 }
 var _preGenerateSnapshot=null;
 window.onGenerate=async function(){
