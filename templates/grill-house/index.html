@@ -11,8 +11,8 @@
 <style>
 :root{
   --char:{{primary_color}};
-  --ember:#D2541F;
-  --amber:#E0A12E;
+  --ember:{{ember_color}};
+  --amber:{{amber_color}};
   --cream:#FBF4E9;
   --ink:#2A211A;
   --ink2:#6E6055;
@@ -86,13 +86,12 @@ header{position:sticky;top:0;z-index:100;background:rgba(34,26,20,.96);backdrop-
 .dish-photo img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
 .dish:hover .dish-photo img{transform:scale(1.06)}
 .dish-body{padding:18px;flex:1;display:flex;flex-direction:column}
-.dish-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.dish-title-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .dish-name{font-family:"Plus Jakarta Sans",sans-serif;font-size:1.02rem;font-weight:700;line-height:1.3}
 .dish-price{color:var(--ember);font-weight:800;font-size:1.02rem;white-space:nowrap;flex-shrink:0}
 .dish-desc{font-size:.86rem;color:var(--ink2);margin:7px 0 14px;flex:1;line-height:1.55}
-.dish-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:8px}
+.dish-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:8px}
 .dish-tag{font-size:.72rem;background:#FBF1DE;color:#92580A;padding:3px 9px;border-radius:6px;font-weight:600}
-.dish-note{font-size:.82rem;color:var(--ink2)}
 .add-btn{background:var(--char);color:#fff;font-weight:700;font-size:.8rem;padding:8px 15px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:5px;transition:background .2s,transform .15s;border:none;cursor:pointer;font-family:inherit;flex-shrink:0}
 .add-btn:hover{background:var(--ember);transform:translateY(-1px)}
 .band{background:var(--char);color:#fff;text-align:center;padding:64px 26px}
@@ -173,78 +172,165 @@ footer{background:#16100B;color:rgba(255,255,255,.6);padding:40px 26px;font-size
 .order-send{flex:1;text-align:center;background:#25D366;color:#fff;border-radius:var(--r-pill);padding:.65rem 1rem;font-weight:700;font-size:.84rem;text-decoration:none;display:block}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease}
 .reveal.in{opacity:1;transform:none}
-.preview-banner{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem 1rem;font-size:.84rem;font-weight:600}
-.preview-banner a{color:#fff;text-decoration:underline}
 </style>
 </head>
 <body>
-<!-- PREVIEW -->
-<!--WCZ:preview_banner-->
 
 <!-- NAV -->
 <header>
   <div class="nav">
-    <!--WCZ:logo-->
+    {{#if logo_url}}
+    <a href="/"><img src="{{logo_url}}" alt="{{business_name}}" class="logo-img"></a>
+    {{else}}
+    <div class="logo">{{business_name_first}} <b>{{business_name_rest}}</b></div>
+    {{/if}}
     <nav class="nav-links">
       <a href="#menu">Menu</a>
-      <!--WCZ:nav_team-->
-      <!--WCZ:nav_hours-->
+      {{#if has_team}}<a href="#team">Team</a>{{/if}}
+      {{#if has_hours}}<a href="#hours">Hours</a>{{/if}}
       <a href="#contact">Visit us</a>
     </nav>
-    <a href="<!--WCZ:wa_order-->" class="nav-cta" target="_blank" rel="noopener">Order online</a>
+    <a href="{{wa_href_order}}" class="nav-cta" target="_blank" rel="noopener">Order online</a>
     <div class="hamburger" id="gh-hamburger"><span></span><span></span><span></span></div>
   </div>
 </header>
 <div class="mob-menu" id="gh-mob-menu">
   <span class="mob-close" id="gh-mob-close">&#x2715;</span>
   <a href="#menu">Menu</a>
-  <!--WCZ:nav_team-->
+  {{#if has_team}}<a href="#team">Team</a>{{/if}}
   <a href="#contact">Visit us</a>
-  <a href="<!--WCZ:wa_order-->" class="btn-wa" target="_blank">Order on WhatsApp</a>
+  <a href="{{wa_href_order}}" class="btn-wa" target="_blank">Order on WhatsApp</a>
 </div>
 
 <!-- HERO -->
 <section class="gh-hero">
-  <div class="gh-hero-bg"><!--WCZ:hero_img--><div class="gh-overlay"></div></div>
+  <div class="gh-hero-bg">
+    {{#if hero_image_url}}
+    <img src="{{hero_image_url}}" alt="{{business_name}}">
+    {{else}}
+    <div class="gh-hero-bg-ph"></div>
+    {{/if}}
+    <div class="gh-overlay"></div>
+  </div>
   <div class="gh-hero-text">
-    <!--WCZ:open_badge-->
-    <span class="eyebrow"><!--WCZ:type_label--></span>
-    <h1><!--WCZ:tagline--></h1>
-    <p><!--WCZ:about--></p>
+    {{open_badge_html}}
+    <span class="eyebrow">{{business_type_label}}</span>
+    <h1>{{tagline}}</h1>
+    <p>{{about}}</p>
     <div class="hero-btns">
       <a href="#menu" class="btn-amber">View Menu</a>
-      <a href="<!--WCZ:wa_order-->" class="btn-wa" target="_blank" rel="noopener">Order on WhatsApp</a>
+      <a href="{{wa_href_order}}" class="btn-wa" target="_blank" rel="noopener">&#x1F4AC; Order on WhatsApp</a>
       <a href="#contact" class="btn-ghost">Find us</a>
     </div>
   </div>
 </section>
 
 <!-- MENU -->
-<!--WCZ:menu_section-->
+{{#if has_menu}}
+<section class="sec" id="menu">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">What we serve</span>
+      <h2>Our Menu</h2>
+    </div>
+    <div class="cat-tabs" id="cat-tabs">
+      {{menu_categories_html}}
+    </div>
+    {{menu_by_category_html}}
+  </div>
+</section>
+{{/if}}
 
-<!-- ORDER CTA -->
+<!-- ORDER CTA BAND -->
 <section class="band" id="order">
   <div class="wrap">
     <h2>Hungry? Order in two taps.</h2>
     <p>Build your order, then send it straight to our kitchen on WhatsApp.</p>
     <div class="band-btns">
-      <a href="<!--WCZ:wa_order-->" class="btn-wa" target="_blank" rel="noopener">&#x1F4AC; Order on WhatsApp</a>
+      <a href="{{wa_href_order}}" class="btn-wa" target="_blank" rel="noopener">&#x1F4AC; Order on WhatsApp</a>
       <a href="#menu" class="btn-ghost">Back to menu</a>
     </div>
   </div>
 </section>
 
 <!-- TEAM -->
-<!--WCZ:team_section-->
+{{#if has_team}}
+<section class="sec" id="team">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Our people</span>
+      <h2>Meet the team</h2>
+    </div>
+    <div class="team-grid">
+      {{#each team}}
+      <div class="team-card reveal">
+        <div class="team-photo">
+          {{#if item.photo}}<img src="{{item.photo}}" alt="{{item.name}}" loading="lazy">{{else}}<span>👨‍🍳</span>{{/if}}
+        </div>
+        <div class="team-name">{{item.name}}</div>
+        <div class="team-role">{{item.role}}</div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+{{/if}}
 
 <!-- GALLERY -->
-<!--WCZ:gallery_section-->
+{{#if has_gallery}}
+<section class="sec" id="gallery">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">From our kitchen</span>
+      <h2>Gallery</h2>
+    </div>
+    <div class="gallery-grid">
+      {{#each gallery}}
+      <img src="{{item.url}}" alt="{{item.caption}}" loading="lazy">
+      {{/each}}
+    </div>
+  </div>
+</section>
+{{/if}}
 
 <!-- TESTIMONIALS -->
-<!--WCZ:testi_section-->
+{{#if has_testimonials}}
+<div class="testi-wrap" id="testimonials">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">What people say</span>
+      <h2>Reviews</h2>
+    </div>
+    {{#each testimonials}}
+    <div class="testi-card reveal">
+      <span class="testi-quote">&ldquo;</span>
+      <p class="testi-text">{{item.text}}</p>
+      <div class="testi-author">
+        <div class="testi-avatar">{{item.name_initial}}</div>
+        <div>
+          <div class="testi-name">{{item.name}}</div>
+          <div class="testi-role">{{item.role}}</div>
+        </div>
+      </div>
+    </div>
+    {{/each}}
+    <div class="testi-dots" id="testi-dots"></div>
+  </div>
+</div>
+{{/if}}
 
 <!-- HOURS -->
-<!--WCZ:hours_section-->
+{{#if has_hours}}
+<div class="hours-wrap" id="hours">
+  <div class="wrap">
+    <h2>Opening Hours</h2>
+    <div class="hours-inner">
+      <div class="hours-badge-wrap">{{open_badge_html}}</div>
+      {{hours_grid_html}}
+    </div>
+  </div>
+</div>
+{{/if}}
 
 <!-- CONTACT -->
 <section class="contact-wrap" id="contact">
@@ -253,41 +339,100 @@ footer{background:#16100B;color:rgba(255,255,255,.6);padding:40px 26px;font-size
       <span class="eyebrow">Visit us</span>
       <h2>Come find us</h2>
     </div>
-    <div class="contact-grid reveal"><!--WCZ:contact_cards--></div>
-    <div class="contact-actions"><!--WCZ:contact_actions--></div>
-    <!--WCZ:map_embed-->
+    <div class="contact-grid reveal">
+      {{#if phone}}
+      <a href="tel:{{phone}}" class="contact-card">
+        <div class="contact-icon">📞</div>
+        <div><div class="contact-label">Call us</div><div class="contact-val">{{phone}}</div></div>
+      </a>
+      {{/if}}
+      {{#if email}}
+      <a href="mailto:{{email}}" class="contact-card">
+        <div class="contact-icon">✉️</div>
+        <div><div class="contact-label">Email</div><div class="contact-val">{{email}}</div></div>
+      </a>
+      {{/if}}
+      {{#if location}}
+      <a href="{{maps_href}}" class="contact-card" target="_blank" rel="noopener">
+        <div class="contact-icon">📍</div>
+        <div><div class="contact-label">Find us</div><div class="contact-val">{{location}}</div></div>
+      </a>
+      {{/if}}
+    </div>
+    <div class="contact-actions">
+      {{#if phone}}
+      <a href="{{wa_href_order}}" class="btn-wa" target="_blank" rel="noopener">&#x1F4AC; WhatsApp us</a>
+      {{/if}}
+    </div>
+    {{#if map_embed_url}}
+    <div class="map-wrap">
+      <iframe src="{{map_embed_url}}" allowfullscreen loading="lazy"></iframe>
+    </div>
+    {{/if}}
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
   <div class="foot">
-    <div><!--WCZ:foot_logo--><p style="margin-top:6px;opacity:.55;font-size:.85rem"><!--WCZ:foot_location--></p></div>
-    <div>&copy; <!--WCZ:year--> <!--WCZ:biz_name--> &middot; <a href="https://websites.co.zw" style="color:rgba(255,255,255,.4)">Built with websites.co.zw</a></div>
+    <div>
+      <div class="foot-logo">{{business_name_first}} <b>{{business_name_rest}}</b></div>
+      <p style="margin-top:6px;opacity:.55;font-size:.85rem">{{location}}</p>
+    </div>
+    <div>&copy; {{current_year}} {{business_name}} &middot; <a href="https://websites.co.zw" style="color:rgba(255,255,255,.4)">Built with websites.co.zw</a></div>
   </div>
 </footer>
 
 <!-- WA FAB -->
-<!--WCZ:wa_fab-->
+{{#if phone}}
+<a class="wa-fab" id="wa-fab" href="{{wa_href_order}}" aria-label="Order on WhatsApp" target="_blank" rel="noopener">
+  <div class="wa-fab-pulse"></div>
+  <svg viewBox="0 0 24 24" width="28" height="28" fill="#fff" stroke="none" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+</a>
+{{/if}}
 
 <!-- ORDER FAB + PANEL -->
-<!--WCZ:order_fab-->
+{{#if has_menu}}
+<button class="order-fab" id="order-fab" onclick="ghToggle()">
+  🛒 My order <span class="order-count" id="order-count">0</span>
+</button>
+<div class="order-panel" id="order-panel">
+  <div class="order-hdr">
+    <span>Your order</span>
+    <button onclick="ghToggle()">&#x2715;</button>
+  </div>
+  <div class="order-items" id="order-items">
+    <div class="order-empty">Your order is empty.<br>Tap + Add to order on any dish.</div>
+  </div>
+  <div class="order-total" id="order-total" style="display:none"></div>
+  <div class="order-actions">
+    <button class="order-clear" onclick="ghClear()">Clear</button>
+    <a class="order-send" id="order-send" href="{{wa_href_order}}" target="_blank">Send order on WhatsApp &#x1F4AC;</a>
+  </div>
+</div>
+{{/if}}
 
 <script>
 (function(){
+  // Nav scroll + FAB
   var fab=document.getElementById('wa-fab');
   window.addEventListener('scroll',function(){if(fab)fab.classList.toggle('visible',window.scrollY>300);},{passive:true});
+  // Mobile menu
   var btn=document.getElementById('gh-hamburger'),menu=document.getElementById('gh-mob-menu'),cl=document.getElementById('gh-mob-close');
   if(btn&&menu){btn.addEventListener('click',function(){menu.classList.add('open');});if(cl)cl.addEventListener('click',function(){menu.classList.remove('open');});menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){menu.classList.remove('open');});});}
+  // Reveal on scroll
   var rvl=document.querySelectorAll('.reveal');
   if(rvl.length){var obs=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');obs.unobserve(x.target);}});},{threshold:.1});rvl.forEach(function(el){obs.observe(el);});}
+  // Menu category tabs
   var tabs=document.querySelectorAll('.cat-tab'),cats=document.querySelectorAll('.menu-cat');
   tabs.forEach(function(tab){tab.addEventListener('click',function(){var cat=tab.dataset.cat;tabs.forEach(function(t){t.classList.toggle('on',t.dataset.cat===cat);});cats.forEach(function(c){c.style.display=c.dataset.cat===cat?'block':'none';});});});
+  // Testimonials carousel
   var cards=document.querySelectorAll('.testi-card'),dotsEl=document.getElementById('testi-dots');
   if(cards.length&&dotsEl){var cur=0;cards.forEach(function(c,i){if(i>0)c.style.display='none';});dotsEl.innerHTML=Array.from(cards).map(function(_,i){return '<span class="testi-dot'+(i===0?' on':'')+'" data-i="'+i+'"></span>';}).join('');dotsEl.querySelectorAll('.testi-dot').forEach(function(d){d.addEventListener('click',function(){cards[cur].style.display='none';cur=parseInt(d.dataset.i);cards[cur].style.display='block';dotsEl.querySelectorAll('.testi-dot').forEach(function(x){x.classList.toggle('on',x.dataset.i==cur);});});});if(cards.length>1)setInterval(function(){cards[cur].style.display='none';cur=(cur+1)%cards.length;cards[cur].style.display='block';dotsEl.querySelectorAll('.testi-dot').forEach(function(x){x.classList.toggle('on',x.dataset.i==cur);});},5000);}
 })();
+// Order cart
 (function(){
-  var _o=[],waNum='<!--WCZ:wa_num-->';
+  var _o=[],waNum='{{whatsapp_clean}}';
   function pP(p){if(!p)return null;var m=String(p).match(/[\d.,]+/);return m?parseFloat(m[0].replace(/,/g,'')):null;}
   function cS(p){var m=String(p||'').match(/^[^\d\s]+/);return m?m[0]:'';}
   function render(){
@@ -295,13 +440,13 @@ footer{background:#16100B;color:rgba(255,255,255,.6);padding:40px 26px;font-size
     if(!iEl)return;
     var cnt=_o.reduce(function(a,b){return a+b.qty;},0);
     if(cEl)cEl.textContent=cnt;
-    if(!_o.length){iEl.innerHTML='<div class="order-empty">Your order is empty.<br>Tap + Add to order on any dish.</div>';if(tEl)tEl.style.display='none';return;}
+    if(!_o.length){iEl.innerHTML='<div class="order-empty">Your order is empty.<br>Tap \u002B Add to order on any dish.</div>';if(tEl)tEl.style.display='none';return;}
     iEl.innerHTML=_o.map(function(i,idx){return '<div class="order-row"><span class="order-row-name">'+i.name+(i.price?' \u2014 '+i.price:'')+'</span><span class="order-qty"><button onclick="ghQ('+idx+',-1)">\u2212</button><span>'+i.qty+'</span><button onclick="ghQ('+idx+',1)">+</button></span></div>';}).join('');
     var allN=_o.every(function(i){return pP(i.price)!==null;});
     if(allN&&tEl){var sym=cS(_o[0].price);var tot=_o.reduce(function(a,i){return a+(pP(i.price)*i.qty);},0);tEl.style.display='flex';tEl.innerHTML='<span>Estimated total</span><span>'+sym+tot.toFixed(2)+'</span>';}else if(tEl)tEl.style.display='none';
     if(sEl&&waNum){var msg='Hello, I would like to place an order:\n'+_o.map(function(i){return '- '+i.name+' x'+i.qty+(i.price?' ('+i.price+')':'');}).join('\n');sEl.href='https://wa.me/'+waNum+'?text='+encodeURIComponent(msg);}
   }
-  window.ghAdd=function(item){var ex=_o.find(function(i){return i.name===item.name;});if(ex){ex.qty++;}else{_o.push({name:item.name,price:item.price,qty:1});}render();var fab=document.getElementById('order-fab');if(fab)fab.style.display='flex';if(window.event&&window.event.target){var btn=window.event.target;var orig=btn.textContent;btn.textContent='Added \u2713';btn.style.background='#1a6b3c';setTimeout(function(){btn.textContent=orig;btn.style.background='';},1500);}};
+  window.ghAddToOrder=function(item){var ex=_o.find(function(i){return i.name===item.name;});if(ex){ex.qty++;}else{_o.push({name:item.name,price:item.price,qty:1});}render();var fab=document.getElementById('order-fab');if(fab)fab.style.display='flex';var btn=event&&event.target;if(btn){var orig=btn.textContent;btn.textContent='Added \u2713';btn.style.background='#1a6b3c';setTimeout(function(){btn.textContent=orig;btn.style.background='';},1500);}};
   window.ghToggle=function(){var p=document.getElementById('order-panel');if(p)p.classList.toggle('open');};
   window.ghClear=function(){_o=[];render();var fab=document.getElementById('order-fab');var p=document.getElementById('order-panel');if(fab)fab.style.display='none';if(p)p.classList.remove('open');};
   window.ghQ=function(idx,d){if(!_o[idx])return;_o[idx].qty+=d;if(_o[idx].qty<=0)_o.splice(idx,1);render();if(!_o.length){var fab=document.getElementById('order-fab');if(fab)fab.style.display='none';}};
