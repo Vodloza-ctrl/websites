@@ -1,0 +1,66 @@
+{
+  "templateId": "grill-house",
+  "defaultPrimaryColor": "#221A14",
+  "defaultTypeLabel": "Flame-grilled · Zimbabwe",
+  "bodyClass": "tpl-grill-house",
+
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+
+  "navTextColor": "#fff",
+  "navCtaLabel": "Order online",
+  "navLinks": [
+    "#menu:Menu",
+    "#team:Team",
+    "#hours:Hours",
+    "#contact:Visit us"
+  ],
+
+  "showOpenBadge": true,
+  "showHoursGrid": true,
+
+  "paletteTokens": {
+    "ember_color": "#D2541F",
+    "amber_color": "#E0A12E"
+  },
+
+  "typeLabels": {
+    "grill-house":  "Flame-grilled · Zimbabwe",
+    "restaurant":   "Restaurant · Zimbabwe",
+    "takeaway":     "Takeaway & Delivery"
+  },
+
+  "extraTokens": {
+    "order_cta_text": "Build your order below, then send it straight to our kitchen on WhatsApp."
+  },
+
+  "lists": [
+    {
+      "key": "team",
+      "itemTemplate": "<div class=\"team-card reveal\"><div class=\"team-photo\">{{#if item.photo}}<img src=\"{{item.photo}}\" alt=\"{{item.name}}\" loading=\"lazy\">{{else}}<div class=\"team-photo-ph\"></div>{{/if}}</div><div class=\"team-name\">{{item.name}}</div><div class=\"team-role\">{{item.role}}</div></div>"
+    },
+    {
+      "key": "gallery",
+      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\" loading=\"lazy\">"
+    },
+    {
+      "key": "testimonials",
+      "itemTemplate": "<div class=\"testi-card reveal\"><span class=\"testi-quote\">\u201c</span><p class=\"testi-text\">{{item.text}}</p><div class=\"testi-author\"><div class=\"testi-avatar\">{{item.name_initial}}</div><div><div class=\"testi-name\">{{item.name}}</div><div class=\"testi-role\">{{item.role}}</div></div></div></div>"
+    }
+  ],
+
+  "conditionals": [
+    { "flag": "is_preview",       "type": "config_value",  "value": false },
+    { "flag": "logo_url",         "type": "computed",      "token": "logo_url" },
+    { "flag": "hero_image_url",   "type": "computed",      "token": "hero_image_url" },
+    { "flag": "has_menu",         "type": "list_present",  "field": "menu" },
+    { "flag": "has_team",         "type": "list_present",  "field": "team" },
+    { "flag": "has_gallery",      "type": "list_present",  "field": "gallery" },
+    { "flag": "has_testimonials", "type": "list_present",  "field": "testimonials" },
+    { "flag": "has_hours",        "type": "field_present", "field": "hours" },
+    { "flag": "has_phone",        "type": "field_present", "field": "phone" },
+    { "flag": "phone",            "type": "field_present", "field": "phone" },
+    { "flag": "email",            "type": "field_present", "field": "email" },
+    { "flag": "location",         "type": "field_present", "field": "location" },
+    { "flag": "map_embed_url",    "type": "field_present", "field": "map_embed_url" }
+  ]
+}

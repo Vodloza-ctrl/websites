@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{seo_title}}</title>
+<meta name="description" content="{{seo_description}}">
+<meta property="og:title" content="{{business_name}}">
+<meta property="og:description" content="{{seo_description}}">
+{{#if hero_image_url}}<meta property="og:image" content="{{hero_image_url}}">{{/if}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Palette ── */
+:root {
+  --char:   {{primary_color}};
+  --ember:  {{ember_color}};
+  --amber:  {{amber_color}};
+  --cream:  #FBF4E9;
+  --ink:    #2A211A;
+  --ink2:   #6E6055;
+  --paper:  #fff;
+  --line:   rgba(34,26,20,.12);
+  --shadow-sm: 0 2px 12px rgba(34,26,20,.08);
+  --shadow-md: 0 20px 44px -20px rgba(34,26,20,.35);
+  --radius-card: 14px;
+  --radius-pill: 999px;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font: inherit; }
+
+/* ── Base ── */
+body {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: var(--ink);
+  background: var(--cream);
+  line-height: 1.6;
+}
+h1, h2, h3 {
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  line-height: 1.06;
+}
+
+/* ── Nav ── */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(34,26,20,.95);
+  backdrop-filter: blur(10px);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 15px 26px;
+  color: #fff;
+}
+.logo {
+  font-family: "Playfair Display", serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: #fff;
+}
+.logo b { color: var(--amber); }
+.logo img.logo-img { height: 36px; width: auto; object-fit: contain; }
+.nav-links { display: flex; gap: 26px; }
+.nav-links a { font-size: .9rem; font-weight: 500; color: rgba(255,255,255,.78); transition: color .2s; }
+.nav-links a:hover { color: #fff; }
+.nav-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ember); color: #fff;
+  font-weight: 600; font-size: .9rem;
+  padding: 10px 18px; border-radius: var(--radius-pill);
+  transition: background .2s;
+}
+.nav-cta:hover { background: #B5440F; }
+.hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px; }
+.hamburger span { width: 24px; height: 2px; background: rgba(255,255,255,.8); display: block; }
+.mobile-menu {
+  display: none; position: fixed; inset: 0; z-index: 999;
+  background: var(--char); flex-direction: column;
+  align-items: center; justify-content: center; gap: 2rem;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a { font-size: 1.4rem; font-weight: 700; color: #fff; }
+.mobile-close { position: absolute; top: 1.5rem; right: 1.5rem; color: rgba(255,255,255,.7); font-size: 1.5rem; cursor: pointer; }
+@media (max-width: 768px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+/* ── Hero ── */
+.gh-hero { position: relative; min-height: 88vh; display: flex; align-items: flex-end; overflow: hidden; }
+.gh-hero-img { position: absolute; inset: 0; }
+.gh-hero-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.gh-hero-img-ph { position: absolute; inset: 0; background: linear-gradient(135deg, var(--char), var(--ember)); }
+.gh-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(34,26,20,.95) 0%, rgba(34,26,20,.45) 45%, rgba(34,26,20,.45) 100%); }
+.gh-hero-text {
+  position: relative; z-index: 1;
+  color: #fff;
+  padding: 0 8% 4.5rem;
+  max-width: 760px; width: 100%;
+}
+.eyebrow {
+  font-size: .8rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--amber); font-weight: 700;
+}
+.gh-hero-text h1 { font-size: clamp(2.8rem, 6vw, 4.8rem); margin: 12px 0 14px; }
+.gh-hero-text p { font-size: 1.1rem; max-width: 44ch; color: rgba(255,255,255,.88); }
+.hero-actions { display: flex; gap: 14px; margin-top: 26px; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--amber); color: var(--char);
+  font-weight: 800; font-size: .92rem;
+  padding: 12px 22px; border-radius: var(--radius-pill);
+  transition: filter .2s;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.4);
+  color: #fff; font-weight: 600; font-size: .92rem;
+  padding: 12px 22px; border-radius: var(--radius-pill);
+  transition: background .2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,.22); }
+.btn-wa {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #25D366; color: #fff;
+  font-weight: 700; font-size: .92rem;
+  padding: 12px 22px; border-radius: var(--radius-pill);
+  transition: filter .2s;
+}
+.btn-wa:hover { filter: brightness(1.08); }
+@media (max-width: 640px) {
+  .gh-hero { flex-direction: column; align-items: stretch; min-height: auto; }
+  .gh-hero-img { position: relative; height: 52vw; min-height: 220px; flex-shrink: 0; }
+  .gh-hero-overlay { background: linear-gradient(to bottom, rgba(34,26,20,.3), rgba(34,26,20,.6)); }
+  .gh-hero-text { background: var(--char); padding: 2rem 1.5rem 2.5rem; }
+}
+
+/* ── Sections ── */
+section.wrap-section { padding: 66px 0; }
+.wrap { max-width: 1140px; margin: 0 auto; padding: 0 26px; }
+.sec-head { text-align: center; max-width: 600px; margin: 0 auto 44px; }
+.sec-head .eyebrow { color: var(--ember); }
+.sec-head h2 { font-size: clamp(2rem, 4vw, 2.8rem); margin-top: 8px; }
+.sec-head p { color: var(--ink2); margin-top: 10px; font-size: .95rem; }
+
+/* ── Category tabs ── */
+.cat-tabs { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 32px; justify-content: center; }
+.cat-tab {
+  background: var(--paper); border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill); padding: 8px 18px;
+  font-size: .88rem; font-weight: 600; cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.cat-tab.on { background: var(--char); color: #fff; border-color: var(--char); }
+.cat-tab:hover:not(.on) { border-color: var(--ember); color: var(--ember); }
+
+/* ── Dish cards ── */
+.menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 900px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .menu-grid { grid-template-columns: 1fr; } }
+.dish {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform .28s cubic-bezier(.4,0,.2,1), box-shadow .28s;
+  box-shadow: var(--shadow-sm);
+}
+.dish:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.dish-photo { aspect-ratio: 4/3; overflow: hidden; background: linear-gradient(135deg, rgba(210,84,31,.15), rgba(224,161,46,.2)); }
+.dish-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s cubic-bezier(.4,0,.2,1); }
+.dish:hover .dish-photo img { transform: scale(1.06); }
+.dish-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+.dish-title-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.dish-name { font-family: "Plus Jakarta Sans", sans-serif; font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+.dish-price { color: var(--ember); font-weight: 800; font-size: 1.05rem; white-space: nowrap; flex-shrink: 0; }
+.dish-desc { font-size: .87rem; color: var(--ink2); margin: 7px 0 14px; flex: 1; line-height: 1.55; }
+.dish-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+.dish-tag { font-size: .72rem; background: #FBF1DE; color: #92580A; padding: 3px 9px; border-radius: 6px; font-weight: 600; }
+.add-btn {
+  background: var(--char); color: #fff;
+  font-weight: 700; font-size: .82rem;
+  padding: 8px 15px; border-radius: var(--radius-pill);
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background .2s, transform .15s;
+  border: none; cursor: pointer; font-family: inherit;
+}
+.add-btn:hover { background: var(--ember); transform: translateY(-1px); }
+
+/* ── Band / CTA strip ── */
+.band {
+  background: var(--char); color: #fff;
+  text-align: center; padding: 64px 26px;
+}
+.band h2 { color: #fff; font-size: clamp(2rem, 4vw, 2.8rem); }
+.band p { color: rgba(255,255,255,.72); margin: 14px auto 0; max-width: 46ch; line-height: 1.7; }
+.band-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+
+/* ── Hours badge ── */
+.badge-open, .badge-closed {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .8rem; font-weight: 600;
+  padding: .25rem .85rem; border-radius: var(--radius-pill);
+}
+.badge-open { background: #d1fae5; color: #065f46; }
+.badge-closed { background: #fee2e2; color: #991b1b; }
+.badge-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.badge-open .badge-dot { animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── Hours grid ── */
+.hours-section { background: var(--char); color: #fff; padding: 64px 26px; }
+.hours-grid { max-width: 520px; margin: 0 auto; border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-card); padding: .5rem; }
+.hours-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: .65rem .9rem; border-radius: 8px;
+}
+.hours-row.today { background: rgba(255,255,255,.12); }
+.hours-row span { font-size: .9rem; }
+.hours-today-badge {
+  font-size: .68rem; background: var(--ember); color: #fff;
+  padding: .1rem .45rem; border-radius: var(--radius-pill); margin-left: .4rem;
+  vertical-align: middle;
+}
+
+/* ── Gallery ── */
+.gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 640px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+.gallery-grid img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: var(--radius-card); cursor: pointer; transition: transform .25s, box-shadow .25s; }
+.gallery-grid img:hover { transform: scale(1.03); box-shadow: var(--shadow-md); }
+
+/* ── Team ── */
+.team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+.team-card { background: var(--paper); border-radius: var(--radius-card); overflow: hidden; text-align: center; box-shadow: var(--shadow-sm); transition: transform .28s, box-shadow .28s; }
+.team-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.team-photo { width: 100%; aspect-ratio: 3/4; overflow: hidden; background: linear-gradient(135deg, rgba(210,84,31,.2), rgba(224,161,46,.25)); }
+.team-photo img { width: 100%; height: 100%; object-fit: cover; }
+.team-photo-ph { width: 100%; height: 100%; background: linear-gradient(135deg, rgba(210,84,31,.2), rgba(224,161,46,.25)); }
+.team-name { font-weight: 700; font-size: 1rem; margin: 14px 12px 2px; font-family: "Plus Jakarta Sans", sans-serif; }
+.team-role { color: var(--ember); font-weight: 600; font-size: .8rem; margin-bottom: 14px; }
+
+/* ── Testimonials carousel ── */
+.testi-section { background: #fff8ef; padding: 66px 26px; }
+.testi-card { background: var(--paper); border-radius: var(--radius-card); padding: 2.25rem; position: relative; box-shadow: var(--shadow-sm); max-width: 700px; margin: 0 auto; }
+.testi-quote { font-size: 3.5rem; line-height: 1; color: var(--ember); opacity: .18; font-family: Georgia, serif; position: absolute; top: .75rem; left: 1.5rem; }
+.testi-text { font-size: 1rem; line-height: 1.75; padding-top: 1.5rem; color: var(--ink); }
+.testi-author { display: flex; align-items: center; gap: .75rem; margin-top: 1.5rem; }
+.testi-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--ember); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.testi-name { font-weight: 700; font-size: .93rem; }
+.testi-role { font-size: .78rem; color: var(--ink2); margin-top: .1rem; }
+.testi-dots { display: flex; gap: .5rem; justify-content: center; margin-top: 1.5rem; }
+.testi-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ember); opacity: .25; cursor: pointer; transition: opacity .2s, transform .2s; }
+.testi-dot.on { opacity: 1; transform: scale(1.3); }
+
+/* ── Contact ── */
+.contact-section { background: var(--cream); padding: 66px 26px; }
+.contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; max-width: 860px; margin: 0 auto 2rem; }
+.contact-card {
+  background: var(--paper); border-radius: var(--radius-card);
+  padding: 1.6rem; display: flex; align-items: center; gap: 1rem;
+  box-shadow: var(--shadow-sm); text-decoration: none; color: inherit;
+  transition: transform .2s, box-shadow .2s;
+}
+.contact-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.contact-icon { width: 46px; height: 46px; border-radius: 12px; background: var(--ember); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem; }
+.contact-label { font-weight: 700; font-size: .9rem; }
+.contact-value { font-size: .84rem; color: var(--ink2); margin-top: .15rem; }
+.contact-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ── Footer ── */
+footer { background: #16100B; color: rgba(255,255,255,.6); padding: 40px 26px; font-size: .9rem; }
+.foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; max-width: 1140px; margin: 0 auto; align-items: center; }
+.foot-logo { font-family: "Playfair Display", serif; font-weight: 800; font-size: 1.3rem; color: #fff; }
+.foot-logo b { color: var(--amber); }
+
+/* ── WhatsApp FAB ── */
+.wa-fab {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 900;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #25D366; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,211,102,.45);
+  opacity: 0; transform: scale(.8);
+  transition: opacity .3s, transform .3s; pointer-events: none;
+}
+.wa-fab.visible { opacity: 1; transform: scale(1); pointer-events: auto; }
+.wa-fab-pulse { position: absolute; inset: 0; border-radius: 50%; border: 2px solid #25D366; animation: fabpulse 2s infinite; }
+@keyframes fabpulse { 0%{transform:scale(1);opacity:.8} 100%{transform:scale(1.8);opacity:0} }
+
+/* ── Order FAB + panel ── */
+.order-fab {
+  position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 950;
+  background: var(--char); color: #fff;
+  border-radius: var(--radius-pill); padding: .75rem 1.35rem;
+  display: none; align-items: center; gap: .6rem;
+  font-weight: 700; font-size: .88rem;
+  box-shadow: 0 8px 24px rgba(34,26,20,.4); cursor: pointer;
+  transition: transform .2s;
+}
+.order-fab:hover { transform: translateY(-2px); }
+.order-fab-count {
+  background: var(--ember); color: #fff; border-radius: 50%;
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; font-weight: 800;
+}
+.order-panel {
+  position: fixed; bottom: 0; right: 0; z-index: 1100;
+  width: min(380px, 100%); max-height: 80vh;
+  background: #fff; border-radius: var(--radius-card) 0 0 0;
+  box-shadow: 0 -8px 40px rgba(0,0,0,.18);
+  transform: translateY(110%); transition: transform .35s ease;
+  display: flex; flex-direction: column;
+}
+.order-panel.open { transform: translateY(0); }
+.order-header {
+  background: linear-gradient(135deg, var(--char), #3a2a1a);
+  color: #fff; padding: 1rem 1.35rem;
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 700; border-radius: var(--radius-card) 0 0 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+.order-header button { color: #fff; background: rgba(255,255,255,.15); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .9rem; }
+.order-items { padding: 1rem 1.35rem; overflow-y: auto; flex: 1; }
+.order-row { display: flex; justify-content: space-between; align-items: center; gap: .75rem; padding: .55rem 0; border-bottom: 1px solid var(--line); }
+.order-row-name { font-weight: 600; font-size: .84rem; flex: 1; }
+.order-qty { display: flex; align-items: center; gap: .4rem; flex-shrink: 0; }
+.order-qty button { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); font-weight: 700; font-size: .8rem; }
+.order-empty { text-align: center; opacity: .4; padding: 2rem 0; font-size: .84rem; }
+.order-total { padding: .8rem 1.35rem; font-weight: 800; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: .9rem; }
+.order-actions { padding: .85rem 1.35rem 1.35rem; display: flex; gap: .6rem; }
+.order-actions .clear-btn { flex-shrink: 0; font-size: .76rem; opacity: .6; background: #f5f0e8; border-radius: var(--radius-pill); padding: .5rem .9rem; }
+.order-actions .send-btn { flex: 1; text-align: center; background: #25D366; color: #fff; border-radius: var(--radius-pill); padding: .65rem 1rem; font-weight: 700; font-size: .84rem; }
+
+/* ── Scroll reveal ── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .5s ease, transform .5s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ── Preview banner ── */
+.preview-banner {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+  background: linear-gradient(135deg, #1a1a2e, #e94560);
+  color: #fff; text-align: center; padding: .75rem 1rem;
+  font-size: .84rem; font-weight: 600;
+}
+.preview-banner a { color: #fff; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+{{#if is_preview}}<div class="preview-banner">Preview mode — <a href="https://app.websites.co.zw">Go to dashboard</a> to publish</div>{{/if}}
+
+<!-- NAV -->
+<header>
+  <div class="nav">
+    {{#if logo_url}}
+    <a href="#" class="logo"><img class="logo-img" src="{{logo_url}}" alt="{{business_name}}"></a>
+    {{else}}
+    <div class="logo">{{business_name_first}}<b>{{business_name_rest}}</b></div>
+    {{/if}}
+    <nav class="nav-links">
+      <a href="#menu">Menu</a>
+      {{#if has_team}}<a href="#team">Team</a>{{/if}}
+      {{#if has_hours}}<a href="#hours">Hours</a>{{/if}}
+      <a href="#contact">Visit us</a>
+    </nav>
+    <a href="{{wa_href_order}}" class="nav-cta" target="_blank" rel="noopener">Order online</a>
+    <div class="hamburger" id="gh-hamburger"><span></span><span></span><span></span></div>
+  </div>
+</header>
+<div class="mobile-menu" id="gh-mobile-menu">
+  <span class="mobile-close" id="gh-mobile-close">✕</span>
+  <a href="#menu">Menu</a>
+  {{#if has_team}}<a href="#team">Team</a>{{/if}}
+  <a href="#contact">Visit us</a>
+  <a href="{{wa_href_order}}" class="btn-wa" target="_blank">Order on WhatsApp</a>
+</div>
+
+<!-- HERO -->
+<section class="gh-hero">
+  <div class="gh-hero-img">
+    {{#if hero_image_url}}
+    <img src="{{hero_image_url}}" alt="{{business_name}}">
+    {{else}}
+    <div class="gh-hero-img-ph"></div>
+    {{/if}}
+    <div class="gh-hero-overlay"></div>
+  </div>
+  <div class="gh-hero-text">
+    {{open_badge_html}}
+    <span class="eyebrow">{{business_type_label}}</span>
+    <h1>{{tagline}}</h1>
+    <p>{{about}}</p>
+    <div class="hero-actions">
+      <a href="#menu" class="btn-primary">View Menu</a>
+      <a href="{{wa_href_order}}" class="btn-wa" target="_blank" rel="noopener">Order on WhatsApp</a>
+      <a href="#contact" class="btn-ghost">Find us</a>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+{{#if has_menu}}
+<section class="wrap-section" id="menu">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Our menu</span>
+      <h2>What's on the grill</h2>
+      {{#if has_phone}}<p>Add items below and send your order straight to us on WhatsApp.</p>{{/if}}
+    </div>
+    <div class="cat-tabs" id="cat-tabs">{{#each menu_categories}}{{/each}}</div>
+    <div id="menu-body">{{#each menu_by_category}}{{/each}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- ORDER CTA BAND -->
+<section class="band" id="order">
+  <div class="wrap">
+    <h2>Hungry? Order in two taps.</h2>
+    <p>{{order_cta_text}}</p>
+    <div class="band-actions">
+      <a href="{{wa_href_order}}" class="btn-wa" target="_blank" rel="noopener">💬 Order on WhatsApp</a>
+      <a href="#menu" class="btn-ghost">Back to menu</a>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+{{#if has_team}}
+<section class="wrap-section" id="team">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The people</span>
+      <h2>Meet the team</h2>
+    </div>
+    <div class="team-grid">{{#each team}}{{/each}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- GALLERY -->
+{{#if has_gallery}}
+<section class="wrap-section" id="gallery">
+  <div class="wrap">
+    <div class="sec-head reveal"><h2>From the kitchen</h2></div>
+    <div class="gallery-grid">{{#each gallery}}{{/each}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- TESTIMONIALS -->
+{{#if has_testimonials}}
+<section class="testi-section" id="testimonials">
+  <div class="wrap">
+    <div class="sec-head reveal"><h2>What people say</h2></div>
+    <div id="testi-track">{{#each testimonials}}{{/each}}</div>
+    <div class="testi-dots" id="testi-dots"></div>
+  </div>
+</section>
+{{/if}}
+
+<!-- HOURS -->
+{{#if has_hours}}
+<section class="hours-section" id="hours">
+  <div class="wrap">
+    <div class="sec-head reveal" style="color:#fff">
+      <h2 style="color:#fff">Opening hours</h2>
+    </div>
+    <div class="hours-grid reveal">
+      {{open_badge_html}}
+      {{hours_grid_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Visit us</span>
+      <h2>Come find us</h2>
+    </div>
+    <div class="contact-grid reveal">
+      {{#if phone}}<a href="tel:{{phone}}" class="contact-card"><div class="contact-icon">📞</div><div><div class="contact-label">Phone / WhatsApp</div><div class="contact-value">{{phone}}</div></div></a>{{/if}}
+      {{#if email}}<a href="mailto:{{email}}" class="contact-card"><div class="contact-icon">✉</div><div><div class="contact-label">Email</div><div class="contact-value">{{email}}</div></div></a>{{/if}}
+      {{#if location}}<a href="{{maps_href}}" target="_blank" class="contact-card"><div class="contact-icon">📍</div><div><div class="contact-label">Address</div><div class="contact-value">{{location}}</div></div></a>{{/if}}
+    </div>
+    <div class="contact-actions">
+      {{#if phone}}<a href="{{wa_href_general}}" class="btn-wa" target="_blank" rel="noopener">💬 Message on WhatsApp</a>{{/if}}
+      {{#if location}}<a href="{{maps_href}}" class="btn-ghost" style="background:var(--char);color:#fff;border:none" target="_blank">📍 Get Directions</a>{{/if}}
+    </div>
+    {{#if map_embed_url}}
+    <div style="max-width:860px;margin:2rem auto 0;border-radius:var(--radius-card);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <iframe src="{{map_embed_url}}" width="100%" height="320" style="border:0;display:block" allowfullscreen loading="lazy"></iframe>
+    </div>
+    {{/if}}
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot">
+    <div>
+      <div class="foot-logo">{{business_name_first}}<b>{{business_name_rest}}</b></div>
+      {{#if location}}<p style="margin-top:6px">📍 {{location}}</p>{{/if}}
+    </div>
+    <div>© {{current_year}} {{business_name}} · <a href="https://websites.co.zw" style="color:rgba(255,255,255,.4)">Built with websites.co.zw</a></div>
+  </div>
+</footer>
+
+<!-- WhatsApp FAB -->
+{{#if phone}}
+<a class="wa-fab" id="wa-fab" href="{{wa_href_general}}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <div class="wa-fab-pulse"></div>
+  <svg viewBox="0 0 24 24" width="28" height="28" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+</a>
+{{/if}}
+
+<!-- Order FAB + Panel -->
+{{#if has_menu}}
+{{#if phone}}
+<div class="order-fab" id="order-fab" onclick="ghToggleOrder()">
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+  <span>Your order</span>
+  <span class="order-fab-count" id="order-count">0</span>
+</div>
+<div class="order-panel" id="order-panel">
+  <div class="order-header">
+    <span>Your order</span>
+    <button onclick="ghToggleOrder()">✕</button>
+  </div>
+  <div class="order-items" id="order-items"></div>
+  <div class="order-total" id="order-total" style="display:none"></div>
+  <div class="order-actions">
+    <button class="clear-btn" onclick="ghClearOrder()">Clear</button>
+    <a class="send-btn" id="order-send" href="#" target="_blank" rel="noopener">Send via WhatsApp</a>
+  </div>
+</div>
+{{/if}}
+{{/if}}
+
+<script>
+// ── Nav scroll + FAB ──
+(function(){
+  var fab = document.getElementById('wa-fab');
+  window.addEventListener('scroll', function(){ if(fab) fab.classList.toggle('visible', window.scrollY > 300); }, {passive:true});
+})();
+
+// ── Mobile menu ──
+(function(){
+  var btn = document.getElementById('gh-hamburger');
+  var menu = document.getElementById('gh-mobile-menu');
+  var close = document.getElementById('gh-mobile-close');
+  if(!btn||!menu) return;
+  btn.addEventListener('click', function(){ menu.classList.add('open'); });
+  if(close) close.addEventListener('click', function(){ menu.classList.remove('open'); });
+  menu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ menu.classList.remove('open'); }); });
+})();
+
+// ── Scroll reveal ──
+(function(){
+  var items = document.querySelectorAll('.reveal');
+  if(!items.length) return;
+  var obs = new IntersectionObserver(function(entries){ entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } }); }, {threshold:.1});
+  items.forEach(function(el){ obs.observe(el); });
+})();
+
+// ── Category tabs ──
+(function(){
+  var tabs = document.querySelectorAll('.cat-tab');
+  var cats = document.querySelectorAll('.menu-cat');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      var cat = tab.dataset.cat;
+      tabs.forEach(function(t){ t.classList.toggle('on', t.dataset.cat === cat); });
+      cats.forEach(function(c){ c.style.display = c.dataset.cat === cat ? 'block' : 'none'; });
+    });
+  });
+})();
+
+// ── Testimonial carousel ──
+(function(){
+  var cards = document.querySelectorAll('.testi-card');
+  var dots = document.getElementById('testi-dots');
+  if(!cards.length || !dots) return;
+  var cur = 0;
+  cards.forEach(function(c,i){ if(i>0) c.style.display='none'; });
+  dots.innerHTML = Array.from(cards).map(function(_,i){ return '<span class="testi-dot'+(i===0?' on':'')+'" data-i="'+i+'"></span>'; }).join('');
+  dots.querySelectorAll('.testi-dot').forEach(function(d){
+    d.addEventListener('click', function(){
+      cards[cur].style.display='none';
+      cur = parseInt(d.dataset.i);
+      cards[cur].style.display='block';
+      dots.querySelectorAll('.testi-dot').forEach(function(x){ x.classList.toggle('on', x.dataset.i==cur); });
+    });
+  });
+  if(cards.length > 1) setInterval(function(){
+    cards[cur].style.display='none';
+    cur = (cur+1) % cards.length;
+    cards[cur].style.display='block';
+    dots.querySelectorAll('.testi-dot').forEach(function(x){ x.classList.toggle('on', x.dataset.i==cur); });
+  }, 5000);
+})();
+
+// ── WhatsApp order cart ──
+(function(){
+  var _order = [];
+  var waPhone = '{{whatsapp_clean}}';
+
+  function parsePrice(p){ if(!p) return null; var m=String(p).match(/[\d.,]+/); return m ? parseFloat(m[0].replace(/,/g,'')) : null; }
+  function currSym(p){ var m=String(p||'').match(/^[^\d\s]+/); return m?m[0]:''; }
+
+  function render(){
+    var itemsEl = document.getElementById('order-items');
+    var countEl = document.getElementById('order-count');
+    var totalEl = document.getElementById('order-total');
+    var sendEl  = document.getElementById('order-send');
+    if(!itemsEl) return;
+    var count = _order.reduce(function(a,b){ return a+b.qty; }, 0);
+    if(countEl) countEl.textContent = count;
+    if(!_order.length){
+      itemsEl.innerHTML = '<div class="order-empty">Your order is empty.<br>Tap "+ Add to order" on any dish.</div>';
+      if(totalEl) totalEl.style.display='none';
+      return;
+    }
+    itemsEl.innerHTML = _order.map(function(i,idx){
+      return '<div class="order-row"><span class="order-row-name">'+i.name+(i.price?' — '+i.price:'')+'</span>'
+        +'<span class="order-qty"><button onclick="ghQty('+idx+',-1)">−</button><span>'+i.qty+'</span><button onclick="ghQty('+idx+',1)">+</button></span></div>';
+    }).join('');
+    var allNum = _order.every(function(i){ return parsePrice(i.price)!==null; });
+    if(allNum && totalEl){
+      var sym = currSym(_order[0].price);
+      var total = _order.reduce(function(a,i){ return a+(parsePrice(i.price)*i.qty); },0);
+      totalEl.style.display='flex'; totalEl.innerHTML='<span>Estimated total</span><span>'+sym+total.toFixed(2)+'</span>';
+    } else if(totalEl){ totalEl.style.display='none'; }
+    if(sendEl && waPhone){
+      var msg = 'Hello, I would like to place an order:\n'+_order.map(function(i){ return '- '+i.name+' x'+i.qty+(i.price?' ('+i.price+')':''); }).join('\n');
+      sendEl.href = 'https://wa.me/'+waPhone+'?text='+encodeURIComponent(msg);
+    }
+  }
+
+  window.ghAddToOrder = function(item){
+    var ex = _order.find(function(i){ return i.name===item.name; });
+    if(ex){ ex.qty++; } else { _order.push({name:item.name, price:item.price, qty:1}); }
+    render();
+    var fab = document.getElementById('order-fab'); if(fab) fab.style.display='flex';
+    if(window.event && window.event.target){
+      var btn = window.event.target;
+      var orig = btn.textContent;
+      btn.textContent='Added ✓'; btn.style.background='#1a6b3c';
+      setTimeout(function(){ btn.textContent=orig; btn.style.background=''; }, 1500);
+    }
+  };
+  window.ghToggleOrder = function(){ var p=document.getElementById('order-panel'); if(p) p.classList.toggle('open'); };
+  window.ghClearOrder = function(){
+    _order=[];render();
+    var fab=document.getElementById('order-fab'); var p=document.getElementById('order-panel');
+    if(fab) fab.style.display='none'; if(p) p.classList.remove('open');
+  };
+  window.ghQty = function(idx,delta){
+    if(!_order[idx]) return;
+    _order[idx].qty += delta;
+    if(_order[idx].qty<=0) _order.splice(idx,1);
+    render();
+    if(!_order.length){ var fab=document.getElementById('order-fab'); if(fab) fab.style.display='none'; }
+  };
+  render();
+})();
+</script>
+</body>
+</html>

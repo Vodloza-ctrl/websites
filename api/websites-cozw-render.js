@@ -1,28 +1,11 @@
 /**
- * websites.co.zw — Render Worker v9.0
+ * websites.co.zw — Render Worker v9.0 (+ grill-house patch)
  * Cloudflare Worker · Config-driven template engine
  *
- * What changed from v8.x:
- *   - Per-template render functions (renderGrillHouse, renderAdvisory, etc.)
- *     are REMOVED from this file. Each template is now two files on Pages:
- *       /templates/{id}/index.html   — slot-based HTML
- *       /templates/{id}/config.json  — slot mapping rules
- *   - renderEngine() is the universal resolver (~200 lines, never changes)
- *   - All shared infrastructure unchanged: htmlShell, buildNav, buildFooter,
- *     buildContactSection, buildHoursSection, normalizeContent, icon system,
- *     ICONS, esc(), wa(), getImage() etc.
- *   - ASSETS binding still points to R2 (images). No binding changes needed.
- *   - Templates fetched from Pages via URL (PAGES_ORIGIN env var or constant).
- *
- * To add a new template: drop index.html + config.json in /templates/{id}/
- * on Pages. Zero Worker changes. Zero Worker redeploys.
- *
- * Bindings (unchanged from v8):
- *   DB      — D1 database
- *   ASSETS  — R2 bucket (images)
- *
- * New env var (set in wrangler.toml [vars]):
- *   PAGES_ORIGIN — your Pages domain e.g. "https://www.websites.co.zw"
+ * Patch applied:
+ *   - buildGrillExtras() added (generates menu_categories_html + menu_by_category_html)
+ *   - buildTemplateExtras() calls buildGrillExtras() for grill-house / restaurant
+ *   - renderEngine() injects pre-built _html tokens after processEach() loop
  */
 
 export default {
@@ -42,7 +25,6 @@ async function handleRequest(request, env) {
   const url  = new URL(request.url);
   const host = url.hostname;
 
-  // R2 asset serving (unchanged)
   if (host === 'assets.websites.co.zw') {
     const key = url.pathname.replace(/^\/+/, '');
     if (!key) return new Response('Not found', { status: 404 });
@@ -52,7 +34,6 @@ async function handleRequest(request, env) {
     return serveAsset(request, env, url.pathname.replace('/assets/', ''));
   }
 
-  // Subdomain routing
   const parts = host.split('.');
   if (parts.length >= 3 && parts[1] === 'websites' && parts[2] === 'co') {
     return handlePublic(request, env, parts[0]);
@@ -61,7 +42,7 @@ async function handleRequest(request, env) {
   return handlePublic(request, env, null, host);
 }
 
-// ─── ASSET PROXY (R2 — unchanged) ─────────────────────────────────────────────
+// ─── ASSET PROXY (R2) ─────────────────────────────────────────────────────────
 
 async function serveAsset(request, env, key) {
   const cached   = caches.default;
@@ -89,7 +70,7 @@ async function serveAsset(request, env, key) {
 
 // ─── TEMPLATE FETCHER ─────────────────────────────────────────────────────────
 
-const TEMPLATE_CACHE = new Map(); // in-memory cache per Worker instance
+const TEMPLATE_CACHE = new Map();
 
 async function getTemplate(templateId, env) {
   if (TEMPLATE_CACHE.has(templateId)) return TEMPLATE_CACHE.get(templateId);
@@ -111,18 +92,16 @@ async function getTemplate(templateId, env) {
   ]);
 
   const result = { html, config };
-  TEMPLATE_CACHE.set(templateId, result); // cache for Worker lifetime (~few minutes)
+  TEMPLATE_CACHE.set(templateId, result);
   return result;
 }
 
 // ─── RENDER ENGINE ────────────────────────────────────────────────────────────
-// Resolves {{tokens}}, {{#if}}/{{#each}} blocks using config rules.
-// The config declares what to do; the engine does the mechanical work.
 
 function renderEngine(templateHtml, site, config, extraTokens) {
   const c = site.content || {};
 
-  // 1. Build computed tokens (platform-level, same for every template)
+  // 1. Build computed tokens
   const computed = buildComputedTokens(site, c, config);
   const tokens   = { ...computed, ...(extraTokens || {}) };
 
@@ -131,6 +110,17 @@ function renderEngine(templateHtml, site, config, extraTokens) {
   // 2. Process {{#each}} blocks
   for (const def of (config.lists || [])) {
     html = processEach(html, def, c, tokens);
+  }
+
+  // ── PATCH: inject pre-built _html tokens, replacing any leftover {{#each}} blocks ──
+  for (const [key, val] of Object.entries(extraTokens || {})) {
+    if (key.endsWith('_html') && val) {
+      const eachKey = key.replace(/_html$/, '');
+      const re = new RegExp(
+        `\\{\\{#each ${eachKey}\\}\\}[\\s\\S]*?\\{\\{\\/each\\}\\}`, 'g'
+      );
+      html = html.replace(re, val);
+    }
   }
 
   // 3. Process {{#if}} / {{#if}}...{{else}} blocks
@@ -143,7 +133,7 @@ function renderEngine(templateHtml, site, config, extraTokens) {
     html = html.split(`{{${key}}}`).join(esc(String(val ?? '')));
   }
 
-  // 5. Strip any unreplaced placeholders (missing optional fields)
+  // 5. Strip unreplaced placeholders
   html = html.replace(/\{\{[^}]+\}\}/g, '');
 
   return html;
@@ -161,7 +151,6 @@ function buildComputedTokens(site, c, config) {
   const businessNameFirst = nameParts[0] || businessName;
   const businessNameRest  = nameParts.slice(1).join(' ') || '';
 
-  // Zimbabwe number normalisation
   const whatsappDigits = whatsapp.replace(/\D/g, '');
   const whatsappClean  = whatsappDigits.startsWith('263')
     ? whatsappDigits
@@ -208,17 +197,14 @@ function processEach(html, def, c, tokens) {
     if (!items.length) return def.emptyHtml || '';
     return items.map((item, i) => {
       let block = def.itemTemplate;
-      // Inner {{#if item.field}}...{{else}}...{{/if}}
       block = block.replace(
         /\{\{#if item\.(\w+)\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g,
         (_, field, t, f) => item[field] ? t : f
       );
-      // Inner {{#if item.field}}...{{/if}}
       block = block.replace(
         /\{\{#if item\.(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
         (_, field, content) => item[field] ? content : ''
       );
-      // {{item.field}} with fallback icon support
       block = block.replace(/\{\{item\.(\w+)\}\}/g, (_, field) => {
         if (field === 'icon' && !item[field] && def.fallbackIcons) {
           return esc(def.fallbackIcons[i % def.fallbackIcons.length]);
@@ -234,7 +220,6 @@ function processEach(html, def, c, tokens) {
 function processConditional(html, def, c, tokens, computed) {
   const condition = evaluateCondition(def, c, tokens, computed);
 
-  // {{#if flag}}...{{else}}...{{/if}}
   const reElse = new RegExp(
     `\\{\\{#if ${def.flag}\\}\\}([\\s\\S]*?)\\{\\{else\\}\\}([\\s\\S]*?)\\{\\{/if\\}\\}`, 'g'
   );
@@ -244,7 +229,6 @@ function processConditional(html, def, c, tokens, computed) {
       : (condition ? t : f)
   );
 
-  // {{#if flag}}...{{/if}}
   const reIf = new RegExp(
     `\\{\\{#if ${def.flag}\\}\\}([\\s\\S]*?)\\{\\{/if\\}\\}`, 'g'
   );
@@ -276,7 +260,7 @@ function deepGet(obj, path) {
 
 async function handlePublic(request, env, slug, customDomain) {
   let site;
-  if (slug)          site = await getSiteBySlug(env.DB, slug);
+  if (slug)              site = await getSiteBySlug(env.DB, slug);
   else if (customDomain) site = await getSiteByDomain(env.DB, customDomain);
   if (!site) return render404();
 
@@ -301,7 +285,6 @@ async function handlePublic(request, env, slug, customDomain) {
   let html;
   try {
     const { html: templateHtml, config } = await getTemplate(templateId, env);
-    // Build extra tokens the template needs that aren't in computedTokens
     const extraTokens = buildTemplateExtras(content, site, config);
     const resolved    = renderEngine(templateHtml, { ...site, content }, config, extraTokens);
     html = wrapWithShell(resolved, content, site, config, isPreview);
@@ -321,13 +304,11 @@ async function handlePublic(request, env, slug, customDomain) {
 }
 
 // ─── TEMPLATE EXTRAS ─────────────────────────────────────────────────────────
-// Tokens that require logic beyond simple field lookup.
-// Config declares which extras to enable; engine calls this once.
 
 function buildTemplateExtras(c, site, config) {
   const extras = {};
 
-  // WhatsApp link (pre-built href)
+  // WhatsApp links
   const phone = c.phone || c.contact?.phone || '';
   if (phone) {
     const digits = phone.replace(/\D/g, '');
@@ -345,17 +326,17 @@ function buildTemplateExtras(c, site, config) {
     extras.maps_href = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
   }
 
-  // Open/closed badge HTML
+  // Open/closed badge
   if (config.showOpenBadge && c.hours) {
     extras.open_badge_html = openClosedBadge(c.hours);
   }
 
-  // Hours grid HTML
+  // Hours grid
   if (config.showHoursGrid && c.hours) {
     extras.hours_grid_html = buildHoursGridHtml(c.hours);
   }
 
-  // Services as select options (for quote forms)
+  // Services as select options
   const services = Array.isArray(c.services) ? c.services : [];
   if (services.length) {
     extras.service_options_html = services
@@ -363,13 +344,13 @@ function buildTemplateExtras(c, site, config) {
       .join('\n');
   }
 
-  // First team member photo (for band image)
+  // First team member photo
   const team = Array.isArray(c.team) ? c.team : [];
   if (team[0]?.photo_url || team[0]?.photo) {
     extras.band_image_url = team[0].photo_url || team[0].photo || '';
   }
 
-  // Stats HTML (pre-rendered for simpler templates)
+  // Stats HTML
   const stats = Array.isArray(c.stats) ? c.stats : [];
   if (stats.length) {
     extras.stats_html = stats.map(s =>
@@ -377,13 +358,86 @@ function buildTemplateExtras(c, site, config) {
     ).join('\n');
   }
 
+  // ── PATCH: grill-house / restaurant menu extras ──────────────────────────
+  const templateId = site.template_id;
+  if (templateId === 'grill-house' || templateId === 'restaurant') {
+    Object.assign(extras, buildGrillExtras(c, config));
+  }
+
+  return extras;
+}
+
+// ─── GRILL EXTRAS (patch) ─────────────────────────────────────────────────────
+// Builds pre-rendered HTML for the menu tabs + dish grid.
+// Tokens produced:
+//   menu_categories_html   — replaces {{#each menu_categories}}…{{/each}}
+//   menu_by_category_html  — replaces {{#each menu_by_category}}…{{/each}}
+//   ember_color            — scalar, e.g. '#D2541F'
+//   amber_color            — scalar, e.g. '#E0A12E'
+
+function buildGrillExtras(c, config) {
+  const extras = {};
+  const menu   = Array.isArray(c.menu) ? c.menu : [];
+
+  // Palette tokens (allow config.paletteTokens to override defaults)
+  const palette  = config.paletteTokens || {};
+  extras.ember_color = palette.ember_color || '#D2541F';
+  extras.amber_color = palette.amber_color || '#E0A12E';
+
+  // Pass through any static extra tokens declared in config
+  for (const [k, v] of Object.entries(config.extraTokens || {})) {
+    extras[k] = v;
+  }
+
+  if (!menu.length) return extras;
+
+  const categories = [...new Set(menu.map(i => i.category || 'Menu'))];
+  const ICONS      = ['🥩', '🍗', '🌽', '🍟', '🥤', '🥗'];
+
+  // Category tab buttons
+  extras.menu_categories_html = categories
+    .map((cat, i) =>
+      `<button class="cat-tab${i === 0 ? ' on' : ''}" data-cat="${esc(cat)}">${esc(cat)}</button>`
+    ).join('');
+
+  // Menu sections grouped by category
+  extras.menu_by_category_html = categories.map((cat, catIdx) => {
+    const items    = menu.filter(item => (item.category || 'Menu') === cat);
+    const itemsHtml = items.map((item, i) => {
+      const photo   = item.photo || item.image || item.photo_url || '';
+      const tag     = item.tag   || item.badge || '';
+      const tagHtml = tag
+        ? `<span class="dish-tag">${esc(tag)}</span>`
+        : `<span style="font-size:.84rem;color:var(--ink2)">${esc(item.serves || item.note || '')}</span>`;
+      // Safe JSON for inline onclick — single-quotes escaped
+      const itemData = JSON.stringify({ name: item.name || '', price: item.price || '' })
+        .replace(/'/g, '&#39;');
+
+      return `<div class="dish reveal">
+  <div class="dish-photo">${photo
+    ? `<img src="${esc(photo)}" alt="${esc(item.name || '')}" loading="lazy">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem">${ICONS[i % ICONS.length]}</div>`
+  }</div>
+  <div class="dish-body">
+    <div class="dish-title-row">
+      <span class="dish-name">${esc(item.name || '')}</span>
+      ${item.price ? `<span class="dish-price">${esc(item.price)}</span>` : ''}
+    </div>
+    ${item.description ? `<p class="dish-desc">${esc(item.description)}</p>` : ''}
+    <div class="dish-footer">${tagHtml}<button class="add-btn" onclick="ghAddToOrder(${itemData})">+ Add to order</button></div>
+  </div>
+</div>`;
+    }).join('');
+
+    return `<div class="menu-cat reveal" data-cat="${esc(cat)}"${catIdx > 0 ? ' style="display:none"' : ''}>
+  <div class="menu-grid">${itemsHtml}</div>
+</div>`;
+  }).join('');
+
   return extras;
 }
 
 // ─── SHELL WRAPPER ────────────────────────────────────────────────────────────
-// Injects the rendered template body into the full HTML shell.
-// The shell provides: nav, FAB, lightbox, shared JS, preview banner.
-// Templates declare what nav links they need via config.navLinks.
 
 function wrapWithShell(body, c, site, config, isPreview) {
   const phone      = c.phone || c.contact?.phone || '';
@@ -452,7 +506,7 @@ ${SHARED_JS}
 </html>`;
 }
 
-// ─── SHARED CSS (injected into every template) ────────────────────────────────
+// ─── SHARED CSS ───────────────────────────────────────────────────────────────
 
 const SHARED_CSS = `
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -496,7 +550,7 @@ ul{list-style:none}
 .form-msg.error{background:#f8d7da;color:#721c24;display:block}
 `;
 
-// ─── SHARED JS (injected into every template) ─────────────────────────────────
+// ─── SHARED JS ────────────────────────────────────────────────────────────────
 
 const SHARED_JS = `<script>
 (function(){
@@ -537,7 +591,6 @@ const SHARED_JS = `<script>
     t.addEventListener('click',function(){t.closest('.wcz-accordion-item').classList.toggle('open');});
   });
 })();
-// Quote form submit (used by advisory, etc.)
 window.wczSubmitQuote = async function(siteId) {
   var msg=document.getElementById('wcz-form-msg');
   if(msg){msg.className='form-msg';}
@@ -554,7 +607,7 @@ window.wczSubmitQuote = async function(siteId) {
 };
 </script>`;
 
-// ─── ICON SYSTEM (unchanged from v8) ─────────────────────────────────────────
+// ─── ICON SYSTEM ─────────────────────────────────────────────────────────────
 
 const ICONS = {
   menu:        `<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>`,
@@ -596,7 +649,7 @@ function icon(name, size = 20, color = 'currentColor') {
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" ${attrs} aria-hidden="true">${paths}</svg>`;
 }
 
-// ─── SHARED HELPERS (unchanged from v8) ───────────────────────────────────────
+// ─── SHARED HELPERS ───────────────────────────────────────────────────────────
 
 function esc(s) {
   if (!s) return '';
@@ -626,7 +679,7 @@ function normalizeItemImages(arr) {
   });
 }
 
-// ─── HOURS HELPERS (unchanged from v8) ────────────────────────────────────────
+// ─── HOURS HELPERS ────────────────────────────────────────────────────────────
 
 function normalizeHours(hours) {
   if (!hours) return null;
@@ -708,7 +761,7 @@ function buildHoursGridHtml(hours) {
   }).filter(Boolean).join('');
 }
 
-// ─── CONTENT NORMALIZATION (unchanged from v8) ────────────────────────────────
+// ─── CONTENT NORMALIZATION ────────────────────────────────────────────────────
 
 function normalizeContent(raw) {
   if (!raw) return {};
@@ -755,7 +808,7 @@ function normalizeContent(raw) {
   };
 }
 
-// ─── DB QUERIES (unchanged from v8) ───────────────────────────────────────────
+// ─── DB QUERIES ───────────────────────────────────────────────────────────────
 
 async function getSiteBySlug(db, slug) {
   const r = await db.prepare('SELECT * FROM sites WHERE draft_subdomain = ? LIMIT 1').bind(slug).first();
