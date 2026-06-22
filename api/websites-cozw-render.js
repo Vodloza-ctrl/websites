@@ -1,11 +1,11 @@
 /**
- * websites.co.zw — Render Worker websites-cozw-render
- * Cloudflare Worker · Config-driven template engine
- *
- * Patch applied:
- *   - buildGrillExtras() added (generates menu_categories_html + menu_by_category_html)
- *   - buildTemplateExtras() calls buildGrillExtras() for grill-house / restaurant
- *   - renderEngine() injects pre-built _html tokens after processEach() loop
+ * websites.co.zw — Render Worker v9.1
+ * Fixes applied vs v9.0:
+ *   1. normalizeContent() — correctly unwraps images.hero/logo/gallery,
+ *      reads phone from all nested locations, maps theme.accent → primary_color
+ *   2. buildGrillExtras() — treats empty-string category as 'Menu'
+ *   3. renderEngine() — pre-built _html token injection (grill patch)
+ *   4. buildTemplateExtras() — calls buildGrillExtras for grill-house/restaurant
  */
 
 export default {
@@ -42,7 +42,7 @@ async function handleRequest(request, env) {
   return handlePublic(request, env, null, host);
 }
 
-// ─── ASSET PROXY (R2) ─────────────────────────────────────────────────────────
+// ─── ASSET PROXY ──────────────────────────────────────────────────────────────
 
 async function serveAsset(request, env, key) {
   const cached   = caches.default;
@@ -55,14 +55,13 @@ async function serveAsset(request, env, key) {
 
   const ext     = key.split('.').pop().toLowerCase();
   const mimeMap = {
-    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
-    gif: 'image/gif',  webp: 'image/webp', svg: 'image/svg+xml',
-    pdf: 'application/pdf', woff2: 'font/woff2', woff: 'font/woff'
+    jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',
+    gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',
+    pdf:'application/pdf',woff2:'font/woff2',woff:'font/woff'
   };
   const ct = mimeMap[ext] || 'application/octet-stream';
-
   const response = new Response(obj.body, {
-    headers: { 'Content-Type': ct, 'Cache-Control': 'public, max-age=31536000, immutable' }
+    headers:{'Content-Type':ct,'Cache-Control':'public, max-age=31536000, immutable'}
   });
   await cached.put(cacheKey, response.clone());
   return response;
@@ -86,11 +85,7 @@ async function getTemplate(templateId, env) {
   if (!htmlRes.ok)   throw new Error(`Template HTML not found: ${templateId}`);
   if (!configRes.ok) throw new Error(`Template config not found: ${templateId}`);
 
-  const [html, config] = await Promise.all([
-    htmlRes.text(),
-    configRes.json(),
-  ]);
-
+  const [html, config] = await Promise.all([htmlRes.text(), configRes.json()]);
   const result = { html, config };
   TEMPLATE_CACHE.set(templateId, result);
   return result;
@@ -101,18 +96,17 @@ async function getTemplate(templateId, env) {
 function renderEngine(templateHtml, site, config, extraTokens) {
   const c = site.content || {};
 
-  // 1. Build computed tokens
   const computed = buildComputedTokens(site, c, config);
   const tokens   = { ...computed, ...(extraTokens || {}) };
 
   let html = templateHtml;
 
-  // 2. Process {{#each}} blocks
+  // 1. Process {{#each}} blocks defined in config.lists
   for (const def of (config.lists || [])) {
     html = processEach(html, def, c, tokens);
   }
 
-  // ── PATCH: inject pre-built _html tokens, replacing any leftover {{#each}} blocks ──
+  // 2. Inject pre-built _html tokens (replaces leftover {{#each}} blocks)
   for (const [key, val] of Object.entries(extraTokens || {})) {
     if (key.endsWith('_html') && val) {
       const eachKey = key.replace(/_html$/, '');
@@ -123,14 +117,16 @@ function renderEngine(templateHtml, site, config, extraTokens) {
     }
   }
 
-  // 3. Process {{#if}} / {{#if}}...{{else}} blocks
+  // 3. Process {{#if}} / {{else}} / {{/if}} blocks
   for (const def of (config.conditionals || [])) {
     html = processConditional(html, def, c, tokens, computed);
   }
 
   // 4. Replace scalar {{token}} placeholders
   for (const [key, val] of Object.entries(tokens)) {
-    html = html.split(`{{${key}}}`).join(esc(String(val ?? '')));
+    if (!key.endsWith('_html') || typeof val === 'string') {
+      html = html.split(`{{${key}}}`).join(String(val ?? ''));
+    }
   }
 
   // 5. Strip unreplaced placeholders
@@ -190,7 +186,7 @@ function buildComputedTokens(site, c, config) {
 
 function processEach(html, def, c, tokens) {
   const re = new RegExp(
-    `\\{\\{#each ${def.key}\\}\\}([\\s\\S]*?)\\{\\{/each\\}\\}`, 'g'
+    `\\{\\{#each ${def.key}\\}\\}([\\s\\S]*?)\\{\\{\\/each\\}\\}`, 'g'
   );
   return html.replace(re, () => {
     const items = Array.isArray(c[def.key]) ? c[def.key] : [];
@@ -221,7 +217,7 @@ function processConditional(html, def, c, tokens, computed) {
   const condition = evaluateCondition(def, c, tokens, computed);
 
   const reElse = new RegExp(
-    `\\{\\{#if ${def.flag}\\}\\}([\\s\\S]*?)\\{\\{else\\}\\}([\\s\\S]*?)\\{\\{/if\\}\\}`, 'g'
+    `\\{\\{#if ${def.flag}\\}\\}([\\s\\S]*?)\\{\\{else\\}\\}([\\s\\S]*?)\\{\\{\\/if\\}\\}`, 'g'
   );
   html = html.replace(reElse, (_, t, f) =>
     def.ifTrue !== undefined || def.ifFalse !== undefined
@@ -230,7 +226,7 @@ function processConditional(html, def, c, tokens, computed) {
   );
 
   const reIf = new RegExp(
-    `\\{\\{#if ${def.flag}\\}\\}([\\s\\S]*?)\\{\\{/if\\}\\}`, 'g'
+    `\\{\\{#if ${def.flag}\\}\\}([\\s\\S]*?)\\{\\{\\/if\\}\\}`, 'g'
   );
   html = html.replace(reIf, (_, content) =>
     condition ? (def.ifTrue ?? content) : ''
@@ -308,7 +304,6 @@ async function handlePublic(request, env, slug, customDomain) {
 function buildTemplateExtras(c, site, config) {
   const extras = {};
 
-  // WhatsApp links
   const phone = c.phone || c.contact?.phone || '';
   if (phone) {
     const digits = phone.replace(/\D/g, '');
@@ -320,37 +315,31 @@ function buildTemplateExtras(c, site, config) {
     extras.wa_href_booking  = `https://wa.me/${num}?text=${encodeURIComponent('Hello, I would like to book an appointment.')}`;
   }
 
-  // Google Maps link
   const address = c.address || c.location || c.contact?.address || '';
   if (address) {
     extras.maps_href = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
   }
 
-  // Open/closed badge
   if (config.showOpenBadge && c.hours) {
     extras.open_badge_html = openClosedBadge(c.hours);
   }
 
-  // Hours grid
   if (config.showHoursGrid && c.hours) {
     extras.hours_grid_html = buildHoursGridHtml(c.hours);
   }
 
-  // Services as select options
   const services = Array.isArray(c.services) ? c.services : [];
   if (services.length) {
     extras.service_options_html = services
-      .map(s => `<option value="${esc(s.name || '')}">${esc(s.name || '')}</option>`)
+      .map(s => `<option value="${esc(s.name || s.title || '')}">${esc(s.name || s.title || '')}</option>`)
       .join('\n');
   }
 
-  // First team member photo
   const team = Array.isArray(c.team) ? c.team : [];
   if (team[0]?.photo_url || team[0]?.photo) {
     extras.band_image_url = team[0].photo_url || team[0].photo || '';
   }
 
-  // Stats HTML
   const stats = Array.isArray(c.stats) ? c.stats : [];
   if (stats.length) {
     extras.stats_html = stats.map(s =>
@@ -358,7 +347,7 @@ function buildTemplateExtras(c, site, config) {
     ).join('\n');
   }
 
-  // ── PATCH: grill-house / restaurant menu extras ──────────────────────────
+  // Grill-house / restaurant menu extras
   const templateId = site.template_id;
   if (templateId === 'grill-house' || templateId === 'restaurant') {
     Object.assign(extras, buildGrillExtras(c, config));
@@ -367,49 +356,42 @@ function buildTemplateExtras(c, site, config) {
   return extras;
 }
 
-// ─── GRILL EXTRAS (patch) ─────────────────────────────────────────────────────
-// Builds pre-rendered HTML for the menu tabs + dish grid.
-// Tokens produced:
-//   menu_categories_html   — replaces {{#each menu_categories}}…{{/each}}
-//   menu_by_category_html  — replaces {{#each menu_by_category}}…{{/each}}
-//   ember_color            — scalar, e.g. '#D2541F'
-//   amber_color            — scalar, e.g. '#E0A12E'
+// ─── GRILL EXTRAS ─────────────────────────────────────────────────────────────
 
 function buildGrillExtras(c, config) {
   const extras = {};
   const menu   = Array.isArray(c.menu) ? c.menu : [];
 
-  // Palette tokens (allow config.paletteTokens to override defaults)
-  const palette  = config.paletteTokens || {};
+  const palette      = config.paletteTokens || {};
   extras.ember_color = palette.ember_color || '#D2541F';
   extras.amber_color = palette.amber_color || '#E0A12E';
 
-  // Pass through any static extra tokens declared in config
   for (const [k, v] of Object.entries(config.extraTokens || {})) {
     extras[k] = v;
   }
 
   if (!menu.length) return extras;
 
-  const categories = [...new Set(menu.map(i => i.category || 'Menu'))];
+  // Treat empty/missing category as 'Menu'
+  const getcat = item =>
+    (item.category && item.category.trim()) ? item.category.trim() : 'Menu';
+
+  const categories = [...new Set(menu.map(getcat))];
   const ICONS      = ['🥩', '🍗', '🌽', '🍟', '🥤', '🥗'];
 
-  // Category tab buttons
   extras.menu_categories_html = categories
     .map((cat, i) =>
       `<button class="cat-tab${i === 0 ? ' on' : ''}" data-cat="${esc(cat)}">${esc(cat)}</button>`
     ).join('');
 
-  // Menu sections grouped by category
-  extras.menu_by_category_html = categories.map((cat, catIdx) => {
-    const items    = menu.filter(item => (item.category || 'Menu') === cat);
+  extras.menu_by_category_html = categories.map((catName, catIdx) => {
+    const items     = menu.filter(item => getcat(item) === catName);
     const itemsHtml = items.map((item, i) => {
       const photo   = item.photo || item.image || item.photo_url || '';
       const tag     = item.tag   || item.badge || '';
       const tagHtml = tag
         ? `<span class="dish-tag">${esc(tag)}</span>`
         : `<span style="font-size:.84rem;color:var(--ink2)">${esc(item.serves || item.note || '')}</span>`;
-      // Safe JSON for inline onclick — single-quotes escaped
       const itemData = JSON.stringify({ name: item.name || '', price: item.price || '' })
         .replace(/'/g, '&#39;');
 
@@ -429,7 +411,7 @@ function buildGrillExtras(c, config) {
 </div>`;
     }).join('');
 
-    return `<div class="menu-cat reveal" data-cat="${esc(cat)}"${catIdx > 0 ? ' style="display:none"' : ''}>
+    return `<div class="menu-cat reveal" data-cat="${esc(catName)}"${catIdx > 0 ? ' style="display:none"' : ''}>
   <div class="menu-grid">${itemsHtml}</div>
 </div>`;
   }).join('');
@@ -438,26 +420,30 @@ function buildGrillExtras(c, config) {
 }
 
 // ─── SHELL WRAPPER ────────────────────────────────────────────────────────────
+// NOTE: for grill-house the template is fully self-contained (own nav, own JS).
+// wrapWithShell still adds shared CSS reset + FAB, but the template's own
+// nav/footer/scripts take precedence since they are rendered inside <main>.
+// The shell nav is suppressed when config.selfContainedNav = true.
 
 function wrapWithShell(body, c, site, config, isPreview) {
-  const phone      = c.phone || c.contact?.phone || '';
-  const digits     = phone.replace(/\D/g, '');
-  const waNum      = digits.startsWith('263') ? digits : '263' + digits.replace(/^0/, '');
-  const waHref     = phone ? `https://wa.me/${waNum}?text=${encodeURIComponent('Hello!')}` : '#';
+  const phone  = c.phone || c.contact?.phone || '';
+  const digits = phone.replace(/\D/g, '');
+  const waNum  = digits.startsWith('263') ? digits : '263' + digits.replace(/^0/, '');
+  const waHref = phone ? `https://wa.me/${waNum}?text=${encodeURIComponent('Hello!')}` : '#';
 
-  const navLinks   = (config.navLinks || ['#services:Services', '#contact:Contact'])
+  // grill-house has its own nav baked into the template HTML — skip shell nav
+  const skipNav = !!config.selfContainedNav;
+
+  const navLinks = (config.navLinks || ['#services:Services', '#contact:Contact'])
     .map(l => { const [href, label] = l.split(':'); return `<a href="${esc(href)}">${esc(label)}</a>`; })
     .join('');
 
-  const ctaLabel   = config.navCtaLabel || 'WhatsApp Us';
-  const ctaHref    = phone ? waHref : '#contact';
-
-  const nav = `
+  const nav = skipNav ? '' : `
 <nav class="wcz-nav" id="wcz-nav" style="--nav-text:${esc(config.navTextColor || '#fff')}">
   <div class="wcz-nav-inner">
     <div class="wcz-nav-logo">${esc(c.business_name || c.name || '')}</div>
     <div class="wcz-nav-links">${navLinks}
-      ${phone ? `<a href="${esc(ctaHref)}" class="wcz-nav-cta" ${phone ? `target="_blank" rel="noopener"` : ''}>${ctaLabel}</a>` : ''}
+      ${phone ? `<a href="${esc(waHref)}" class="wcz-nav-cta" target="_blank" rel="noopener">${config.navCtaLabel || 'WhatsApp Us'}</a>` : ''}
     </div>
     <div class="wcz-hamburger" id="wcz-hamburger"><span></span><span></span><span></span></div>
   </div>
@@ -469,15 +455,19 @@ function wrapWithShell(body, c, site, config, isPreview) {
 </div>`;
 
   const previewBanner = isPreview
-    ? `<div class="wcz-preview-banner">Preview mode — <a href="https://app.websites.co.zw">Go to dashboard</a> to publish</div>`
+    ? `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600">Preview mode — <a href="https://app.websites.co.zw" style="color:#fff;text-decoration:underline">Go to dashboard</a> to publish</div>`
     : '';
 
-  const fab = phone
-    ? `<a class="wcz-fab" id="wcz-fab" href="${esc(waHref)}" aria-label="Chat on WhatsApp" target="_blank" rel="noopener">
-        <div class="wcz-fab-pulse"></div>
-        ${icon('whatsapp', 30, '#fff')}
-      </a>`
-    : '';
+  // Shell JS: only the bits the template doesn't provide itself
+  const shellJs = skipNav ? '' : `<script>
+(function(){
+  var nav=document.getElementById('wcz-nav');
+  function s(){if(nav)nav.classList.toggle('scrolled',window.scrollY>60);}
+  window.addEventListener('scroll',s,{passive:true});s();
+  var btn=document.getElementById('wcz-hamburger'),menu=document.getElementById('wcz-mobile-menu'),close=document.getElementById('wcz-mobile-close');
+  if(btn&&menu){btn.addEventListener('click',function(){menu.classList.add('open');});if(close)close.addEventListener('click',function(){menu.classList.remove('open');});menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){menu.classList.remove('open');});});}
+})();
+</script>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -489,125 +479,26 @@ function wrapWithShell(body, c, site, config, isPreview) {
 <meta property="og:title" content="${esc(c.business_name || c.name || '')}">
 <meta property="og:description" content="${esc(c.about || '')}">
 ${c.hero_image_url || c.hero_image ? `<meta property="og:image" content="${esc(c.hero_image_url || c.hero_image)}">` : ''}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-${config.googleFonts ? `<link href="${esc(config.googleFonts)}" rel="stylesheet">` : ''}
-<style>${SHARED_CSS}${config.templateCSS || ''}</style>
-</head>
-<body class="${esc(config.bodyClass || '')}">
-${previewBanner}
-${nav}
-<main>
-${body}
-</main>
-${fab}
-${SHARED_JS}
-</body>
-</html>`;
-}
-
-// ─── SHARED CSS ───────────────────────────────────────────────────────────────
-
-const SHARED_CSS = `
+${config.googleFonts ? `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="${esc(config.googleFonts)}" rel="stylesheet">` : ''}
+<style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
 img{max-width:100%;height:auto;display:block}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;border:none;background:none;font:inherit}
 ul{list-style:none}
-:root{--shadow-sm:0 2px 12px rgba(0,0,0,.06);--shadow-md:0 8px 32px rgba(0,0,0,.12);--radius-card:12px;--radius-pill:999px}
-.wcz-nav{position:fixed;top:0;left:0;right:0;z-index:1000;transition:background .3s,box-shadow .3s;padding:0 1.5rem}
-.wcz-nav.scrolled{background:rgba(var(--nav-bg-rgb,255,255,255),.92);backdrop-filter:blur(12px);box-shadow:0 1px 16px rgba(0,0,0,.12)}
-.wcz-nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;height:64px}
-.wcz-nav-logo{font-size:1.25rem;font-weight:800;color:var(--accent,#000)}
-.wcz-nav-links{display:flex;gap:1.5rem;align-items:center}
-.wcz-nav-links a{font-size:.9rem;font-weight:500;color:var(--nav-text,#fff);opacity:.85;transition:opacity .2s}
-.wcz-nav-links a:hover{opacity:1}
-.wcz-nav-cta{background:var(--accent);color:#fff!important;padding:.45rem 1.1rem;border-radius:var(--radius-pill);font-weight:700;opacity:1!important}
-.wcz-hamburger{display:none;flex-direction:column;gap:5px;padding:8px;cursor:pointer}
-.wcz-hamburger span{width:24px;height:2px;background:var(--nav-text,#fff);display:block;transition:.3s}
-.wcz-mobile-menu{display:none;position:fixed;inset:0;z-index:999;background:#fff;flex-direction:column;align-items:center;justify-content:center;gap:2rem}
-.wcz-mobile-menu.open{display:flex}
-.wcz-mobile-menu a{font-size:1.3rem;font-weight:700;color:#1a1a2e}
-.wcz-mobile-close{position:absolute;top:1.5rem;right:1.5rem;cursor:pointer;font-size:1.5rem}
-@media(max-width:768px){.wcz-nav-links{display:none}.wcz-hamburger{display:flex}}
-.wcz-fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:900;width:56px;height:56px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.45);opacity:0;transform:scale(.8);transition:opacity .3s,transform .3s;pointer-events:none}
-.wcz-fab.visible{opacity:1;transform:scale(1);pointer-events:auto}
-.wcz-fab-pulse{position:absolute;inset:0;border-radius:50%;border:2px solid #25d366;animation:fabpulse 2s infinite}
-@keyframes fabpulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.8);opacity:0}}
-.wcz-reveal{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease}
-.wcz-reveal.revealed{opacity:1;transform:none}
-.wcz-preview-banner{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600}
-.wcz-preview-banner a{color:#fff;text-decoration:underline}
-.badge-open,.badge-closed{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;padding:.25rem .8rem;border-radius:var(--radius-pill)}
-.badge-open{background:#d1fae5;color:#065f46}
-.badge-closed{background:#fee2e2;color:#991b1b}
-.badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
-.badge-open .badge-dot{animation:pulse-dot 2s infinite}
-@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
-.form-msg{display:none;padding:12px 16px;border-radius:8px;font-size:.92rem;margin-bottom:12px}
-.form-msg.success{background:#d4edda;color:#155724;display:block}
-.form-msg.error{background:#f8d7da;color:#721c24;display:block}
-`;
+</style>
+</head>
+<body class="${esc(config.bodyClass || '')}">
+${previewBanner}
+${nav}
+${body}
+${shellJs}
+</body>
+</html>`;
+}
 
-// ─── SHARED JS ────────────────────────────────────────────────────────────────
-
-const SHARED_JS = `<script>
-(function(){
-  var nav=document.getElementById('wcz-nav');
-  var fab=document.getElementById('wcz-fab');
-  function s(){ var y=window.scrollY; if(nav) nav.classList.toggle('scrolled',y>60); if(fab) fab.classList.toggle('visible',y>300); }
-  window.addEventListener('scroll',s,{passive:true}); s();
-})();
-(function(){
-  var btn=document.getElementById('wcz-hamburger');
-  var menu=document.getElementById('wcz-mobile-menu');
-  var close=document.getElementById('wcz-mobile-close');
-  if(!btn||!menu) return;
-  btn.addEventListener('click',function(){menu.classList.add('open');});
-  if(close) close.addEventListener('click',function(){menu.classList.remove('open');});
-  menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){menu.classList.remove('open');});});
-})();
-(function(){
-  var items=document.querySelectorAll('.wcz-reveal');
-  if(!items.length) return;
-  var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('revealed');obs.unobserve(e.target);}});},{threshold:.1});
-  items.forEach(function(el){obs.observe(el);});
-})();
-(function(){
-  var counters=document.querySelectorAll('.wcz-stat-num[data-target]');
-  if(!counters.length) return;
-  var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){
-    if(!e.isIntersecting) return;
-    var el=e.target; var target=parseInt(el.dataset.target,10); var suffix=el.dataset.suffix||'';
-    var start=0; var dur=1800; var step=16; var inc=target/(dur/step);
-    var timer=setInterval(function(){start=Math.min(start+inc,target);el.textContent=Math.floor(start).toLocaleString()+suffix;if(start>=target)clearInterval(timer);},step);
-    obs.unobserve(el);
-  });},{threshold:.5});
-  counters.forEach(function(el){obs.observe(el);});
-})();
-(function(){
-  document.querySelectorAll('.wcz-accordion-trigger').forEach(function(t){
-    t.addEventListener('click',function(){t.closest('.wcz-accordion-item').classList.toggle('open');});
-  });
-})();
-window.wczSubmitQuote = async function(siteId) {
-  var msg=document.getElementById('wcz-form-msg');
-  if(msg){msg.className='form-msg';}
-  var name=(document.getElementById('wcz-f-name')||{}).value||'';
-  var phone=(document.getElementById('wcz-f-phone')||{}).value||'';
-  var service=(document.getElementById('wcz-f-service')||{}).value||'';
-  var message=(document.getElementById('wcz-f-message')||{}).value||'';
-  if(!name||!phone){if(msg){msg.className='form-msg error';msg.textContent='Please enter your name and contact details.';}return;}
-  try{
-    var res=await fetch('/forms/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({site_id:siteId,name,phone,service,message})});
-    if(res.ok){if(msg){msg.className='form-msg success';msg.textContent='Thanks — we\u2019ll be in touch within one business day.';}['wcz-f-name','wcz-f-phone','wcz-f-message'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});var sel=document.getElementById('wcz-f-service');if(sel)sel.value='';}
-    else throw new Error();
-  }catch(e){if(msg){msg.className='form-msg error';msg.textContent='Something went wrong. Please WhatsApp or call us directly.';}}
-};
-</script>`;
-
-// ─── ICON SYSTEM ─────────────────────────────────────────────────────────────
+// ─── ICON SYSTEM ──────────────────────────────────────────────────────────────
 
 const ICONS = {
   menu:        `<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>`,
@@ -619,26 +510,18 @@ const ICONS = {
   mail:        `<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>`,
   mapPin:      `<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>`,
   clock:       `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>`,
-  bed:         `<path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>`,
-  bath:        `<path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" y1="5" x2="8" y2="7"/><line x1="2" y1="12" x2="22" y2="12"/>`,
-  ruler:       `<path d="M21.3 8.7 8.7 21.3c-1 1-2.5 1-3.4 0l-2.6-2.6c-1-1-1-2.5 0-3.4L15.3 2.7c1-1 2.5-1 3.4 0l2.6 2.6c1 1 1 2.5 0 3.4z"/><path d="m7.5 10.5 2 2"/><path d="m10.5 7.5 2 2"/><path d="m13.5 4.5 2 2"/><path d="m4.5 13.5 2 2"/>`,
   facebook:    `<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>`,
   instagram:   `<rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>`,
   twitter:     `<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>`,
-  tiktok:      `<path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/>`,
-  linkedin:    `<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/>`,
   whatsapp:    `<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>`,
   star:        `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>`,
   check:       `<polyline points="20 6 9 17 4 12"/>`,
   zap:         `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
-  navigation:  `<polygon points="3 11 22 2 13 21 11 13 3 11"/>`,
   shoppingCart:`<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>`,
-  clipboard:   `<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>`,
-  externalLink:`<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>`,
   utensils:    `<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>`,
 };
 
-const FILLED_ICONS = new Set(['facebook','instagram','twitter','tiktok','linkedin','whatsapp','star','zap']);
+const FILLED_ICONS = new Set(['facebook','instagram','twitter','whatsapp','star','zap']);
 
 function icon(name, size = 20, color = 'currentColor') {
   const paths  = ICONS[name] || '';
@@ -746,7 +629,7 @@ function buildHoursGridHtml(hours) {
   const h = normalizeHours(hours);
   if (!h || typeof h === 'string') return '';
   const order  = ['mon','tue','wed','thu','fri','sat','sun'];
-  const labels = { mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday' };
+  const labels = {mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
   const today  = ['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()];
   return order.map(d => {
     const slot = h[d];
@@ -754,57 +637,74 @@ function buildHoursGridHtml(hours) {
     const isToday  = d === today;
     const isClosed = slot.closed;
     const timeStr  = isClosed ? 'Closed' : `${slot.open||'?'} – ${slot.close||'?'}`;
-    return `<div style="display:flex;justify-content:space-between;padding:.65rem .9rem;border-radius:8px;background:${isToday?'rgba(255,255,255,.12)':'transparent'}">
-      <span style="font-weight:${isToday?'700':'400'};opacity:${isToday?'1':'.7'}">${labels[d]}${isToday?' <span style="font-size:.72rem;background:var(--accent);color:#fff;padding:.1rem .45rem;border-radius:999px;margin-left:.3rem">Today</span>':''}</span>
-      <span style="font-weight:${isToday?'700':'400'};opacity:${isClosed?'.4':isToday?'1':'.7'}">${esc(timeStr)}</span>
+    return `<div class="hours-row${isToday?' today':''}">
+      <span class="day">${labels[d]}${isToday?'<span class="today-pill">Today</span>':''}</span>
+      <span class="time">${esc(timeStr)}</span>
     </div>`;
   }).filter(Boolean).join('');
 }
 
 // ─── CONTENT NORMALIZATION ────────────────────────────────────────────────────
+// Handles double-nested content: { theme:{}, content:{ business_name, images:{}, ... } }
 
 function normalizeContent(raw) {
   if (!raw) return {};
-  if (!raw.content || typeof raw.content !== 'object' || Array.isArray(raw.content)) return raw;
-  const inner = raw.content;
-  const theme = raw.theme || {};
+
+  // Unwrap double-nested structure
+  const inner = (raw.content && typeof raw.content === 'object' && !Array.isArray(raw.content))
+    ? raw.content
+    : raw;
+  const theme  = raw.theme || {};
+  const images = inner.images || {};
+
+  // Gallery: stored as string[] in images.gallery, convert to [{url,caption}]
+  const gallery = Array.isArray(inner.gallery)
+    ? inner.gallery
+    : Array.isArray(images.gallery)
+      ? images.gallery.map(u => (typeof u === 'string' ? { url: u, caption: '' } : u))
+      : [];
+
   return {
     theme,
-    business_name: inner.business_name || inner.name || '',
-    name:          inner.business_name || inner.name || '',
-    tagline:       inner.tagline || '',
-    about:         inner.about || '',
-    phone:         inner.contact?.phone || inner.contact?.whatsapp || inner.phone || '',
-    email:         inner.contact?.email || inner.email || '',
-    address:       inner.contact?.address || inner.address || inner.location || '',
-    location:      inner.location || inner.contact?.address || '',
-    hero_image:    inner.images?.hero || inner.hero_image || '',
-    hero_image_url:inner.hero_image_url || inner.images?.hero || inner.hero_image || '',
-    logo_url:      inner.logo_url || '',
-    primary_color: inner.primary_color || '',
-    images:        inner.images || {},
-    gallery:       Array.isArray(inner.gallery) ? inner.gallery : (Array.isArray(inner.images?.gallery) ? inner.images.gallery : []),
-    services:      normalizeItemImages(inner.services),
-    services_intro:inner.services_intro || '',
-    menu:          normalizeItemImages(inner.menu),
-    products:      normalizeItemImages(inner.products),
-    listings:      normalizeItemImages(inner.listings),
-    team:          normalizeItemImages(inner.team),
-    testimonials:  inner.testimonials || [],
-    stats:         inner.stats || [],
-    events:        inner.events || inner.schedule || [],
-    hours:         normalizeHours(inner.hours) || null,
-    socials:       inner.socials || {},
-    seo:           inner.seo || {},
-    contact:       inner.contact || {},
-    map_embed_url: inner.map_embed_url || inner.contact?.map_embed_url || null,
-    before_after:  inner.before_after || [],
-    credentials:   inner.credentials || [],
-    brands:        inner.brands || [],
-    clients:       inner.clients || inner.partners || [],
-    deal:          inner.deal || null,
-    badge:         inner.badge || null,
-    video_url:     inner.video || inner.video_url || null,
+    business_name:  inner.business_name || inner.name || '',
+    name:           inner.business_name || inner.name || '',
+    tagline:        inner.tagline  || '',
+    about:          inner.about    || '',
+    // Phone: try contact.phone, contact.whatsapp, top-level phone, _brief.phone
+    phone:          inner.contact?.phone || inner.contact?.whatsapp
+                    || inner.phone       || inner._brief?.phone || '',
+    email:          inner.contact?.email  || inner.email  || inner._brief?.email || '',
+    address:        inner.contact?.address || inner.address || inner.location || '',
+    location:       inner.location || inner.contact?.address || '',
+    // Images: unwrap images.hero / images.logo
+    hero_image:     images.hero    || inner.hero_image     || '',
+    hero_image_url: images.hero    || inner.hero_image_url || inner.hero_image || '',
+    logo_url:       images.logo    || inner.logo_url       || '',
+    // primary_color: explicit field, then theme.accent fallback
+    primary_color:  inner.primary_color || theme.accent || '',
+    images,
+    gallery,
+    services:       normalizeItemImages(inner.services),
+    services_intro: inner.services_intro || '',
+    menu:           normalizeItemImages(inner.menu),
+    products:       normalizeItemImages(inner.products),
+    listings:       normalizeItemImages(inner.listings),
+    team:           normalizeItemImages(inner.team),
+    testimonials:   inner.testimonials || [],
+    stats:          inner.stats        || [],
+    events:         inner.events       || inner.schedule || [],
+    hours:          normalizeHours(inner.hours) || null,
+    socials:        inner.socials  || {},
+    seo:            inner.seo      || {},
+    contact:        inner.contact  || {},
+    map_embed_url:  inner.map_embed_url || inner.contact?.map_embed_url || null,
+    before_after:   inner.before_after  || [],
+    credentials:    inner.credentials  || [],
+    brands:         inner.brands       || [],
+    clients:        inner.clients      || inner.partners || [],
+    deal:           inner.deal         || null,
+    badge:          inner.badge        || null,
+    video_url:      inner.video        || inner.video_url || null,
   };
 }
 
