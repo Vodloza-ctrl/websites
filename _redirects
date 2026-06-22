@@ -9,3 +9,4 @@
 /terms/   /terms/index.html    200
 /checkout     /checkout/index.html    200
 /checkout/    /checkout/index.html    200
+/templates/*  /templates/:splat  200
