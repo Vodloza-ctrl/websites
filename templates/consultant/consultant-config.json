@@ -1,0 +1,62 @@
+{
+  "templateId": "consultant",
+  "defaultPrimaryColor": "#C08A2D",
+  "defaultTypeLabel": "Professional Advisory Services",
+  "bodyClass": "tpl-advisory-firm",
+
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
+
+  "navTextColor": "#1A2236",
+  "navCtaLabel": "Book a consultation",
+  "navLinks": [
+    "#services:Services",
+    "#team:Our team",
+    "#why:Why us",
+    "#contact:Contact"
+  ],
+
+  "showOpenBadge": false,
+  "showHoursGrid": false,
+
+  "typeLabels": {
+    "consultant":      "Business · Tax · Advisory",
+    "advisory-firm":   "Business · Tax · Advisory",
+    "consultant-corp": "Business · Strategy · Consulting",
+    "law-firm":        "Legal · Compliance · Advisory",
+    "accountant":      "Accounting · Tax · Finance"
+  },
+
+  "scalars": [],
+
+  "lists": [
+    {
+      "key": "services",
+      "fallbackIcons": ["⚖", "📊", "🏢", "📈", "🤝", "💼", "📋", "🔍"],
+      "itemTemplate": "<div class=\"card\"><div class=\"ic\">{{item.icon}}</div><h3>{{item.name}}</h3><p>{{item.description}}</p></div>"
+    },
+    {
+      "key": "stats",
+      "itemTemplate": "<div><b>{{item.value}}</b><span>{{item.label}}</span></div>"
+    },
+    {
+      "key": "team",
+      "itemTemplate": "<div class=\"team-card\">{{#if item.photo_url}}<img src=\"{{item.photo_url}}\" alt=\"{{item.name}}\">{{else}}<div class=\"team-avatar\">👤</div>{{/if}}<div class=\"t-name\">{{item.name}}</div><div class=\"t-role\">{{item.role}}</div>{{#if item.bio}}<p class=\"t-bio\">{{item.bio}}</p>{{/if}}</div>"
+    },
+    {
+      "key": "testimonials",
+      "itemTemplate": "<div class=\"testi-card\"><p class=\"testi-text\">\"{{item.text}}\"</p><p class=\"testi-name\">{{item.name}}</p><p class=\"testi-role\">{{item.role}}</p>{{#if item.ai_sample}}<span class=\"ai-badge\">Sample — replace with a real review</span>{{/if}}</div>"
+    }
+  ],
+
+  "conditionals": [
+    { "flag": "logo_url",          "type": "computed",      "token": "logo_url" },
+    { "flag": "hero_image_url",    "type": "computed",      "token": "hero_image_url" },
+    { "flag": "has_stats",         "type": "list_present",  "field": "stats" },
+    { "flag": "has_team",          "type": "list_present",  "field": "team" },
+    { "flag": "has_testimonials",  "type": "list_present",  "field": "testimonials" },
+    { "flag": "location",          "type": "field_present", "field": "location" },
+    { "flag": "email",             "type": "field_present", "field": "email" },
+    { "flag": "phone",             "type": "field_present", "field": "phone" },
+    { "flag": "quote_form_enabled","type": "content_flag",  "field": "quote_form.enabled", "default": true }
+  ]
+}
