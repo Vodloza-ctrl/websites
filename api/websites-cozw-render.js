@@ -1,11 +1,10 @@
 /**
- * websites.co.zw — Render Worker v9.1
- * Fixes applied vs v9.0:
- *   1. normalizeContent() — correctly unwraps images.hero/logo/gallery,
- *      reads phone from all nested locations, maps theme.accent → primary_color
- *   2. buildGrillExtras() — treats empty-string category as 'Menu'
- *   3. renderEngine() — pre-built _html token injection (grill patch)
- *   4. buildTemplateExtras() — calls buildGrillExtras for grill-house/restaurant
+ * websites.co.zw — Render Worker v9.2
+ * Fixes applied vs v9.1:
+ *   5. normalizeContent() — services items normalized so both .name/.title
+ *      and .body/.description are always populated from whichever field
+ *      exists (AI Worker outputs title+body, editor saves name+body).
+ *      Fixes blank service cards on advisory-firm and all future templates.
  */
 
 export default {
@@ -420,10 +419,6 @@ function buildGrillExtras(c, config) {
 }
 
 // ─── SHELL WRAPPER ────────────────────────────────────────────────────────────
-// NOTE: for grill-house the template is fully self-contained (own nav, own JS).
-// wrapWithShell still adds shared CSS reset + FAB, but the template's own
-// nav/footer/scripts take precedence since they are rendered inside <main>.
-// The shell nav is suppressed when config.selfContainedNav = true.
 
 function wrapWithShell(body, c, site, config, isPreview) {
   const phone  = c.phone || c.contact?.phone || '';
@@ -431,7 +426,6 @@ function wrapWithShell(body, c, site, config, isPreview) {
   const waNum  = digits.startsWith('263') ? digits : '263' + digits.replace(/^0/, '');
   const waHref = phone ? `https://wa.me/${waNum}?text=${encodeURIComponent('Hello!')}` : '#';
 
-  // grill-house has its own nav baked into the template HTML — skip shell nav
   const skipNav = !!config.selfContainedNav;
 
   const navLinks = (config.navLinks || ['#services:Services', '#contact:Contact'])
@@ -458,7 +452,6 @@ function wrapWithShell(body, c, site, config, isPreview) {
     ? `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600">Preview mode — <a href="https://app.websites.co.zw" style="color:#fff;text-decoration:underline">Go to dashboard</a> to publish</div>`
     : '';
 
-  // Shell JS: only the bits the template doesn't provide itself
   const shellJs = skipNav ? '' : `<script>
 (function(){
   var nav=document.getElementById('wcz-nav');
@@ -562,6 +555,23 @@ function normalizeItemImages(arr) {
   });
 }
 
+// ─── NORMALIZE SERVICES ───────────────────────────────────────────────────────
+// AI Worker outputs { title, body }; editor saves { name, body }.
+// Normalize so both .name/.title and .body/.description are always present,
+// whichever source the data came from. Configs can safely use either field name.
+
+function normalizeServices(arr) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map(item => {
+    if (!item || typeof item !== 'object') return item;
+    const title       = item.title       || item.name        || '';
+    const name        = item.name        || item.title       || '';
+    const body        = item.body        || item.description || '';
+    const description = item.description || item.body        || '';
+    return { ...item, title, name, body, description };
+  });
+}
+
 // ─── HOURS HELPERS ────────────────────────────────────────────────────────────
 
 function normalizeHours(hours) {
@@ -645,19 +655,16 @@ function buildHoursGridHtml(hours) {
 }
 
 // ─── CONTENT NORMALIZATION ────────────────────────────────────────────────────
-// Handles double-nested content: { theme:{}, content:{ business_name, images:{}, ... } }
 
 function normalizeContent(raw) {
   if (!raw) return {};
 
-  // Unwrap double-nested structure
   const inner = (raw.content && typeof raw.content === 'object' && !Array.isArray(raw.content))
     ? raw.content
     : raw;
   const theme  = raw.theme || {};
   const images = inner.images || {};
 
-  // Gallery: stored as string[] in images.gallery, convert to [{url,caption}]
   const gallery = Array.isArray(inner.gallery)
     ? inner.gallery
     : Array.isArray(images.gallery)
@@ -670,21 +677,20 @@ function normalizeContent(raw) {
     name:           inner.business_name || inner.name || '',
     tagline:        inner.tagline  || '',
     about:          inner.about    || '',
-    // Phone: try contact.phone, contact.whatsapp, top-level phone, _brief.phone
     phone:          inner.contact?.phone || inner.contact?.whatsapp
                     || inner.phone       || inner._brief?.phone || '',
     email:          inner.contact?.email  || inner.email  || inner._brief?.email || '',
     address:        inner.contact?.address || inner.address || inner.location || '',
     location:       inner.location || inner.contact?.address || '',
-    // Images: unwrap images.hero / images.logo
     hero_image:     images.hero    || inner.hero_image     || '',
     hero_image_url: images.hero    || inner.hero_image_url || inner.hero_image || '',
     logo_url:       images.logo    || inner.logo_url       || '',
-    // primary_color: explicit field, then theme.accent fallback
     primary_color:  inner.primary_color || theme.accent || '',
     images,
     gallery,
-    services:       normalizeItemImages(inner.services),
+    // ↓ v9.2: normalizeServices() ensures title/name and body/description
+    //   are always both populated regardless of which source wrote the data.
+    services:       normalizeServices(normalizeItemImages(inner.services)),
     services_intro: inner.services_intro || '',
     menu:           normalizeItemImages(inner.menu),
     products:       normalizeItemImages(inner.products),
