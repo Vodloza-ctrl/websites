@@ -521,7 +521,7 @@ function populateForm(){
   if(tlabel)tlabel.textContent=templateNames[state.site.template_id]||state.site.template_id||"General Business";
   set("f_phone",ct.phone||"");set("f_whatsapp",ct.whatsapp||"");
   set("f_email",ct.email||"");set("f_address",ct.address||"");
-  set("f_location",c.location||"");set("f_map_embed_url",c.map_embed_url||inner.map_embed_url||"");
+  set("f_location",c.location||"");set("f_map_embed_url",c.map_embed_url||c.contact?.map_embed_url||"");
   set("s_whatsapp",s.whatsapp||"");set("s_facebook",s.facebook||"");
   set("s_instagram",s.instagram||"");set("s_tiktok",s.tiktok||"");
   set("s_twitter",s.twitter||"");set("s_linkedin",s.linkedin||"");
