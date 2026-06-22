@@ -1,1050 +1,786 @@
 /**
- * websites.co.zw — render Worker v3 (SELF-CONTAINED, no imports)
- * --------------------------------------------------------------
- * Skins registered: bold-retail, grill-house, beauty-salon,
- *                   school-institution, advisory-firm, property-estate
+ * websites.co.zw — Render Worker v9.0
+ * Cloudflare Worker · Config-driven template engine
  *
- * Each skin reads from the same content JSON schema:
- *   content.business_name, .tagline, .about, .services[], .contact{},
- *   .socials{}, .images{hero,logo,gallery[]}, .team[], .testimonials[],
- *   .video{embedUrl,r2Url,poster}, .menu{categories[]}, .hours,
- *   .stats[], .location
+ * What changed from v8.x:
+ *   - Per-template render functions (renderGrillHouse, renderAdvisory, etc.)
+ *     are REMOVED from this file. Each template is now two files on Pages:
+ *       /templates/{id}/index.html   — slot-based HTML
+ *       /templates/{id}/config.json  — slot mapping rules
+ *   - renderEngine() is the universal resolver (~200 lines, never changes)
+ *   - All shared infrastructure unchanged: htmlShell, buildNav, buildFooter,
+ *     buildContactSection, buildHoursSection, normalizeContent, icon system,
+ *     ICONS, esc(), wa(), getImage() etc.
+ *   - ASSETS binding still points to R2 (images). No binding changes needed.
+ *   - Templates fetched from Pages via URL (PAGES_ORIGIN env var or constant).
  *
- * theme.palette   → one of the PALETTES keys (or skin default)
- * theme.font_pair → one of the FONT_PAIRS keys (or skin default)
- * theme.sections  → ordered array of section names (or skin default)
+ * To add a new template: drop index.html + config.json in /templates/{id}/
+ * on Pages. Zero Worker changes. Zero Worker redeploys.
+ *
+ * Bindings (unchanged from v8):
+ *   DB      — D1 database
+ *   ASSETS  — R2 bucket (images)
+ *
+ * New env var (set in wrangler.toml [vars]):
+ *   PAGES_ORIGIN — your Pages domain e.g. "https://www.websites.co.zw"
  */
 
-const PUBLICLY_SERVEABLE = new Set(["published", "grace"]);
-
 export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const host = url.hostname.toLowerCase();
-    const root = (env.PLATFORM_ROOT || "websites.co.zw").toLowerCase();
-
-    if (host === `assets.${root}` || host === `cdn.${root}`) {
-      return serveAsset(request, env, ctx, url);
+  async fetch(request, env) {
+    try {
+      return await handleRequest(request, env);
+    } catch (err) {
+      console.error('Render error:', err);
+      return new Response('Internal error', { status: 500 });
     }
-
-    const target = resolveHost(host, url.pathname, root);
-
-    // app.websites.co.zw (non-preview) → forward to auth/dashboard Worker
-    if (target && target.context === "app") {
-      const authHost = env.AUTH_WORKER_HOST || "websites-cozw-auth.yasibomedia.workers.dev";
-      const authUrl  = new URL(request.url);
-      authUrl.hostname = authHost;
-      return fetch(new Request(authUrl.toString(), request));
-    }
-
-    // null = apex / www → forward to Pages (rewrite hostname to avoid loop)
-    if (!target) {
-      const pagesHost = env.PAGES_HOST || "websites-aon.pages.dev";
-      const pagesUrl  = new URL(request.url);
-      pagesUrl.hostname = pagesHost;
-      return fetch(new Request(pagesUrl.toString(), request));
-    }
-
-    const site = await loadSite(env.DB, target);
-    if (!site) return holdingPage(404, "Site not found");
-
-    if (target.context === "preview") {
-      const claims = await verifyPreviewToken(readCookie(request, "wcz_preview"), env.PREVIEW_SECRET);
-      if (!claims) return redirectToLogin(request, env);
-      if (claims.sub !== site.owner_id) return holdingPage(404, "Site not found");
-    }
-
-    const status = effectiveStatus(site);
-
-    if (target.context === "public" && !PUBLICLY_SERVEABLE.has(status)) {
-      return holdingPage(404, "This site is not published yet");
-    }
-
-    let doc;
-    try { doc = JSON.parse(site.content || "{}"); } catch { doc = {}; }
-    const theme   = doc.theme   || {};
-    const content = doc.content || {};
-
-    const showBanner = target.context === "preview";
-    const html = renderSite({ site, status, theme, content, showBanner, env });
-
-    return new Response(html, {
-      headers: {
-        "content-type": "text/html; charset=utf-8",
-        "cache-control": showBanner ? "no-store" : "public, max-age=60",
-        "x-robots-tag": showBanner ? "noindex, nofollow" : "all",
-      },
-    });
-  },
-};
-
-/* =========================================================================
- * Host + path resolution
- * ========================================================================= */
-const RESERVED_SUBDOMAINS = new Set([
-  "app","www","api","preview","dashboard","admin","assets","cdn","mail",
-]);
-
-function resolveHost(host, pathname, root) {
-  const appHost = `app.${root}`;
-  if (host === appHost) {
-    const m = pathname.match(/^\/preview\/([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)(?:\/|$)/i);
-    if (m) return { context: "preview", token: m[1].toLowerCase() };
-    return { context: "app" }; // forward to auth/dashboard worker
   }
-  if (host === root || host === `www.${root}`) return null;
-  const publicSuffix = `.${root}`;
-  if (host.endsWith(publicSuffix)) {
-    const token = host.slice(0, -publicSuffix.length);
-    if (!token || token.includes(".") || RESERVED_SUBDOMAINS.has(token)) return null;
-    return { context: "public", token };
+};
+
+// ─── ROUTING ──────────────────────────────────────────────────────────────────
+
+async function handleRequest(request, env) {
+  const url  = new URL(request.url);
+  const host = url.hostname;
+
+  // R2 asset serving (unchanged)
+  if (host === 'assets.websites.co.zw') {
+    const key = url.pathname.replace(/^\/+/, '');
+    if (!key) return new Response('Not found', { status: 404 });
+    return serveAsset(request, env, key);
   }
-  return { context: "public", host };
-}
-
-async function loadSite(db, target) {
-  const cols = "id, owner_id, status, plan, draft_subdomain, custom_domain, custom_domain_status, template_id, content, published_at, expires_at";
-  if (target.token) {
-    return db.prepare(`SELECT ${cols} FROM sites WHERE draft_subdomain = ?1`).bind(target.token).first();
+  if (url.pathname.startsWith('/assets/')) {
+    return serveAsset(request, env, url.pathname.replace('/assets/', ''));
   }
-  return db.prepare(`SELECT ${cols} FROM sites WHERE custom_domain = ?1`).bind(target.host).first();
+
+  // Subdomain routing
+  const parts = host.split('.');
+  if (parts.length >= 3 && parts[1] === 'websites' && parts[2] === 'co') {
+    return handlePublic(request, env, parts[0]);
+  }
+
+  return handlePublic(request, env, null, host);
 }
 
-const GRACE_WINDOW_SECONDS = 14 * 24 * 60 * 60;
-function effectiveStatus(site) {
-  if (site.status !== "published" && site.status !== "grace") return site.status;
-  if (!site.expires_at) return site.status;
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= site.expires_at) return "published";
-  if (now <= site.expires_at + GRACE_WINDOW_SECONDS) return "grace";
-  return "suspended";
+// ─── ASSET PROXY (R2 — unchanged) ─────────────────────────────────────────────
+
+async function serveAsset(request, env, key) {
+  const cached   = caches.default;
+  const cacheKey = new Request(request.url, request);
+  const hit      = await cached.match(cacheKey);
+  if (hit) return hit;
+
+  const obj = await env.ASSETS.get(key);
+  if (!obj) return new Response('Not found', { status: 404 });
+
+  const ext     = key.split('.').pop().toLowerCase();
+  const mimeMap = {
+    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+    gif: 'image/gif',  webp: 'image/webp', svg: 'image/svg+xml',
+    pdf: 'application/pdf', woff2: 'font/woff2', woff: 'font/woff'
+  };
+  const ct = mimeMap[ext] || 'application/octet-stream';
+
+  const response = new Response(obj.body, {
+    headers: { 'Content-Type': ct, 'Cache-Control': 'public, max-age=31536000, immutable' }
+  });
+  await cached.put(cacheKey, response.clone());
+  return response;
 }
 
-/* =========================================================================
- * Skin registry
- * ========================================================================= */
-const SKINS = {
-  "bold-retail":        renderBoldRetail,
-  "grill-house":        renderGrillHouse,
-  "beauty-salon":       renderBeautySalon,
-  "school-institution": renderSchoolInstitution,
-  "advisory-firm":      renderAdvisoryFirm,
-  "property-estate":    renderPropertyEstate,
-};
+// ─── TEMPLATE FETCHER ─────────────────────────────────────────────────────────
 
-// Alias mapping so template_id values from the editor work
-const SKIN_ALIASES = {
-  "restaurant": "grill-house",
-  "salon":      "beauty-salon",
-  "school":     "school-institution",
-  "consultant": "advisory-firm",
-  "realestate": "property-estate",
-  "church":     "school-institution", // shares institution layout
-  "sports":     "bold-retail",        // uses bold-retail + sports-sans
-};
+const TEMPLATE_CACHE = new Map(); // in-memory cache per Worker instance
 
-function renderSite(ctx) {
-  const tid = ctx.site.template_id || "bold-retail";
-  const key = SKINS[tid] ? tid : (SKIN_ALIASES[tid] || "bold-retail");
-  const skin = SKINS[key];
-  const body = skin(ctx);
-  return wrapDocument(body, ctx, key);
+async function getTemplate(templateId, env) {
+  if (TEMPLATE_CACHE.has(templateId)) return TEMPLATE_CACHE.get(templateId);
+
+  const origin = (env.PAGES_ORIGIN || 'https://www.websites.co.zw').replace(/\/$/, '');
+  const base   = `${origin}/templates/${templateId}`;
+
+  const [htmlRes, configRes] = await Promise.all([
+    fetch(`${base}/index.html`),
+    fetch(`${base}/config.json`),
+  ]);
+
+  if (!htmlRes.ok)   throw new Error(`Template HTML not found: ${templateId}`);
+  if (!configRes.ok) throw new Error(`Template config not found: ${templateId}`);
+
+  const [html, config] = await Promise.all([
+    htmlRes.text(),
+    configRes.json(),
+  ]);
+
+  const result = { html, config };
+  TEMPLATE_CACHE.set(templateId, result); // cache for Worker lifetime (~few minutes)
+  return result;
 }
 
-/* =========================================================================
- * Theme tokens
- * ========================================================================= */
-const PALETTES = {
-  // Global
-  "black-white-gold": { bg:"#0c0c0c", surface:"#161616", ink:"#f5f5f3", muted:"#a8a89f", accent:"#c8a24a", onAccent:"#0c0c0c", hero:"rgba(0,0,0,.62)" },
-  "clean-white":      { bg:"#ffffff", surface:"#f6f6f4", ink:"#1a1a1a", muted:"#6b6b66", accent:"#1a1a1a", onAccent:"#ffffff", hero:"rgba(0,0,0,.55)" },
-  "sky-blue":         { bg:"#0f1b2d", surface:"#16263d", ink:"#eef4fb", muted:"#9fb3cc", accent:"#3da5e0", onAccent:"#0f1b2d", hero:"rgba(15,27,45,.7)" },
-  "elite-sports":     { bg:"#0a0a0a", surface:"#151515", ink:"#f5f6f5", muted:"#9aa0a6", accent:"#16a34a", onAccent:"#ffffff", hero:"rgba(0,0,0,.72)" },
-  // Restaurant / grill
-  "ember-cream":      { bg:"#FBF4E9", surface:"#fff",    ink:"#2A211A", muted:"#6E6055", accent:"#D2541F", onAccent:"#fff",    hero:"rgba(34,26,20,.88)" },
-  // Salon / beauty
-  "blush-plum":       { bg:"#ffffff", surface:"#F7ECEC", ink:"#2E2329", muted:"#7A6A70", accent:"#B08D57", onAccent:"#fff",    hero:"rgba(58,31,43,.68)" },
-  // School / institution
-  "navy-gold":        { bg:"#ffffff", surface:"#EAF1F9", ink:"#1C2733", muted:"#5C6976", accent:"#C99A2E", onAccent:"#fff",    hero:"rgba(17,51,92,.88)" },
-  // Advisory / consultant
-  "slate-gold":       { bg:"#ffffff", surface:"#F4F6FA", ink:"#1A2236", muted:"#5A6478", accent:"#C08A2D", onAccent:"#fff",    hero:"rgba(21,34,56,.82)" },
-  // Property / real estate
-  "forest-cream":     { bg:"#F6F1E7", surface:"#fff",    ink:"#1E2A24", muted:"#5E6B63", accent:"#B0852F", onAccent:"#fff",    hero:"rgba(19,57,42,.82)" },
-};
+// ─── RENDER ENGINE ────────────────────────────────────────────────────────────
+// Resolves {{tokens}}, {{#if}}/{{#each}} blocks using config rules.
+// The config declares what to do; the engine does the mechanical work.
 
-const FONT_PAIRS = {
-  "grotesk-serif":    { display:"'Fraunces', Georgia, serif",           body:"'Plus Jakarta Sans', system-ui, sans-serif", url:"https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" },
-  "clean-sans":       { display:"'Space Grotesk', sans-serif",          body:"'Inter', system-ui, sans-serif",             url:"https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" },
-  "sports-sans":      { display:"'Barlow Condensed', system-ui, sans-serif", body:"'Barlow', system-ui, sans-serif",       url:"https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" },
-  "playfair-jakarta": { display:"'Playfair Display', Georgia, serif",   body:"'Plus Jakarta Sans', system-ui, sans-serif", url:"https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" },
-  "garamond-jost":    { display:"'Cormorant Garamond', Georgia, serif", body:"'Jost', system-ui, sans-serif",              url:"https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" },
-};
+function renderEngine(templateHtml, site, config, extraTokens) {
+  const c = site.content || {};
 
-// Per-skin defaults — used when theme.palette / theme.font_pair not set
-const SKIN_DEFAULTS = {
-  "bold-retail":        { palette:"clean-white",  font:"clean-sans",       sections:["hero","about","services","gallery","team","testimonials","contact"] },
-  "grill-house":        { palette:"ember-cream",  font:"playfair-jakarta", sections:["hero","menu","about","gallery","contact"] },
-  "beauty-salon":       { palette:"blush-plum",   font:"garamond-jost",    sections:["hero","services","about","gallery","team","contact"] },
-  "school-institution": { palette:"navy-gold",    font:"grotesk-serif",    sections:["hero","stats","about","services","team","testimonials","contact"] },
-  "advisory-firm":      { palette:"slate-gold",   font:"grotesk-serif",    sections:["hero","services","about","team","testimonials","contact"] },
-  "property-estate":    { palette:"forest-cream", font:"grotesk-serif",    sections:["hero","services","about","gallery","contact"] },
-};
+  // 1. Build computed tokens (platform-level, same for every template)
+  const computed = buildComputedTokens(site, c, config);
+  const tokens   = { ...computed, ...(extraTokens || {}) };
 
-function themeVars(theme, skinKey) {
-  const def = SKIN_DEFAULTS[skinKey] || SKIN_DEFAULTS["bold-retail"];
-  const p = PALETTES[theme.palette] || PALETTES[def.palette];
-  const f = FONT_PAIRS[theme.font_pair] || FONT_PAIRS[def.font];
-  const vars = [
-    `--bg:${p.bg}`,`--surface:${p.surface}`,`--ink:${p.ink}`,
-    `--muted:${p.muted}`,`--accent:${p.accent}`,`--on-accent:${p.onAccent}`,
-    `--hero-overlay:${p.hero}`,
-    `--font-display:${f.display}`,`--font-body:${f.body}`,
-  ].join(";");
-  return { vars, fontUrl: f.url };
+  let html = templateHtml;
+
+  // 2. Process {{#each}} blocks
+  for (const def of (config.lists || [])) {
+    html = processEach(html, def, c, tokens);
+  }
+
+  // 3. Process {{#if}} / {{#if}}...{{else}} blocks
+  for (const def of (config.conditionals || [])) {
+    html = processConditional(html, def, c, tokens, computed);
+  }
+
+  // 4. Replace scalar {{token}} placeholders
+  for (const [key, val] of Object.entries(tokens)) {
+    html = html.split(`{{${key}}}`).join(esc(String(val ?? '')));
+  }
+
+  // 5. Strip any unreplaced placeholders (missing optional fields)
+  html = html.replace(/\{\{[^}]+\}\}/g, '');
+
+  return html;
 }
 
-/* =========================================================================
- * Document wrapper — shared <head>, CSS scaffold, draft banner, scripts
- * ========================================================================= */
-function wrapDocument(body, ctx, skinKey) {
-  const { vars, fontUrl } = themeVars(ctx.theme, skinKey);
-  const imgs  = ctx.content.images || {};
-  const title = esc(ctx.content.business_name || "Untitled site");
-  const desc  = esc(ctx.content.tagline || "");
-  const banner = ctx.showBanner ? draftBanner(ctx.status) : "";
-  const favicon  = imgs.favicon || "";
-  const ogImage  = imgs.hero || imgs.logo || "";
+function buildComputedTokens(site, c, config) {
+  const businessName  = c.business_name || c.name || '';
+  const primaryColor  = c.primary_color || site.primary_color || config.defaultPrimaryColor || '#1a3a5c';
+  const phone         = c.phone || c.contact?.phone || '';
+  const whatsapp      = c.whatsapp || c.contact?.whatsapp || phone;
+  const location      = c.location || c.address || c.contact?.address || '';
+  const about         = c.about || '';
+
+  const nameParts         = businessName.trim().split(/\s+/);
+  const businessNameFirst = nameParts[0] || businessName;
+  const businessNameRest  = nameParts.slice(1).join(' ') || '';
+
+  // Zimbabwe number normalisation
+  const whatsappDigits = whatsapp.replace(/\D/g, '');
+  const whatsappClean  = whatsappDigits.startsWith('263')
+    ? whatsappDigits
+    : '263' + whatsappDigits.replace(/^0/, '');
+
+  const seoTitle = c.seo?.meta_title       || `${businessName}${location ? ' — ' + location : ''}`;
+  const seoDesc  = c.seo?.meta_description || about.slice(0, 155);
+
+  const typeLabel = (config.typeLabels || {})[site.template_id]
+    || c.business_type_label
+    || config.defaultTypeLabel
+    || '';
+
+  return {
+    site_id:             site.id            || '',
+    business_name:       businessName,
+    business_name_first: businessNameFirst,
+    business_name_rest:  businessNameRest,
+    primary_color:       primaryColor,
+    accent_color:        primaryColor,
+    tagline:             c.tagline          || '',
+    about:               about,
+    phone:               phone,
+    email:               c.email || c.contact?.email || '',
+    whatsapp:            whatsapp,
+    whatsapp_clean:      whatsappClean,
+    whatsapp_wa_link:    `https://wa.me/${whatsappClean}`,
+    location:            location,
+    logo_url:            c.logo_url         || site.logo_url         || '',
+    hero_image_url:      c.hero_image_url   || c.hero_image          || site.hero_image_url || '',
+    seo_title:           seoTitle,
+    seo_description:     seoDesc,
+    business_type_label: typeLabel,
+    current_year:        String(new Date().getFullYear()),
+  };
+}
+
+function processEach(html, def, c, tokens) {
+  const re = new RegExp(
+    `\\{\\{#each ${def.key}\\}\\}([\\s\\S]*?)\\{\\{/each\\}\\}`, 'g'
+  );
+  return html.replace(re, () => {
+    const items = Array.isArray(c[def.key]) ? c[def.key] : [];
+    if (!items.length) return def.emptyHtml || '';
+    return items.map((item, i) => {
+      let block = def.itemTemplate;
+      // Inner {{#if item.field}}...{{else}}...{{/if}}
+      block = block.replace(
+        /\{\{#if item\.(\w+)\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g,
+        (_, field, t, f) => item[field] ? t : f
+      );
+      // Inner {{#if item.field}}...{{/if}}
+      block = block.replace(
+        /\{\{#if item\.(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
+        (_, field, content) => item[field] ? content : ''
+      );
+      // {{item.field}} with fallback icon support
+      block = block.replace(/\{\{item\.(\w+)\}\}/g, (_, field) => {
+        if (field === 'icon' && !item[field] && def.fallbackIcons) {
+          return esc(def.fallbackIcons[i % def.fallbackIcons.length]);
+        }
+        return esc(String(item[field] ?? ''));
+      });
+      block = block.replace(/\{\{item_index\}\}/g, String(i + 1));
+      return block;
+    }).join('\n');
+  });
+}
+
+function processConditional(html, def, c, tokens, computed) {
+  const condition = evaluateCondition(def, c, tokens, computed);
+
+  // {{#if flag}}...{{else}}...{{/if}}
+  const reElse = new RegExp(
+    `\\{\\{#if ${def.flag}\\}\\}([\\s\\S]*?)\\{\\{else\\}\\}([\\s\\S]*?)\\{\\{/if\\}\\}`, 'g'
+  );
+  html = html.replace(reElse, (_, t, f) =>
+    def.ifTrue !== undefined || def.ifFalse !== undefined
+      ? (condition ? (def.ifTrue ?? t) : (def.ifFalse ?? ''))
+      : (condition ? t : f)
+  );
+
+  // {{#if flag}}...{{/if}}
+  const reIf = new RegExp(
+    `\\{\\{#if ${def.flag}\\}\\}([\\s\\S]*?)\\{\\{/if\\}\\}`, 'g'
+  );
+  html = html.replace(reIf, (_, content) =>
+    condition ? (def.ifTrue ?? content) : ''
+  );
+
+  return html;
+}
+
+function evaluateCondition(def, c, tokens, computed) {
+  switch (def.type) {
+    case 'field_present':   return !!(deepGet(c, def.field));
+    case 'list_present':    return Array.isArray(c[def.field]) && c[def.field].length > 0;
+    case 'nested_field':    return !!(c[def.field]?.[def.subfield]);
+    case 'computed':        return !!(computed[def.token] || tokens[def.token]);
+    case 'config_value':    return !!def.value;
+    case 'content_flag':    return deepGet(c, def.field) !== false && (deepGet(c, def.field) ?? def.default ?? true);
+    default:                return false;
+  }
+}
+
+function deepGet(obj, path) {
+  if (!path) return undefined;
+  return path.split('.').reduce((o, k) => o?.[k], obj);
+}
+
+// ─── PUBLIC RENDER ────────────────────────────────────────────────────────────
+
+async function handlePublic(request, env, slug, customDomain) {
+  let site;
+  if (slug)          site = await getSiteBySlug(env.DB, slug);
+  else if (customDomain) site = await getSiteByDomain(env.DB, customDomain);
+  if (!site) return render404();
+
+  const isLive = ['published', 'grace'].includes(site.status);
+  let isPreview = false;
+  if (!isLive) {
+    const previewToken = new URL(request.url).searchParams.get('preview_token');
+    if (previewToken) {
+      const valid = await checkPreviewToken(env.DB, previewToken, site.id);
+      if (!valid) return render404();
+      isPreview = true;
+    } else {
+      return render404();
+    }
+  }
+
+  const raw     = typeof site.content === 'string' ? JSON.parse(site.content) : site.content;
+  const content = normalizeContent(raw);
+
+  const templateId = site.template_id || content.template || 'bold-retail';
+
+  let html;
+  try {
+    const { html: templateHtml, config } = await getTemplate(templateId, env);
+    // Build extra tokens the template needs that aren't in computedTokens
+    const extraTokens = buildTemplateExtras(content, site, config);
+    const resolved    = renderEngine(templateHtml, { ...site, content }, config, extraTokens);
+    html = wrapWithShell(resolved, content, site, config, isPreview);
+  } catch (err) {
+    console.error('Template error:', err);
+    return new Response(`Template error: ${err.message}`, { status: 500 });
+  }
+
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html;charset=UTF-8',
+      'Cache-Control': isPreview ? 'no-store'
+        : site.status === 'grace' ? 'no-store'
+        : 'public, max-age=300, stale-while-revalidate=3600',
+    }
+  });
+}
+
+// ─── TEMPLATE EXTRAS ─────────────────────────────────────────────────────────
+// Tokens that require logic beyond simple field lookup.
+// Config declares which extras to enable; engine calls this once.
+
+function buildTemplateExtras(c, site, config) {
+  const extras = {};
+
+  // WhatsApp link (pre-built href)
+  const phone = c.phone || c.contact?.phone || '';
+  if (phone) {
+    const digits = phone.replace(/\D/g, '');
+    const num    = digits.startsWith('263') ? digits : '263' + digits.replace(/^0/, '');
+    extras.wa_href_general  = `https://wa.me/${num}?text=${encodeURIComponent('Hello, I found you on websites.co.zw!')}`;
+    extras.wa_href_consult  = `https://wa.me/${num}?text=${encodeURIComponent('Hello, I would like to book a consultation.')}`;
+    extras.wa_href_order    = `https://wa.me/${num}?text=${encodeURIComponent('Hello, I would like to place an order.')}`;
+    extras.wa_href_enquiry  = `https://wa.me/${num}?text=${encodeURIComponent('Hello, I would like to make an enquiry.')}`;
+    extras.wa_href_booking  = `https://wa.me/${num}?text=${encodeURIComponent('Hello, I would like to book an appointment.')}`;
+  }
+
+  // Google Maps link
+  const address = c.address || c.location || c.contact?.address || '';
+  if (address) {
+    extras.maps_href = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
+  }
+
+  // Open/closed badge HTML
+  if (config.showOpenBadge && c.hours) {
+    extras.open_badge_html = openClosedBadge(c.hours);
+  }
+
+  // Hours grid HTML
+  if (config.showHoursGrid && c.hours) {
+    extras.hours_grid_html = buildHoursGridHtml(c.hours);
+  }
+
+  // Services as select options (for quote forms)
+  const services = Array.isArray(c.services) ? c.services : [];
+  if (services.length) {
+    extras.service_options_html = services
+      .map(s => `<option value="${esc(s.name || '')}">${esc(s.name || '')}</option>`)
+      .join('\n');
+  }
+
+  // First team member photo (for band image)
+  const team = Array.isArray(c.team) ? c.team : [];
+  if (team[0]?.photo_url || team[0]?.photo) {
+    extras.band_image_url = team[0].photo_url || team[0].photo || '';
+  }
+
+  // Stats HTML (pre-rendered for simpler templates)
+  const stats = Array.isArray(c.stats) ? c.stats : [];
+  if (stats.length) {
+    extras.stats_html = stats.map(s =>
+      `<div><b>${esc(String(s.value || s.number || ''))}</b><span>${esc(s.label || '')}</span></div>`
+    ).join('\n');
+  }
+
+  return extras;
+}
+
+// ─── SHELL WRAPPER ────────────────────────────────────────────────────────────
+// Injects the rendered template body into the full HTML shell.
+// The shell provides: nav, FAB, lightbox, shared JS, preview banner.
+// Templates declare what nav links they need via config.navLinks.
+
+function wrapWithShell(body, c, site, config, isPreview) {
+  const phone      = c.phone || c.contact?.phone || '';
+  const digits     = phone.replace(/\D/g, '');
+  const waNum      = digits.startsWith('263') ? digits : '263' + digits.replace(/^0/, '');
+  const waHref     = phone ? `https://wa.me/${waNum}?text=${encodeURIComponent('Hello!')}` : '#';
+
+  const navLinks   = (config.navLinks || ['#services:Services', '#contact:Contact'])
+    .map(l => { const [href, label] = l.split(':'); return `<a href="${esc(href)}">${esc(label)}</a>`; })
+    .join('');
+
+  const ctaLabel   = config.navCtaLabel || 'WhatsApp Us';
+  const ctaHref    = phone ? waHref : '#contact';
+
+  const nav = `
+<nav class="wcz-nav" id="wcz-nav" style="--nav-text:${esc(config.navTextColor || '#fff')}">
+  <div class="wcz-nav-inner">
+    <div class="wcz-nav-logo">${esc(c.business_name || c.name || '')}</div>
+    <div class="wcz-nav-links">${navLinks}
+      ${phone ? `<a href="${esc(ctaHref)}" class="wcz-nav-cta" ${phone ? `target="_blank" rel="noopener"` : ''}>${ctaLabel}</a>` : ''}
+    </div>
+    <div class="wcz-hamburger" id="wcz-hamburger"><span></span><span></span><span></span></div>
+  </div>
+</nav>
+<div class="wcz-mobile-menu" id="wcz-mobile-menu">
+  <span class="wcz-mobile-close" id="wcz-mobile-close">✕</span>
+  ${navLinks}
+  ${phone ? `<a href="${esc(waHref)}" target="_blank" rel="noopener" style="background:#25d366;color:#fff;padding:.75rem 2rem;border-radius:999px;font-weight:700">WhatsApp</a>` : ''}
+</div>`;
+
+  const previewBanner = isPreview
+    ? `<div class="wcz-preview-banner">Preview mode — <a href="https://app.websites.co.zw">Go to dashboard</a> to publish</div>`
+    : '';
+
+  const fab = phone
+    ? `<a class="wcz-fab" id="wcz-fab" href="${esc(waHref)}" aria-label="Chat on WhatsApp" target="_blank" rel="noopener">
+        <div class="wcz-fab-pulse"></div>
+        ${icon('whatsapp', 30, '#fff')}
+      </a>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title}</title>
-<meta name="description" content="${desc}">
-${favicon ? `<link rel="icon" href="${esc(favicon)}">` : ""}
-<meta property="og:title" content="${title}">
-<meta property="og:description" content="${desc}">
-<meta property="og:type" content="website">
-${ogImage ? `<meta property="og:image" content="${esc(ogImage)}">` : ""}
-<meta name="twitter:card" content="${ogImage ? "summary_large_image" : "summary"}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(c.seo?.meta_title || c.business_name || c.name || '')}</title>
+<meta name="description" content="${esc(c.seo?.meta_description || c.about || '')}">
+<meta property="og:title" content="${esc(c.business_name || c.name || '')}">
+<meta property="og:description" content="${esc(c.about || '')}">
+${c.hero_image_url || c.hero_image ? `<meta property="og:image" content="${esc(c.hero_image_url || c.hero_image)}">` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="${fontUrl}" rel="stylesheet">
-<style>
-  :root{${vars}}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.62;-webkit-font-smoothing:antialiased}
-  h1,h2,h3,h4{font-family:var(--font-display);line-height:1.08;font-weight:600}
-  a{color:inherit;text-decoration:none}
-  img{display:block;max-width:100%}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 26px}
-  .section{padding:70px 0}
-  .eyebrow{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--accent)}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--on-accent);padding:13px 24px;border-radius:8px;font-weight:600;font-size:.94rem;cursor:pointer;border:none;transition:.2s}
-  .btn:hover{opacity:.88;transform:translateY(-1px)}
-  .btn-ghost{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.45);color:#fff}
-  .btn-ghost:hover{background:rgba(255,255,255,.22)}
-  /* Nav */
-  .nav{position:fixed;top:0;left:0;right:0;z-index:900;display:flex;align-items:center;justify-content:space-between;
-       padding:18px 26px;transition:background .3s,padding .3s,border-color .3s;background:transparent;border-bottom:1px solid transparent}
-  .nav.scrolled{background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(14px);padding:11px 26px;border-bottom-color:rgba(128,128,128,.16)}
-  .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-  .nav-logo{height:38px;width:auto}
-  .nav-logo-text{font-family:var(--font-display);font-weight:700;font-size:1.25rem;color:var(--ink)}
-  .nav-cta{background:var(--accent);color:var(--on-accent);padding:9px 18px;border-radius:8px;font-weight:600;font-size:.86rem}
-  /* Hero */
-  .hero{position:relative;min-height:86vh;display:flex;align-items:flex-end;overflow:hidden}
-  .hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;transform:scale(1.04);animation:hzoom 14s ease-out forwards}
-  @keyframes hzoom{to{transform:scale(1)}}
-  .hero-ov{position:absolute;inset:0;background:linear-gradient(0deg,var(--hero-overlay) 0%,rgba(0,0,0,.18) 55%,transparent 100%)}
-  .hero-in{position:relative;z-index:2;padding:0 26px 64px;color:#fff;max-width:1120px;margin:0 auto;width:100%}
-  .hero-in .eyebrow{color:rgba(255,255,255,.75)}
-  .hero-in h1{font-size:clamp(2.8rem,7vw,5.2rem);margin:12px 0 16px;max-width:18ch;text-shadow:0 2px 30px rgba(0,0,0,.35)}
-  .hero-in p{font-size:clamp(1rem,2vw,1.2rem);max-width:46ch;color:rgba(255,255,255,.88)}
-  .hero-actions{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap}
-  /* Section heads */
-  .sec-head{max-width:640px;margin-bottom:44px}
-  .sec-head.center{margin:0 auto 44px;text-align:center}.sec-head.center .eyebrow{display:block;text-align:center}
-  .sec-head h2{font-size:clamp(1.9rem,3.8vw,2.8rem);margin-top:10px}
-  .sec-head p{color:var(--muted);margin-top:10px;font-size:1.02rem}
-  /* Gallery + lightbox */
-  .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-  .gal button{padding:0;border:0;background:none;cursor:pointer;overflow:hidden;border-radius:12px;display:block;width:100%}
-  .gal img{width:100%;height:270px;object-fit:cover;transition:transform .5s}
-  .gal button:hover img{transform:scale(1.07)}
-  .lb{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;z-index:1000;padding:28px}
-  .lb.open{display:flex}
-  .lb img{max-width:100%;max-height:100%;border-radius:8px}
-  .lb-close{position:absolute;top:16px;right:24px;color:#fff;font-size:40px;line-height:1;background:none;border:0;cursor:pointer}
-  /* Reveal animation */
-  .reveal{opacity:0;transform:translateY(16px);animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards}
-  @keyframes rise{to{opacity:1;transform:none}}
-  @media (prefers-reduced-motion:reduce){.reveal,.hero-bg{animation:none;opacity:1;transform:none}}
-  ${ctx.showBanner ? "body{padding-top:44px}.has-banner .nav{top:44px}" : ""}
-  @media(max-width:768px){.nav .nav-links{display:none}}
-</style>
+${config.googleFonts ? `<link href="${esc(config.googleFonts)}" rel="stylesheet">` : ''}
+<style>${SHARED_CSS}${config.templateCSS || ''}</style>
 </head>
-<body class="${ctx.showBanner ? "has-banner" : ""}">
-${banner}
+<body class="${esc(config.bodyClass || '')}">
+${previewBanner}
+${nav}
+<main>
 ${body}
-<script>
-(function(){
-  // Nav scroll behaviour
-  var nav=document.querySelector('.nav');
-  if(nav){var s=function(){nav.classList.toggle('scrolled',scrollY>40)};s();addEventListener('scroll',s,{passive:true});}
-  // Mobile menu
-  var ham=document.querySelector('.hamburger');
-  var mob=document.querySelector('.mobile-menu');
-  var cls=document.querySelector('.mob-close');
-  if(ham&&mob){
-    ham.addEventListener('click',function(){mob.classList.add('open');document.body.style.overflow='hidden'});
-    function closeMob(){mob.classList.remove('open');document.body.style.overflow=''}
-    if(cls)cls.addEventListener('click',closeMob);
-    mob.addEventListener('click',function(e){if(e.target===mob)closeMob()});
-    mob.querySelectorAll('a').forEach(function(a){a.addEventListener('click',closeMob)});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMob()});
-  }
-  // Lightbox
-  var lb=document.querySelector('.lb');
-  if(lb){
-    var lbi=lb.querySelector('img');
-    document.querySelectorAll('.gal button').forEach(function(b){
-      b.addEventListener('click',function(){lbi.src=b.dataset.full;lb.classList.add('open');document.body.style.overflow='hidden'});
-    });
-    var clslb=function(){lb.classList.remove('open');lbi.removeAttribute('src');document.body.style.overflow=''};
-    lb.addEventListener('click',function(e){if(e.target===lb||e.target.classList.contains('lb-close'))clslb()});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')clslb()});
-  }
-})();
-</script>
+</main>
+${fab}
+${SHARED_JS}
 </body>
 </html>`;
 }
 
-function draftBanner(status) {
-  const label = {
-    draft:"Draft — not published",
-    pending_payment:"Payment pending — publishing once confirmed",
-    grace:"Live, but renewal overdue",
-    suspended:"Suspended — renew to bring this site back online",
-  }[status] || "Preview";
-  return `<div style="position:fixed;top:0;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:center;gap:14px;background:#161616;color:#f5f5f3;font:500 14px system-ui;z-index:9999;border-bottom:1px solid rgba(255,255,255,.1)">
-    <span>${esc(label)}</span>
-    <a href="https://app.websites.co.zw/publish" style="background:var(--accent);color:var(--on-accent);padding:5px 14px;border-radius:6px;font-weight:600">Publish</a>
-  </div>`;
-}
+// ─── SHARED CSS (injected into every template) ────────────────────────────────
 
-/* =========================================================================
- * Shared section builders (used across skins)
- * ========================================================================= */
+const SHARED_CSS = `
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;background:none;font:inherit}
+ul{list-style:none}
+:root{--shadow-sm:0 2px 12px rgba(0,0,0,.06);--shadow-md:0 8px 32px rgba(0,0,0,.12);--radius-card:12px;--radius-pill:999px}
+.wcz-nav{position:fixed;top:0;left:0;right:0;z-index:1000;transition:background .3s,box-shadow .3s;padding:0 1.5rem}
+.wcz-nav.scrolled{background:rgba(var(--nav-bg-rgb,255,255,255),.92);backdrop-filter:blur(12px);box-shadow:0 1px 16px rgba(0,0,0,.12)}
+.wcz-nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto;height:64px}
+.wcz-nav-logo{font-size:1.25rem;font-weight:800;color:var(--accent,#000)}
+.wcz-nav-links{display:flex;gap:1.5rem;align-items:center}
+.wcz-nav-links a{font-size:.9rem;font-weight:500;color:var(--nav-text,#fff);opacity:.85;transition:opacity .2s}
+.wcz-nav-links a:hover{opacity:1}
+.wcz-nav-cta{background:var(--accent);color:#fff!important;padding:.45rem 1.1rem;border-radius:var(--radius-pill);font-weight:700;opacity:1!important}
+.wcz-hamburger{display:none;flex-direction:column;gap:5px;padding:8px;cursor:pointer}
+.wcz-hamburger span{width:24px;height:2px;background:var(--nav-text,#fff);display:block;transition:.3s}
+.wcz-mobile-menu{display:none;position:fixed;inset:0;z-index:999;background:#fff;flex-direction:column;align-items:center;justify-content:center;gap:2rem}
+.wcz-mobile-menu.open{display:flex}
+.wcz-mobile-menu a{font-size:1.3rem;font-weight:700;color:#1a1a2e}
+.wcz-mobile-close{position:absolute;top:1.5rem;right:1.5rem;cursor:pointer;font-size:1.5rem}
+@media(max-width:768px){.wcz-nav-links{display:none}.wcz-hamburger{display:flex}}
+.wcz-fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:900;width:56px;height:56px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.45);opacity:0;transform:scale(.8);transition:opacity .3s,transform .3s;pointer-events:none}
+.wcz-fab.visible{opacity:1;transform:scale(1);pointer-events:auto}
+.wcz-fab-pulse{position:absolute;inset:0;border-radius:50%;border:2px solid #25d366;animation:fabpulse 2s infinite}
+@keyframes fabpulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+.wcz-reveal{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease}
+.wcz-reveal.revealed{opacity:1;transform:none}
+.wcz-preview-banner{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600}
+.wcz-preview-banner a{color:#fff;text-decoration:underline}
+.badge-open,.badge-closed{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;padding:.25rem .8rem;border-radius:var(--radius-pill)}
+.badge-open{background:#d1fae5;color:#065f46}
+.badge-closed{background:#fee2e2;color:#991b1b}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.badge-open .badge-dot{animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.form-msg{display:none;padding:12px 16px;border-radius:8px;font-size:.92rem;margin-bottom:12px}
+.form-msg.success{background:#d4edda;color:#155724;display:block}
+.form-msg.error{background:#f8d7da;color:#721c24;display:block}
+`;
 
-/* ── Nav link generation ──────────────────────────────────────────────────
- * Priority: content.nav_links[] (owner-defined) → auto from active sections
- * Each link: { label, href } e.g. { label:"Menu", href:"#menu" }
- * Auto-generated hrefs match the section id attrs set in each section builder.
- */
-const SECTION_LABELS = {
-  about:"About", services:"Services", menu:"Menu", gallery:"Gallery",
-  team:"Team", testimonials:"Reviews", contact:"Contact", stats:null,
-  video:null, hero:null, listings:"Listings",
+// ─── SHARED JS (injected into every template) ─────────────────────────────────
+
+const SHARED_JS = `<script>
+(function(){
+  var nav=document.getElementById('wcz-nav');
+  var fab=document.getElementById('wcz-fab');
+  function s(){ var y=window.scrollY; if(nav) nav.classList.toggle('scrolled',y>60); if(fab) fab.classList.toggle('visible',y>300); }
+  window.addEventListener('scroll',s,{passive:true}); s();
+})();
+(function(){
+  var btn=document.getElementById('wcz-hamburger');
+  var menu=document.getElementById('wcz-mobile-menu');
+  var close=document.getElementById('wcz-mobile-close');
+  if(!btn||!menu) return;
+  btn.addEventListener('click',function(){menu.classList.add('open');});
+  if(close) close.addEventListener('click',function(){menu.classList.remove('open');});
+  menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){menu.classList.remove('open');});});
+})();
+(function(){
+  var items=document.querySelectorAll('.wcz-reveal');
+  if(!items.length) return;
+  var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('revealed');obs.unobserve(e.target);}});},{threshold:.1});
+  items.forEach(function(el){obs.observe(el);});
+})();
+(function(){
+  var counters=document.querySelectorAll('.wcz-stat-num[data-target]');
+  if(!counters.length) return;
+  var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var el=e.target; var target=parseInt(el.dataset.target,10); var suffix=el.dataset.suffix||'';
+    var start=0; var dur=1800; var step=16; var inc=target/(dur/step);
+    var timer=setInterval(function(){start=Math.min(start+inc,target);el.textContent=Math.floor(start).toLocaleString()+suffix;if(start>=target)clearInterval(timer);},step);
+    obs.unobserve(el);
+  });},{threshold:.5});
+  counters.forEach(function(el){obs.observe(el);});
+})();
+(function(){
+  document.querySelectorAll('.wcz-accordion-trigger').forEach(function(t){
+    t.addEventListener('click',function(){t.closest('.wcz-accordion-item').classList.toggle('open');});
+  });
+})();
+// Quote form submit (used by advisory, etc.)
+window.wczSubmitQuote = async function(siteId) {
+  var msg=document.getElementById('wcz-form-msg');
+  if(msg){msg.className='form-msg';}
+  var name=(document.getElementById('wcz-f-name')||{}).value||'';
+  var phone=(document.getElementById('wcz-f-phone')||{}).value||'';
+  var service=(document.getElementById('wcz-f-service')||{}).value||'';
+  var message=(document.getElementById('wcz-f-message')||{}).value||'';
+  if(!name||!phone){if(msg){msg.className='form-msg error';msg.textContent='Please enter your name and contact details.';}return;}
+  try{
+    var res=await fetch('/forms/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({site_id:siteId,name,phone,service,message})});
+    if(res.ok){if(msg){msg.className='form-msg success';msg.textContent='Thanks — we\u2019ll be in touch within one business day.';}['wcz-f-name','wcz-f-phone','wcz-f-message'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});var sel=document.getElementById('wcz-f-service');if(sel)sel.value='';}
+    else throw new Error();
+  }catch(e){if(msg){msg.className='form-msg error';msg.textContent='Something went wrong. Please WhatsApp or call us directly.';}}
+};
+</script>`;
+
+// ─── ICON SYSTEM (unchanged from v8) ─────────────────────────────────────────
+
+const ICONS = {
+  menu:        `<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>`,
+  x:           `<path d="M18 6 6 18"/><path d="m6 6 12 12"/>`,
+  chevronLeft: `<path d="m15 18-6-6 6-6"/>`,
+  chevronRight:`<path d="m9 18 6-6-6-6"/>`,
+  chevronDown: `<path d="m6 9 6 6 6-6"/>`,
+  phone:       `<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>`,
+  mail:        `<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>`,
+  mapPin:      `<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>`,
+  clock:       `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>`,
+  bed:         `<path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>`,
+  bath:        `<path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" y1="5" x2="8" y2="7"/><line x1="2" y1="12" x2="22" y2="12"/>`,
+  ruler:       `<path d="M21.3 8.7 8.7 21.3c-1 1-2.5 1-3.4 0l-2.6-2.6c-1-1-1-2.5 0-3.4L15.3 2.7c1-1 2.5-1 3.4 0l2.6 2.6c1 1 1 2.5 0 3.4z"/><path d="m7.5 10.5 2 2"/><path d="m10.5 7.5 2 2"/><path d="m13.5 4.5 2 2"/><path d="m4.5 13.5 2 2"/>`,
+  facebook:    `<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>`,
+  instagram:   `<rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>`,
+  twitter:     `<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>`,
+  tiktok:      `<path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/>`,
+  linkedin:    `<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/>`,
+  whatsapp:    `<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>`,
+  star:        `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>`,
+  check:       `<polyline points="20 6 9 17 4 12"/>`,
+  zap:         `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`,
+  navigation:  `<polygon points="3 11 22 2 13 21 11 13 3 11"/>`,
+  shoppingCart:`<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>`,
+  clipboard:   `<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>`,
+  externalLink:`<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>`,
+  utensils:    `<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>`,
 };
 
-function buildNavLinks(content, theme) {
-  // Owner-defined links take absolute priority
-  if (Array.isArray(content.nav_links) && content.nav_links.length) {
-    return content.nav_links.slice(0, 6);
-  }
-  // Auto-generate from active sections (skip hero/stats/video — not linkable anchors)
-  const sections = (Array.isArray(theme && theme.sections) && theme.sections.length)
-    ? theme.sections : [];
-  return sections
-    .filter(s => SECTION_LABELS[s])
-    .map(s => ({ label: SECTION_LABELS[s], href: "#" + s }));
+const FILLED_ICONS = new Set(['facebook','instagram','twitter','tiktok','linkedin','whatsapp','star','zap']);
+
+function icon(name, size = 20, color = 'currentColor') {
+  const paths  = ICONS[name] || '';
+  const filled = FILLED_ICONS.has(name);
+  const attrs  = filled
+    ? `fill="${color}" stroke="none"`
+    : `fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" ${attrs} aria-hidden="true">${paths}</svg>`;
 }
 
-function renderNavLinks(links, opts) {
-  opts = opts || {};
-  if (!links.length) return "";
-  const cls = opts.light ? "nav-links light" : "nav-links";
-  const items = links.map(l =>
-    `<a href="${esc(l.href||"#")}">${esc(l.label||"")}</a>`
-  ).join("");
-  return `<div class="${cls}">${items}</div>`;
-}
+// ─── SHARED HELPERS (unchanged from v8) ───────────────────────────────────────
 
-function renderMobileMenu(links, cta, opts) {
-  opts = opts || {};
-  const items = links.map(l =>
-    `<a href="${esc(l.href||"#")}">${esc(l.label||"")}</a>`
-  ).join("");
-  return `<div class="mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation">
-    <button class="mob-close" aria-label="Close menu">&times;</button>
-    ${items}
-    ${cta ? `<span class="mob-cta">${cta}</span>` : ""}
-  </div>`;
-}
-
-function buildCta(content, opts) {
-  opts = opts || {};
-  const s = content.socials || {};
-  const c = content.contact || {};
-  const label = opts.ctaLabel || "WhatsApp";
-  const style = opts.ctaStyle || "";
-  if (s.whatsapp)
-    return `<a class="nav-cta" href="https://wa.me/${digits(s.whatsapp)}" style="${style}">${label}</a>`;
-  if (c.phone)
-    return `<a class="nav-cta" href="tel:${esc(c.phone)}" style="${style}">Call us</a>`;
-  return "";
-}
-
-function buildHamburger(opts) {
-  opts = opts || {};
-  const cls = opts.light ? "hamburger light" : "hamburger";
-  return `<button class="${cls}" aria-label="Open menu" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>`;
-}
-
-function sharedNav(content, opts) {
-  opts = opts || {};
-  const imgs = content.images || {};
-  const name = esc(content.business_name || "");
-  const theme = opts.theme || {};
-  const links = buildNavLinks(content, theme);
-  const isLight = !!opts.lightText;
-  const brand = imgs.logo
-    ? `<img class="nav-logo" src="${esc(imgs.logo)}" alt="${name}">`
-    : `<span class="nav-logo-text" style="${isLight ? "color:#fff" : ""}">${name}</span>`;
-  const cta = buildCta(content, { ctaLabel: opts.ctaLabel || "WhatsApp", ctaStyle: opts.ctaStyle || "" });
-  const navLinks = renderNavLinks(links, { light: isLight });
-  const ham = buildHamburger({ light: isLight });
-  // Mobile menu CTA is plain text inside a styled span — JS handles the click via the nav
-  const mob = renderMobileMenu(links, cta);
-  const navStyle = opts.forceStyle || "";
-  return `<nav class="nav"${navStyle ? ` style="${navStyle}"` : ""}>
-    <a class="nav-brand" href="#top" aria-label="${name}">${brand}</a>
-    ${navLinks}
-    <div style="display:flex;align-items:center;gap:12px">${cta}${ham}</div>
-  </nav>
-  ${mob}`;
-}
-
-function sharedHero(content, opts) {
-  opts = opts || {};
-  const imgs = content.images || {};
-  const name = esc(content.business_name || "Your business");
-  const tag  = esc(content.tagline || "");
-  const s    = content.socials || {};
-  const bg   = imgs.hero ? `background-image:url('${esc(imgs.hero)}')` : `background:var(--bg)`;
-  const cta1 = s.whatsapp
-    ? `<a class="btn" href="https://wa.me/${digits(s.whatsapp)}">${opts.ctaLabel || "WhatsApp us"}</a>`
-    : "";
-  const cta2 = opts.cta2 || "";
-  const eyebrow = opts.eyebrow ? `<p class="eyebrow reveal">${esc(opts.eyebrow)}</p>` : "";
-
-  return `<header class="hero" id="top">
-    <div class="hero-bg" style="${bg}"></div>
-    <div class="hero-ov"></div>
-    <div class="hero-in">
-      ${eyebrow}
-      <h1 class="reveal">${name}</h1>
-      ${tag ? `<p class="reveal" style="animation-delay:.07s">${tag}</p>` : ""}
-      ${(cta1 || cta2) ? `<div class="hero-actions reveal" style="animation-delay:.14s">${cta1}${cta2}</div>` : ""}
-    </div>
-  </header>`;
-}
-
-function sharedAbout(content) {
-  const about = content.about || (typeof content.about_text === "string" ? content.about_text : "");
-  if (!about) return "";
-  return `<section class="section" id="about" style="background:var(--surface)"><div class="wrap" style="max-width:760px">
-    <p class="eyebrow">About us</p>
-    <p style="font-size:clamp(1.15rem,2.4vw,1.5rem);margin-top:16px;line-height:1.55;color:var(--ink)">${esc(about)}</p>
-  </div></section>`;
-}
-
-function sharedServices(content, opts) {
-  opts = opts || {};
-  const items = Array.isArray(content.services) ? content.services : [];
-  if (!items.length) return "";
-  const cards = items.map(s => `<div style="background:var(--bg);padding:28px 24px;border-radius:14px;border:1px solid rgba(128,128,128,.12)">
-      <h3 style="font-size:1.12rem">${esc(s.title || "")}</h3>
-      <p style="color:var(--muted);margin-top:10px;font-size:.94rem;line-height:1.55">${esc(s.body || s.description || "")}</p>
-      ${s.price ? `<p style="font-weight:600;margin-top:14px;color:var(--accent)">${esc(s.price)}</p>` : ""}
-    </div>`).join("");
-  return `<section class="section" id="services"><div class="wrap">
-    <div class="sec-head${opts.center ? " center" : ""}">
-      <p class="eyebrow">${esc(opts.label || "What we do")}</p>
-      <h2>${esc(opts.heading || "Our services")}</h2>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">${cards}</div>
-  </div></section>`;
-}
-
-function sharedGallery(content) {
-  const imgs = Array.isArray(content.images && content.images.gallery) ? content.images.gallery : [];
-  if (!imgs.length) return "";
-  const cells = imgs.map(src => `<button data-full="${esc(src)}" aria-label="View image"><img loading="lazy" src="${esc(src)}" alt=""></button>`).join("");
-  return `<section class="section" id="gallery" style="background:var(--surface)"><div class="wrap">
-    <div class="sec-head"><p class="eyebrow">Gallery</p><h2>Our work</h2></div>
-    <div class="gal">${cells}</div>
-  </div></section>
-  <div class="lb"><button class="lb-close" aria-label="Close">&times;</button><img alt=""></div>`;
-}
-
-function sharedTeam(content, opts) {
-  opts = opts || {};
-  const items = Array.isArray(content.team) ? content.team : [];
-  if (!items.length) return "";
-  if (items.length === 1) {
-    const m = items[0];
-    return `<section class="section" id="team" style="background:var(--surface)"><div class="wrap">
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:44px;max-width:900px;margin:0 auto">
-        ${m.photo ? `<img loading="lazy" src="${esc(m.photo)}" alt="${esc(m.name||"")}" style="width:200px;height:200px;border-radius:16px;object-fit:cover;flex:none;border:3px solid var(--accent)">` : ""}
-        <div style="flex:1;min-width:240px">
-          <p class="eyebrow">${esc(opts.label || "Our team")}</p>
-          <h3 style="font-size:clamp(1.6rem,3vw,2.2rem);margin-top:10px">${esc(m.name||"")}</h3>
-          ${m.role ? `<p style="color:var(--accent);font-weight:600;margin-top:6px">${esc(m.role)}</p>` : ""}
-          ${m.bio  ? `<p style="color:var(--muted);margin-top:16px;line-height:1.6">${esc(m.bio)}</p>` : ""}
-        </div>
-      </div>
-    </div></section>`;
-  }
-  const cards = items.map(m => `<div style="text-align:center">
-      ${m.photo ? `<img loading="lazy" src="${esc(m.photo)}" alt="${esc(m.name||"")}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 14px;border:3px solid var(--accent)">` : ""}
-      <h3 style="font-size:1.05rem">${esc(m.name||"")}</h3>
-      ${m.role ? `<p style="color:var(--accent);font-size:.84rem;font-weight:600;margin-top:4px">${esc(m.role)}</p>` : ""}
-      ${m.bio  ? `<p style="color:var(--muted);font-size:.86rem;margin-top:8px">${esc(m.bio)}</p>` : ""}
-    </div>`).join("");
-  return `<section class="section" id="team" style="background:var(--surface)"><div class="wrap">
-    <div class="sec-head center"><p class="eyebrow">${esc(opts.label || "Our team")}</p><h2>${esc(opts.heading || "Meet the team")}</h2></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:28px">${cards}</div>
-  </div></section>`;
-}
-
-function sharedTestimonials(content, opts) {
-  opts = opts || {};
-  const items = Array.isArray(content.testimonials) ? content.testimonials : [];
-  if (!items.length) return "";
-  const cards = items.map(t => `<figure style="background:var(--bg);padding:28px;border-radius:14px;border:1px solid rgba(128,128,128,.12);margin:0">
-      <blockquote style="font-size:1.05rem;line-height:1.6">"${esc(t.quote||"")}"</blockquote>
-      <figcaption style="margin-top:18px;display:flex;align-items:center;gap:12px">
-        ${t.photo ? `<img loading="lazy" src="${esc(t.photo)}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none">` : ""}
-        <span style="font-size:.88rem;color:var(--muted)"><strong style="color:var(--ink)">${esc(t.name||"")}</strong>${t.role ? `<br>${esc(t.role)}` : ""}</span>
-      </figcaption>
-    </figure>`).join("");
-  return `<section class="section" id="testimonials"><div class="wrap">
-    <div class="sec-head center"><p class="eyebrow">Testimonials</p><h2>${esc(opts.heading || "What people say")}</h2></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px">${cards}</div>
-  </div></section>`;
-}
-
-function sharedContact(content) {
-  const c = content.contact || {};
-  const s = content.socials  || {};
-  const rows = [];
-  if (c.phone)    rows.push(contactRow("Phone",    `<a href="tel:${esc(c.phone)}">${esc(c.phone)}</a>`));
-  if (c.email)    rows.push(contactRow("Email",    `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`));
-  if (c.address)  rows.push(contactRow("Address",  esc(c.address)));
-  if (s.whatsapp) rows.push(contactRow("WhatsApp", `<a href="https://wa.me/${digits(s.whatsapp)}">${esc(s.whatsapp)}</a>`));
-  if (s.facebook) rows.push(contactRow("Facebook", `<a href="${esc(s.facebook)}">Visit page</a>`));
-  if (!rows.length) return "";
-  return `<section class="section" id="contact" style="background:var(--surface)"><div class="wrap" style="max-width:640px">
-    <div class="sec-head"><p class="eyebrow">Find us</p><h2>Get in touch</h2></div>
-    ${rows.join("")}
-    ${s.whatsapp ? `<a class="btn" href="https://wa.me/${digits(s.whatsapp)}" style="margin-top:24px">💬 Chat on WhatsApp</a>` : ""}
-  </div></section>`;
-}
-
-function contactRow(label, value) {
-  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid rgba(128,128,128,.12)">
-    <span style="color:var(--muted);font-size:.9rem">${esc(label)}</span><span style="font-weight:500">${value}</span></div>`;
-}
-
-function sharedFooter(content) {
-  const imgs = content.images || {};
-  return `<footer style="padding:50px 0;text-align:center;color:var(--muted);font-size:.84rem;border-top:1px solid rgba(128,128,128,.12)">
-    <div class="wrap">
-      ${imgs.logo ? `<img src="${esc(imgs.logo)}" alt="" style="height:36px;width:auto;margin:0 auto 16px;opacity:.85">` : ""}
-      <p>© ${new Date().getFullYear()} ${esc(content.business_name||"")}</p>
-      <p style="margin-top:6px;opacity:.65">Built on <a href="https://websites.co.zw" style="text-decoration:underline">websites.co.zw</a></p>
-    </div>
-  </footer>`;
-}
-
-function sharedStats(content) {
-  const items = Array.isArray(content.stats) ? content.stats : [];
-  if (!items.length) return "";
-  const cells = items.map(s => `<div style="text-align:center">
-      <p style="font-family:var(--font-display);font-size:clamp(2rem,4vw,2.8rem);font-weight:700;color:var(--accent)">${esc(s.value||"")}</p>
-      <p style="font-size:.84rem;color:var(--muted);margin-top:4px">${esc(s.label||"")}</p>
-    </div>`).join("");
-  return `<div id="stats" style="background:var(--ink);color:var(--bg);padding:28px 0">
-    <div class="wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:20px;padding:0 26px">
-      ${cells}
-    </div>
-  </div>`;
-}
-
-function sharedVideo(content, plan) {
-  const v = content.video || {};
-  if (v.embedUrl) {
-    return `<section class="section"><div class="wrap" style="max-width:880px;aspect-ratio:16/9">
-      <iframe src="${esc(v.embedUrl)}" style="width:100%;height:100%;border:0;border-radius:14px" allowfullscreen loading="lazy"></iframe>
-    </div></section>`;
-  }
-  if (v.r2Url && plan === "pro") {
-    return `<section class="section"><div class="wrap" style="max-width:880px">
-      <video controls preload="none" poster="${esc(v.poster||"")}" style="width:100%;border-radius:14px"><source src="${esc(v.r2Url)}"></video>
-    </div></section>`;
-  }
-  return "";
-}
-
-/* =========================================================================
- * SKIN: bold-retail (default — general purpose)
- * ========================================================================= */
-function renderBoldRetail(ctx) {
-  const { content, theme, site } = ctx;
-  const def = SKIN_DEFAULTS["bold-retail"];
-  const sections = (Array.isArray(theme.sections) && theme.sections.length) ? theme.sections : def.sections;
-  const parts = sections.map(n => {
-    switch (n) {
-      case "hero":         return sharedHero(content, { ctaLabel: "WhatsApp us" });
-      case "about":        return sharedAbout(content);
-      case "services":     return sharedServices(content);
-      case "gallery":      return sharedGallery(content);
-      case "team":         return sharedTeam(content);
-      case "testimonials": return sharedTestimonials(content);
-      case "video":        return sharedVideo(content, site.plan);
-      case "contact":      return sharedContact(content);
-      default: return "";
-    }
-  });
-  return sharedNav(content, { theme }) + parts.join("") + sharedFooter(content);
-}
-
-/* =========================================================================
- * SKIN: grill-house (restaurants, cafés, grills)
- * Palette: ember-cream · Font: playfair-jakarta
- * Signature: dark sticky nav, full-bleed fire-gradient hero bottom-anchored,
- *            menu section with category tabs, tinted section bands
- * ========================================================================= */
-function renderGrillHouse(ctx) {
-  const { content, theme, site } = ctx;
-  const def = SKIN_DEFAULTS["grill-house"];
-  const sections = (Array.isArray(theme.sections) && theme.sections.length) ? theme.sections : def.sections;
-  const parts = sections.map(n => {
-    switch (n) {
-      case "hero":    return grillHero(content);
-      case "menu":    return grillMenu(content);
-      case "about":   return sharedAbout(content);
-      case "gallery": return sharedGallery(content);
-      case "video":   return sharedVideo(content, site.plan);
-      case "contact": return grillContact(content);
-      default: return "";
-    }
-  });
-  return grillNav(content, theme) + parts.join("") + sharedFooter(content);
-}
-
-function grillNav(content, theme) {
-  return sharedNav(content, {
-    lightText: true,
-    theme,
-    ctaLabel: "Reserve a table",
-    forceStyle: "background:rgba(34,26,20,.92)",
-  });
-}
-
-function grillHero(content) {
-  const imgs = content.images || {};
-  const name = esc(content.business_name || "");
-  const tag  = esc(content.tagline || "");
-  const c    = content.contact || {};
-  const s    = content.socials || {};
-  const bg   = imgs.hero ? `background-image:url('${esc(imgs.hero)}')` : `background:#221A14`;
-  const eyebrow = content.location ? esc(content.location) : "";
-  const cta1 = s.whatsapp ? `<a class="btn" href="https://wa.me/${digits(s.whatsapp)}" style="background:var(--accent)">Reserve a table</a>` : "";
-  const cta2 = c.phone ? `<a class="btn btn-ghost" href="tel:${esc(c.phone)}">Call us</a>` : "";
-  return `<header class="hero" id="top" style="min-height:88vh;align-items:flex-end">
-    <div class="hero-bg" style="${bg}"></div>
-    <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(34,26,20,.94) 0%,rgba(34,26,20,.18) 55%,transparent 100%)"></div>
-    <div class="hero-in" style="padding-bottom:70px">
-      ${eyebrow ? `<p style="font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:10px">${eyebrow}</p>` : ""}
-      <h1 class="reveal" style="font-size:clamp(3rem,7vw,5.5rem)">${name}</h1>
-      ${tag ? `<p class="reveal" style="animation-delay:.07s;font-size:1.1rem;color:rgba(255,255,255,.85);max-width:44ch">${tag}</p>` : ""}
-      ${(cta1||cta2) ? `<div class="hero-actions reveal" style="animation-delay:.14s">${cta1}${cta2}</div>` : ""}
-    </div>
-  </header>`;
-}
-
-function grillMenu(content) {
-  const menu = content.menu || {};
-  const categories = Array.isArray(menu.categories) ? menu.categories : [];
-  // Fallback: if no dedicated menu, use services as menu items
-  if (!categories.length) {
-    return sharedServices(content, { label: "Our menu", heading: "What we serve" });
-  }
-  const tabs = categories.map((cat, i) =>
-    `<button class="pill" onclick="showCat(${i})" id="tab-${i}" style="${i===0?"background:var(--ink);color:var(--bg)":""}">${esc(cat.name||"")}</button>`
-  ).join("");
-  const panels = categories.map((cat, i) => {
-    const items = Array.isArray(cat.items) ? cat.items : [];
-    const rows = items.map(item => `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:14px 0;border-bottom:1px dashed rgba(128,128,128,.15)">
-        <div>
-          <p style="font-weight:600">${esc(item.name||"")}</p>
-          ${item.description ? `<p style="color:var(--muted);font-size:.88rem;margin-top:3px">${esc(item.description)}</p>` : ""}
-        </div>
-        ${item.price ? `<span style="font-weight:700;color:var(--accent);margin-left:16px;white-space:nowrap">${esc(item.price)}</span>` : ""}
-      </div>`).join("");
-    return `<div id="cat-${i}" style="${i===0?"":"display:none"}">${rows}</div>`;
-  }).join("");
-
-  return `<section class="section" id="menu" style="background:var(--surface)"><div class="wrap">
-    <div class="sec-head"><p class="eyebrow">Menu</p><h2>What we serve</h2></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px">${tabs}</div>
-    <div>${panels}</div>
-  </div></section>
-  <style>.pill{display:inline-block;border:1px solid rgba(128,128,128,.2);border-radius:100px;padding:8px 18px;font-weight:600;font-size:.88rem;cursor:pointer;font-family:var(--font-body);background:var(--bg);color:var(--ink);transition:.18s}.pill:hover{background:var(--ink);color:var(--bg)}</style>
-  <script>function showCat(i){document.querySelectorAll('[id^="cat-"]').forEach(function(p){p.style.display='none'});document.getElementById('cat-'+i).style.display='';document.querySelectorAll('[id^="tab-"]').forEach(function(t,j){t.style.background=j===i?'var(--ink)':'';t.style.color=j===i?'var(--bg)':''});}</script>`;
-}
-
-function grillContact(content) {
-  const c = content.contact || {};
-  const s = content.socials  || {};
-  const rows = [];
-  if (c.phone)    rows.push(contactRow("Reservations", `<a href="tel:${esc(c.phone)}">${esc(c.phone)}</a>`));
-  if (s.whatsapp) rows.push(contactRow("WhatsApp",     `<a href="https://wa.me/${digits(s.whatsapp)}">${esc(s.whatsapp)}</a>`));
-  if (c.address)  rows.push(contactRow("Address",      esc(c.address)));
-  if (content.hours) rows.push(contactRow("Hours",     esc(content.hours)));
-  if (c.email)    rows.push(contactRow("Email",        `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`));
-  if (!rows.length) return "";
-  return `<section class="section" id="contact"><div class="wrap" style="max-width:640px">
-    <div class="sec-head"><p class="eyebrow">Visit us</p><h2>Find us &amp; book</h2></div>
-    ${rows.join("")}
-    ${s.whatsapp ? `<a class="btn" href="https://wa.me/${digits(s.whatsapp)}" style="margin-top:24px">💬 Reserve via WhatsApp</a>` : ""}
-  </div></section>`;
-}
-
-/* =========================================================================
- * SKIN: beauty-salon (salons, spas, clinics)
- * Palette: blush-plum · Font: garamond-jost
- * Signature: editorial left-anchored hero, dashed service price list,
- *            delicate lines, gold accents
- * ========================================================================= */
-function renderBeautySalon(ctx) {
-  const { content, theme, site } = ctx;
-  const def = SKIN_DEFAULTS["beauty-salon"];
-  const sections = (Array.isArray(theme.sections) && theme.sections.length) ? theme.sections : def.sections;
-  const parts = sections.map(n => {
-    switch (n) {
-      case "hero":         return salonHero(content);
-      case "services":     return salonServices(content);
-      case "about":        return sharedAbout(content);
-      case "gallery":      return sharedGallery(content);
-      case "team":         return sharedTeam(content, { label: "Our stylists", heading: "Meet the team" });
-      case "testimonials": return sharedTestimonials(content, { heading: "Client love" });
-      case "contact":      return sharedContact(content);
-      default: return "";
-    }
-  });
-  return salonNav(content, theme) + parts.join("") + sharedFooter(content);
-}
-
-function salonNav(content, theme) {
-  return sharedNav(content, {
-    theme,
-    ctaLabel: "Book now",
-    ctaStyle: "border-radius:2px;letter-spacing:.06em;text-transform:uppercase;font-size:.78rem",
-  });
-}
-
-function salonHero(content) {
-  const imgs = content.images || {};
-  const name = esc(content.business_name || "");
-  const tag  = esc(content.tagline || "");
-  const s    = content.socials || {};
-  const bg   = imgs.hero ? `background-image:url('${esc(imgs.hero)}')` : `background:#3A1F2B`;
-  const cta  = s.whatsapp
-    ? `<a class="btn" href="https://wa.me/${digits(s.whatsapp)}" style="background:var(--accent);border-radius:2px">Book an appointment</a>`
-    : "";
-  return `<header class="hero" id="top" style="min-height:82vh;align-items:center">
-    <div class="hero-bg" style="${bg}"></div>
-    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(58,31,43,.75) 0%,rgba(58,31,43,.22) 100%)"></div>
-    <div class="hero-in" style="padding-bottom:0;padding-top:80px">
-      <p style="font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:14px">${esc(content.location||"")}</p>
-      <h1 class="reveal" style="font-size:clamp(2.8rem,6vw,4.8rem);max-width:16ch">${name}</h1>
-      ${tag ? `<p class="reveal" style="animation-delay:.07s;font-size:1.1rem;max-width:40ch;color:rgba(255,255,255,.88)">${tag}</p>` : ""}
-      ${cta ? `<div class="reveal" style="margin-top:28px;animation-delay:.14s">${cta}</div>` : ""}
-    </div>
-  </header>`;
-}
-
-function salonServices(content) {
-  const items = Array.isArray(content.services) ? content.services : [];
-  if (!items.length) return "";
-  // Salon layout: dashed price list, not cards
-  const rows = items.map(s => `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 0;border-bottom:1px dashed rgba(128,128,128,.2)">
-      <div>
-        <p style="font-weight:600">${esc(s.title||"")}</p>
-        ${s.body||s.description ? `<p style="color:var(--muted);font-size:.86rem;margin-top:3px">${esc(s.body||s.description||"")}</p>` : ""}
-      </div>
-      ${s.price ? `<span style="font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--accent);margin-left:16px;white-space:nowrap">${esc(s.price)}</span>` : ""}
-    </div>`).join("");
-  return `<section class="section" id="services"><div class="wrap" style="max-width:700px">
-    <div class="sec-head"><p class="eyebrow">Services</p><h2>Our treatments &amp; prices</h2></div>
-    ${rows}
-  </div></section>`;
-}
-
-/* =========================================================================
- * SKIN: school-institution (schools, churches, NGOs, academies)
- * Palette: navy-gold · Font: grotesk-serif
- * Signature: top info bar, stats band, crest in nav, institutional gravitas
- * ========================================================================= */
-function renderSchoolInstitution(ctx) {
-  const { content, theme, site } = ctx;
-  const def = SKIN_DEFAULTS["school-institution"];
-  const sections = (Array.isArray(theme.sections) && theme.sections.length) ? theme.sections : def.sections;
-  const topbar = content.contact
-    ? schoolTopbar(content)
-    : "";
-  const parts = sections.map(n => {
-    switch (n) {
-      case "hero":         return sharedHero(content, { eyebrow: content.location, ctaLabel: "Enquire now" });
-      case "stats":        return sharedStats(content);
-      case "about":        return sharedAbout(content);
-      case "services":     return sharedServices(content, { label: "Programmes", heading: "What we offer" });
-      case "team":         return sharedTeam(content, { label: "Leadership", heading: "Our leadership team" });
-      case "testimonials": return sharedTestimonials(content, { heading: "What parents say" });
-      case "video":        return sharedVideo(content, site.plan);
-      case "contact":      return sharedContact(content);
-      default: return "";
-    }
-  });
-  return topbar + schoolNav(content, theme) + parts.join("") + sharedFooter(content);
-}
-
-function schoolTopbar(content) {
-  const c = content.contact || {};
-  const phone = c.phone ? `📞 ${esc(c.phone)}` : "";
-  const email = c.email ? `✉ ${esc(c.email)}` : "";
-  const info  = [phone, email].filter(Boolean).join(" &nbsp;·&nbsp; ");
-  return `<div style="background:var(--ink);color:rgba(255,255,255,.78);font-size:.8rem;padding:7px 0">
-    <div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
-      <span>${esc(content.business_name||"")}</span><span>${info}</span>
-    </div>
-  </div>`;
-}
-
-function schoolNav(content, theme) {
-  return sharedNav(content, { theme, ctaLabel: "Enquire now" });
-}
-
-/* =========================================================================
- * SKIN: advisory-firm (consultants, lawyers, accountants)
- * Palette: slate-gold · Font: grotesk-serif
- * Signature: split hero (text left / image right), stats inline,
- *            clean professional layout with sidebar contact
- * ========================================================================= */
-function renderAdvisoryFirm(ctx) {
-  const { content, theme, site } = ctx;
-  const def = SKIN_DEFAULTS["advisory-firm"];
-  const sections = (Array.isArray(theme.sections) && theme.sections.length) ? theme.sections : def.sections;
-  const parts = sections.map(n => {
-    switch (n) {
-      case "hero":         return advisoryHero(content);
-      case "services":     return sharedServices(content, { label: "Practice areas", heading: "How we can help" });
-      case "about":        return sharedAbout(content);
-      case "team":         return sharedTeam(content, { label: "Our people", heading: "The team" });
-      case "testimonials": return sharedTestimonials(content, { heading: "Client feedback" });
-      case "contact":      return sharedContact(content);
-      default: return "";
-    }
-  });
-  return sharedNav(content, { theme }) + parts.join("") + sharedFooter(content);
-}
-
-function advisoryHero(content) {
-  const imgs = content.images || {};
-  const name = esc(content.business_name || "");
-  const tag  = esc(content.tagline || "");
-  const s    = content.socials || {};
-  const c    = content.contact || {};
-  const stats = Array.isArray(content.stats) ? content.stats : [];
-
-  // If there's a hero image, use the full-bleed version
-  if (imgs.hero) {
-    return sharedHero(content, { eyebrow: content.location, ctaLabel: "Book a consultation" });
-  }
-
-  // Text-only split layout — more appropriate for a professional firm without photography
-  const cta1 = s.whatsapp ? `<a class="btn" href="https://wa.me/${digits(s.whatsapp)}">WhatsApp us</a>` : "";
-  const cta2 = c.phone    ? `<a class="btn" style="background:transparent;border:1.5px solid var(--ink);color:var(--ink)" href="tel:${esc(c.phone)}">Call us</a>` : "";
-  const statHtml = stats.length ? `<div style="display:flex;gap:40px;margin-top:36px;flex-wrap:wrap">${
-    stats.map(s => `<div><p style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--ink)">${esc(s.value)}</p><p style="font-size:.82rem;color:var(--muted);margin-top:2px">${esc(s.label)}</p></div>`).join("")
-  }</div>` : "";
-  const heroImg = imgs.profile || imgs.team || "";
-  return `<section style="padding:120px 0 80px" id="top"><div class="wrap">
-    <div style="display:grid;grid-template-columns:${heroImg?"1fr 1fr":"1fr"};gap:56px;align-items:center">
-      <div>
-        ${content.location ? `<p class="eyebrow" style="margin-bottom:14px">${esc(content.location)}</p>` : ""}
-        <h1 style="font-size:clamp(2.4rem,5vw,3.6rem);max-width:18ch">${name}</h1>
-        ${tag ? `<p style="font-size:1.1rem;color:var(--muted);margin-top:16px;max-width:46ch">${tag}</p>` : ""}
-        ${(cta1||cta2) ? `<div style="display:flex;gap:14px;margin-top:28px;flex-wrap:wrap">${cta1}${cta2}</div>` : ""}
-        ${statHtml}
-      </div>
-      ${heroImg ? `<div><img src="${esc(heroImg)}" alt="" style="width:100%;border-radius:16px;aspect-ratio:4/3.4;object-fit:cover;box-shadow:0 40px 80px -40px rgba(21,34,56,.35)"></div>` : ""}
-    </div>
-  </div></section>`;
-}
-
-/* =========================================================================
- * SKIN: property-estate (real estate agents, developers, rentals)
- * Palette: forest-cream · Font: grotesk-serif
- * Signature: search bar in hero, property listing cards, forest green CTA
- * ========================================================================= */
-function renderPropertyEstate(ctx) {
-  const { content, theme, site } = ctx;
-  const def = SKIN_DEFAULTS["property-estate"];
-  const sections = (Array.isArray(theme.sections) && theme.sections.length) ? theme.sections : def.sections;
-  const parts = sections.map(n => {
-    switch (n) {
-      case "hero":    return estateHero(content);
-      case "services":return sharedServices(content, { label: "What we offer", heading: "Our services" });
-      case "about":   return sharedAbout(content);
-      case "gallery": return estateListings(content);
-      case "contact": return sharedContact(content);
-      default: return "";
-    }
-  });
-  return estateNav(content, theme) + parts.join("") + sharedFooter(content);
-}
-
-function estateNav(content, theme) {
-  return sharedNav(content, { theme, ctaLabel: "View listings" });
-}
-
-function estateHero(content) {
-  const imgs = content.images || {};
-  const name = esc(content.business_name || "");
-  const tag  = esc(content.tagline || "");
-  const s    = content.socials || {};
-  const bg   = imgs.hero ? `background-image:url('${esc(imgs.hero)}')` : `background:#13392A`;
-  const cta  = s.whatsapp
-    ? `<a class="btn" href="https://wa.me/${digits(s.whatsapp)}" style="background:var(--accent)">View listings on WhatsApp</a>`
-    : "";
-  return `<header class="hero" id="top" style="min-height:78vh">
-    <div class="hero-bg" style="${bg}"></div>
-    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(19,57,42,.88) 0%,rgba(19,57,42,.3) 100%)"></div>
-    <div class="hero-in" style="padding-bottom:0;padding-top:80px">
-      ${content.location ? `<p style="font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:12px">${esc(content.location)}</p>` : ""}
-      <h1 class="reveal" style="font-size:clamp(2.6rem,6vw,5rem);max-width:18ch">${name}</h1>
-      ${tag ? `<p class="reveal" style="animation-delay:.07s;font-size:1.1rem;max-width:46ch;color:rgba(255,255,255,.88)">${tag}</p>` : ""}
-      ${cta ? `<div class="reveal" style="margin-top:30px;animation-delay:.14s">${cta}</div>` : ""}
-    </div>
-  </header>`;
-}
-
-function estateListings(content) {
-  // If the owner has provided property listings in content.listings[], show cards.
-  // Otherwise fall back to the gallery grid.
-  const listings = Array.isArray(content.listings) ? content.listings : [];
-  if (!listings.length) return sharedGallery(content);
-
-  const cards = listings.map(p => `<div style="background:var(--bg);border:1px solid rgba(128,128,128,.14);border-radius:14px;overflow:hidden">
-      ${p.image ? `<div style="aspect-ratio:16/10;background-image:url('${esc(p.image)}');background-size:cover;background-position:center"></div>` : ""}
-      <div style="padding:18px">
-        <p style="font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px">${esc(p.type||"Property")}</p>
-        <h3 style="font-size:1.05rem">${esc(p.title||"")}</h3>
-        ${p.location ? `<p style="font-size:.88rem;color:var(--muted);margin-top:4px">📍 ${esc(p.location)}</p>` : ""}
-        ${p.price    ? `<p style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--ink);margin-top:10px">${esc(p.price)}</p>` : ""}
-        ${p.beds||p.baths ? `<p style="font-size:.84rem;color:var(--muted);margin-top:6px">${p.beds?esc(p.beds)+" bed":""} ${p.baths?esc(p.baths)+" bath":""}</p>` : ""}
-      </div>
-    </div>`).join("");
-
-  return `<section class="section" id="listings"><div class="wrap">
-    <div class="sec-head"><p class="eyebrow">Listings</p><h2>Available properties</h2></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">${cards}</div>
-  </div></section>`;
-}
-
-/* =========================================================================
- * Static asset serving (R2)
- * ========================================================================= */
-async function serveAsset(request, env, ctx, url) {
-  if (request.method !== "GET" && request.method !== "HEAD")
-    return new Response("Method not allowed", { status: 405 });
-  if (!env.ASSETS) return new Response("Asset store not configured", { status: 500 });
-  const key = decodeURIComponent(url.pathname).replace(/^\/+/, "");
-  if (!key || key.includes("..")) return new Response("Not found", { status: 404 });
-  const cache = caches.default;
-  const hit = await cache.match(request);
-  if (hit) return hit;
-  const obj = await env.ASSETS.get(key);
-  if (!obj) return new Response("Not found", { status: 404 });
-  const headers = new Headers();
-  obj.writeHttpMetadata(headers);
-  headers.set("etag", obj.httpEtag);
-  headers.set("cache-control", "public, max-age=31536000, immutable");
-  const resp = new Response(obj.body, { headers });
-  ctx.waitUntil(cache.put(request, resp.clone()));
-  return resp;
-}
-
-/* =========================================================================
- * Holding page
- * ========================================================================= */
-function holdingPage(code, message) {
-  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(message)}</title>
-<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0c0c0c;color:#f5f5f3;font:400 16px system-ui;text-align:center;padding:24px}a{color:#c8a24a}</style>
-</head><body><div><h1 style="font-size:22px;font-weight:600">${esc(message)}</h1>
-<p style="color:#a8a89f;margin-top:10px">Powered by <a href="https://websites.co.zw">websites.co.zw</a></p></div></body></html>`;
-  return new Response(html, { status: code, headers: { "content-type": "text/html; charset=utf-8" } });
-}
-
-/* =========================================================================
- * Helpers
- * ========================================================================= */
-function readCookie(request, name) {
-  const header = request.headers.get("cookie") || "";
-  for (const part of header.split(";")) {
-    const eq = part.indexOf("=");
-    if (eq < 0) continue;
-    if (part.slice(0, eq).trim() === name) return decodeURIComponent(part.slice(eq + 1).trim());
-  }
-  return null;
-}
-function redirectToLogin(request, env) {
-  const loginUrl = env.APP_LOGIN_URL || "https://app.websites.co.zw/login";
-  return Response.redirect(`${loginUrl}?next=${encodeURIComponent(request.url)}`, 302);
-}
 function esc(s) {
-  return String(s == null ? "" : s)
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-function digits(s) { return String(s||"").replace(/[^\d]/g,""); }
 
-/* =========================================================================
- * Preview auth (inlined — no imports)
- * ========================================================================= */
-const enc = new TextEncoder();
-function b64url(bytes){let b="";const a=new Uint8Array(bytes);for(let i=0;i<a.length;i++)b+=String.fromCharCode(a[i]);return btoa(b).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
-function b64urlToBytes(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";const b=atob(s),o=new Uint8Array(b.length);for(let i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o;}
-async function hmacKey(secret){return crypto.subtle.importKey("raw",enc.encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign","verify"]);}
-async function verifyPreviewToken(token,secret){
-  if(!token||!secret||!token.includes("."))return null;
-  const[pb,sb]=token.split(".");if(!pb||!sb)return null;
-  const key=await hmacKey(secret);
-  let ok=false;
-  try{ok=await crypto.subtle.verify("HMAC",key,b64urlToBytes(sb),enc.encode(pb));}catch{return null;}
-  if(!ok)return null;
-  let p;try{p=JSON.parse(new TextDecoder().decode(b64urlToBytes(pb)));}catch{return null;}
-  if(p.scope!=="preview")return null;
-  if(!p.exp||Math.floor(Date.now()/1000)>p.exp)return null;
-  return p;
+function wa(phone, msg) {
+  const p = String(phone || '').replace(/\D/g, '');
+  const m = encodeURIComponent(msg || 'Hello, I found you on websites.co.zw');
+  return `https://wa.me/${p}?text=${m}`;
+}
+
+function getImage(obj, ...extraFields) {
+  if (!obj || typeof obj !== 'object') return '';
+  const fields = ['photo','image','image_url','photo_url','img','picture','thumbnail',...extraFields];
+  for (const key of fields) { if (obj[key]) return obj[key]; }
+  return '';
+}
+
+function normalizeItemImages(arr) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map(item => {
+    if (!item || typeof item !== 'object') return item;
+    const resolved = getImage(item);
+    if (!resolved) return item;
+    return { ...item, photo: item.photo || resolved, image: item.image || resolved };
+  });
+}
+
+// ─── HOURS HELPERS (unchanged from v8) ────────────────────────────────────────
+
+function normalizeHours(hours) {
+  if (!hours) return null;
+  if (typeof hours === 'string') return hours.trim();
+  if (typeof hours !== 'object' || Array.isArray(hours)) return null;
+  const DAY_KEYS = new Set(['mon','tue','wed','thu','fri','sat','sun']);
+  const hasDay = Object.keys(hours).some(k => DAY_KEYS.has(k));
+  let h = hours;
+  if (!hasDay) {
+    let found = null;
+    for (const v of Object.values(hours)) {
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        if (Object.keys(v).some(k => DAY_KEYS.has(k))) { found = v; break; }
+      }
+    }
+    if (!found) return null;
+    h = found;
+  }
+  function slotToStr(val) {
+    if (!val) return null;
+    if (typeof val === 'string') return val.trim();
+    if (typeof val === 'number') return String(val).padStart(2,'0') + ':00';
+    if (typeof val === 'object') {
+      const hr  = String(val.hour ?? val.h ?? val.hours ?? 0).padStart(2,'0');
+      const min = String(val.minute ?? val.m ?? val.minutes ?? 0).padStart(2,'0');
+      return `${hr}:${min}`;
+    }
+    return null;
+  }
+  const normalized = {};
+  for (const d of DAY_KEYS) {
+    const slot = h[d];
+    if (!slot || typeof slot !== 'object') continue;
+    if (slot.closed) { normalized[d] = { closed: true }; continue; }
+    const open  = slotToStr(slot.open ?? slot.opens ?? slot.from ?? slot.start);
+    const close = slotToStr(slot.close ?? slot.closes ?? slot.to ?? slot.end);
+    if (open || close) normalized[d] = { open: open || '?', close: close || '?' };
+  }
+  return Object.keys(normalized).length ? normalized : null;
+}
+
+function isOpenNow(hours) {
+  const h = normalizeHours(hours);
+  if (!h || typeof h === 'string') return null;
+  const days = ['sun','mon','tue','wed','thu','fri','sat'];
+  const day  = days[new Date().getDay()];
+  const slot = h[day];
+  if (!slot || typeof slot !== 'object' || slot.closed) return false;
+  const [oh, om] = (slot.open  || '00:00').split(':').map(Number);
+  const [ch, cm] = (slot.close || '00:00').split(':').map(Number);
+  const mins = new Date().getHours() * 60 + new Date().getMinutes();
+  return mins >= oh * 60 + om && mins < ch * 60 + cm;
+}
+
+function openClosedBadge(hours) {
+  const open = isOpenNow(hours);
+  if (open === null) return '';
+  return open
+    ? `<span class="badge-open"><span class="badge-dot"></span>Open Now</span>`
+    : `<span class="badge-closed"><span class="badge-dot"></span>Closed</span>`;
+}
+
+function buildHoursGridHtml(hours) {
+  const h = normalizeHours(hours);
+  if (!h || typeof h === 'string') return '';
+  const order  = ['mon','tue','wed','thu','fri','sat','sun'];
+  const labels = { mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday' };
+  const today  = ['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()];
+  return order.map(d => {
+    const slot = h[d];
+    if (!slot || typeof slot !== 'object') return null;
+    const isToday  = d === today;
+    const isClosed = slot.closed;
+    const timeStr  = isClosed ? 'Closed' : `${slot.open||'?'} – ${slot.close||'?'}`;
+    return `<div style="display:flex;justify-content:space-between;padding:.65rem .9rem;border-radius:8px;background:${isToday?'rgba(255,255,255,.12)':'transparent'}">
+      <span style="font-weight:${isToday?'700':'400'};opacity:${isToday?'1':'.7'}">${labels[d]}${isToday?' <span style="font-size:.72rem;background:var(--accent);color:#fff;padding:.1rem .45rem;border-radius:999px;margin-left:.3rem">Today</span>':''}</span>
+      <span style="font-weight:${isToday?'700':'400'};opacity:${isClosed?'.4':isToday?'1':'.7'}">${esc(timeStr)}</span>
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
+// ─── CONTENT NORMALIZATION (unchanged from v8) ────────────────────────────────
+
+function normalizeContent(raw) {
+  if (!raw) return {};
+  if (!raw.content || typeof raw.content !== 'object' || Array.isArray(raw.content)) return raw;
+  const inner = raw.content;
+  const theme = raw.theme || {};
+  return {
+    theme,
+    business_name: inner.business_name || inner.name || '',
+    name:          inner.business_name || inner.name || '',
+    tagline:       inner.tagline || '',
+    about:         inner.about || '',
+    phone:         inner.contact?.phone || inner.contact?.whatsapp || inner.phone || '',
+    email:         inner.contact?.email || inner.email || '',
+    address:       inner.contact?.address || inner.address || inner.location || '',
+    location:      inner.location || inner.contact?.address || '',
+    hero_image:    inner.images?.hero || inner.hero_image || '',
+    hero_image_url:inner.hero_image_url || inner.images?.hero || inner.hero_image || '',
+    logo_url:      inner.logo_url || '',
+    primary_color: inner.primary_color || '',
+    images:        inner.images || {},
+    gallery:       Array.isArray(inner.gallery) ? inner.gallery : (Array.isArray(inner.images?.gallery) ? inner.images.gallery : []),
+    services:      normalizeItemImages(inner.services),
+    services_intro:inner.services_intro || '',
+    menu:          normalizeItemImages(inner.menu),
+    products:      normalizeItemImages(inner.products),
+    listings:      normalizeItemImages(inner.listings),
+    team:          normalizeItemImages(inner.team),
+    testimonials:  inner.testimonials || [],
+    stats:         inner.stats || [],
+    events:        inner.events || inner.schedule || [],
+    hours:         normalizeHours(inner.hours) || null,
+    socials:       inner.socials || {},
+    seo:           inner.seo || {},
+    contact:       inner.contact || {},
+    map_embed_url: inner.map_embed_url || inner.contact?.map_embed_url || null,
+    before_after:  inner.before_after || [],
+    credentials:   inner.credentials || [],
+    brands:        inner.brands || [],
+    clients:       inner.clients || inner.partners || [],
+    deal:          inner.deal || null,
+    badge:         inner.badge || null,
+    video_url:     inner.video || inner.video_url || null,
+  };
+}
+
+// ─── DB QUERIES (unchanged from v8) ───────────────────────────────────────────
+
+async function getSiteBySlug(db, slug) {
+  const r = await db.prepare('SELECT * FROM sites WHERE draft_subdomain = ? LIMIT 1').bind(slug).first();
+  return r || null;
+}
+
+async function getSiteByDomain(db, domain) {
+  const r = await db.prepare("SELECT * FROM sites WHERE custom_domain = ? AND custom_domain_status = 'active' LIMIT 1").bind(domain).first();
+  return r || null;
+}
+
+async function checkPreviewToken(db, token, siteId) {
+  const row = await db.prepare('SELECT site_id, expires_at FROM preview_tokens WHERE token = ?1 LIMIT 1').bind(token).first();
+  if (!row) return false;
+  if (row.site_id !== siteId) return false;
+  if (row.expires_at < Math.floor(Date.now() / 1000)) return false;
+  return true;
+}
+
+function render404() {
+  return new Response(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Not Found · websites.co.zw</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5}
+h1{font-size:4rem;margin:0;color:#1a1a2e}p{color:#666;margin:.5rem 0}a{color:#e94560;font-weight:600}</style>
+</head><body><h1>404</h1><p>This site isn't available.</p><a href="https://websites.co.zw">Get your own site →</a></body></html>`,
+  { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
