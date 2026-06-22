@@ -1,5 +1,5 @@
 /**
- * websites.co.zw — Render Worker v9.0 (+ grill-house patch)
+ * websites.co.zw — Render Worker websites-cozw-render
  * Cloudflare Worker · Config-driven template engine
  *
  * Patch applied:
