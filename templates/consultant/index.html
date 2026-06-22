@@ -1,109 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tafara Advisory — Business & Tax Consultants, Harare</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{seo_title}}</title>
+<meta name="description" content="{{seo_description}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--navy:#152238;--navy2:#1F3052;--ink:#1A2236;--ink2:#5A6478;--paper:#fff;--bg:#F4F6FA;--gold:#C08A2D;--line:rgba(21,34,56,.1)}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:"Plus Jakarta Sans",sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;-webkit-font-smoothing:antialiased}
-  h1,h2,h3{font-family:"Fraunces",serif;font-weight:600;line-height:1.08;letter-spacing:-.02em}
-  a{color:inherit;text-decoration:none}.wrap{max-width:1140px;margin:0 auto;padding:0 26px}
-  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
-  .logo{font-family:"Fraunces",serif;font-weight:700;font-size:1.3rem}.logo b{color:var(--gold)}
-  .nav nav{display:flex;gap:28px}.nav nav a{font-size:.92rem;font-weight:500;color:var(--ink2)}.nav nav a:hover{color:var(--ink)}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;font-weight:600;font-size:.92rem;padding:11px 20px;border-radius:8px;transition:.2s}
-  .btn:hover{background:var(--navy2)}
-  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center;padding:70px 0}
-  .eyebrow{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
-  .hero h1{font-size:clamp(2.4rem,5vw,3.6rem);margin:16px 0 18px}
-  .hero p{font-size:1.12rem;color:var(--ink2);max-width:44ch}
-  .hero-actions{display:flex;gap:14px;margin-top:28px}
-  .ghost{border:1px solid var(--line);color:var(--ink);background:#fff}.ghost:hover{border-color:var(--navy);background:#fff}
-  .hero img{width:100%;border-radius:16px;aspect-ratio:4/3.4;object-fit:cover;box-shadow:0 30px 60px -30px rgba(21,34,56,.4)}
-  .stats{display:flex;gap:40px;margin-top:36px}.stats b{font-family:"Fraunces",serif;font-size:1.8rem;display:block;color:var(--navy)}.stats span{font-size:.84rem;color:var(--ink2)}
-  section{padding:64px 0}.sec-head{text-align:center;max-width:620px;margin:0 auto 44px}
-  .sec-head h2{font-size:clamp(1.9rem,3.5vw,2.6rem)}.sec-head p{color:var(--ink2);margin-top:12px}
-  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-  .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:28px 24px;transition:.3s}
-  .card:hover{transform:translateY(-4px);box-shadow:0 24px 44px -28px rgba(21,34,56,.35)}
-  .card .ic{width:46px;height:46px;border-radius:11px;background:#FBF1DE;color:var(--gold);display:grid;place-items:center;font-size:1.3rem;margin-bottom:16px}
-  .card h3{font-size:1.18rem}.card p{font-size:.92rem;color:var(--ink2);margin-top:8px}
-  .band{background:var(--navy);color:#fff;border-radius:24px;margin:0 26px;padding:60px 0}
-  .band .wrap{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}
-  .band h2{color:#fff;font-size:2.2rem}.band p{color:rgba(255,255,255,.75);margin-top:14px}
-  .band ul{list-style:none;margin-top:22px;display:flex;flex-direction:column;gap:12px}
-  .band li{display:flex;gap:10px;align-items:center;font-size:.96rem}.band li::before{content:"✓";color:var(--gold);font-weight:800}
-  .band img{width:100%;border-radius:16px;aspect-ratio:1/1;object-fit:cover}
-  .contact{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-  .field{margin-bottom:14px}.field input,.field textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:.95rem}
-  .wa{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;font-weight:700;padding:13px 22px;border-radius:10px;margin-top:8px}
-  footer{background:#0E1726;color:rgba(255,255,255,.6);margin-top:60px;padding:40px 0;font-size:.9rem}
-  .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
-  @media(max-width:860px){.hero,.band .wrap,.contact{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}.nav nav{display:none}.hero img{order:-1}}
-</style></head>
+  :root {
+    --navy: #152238;
+    --navy2: #1F3052;
+    --ink: #1A2236;
+    --ink2: #5A6478;
+    --paper: #fff;
+    --bg: #F4F6FA;
+    --gold: {{primary_color}};
+    --line: rgba(21,34,56,.1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Plus Jakarta Sans", sans-serif; color: var(--ink); background: var(--paper); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: "Fraunces", serif; font-weight: 600; line-height: 1.08; letter-spacing: -.02em; }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 26px; }
+  header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
+  .logo { font-family: "Fraunces", serif; font-weight: 700; font-size: 1.3rem; }
+  .logo b { color: var(--gold); }
+  .logo-img { height: 38px; width: auto; object-fit: contain; }
+  nav.main-nav { display: flex; gap: 28px; }
+  nav.main-nav a { font-size: .92rem; font-weight: 500; color: var(--ink2); transition: color .2s; }
+  nav.main-nav a:hover { color: var(--ink); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; background: var(--navy); color: #fff; font-weight: 600; font-size: .92rem; padding: 11px 20px; border-radius: 8px; transition: background .2s; cursor: pointer; border: none; font-family: inherit; }
+  .btn:hover { background: var(--navy2); }
+  .ghost { border: 1px solid var(--line); color: var(--ink); background: #fff; }
+  .ghost:hover { border-color: var(--navy); }
+  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 50px; align-items: center; padding: 70px 0; }
+  .eyebrow { font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+  .hero h1 { font-size: clamp(2.4rem, 5vw, 3.6rem); margin: 16px 0 18px; }
+  .hero-lead { font-size: 1.12rem; color: var(--ink2); max-width: 44ch; }
+  .hero-actions { display: flex; gap: 14px; margin-top: 28px; flex-wrap: wrap; }
+  .hero-img { width: 100%; border-radius: 16px; aspect-ratio: 4/3.4; object-fit: cover; box-shadow: 0 30px 60px -30px rgba(21,34,56,.4); }
+  .hero-img-ph { width: 100%; border-radius: 16px; aspect-ratio: 4/3.4; background: linear-gradient(135deg,#dde3ee,#c8d0e0); display: flex; align-items: center; justify-content: center; color: var(--ink2); font-size: .9rem; }
+  .stats { display: flex; gap: 40px; margin-top: 36px; flex-wrap: wrap; }
+  .stats b { font-family: "Fraunces", serif; font-size: 1.8rem; display: block; color: var(--navy); }
+  .stats span { font-size: .84rem; color: var(--ink2); }
+  section { padding: 64px 0; }
+  .sec-head { text-align: center; max-width: 620px; margin: 0 auto 44px; }
+  .sec-head h2 { font-size: clamp(1.9rem,3.5vw,2.6rem); }
+  .sec-head p { color: var(--ink2); margin-top: 12px; }
+  .services-bg { background: var(--bg); }
+  .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 28px 24px; transition: transform .3s, box-shadow .3s; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 24px 44px -28px rgba(21,34,56,.35); }
+  .card .ic { width: 46px; height: 46px; border-radius: 11px; background: #FBF1DE; color: var(--gold); display: grid; place-items: center; font-size: 1.3rem; margin-bottom: 16px; }
+  .card h3 { font-size: 1.18rem; }
+  .card p { font-size: .92rem; color: var(--ink2); margin-top: 8px; }
+  .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+  .team-card { text-align: center; }
+  .team-card img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin: 0 auto 14px; border: 3px solid var(--line); }
+  .team-avatar { width: 90px; height: 90px; border-radius: 50%; background: var(--bg); margin: 0 auto 14px; border: 3px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+  .t-name { font-family: "Fraunces",serif; font-size: 1.1rem; font-weight: 600; }
+  .t-role { font-size: .88rem; color: var(--gold); font-weight: 600; margin-top: 2px; }
+  .t-bio { font-size: .9rem; color: var(--ink2); margin-top: 8px; }
+  .band { background: var(--navy); color: #fff; border-radius: 24px; margin: 0 26px; padding: 60px 0; }
+  .band .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
+  .band h2 { color: #fff; font-size: 2.2rem; }
+  .band p { color: rgba(255,255,255,.75); margin-top: 14px; }
+  .band ul { list-style: none; margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .band li { display: flex; gap: 10px; align-items: flex-start; font-size: .96rem; }
+  .band li::before { content: "✓"; color: var(--gold); font-weight: 800; flex-shrink: 0; }
+  .band-img { width: 100%; border-radius: 16px; aspect-ratio: 1/1; object-fit: cover; }
+  .band-img-ph { width: 100%; border-radius: 16px; aspect-ratio: 1/1; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.4); font-size: .9rem; }
+  .testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+  .testi-card { background: var(--bg); border-radius: 14px; padding: 26px 22px; }
+  .testi-text { font-size: .96rem; color: var(--ink2); font-style: italic; line-height: 1.65; }
+  .testi-name { font-weight: 700; font-size: .92rem; margin-top: 18px; color: var(--ink); }
+  .testi-role { font-size: .84rem; color: var(--ink2); }
+  .ai-badge { display: inline-block; background: #FBF1DE; color: var(--gold); font-size: .72rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; margin-top: 8px; }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  .contact-info h2 { font-size: 2.2rem; margin-top: 12px; }
+  .contact-info p { color: var(--ink2); margin-top: 14px; }
+  .wa-btn { display: inline-flex; align-items: center; gap: 10px; background: #25D366; color: #fff; font-weight: 700; padding: 13px 22px; border-radius: 10px; margin-top: 18px; font-family: inherit; font-size: .96rem; }
+  .contact-meta { color: var(--ink2); font-size: .9rem; margin-top: 18px; line-height: 2; }
+  .contact-form { background: var(--bg); border-radius: 16px; padding: 28px; }
+  .contact-form-alt { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; text-align: center; gap: 16px; background: var(--bg); border-radius: 16px; padding: 28px; }
+  .field { margin-bottom: 14px; }
+  .field input, .field textarea, .field select { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; font-family: inherit; font-size: .95rem; background: #fff; color: var(--ink); }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--gold); }
+  .field textarea { resize: vertical; }
+  .form-msg { display: none; padding: 12px 16px; border-radius: 8px; font-size: .92rem; margin-bottom: 12px; }
+  .form-msg.success { background: #d4edda; color: #155724; display: block; }
+  .form-msg.error { background: #f8d7da; color: #721c24; display: block; }
+  footer { background: #0E1726; color: rgba(255,255,255,.6); margin-top: 60px; padding: 40px 0; font-size: .9rem; }
+  .foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .foot-logo { font-family: "Fraunces",serif; font-weight: 700; font-size: 1.2rem; color: #fff; }
+  .foot-logo b { color: var(--gold); }
+  @media (max-width: 860px) {
+    .hero, .band .wrap, .contact-grid { grid-template-columns: 1fr; }
+    .grid3, .team-grid, .testi-grid { grid-template-columns: 1fr; }
+    nav.main-nav { display: none; }
+    .hero-img, .hero-img-ph { order: -1; }
+    .band { margin: 0 12px; }
+  }
+</style>
+</head>
 <body>
-<header><div class="wrap nav">
-  <div class="logo">Tafara<b>.</b>Advisory</div>
-  <nav><a href="#services">Services</a><a href="#why">Why us</a><a href="#contact">Contact</a></nav>
-  <a href="#contact" class="btn">Book a consultation</a>
-</div></header>
+
+<header>
+  <div class="wrap nav">
+    {{#if logo_url}}
+    <a href="#" class="logo"><img class="logo-img" src="{{logo_url}}" alt="{{business_name}}"></a>
+    {{else}}
+    <div class="logo">{{business_name_first}}<b>.</b>{{business_name_rest}}</div>
+    {{/if}}
+    <nav class="main-nav">
+      <a href="#services">Services</a>
+      {{#if has_team}}<a href="#team">Our team</a>{{/if}}
+      <a href="#why">Why us</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a href="#contact" class="btn">Book a consultation</a>
+  </div>
+</header>
 
 <div class="wrap hero">
   <div>
-    <span class="eyebrow">Business · Tax · Advisory</span>
-    <h1>Clear financial advice for growing Zimbabwean businesses.</h1>
-    <p>We help SMEs, startups and established firms stay compliant, structure smartly, and make confident decisions — from registration to tax to growth strategy.</p>
-    <div class="hero-actions"><a href="#contact" class="btn">Book a consultation</a><a href="#services" class="btn ghost">Our services</a></div>
-    <div class="stats"><div><b>12+</b><span>Years advising</span></div><div><b>300+</b><span>Clients served</span></div><div><b>ZIMRA</b><span>Tax specialists</span></div></div>
+    <span class="eyebrow">{{business_type_label}}</span>
+    <h1>{{tagline}}</h1>
+    <p class="hero-lead">{{about}}</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn">Book a consultation</a>
+      <a href="#services" class="btn ghost">Our services</a>
+    </div>
+    {{#if has_stats}}
+    <div class="stats">
+      {{#each stats}}{{/each}}
+    </div>
+    {{/if}}
   </div>
-  <img src="https://picsum.photos/seed/tafara-office/900/780" alt="Advisory team meeting">
+  <div>
+    {{#if hero_image_url}}
+    <img class="hero-img" src="{{hero_image_url}}" alt="{{business_name}}">
+    {{else}}
+    <div class="hero-img-ph">Add a hero photo in your dashboard</div>
+    {{/if}}
+  </div>
 </div>
 
-<section id="services" style="background:var(--bg)">
+<section id="services" class="services-bg">
   <div class="wrap">
-    <div class="sec-head"><h2>What we do</h2><p>Practical, partner-led advisory across the areas that matter most to a Zimbabwean business.</p></div>
-    <div class="grid3">
-      <div class="card"><div class="ic">⚖</div><h3>Tax & compliance</h3><p>ZIMRA registration, VAT, PAYE, returns and audits handled end-to-end so you stay penalty-free.</p></div>
-      <div class="card"><div class="ic">📊</div><h3>Accounting</h3><p>Bookkeeping, management accounts and financial statements that give you a clear picture.</p></div>
-      <div class="card"><div class="ic">🏢</div><h3>Company setup</h3><p>Registration, restructuring and statutory compliance for new and growing entities.</p></div>
-      <div class="card"><div class="ic">📈</div><h3>Business advisory</h3><p>Cash-flow planning, pricing and growth strategy from advisors who know the local market.</p></div>
-      <div class="card"><div class="ic">🤝</div><h3>Payroll</h3><p>Accurate monthly payroll, NSSA and statutory deductions, fully managed.</p></div>
-      <div class="card"><div class="ic">💼</div><h3>Funding support</h3><p>Business plans and financials that stand up to lenders and investors.</p></div>
+    <div class="sec-head"><h2>What we do</h2><p>Practical, partner-led advisory across the areas that matter most to your business.</p></div>
+    <div class="grid3">{{#each services}}{{/each}}</div>
+  </div>
+</section>
+
+{{#if has_team}}
+<section id="team">
+  <div class="wrap">
+    <div class="sec-head"><h2>Meet the team</h2><p>You work directly with experienced advisors — never passed to someone who doesn't know your business.</p></div>
+    <div class="team-grid">{{#each team}}{{/each}}</div>
+  </div>
+</section>
+{{/if}}
+
+<section class="band" id="why">
+  <div class="wrap">
+    <div>
+      <h2>Advice you can build on.</h2>
+      <p>We're not a faceless firm — you work directly with advisors who understand your business and are reachable when you need them.</p>
+      <ul>
+        <li>Partner-led, not passed to juniors</li>
+        <li>Fixed, transparent fees</li>
+        <li>Reachable on WhatsApp</li>
+        <li>Deep local regulatory knowledge</li>
+      </ul>
+    </div>
+    <div>
+      {{#if band_image_url}}
+      <img class="band-img" src="{{band_image_url}}" alt="{{business_name}}">
+      {{else}}
+      <div class="band-img-ph">Add a team photo in your dashboard</div>
+      {{/if}}
     </div>
   </div>
 </section>
 
-<section class="band" id="why"><div class="wrap">
-  <div>
-    <h2>Advice you can build on.</h2>
-    <p>We're not a faceless firm — you work directly with a senior advisor who understands your business and is reachable when you need them.</p>
-    <ul><li>Partner-led, not passed to juniors</li><li>Fixed, transparent fees</li><li>Reachable on WhatsApp</li><li>Deep local regulatory knowledge</li></ul>
+{{#if has_testimonials}}
+<section id="testimonials">
+  <div class="wrap">
+    <div class="sec-head"><h2>What clients say</h2><p>Trusted by businesses across Zimbabwe.</p></div>
+    <div class="testi-grid">{{#each testimonials}}{{/each}}</div>
   </div>
-  <img src="https://picsum.photos/seed/tafara-advisor/700/700" alt="Senior advisor">
-</div></section>
+</section>
+{{/if}}
 
-<section id="contact"><div class="wrap contact">
-  <div>
-    <span class="eyebrow">Get in touch</span>
-    <h2 style="font-size:2.2rem;margin-top:12px">Let's talk about your business.</h2>
-    <p style="color:var(--ink2);margin-top:14px">Book a free 20-minute consultation. Tell us where you are and where you want to go.</p>
-    <a href="https://wa.me/263770000000" class="wa">💬 Chat on WhatsApp</a>
-    <p style="color:var(--ink2);font-size:.9rem;margin-top:18px">📍 12 Fife Avenue, Harare &nbsp;·&nbsp; ✉ hello@tafara-advisory.co.zw</p>
+<section id="contact">
+  <div class="wrap contact-grid">
+    <div class="contact-info">
+      <span class="eyebrow">Get in touch</span>
+      <h2>Let's talk about your business.</h2>
+      <p>Book a free consultation. Tell us where you are and where you want to go.</p>
+      <a href="https://wa.me/{{whatsapp_clean}}" class="wa-btn">💬 Chat on WhatsApp</a>
+      <div class="contact-meta">
+        {{#if location}}📍 {{location}}<br>{{/if}}
+        {{#if email}}✉ {{email}}<br>{{/if}}
+        {{#if phone}}📞 {{phone}}{{/if}}
+      </div>
+    </div>
+    {{#if quote_form_enabled}}
+    <div class="contact-form">
+      <div class="form-msg" id="form-msg"></div>
+      <div class="field"><input type="text" id="f-name" placeholder="Your name"></div>
+      <div class="field"><input type="text" id="f-phone" placeholder="Phone or email"></div>
+      <div class="field">
+        <select id="f-service">
+          <option value="">What do you need help with?</option>
+          {{#each services}}{{/each}}
+          <option value="General enquiry">General enquiry</option>
+        </select>
+      </div>
+      <div class="field"><textarea id="f-message" rows="4" placeholder="Tell us more about your situation…"></textarea></div>
+      <button class="btn" style="width:100%;justify-content:center" onclick="submitQuote()">Request consultation</button>
+    </div>
+    {{else}}
+    <div class="contact-form-alt">
+      <p style="color:var(--ink2)">Reach us directly on WhatsApp or by phone — we respond same day.</p>
+      <a href="https://wa.me/{{whatsapp_clean}}" class="wa-btn">💬 Chat on WhatsApp</a>
+    </div>
+    {{/if}}
   </div>
-  <div style="background:var(--bg);border-radius:16px;padding:28px">
-    <div class="field"><input placeholder="Your name"></div>
-    <div class="field"><input placeholder="Phone or email"></div>
-    <div class="field"><textarea rows="4" placeholder="How can we help?"></textarea></div>
-    <button class="btn" style="width:100%;justify-content:center">Request consultation</button>
-  </div>
-</div></section>
+</section>
 
-<footer><div class="wrap foot">
-  <div><span class="logo" style="color:#fff">Tafara<b>.</b>Advisory</span><p style="margin-top:8px">Business, tax & advisory services · Harare, Zimbabwe</p></div>
-  <div>© 2026 Tafara Advisory · Built with websites.co.zw</div>
-</div></footer>
-</body></html>
+<footer>
+  <div class="wrap foot">
+    <div>
+      <div class="foot-logo">{{business_name_first}}<b>.</b>{{business_name_rest}}</div>
+      <p style="margin-top:6px">{{business_type_label}} · {{location}}</p>
+    </div>
+    <div>© 2026 {{business_name}} · <a href="https://websites.co.zw" style="color:rgba(255,255,255,.4)">Built with websites.co.zw</a></div>
+  </div>
+</footer>
+
+<script>
+async function submitQuote() {
+  const msg = document.getElementById('form-msg');
+  msg.className = 'form-msg';
+  const name = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const service = document.getElementById('f-service').value;
+  const message = document.getElementById('f-message').value.trim();
+  if (!name || !phone) { msg.className = 'form-msg error'; msg.textContent = 'Please enter your name and contact details.'; return; }
+  try {
+    const res = await fetch('/forms/quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ site_id: '{{site_id}}', name, phone, service, message })
+    });
+    if (res.ok) {
+      msg.className = 'form-msg success';
+      msg.textContent = 'Thanks — we\u2019ll be in touch within one business day.';
+      ['f-name','f-phone','f-message'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('f-service').value = '';
+    } else { throw new Error(); }
+  } catch {
+    msg.className = 'form-msg error';
+    msg.textContent = 'Something went wrong. Please call or WhatsApp us directly.';
+  }
+}
+</script>
+</body>
+</html>
