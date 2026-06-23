@@ -266,6 +266,17 @@ img { display:block; max-width:100%; }
 @media (max-width:480px) {
   .agents-grid { grid-template-columns:1fr; }
 }
+
+/* ── PROPERTY PHOTO SLIDER (Pro feature) ── */
+.prop-slider { position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; background:#dde3e0; }
+.prop-slider .pslide { width:100%; height:100%; object-fit:cover; display:block; }
+.ps-btn { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.85); border:none; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; cursor:pointer; color:var(--ink); transition:background .15s; z-index:2; }
+.ps-btn:hover { background:#fff; }
+.ps-prev { left:8px; }
+.ps-next { right:8px; }
+.ps-dots { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); display:flex; gap:5px; z-index:2; }
+.ps-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.55); cursor:pointer; transition:background .15s; }
+.ps-dot.active { background:#fff; }
 </style>
 </head>
 <body>
@@ -401,6 +412,31 @@ img { display:block; max-width:100%; }
 <script>
 function openMobileMenu(){document.getElementById('mobileMenu').classList.add('open');}
 function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open');}
+
+function propSlide(sid, dir) {
+  var el = document.getElementById(sid); if (!el) return;
+  var slides = el.querySelectorAll('.pslide');
+  var dots   = el.querySelectorAll('.ps-dot');
+  var idx    = parseInt(el.dataset.idx || '0');
+  slides[idx].style.display = 'none';
+  if (dots[idx]) dots[idx].classList.remove('active');
+  idx = (idx + dir + slides.length) % slides.length;
+  slides[idx].style.display = 'block';
+  if (dots[idx]) dots[idx].classList.add('active');
+  el.dataset.idx = idx;
+}
+function propSlideTo(sid, to) {
+  var el = document.getElementById(sid); if (!el) return;
+  var slides = el.querySelectorAll('.pslide');
+  var dots   = el.querySelectorAll('.ps-dot');
+  var idx    = parseInt(el.dataset.idx || '0');
+  slides[idx].style.display = 'none';
+  if (dots[idx]) dots[idx].classList.remove('active');
+  slides[to].style.display = 'block';
+  if (dots[to]) dots[to].classList.add('active');
+  el.dataset.idx = to;
+}
+
 window.addEventListener('click',function(e){
   var m=document.getElementById('mobileMenu');
   if(m.classList.contains('open')&&!m.contains(e.target)&&e.target.id!=='navHam'){
