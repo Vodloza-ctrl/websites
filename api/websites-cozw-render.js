@@ -1,13 +1,9 @@
 /**
- * websites.co.zw — Render Worker v9.5
- * Fixes applied vs v9.3:
- *   7. buildTemplateExtras() — advisory-firm service_points_html token
- *      for dynamic "Why us" band bullet points.
- * Fixes applied vs v9.2:
- *   6. getTemplate() — TEMPLATE_CACHE disabled (always fetches fresh).
- *      ?v=3 query param added to bust Pages CDN cache on every request.
- *      Permanent fix: cache will be re-enabled with a TTL in v9.4 once
- *      all templates are stable.
+ * websites.co.zw — Render Worker v9.7
+ * Added vs v9.6:
+ *   - buildTemplateExtras(): beauty-salon extras block
+ *     (services_html with category tabs or flat grid, booking_services_json,
+ *      gallery_html, team_html, logo_img, hours_html)
  */
 
 export default {
@@ -70,9 +66,6 @@ async function serveAsset(request, env, key) {
 }
 
 // ─── TEMPLATE FETCHER ─────────────────────────────────────────────────────────
-// v9.3: in-memory cache disabled while templates are actively being updated.
-// ?v=3 busts any Pages CDN cache so we always get the latest config.json.
-// Re-enable caching in v9.4 once all 9 templates are stable.
 
 async function getTemplate(templateId, env) {
   const origin = (env.PAGES_ORIGIN || 'https://www.websites.co.zw').replace(/\/$/, '');
@@ -204,7 +197,6 @@ function processEach(html, def, c, tokens) {
         if (field === 'icon' && !item[field] && def.fallbackIcons) {
           return esc(def.fallbackIcons[i % def.fallbackIcons.length]);
         }
-        // Fields ending in _html or _link are pre-built safe values — skip escaping
         if (field.endsWith('_html') || field.endsWith('_link') || field.endsWith('_class')) {
           return String(item[field] ?? '');
         }
@@ -352,7 +344,7 @@ function buildTemplateExtras(c, site, config) {
 
   const templateId = site.template_id;
 
-  // Advisory-firm: dynamic "Why us" bullet points from service titles
+  // ── ADVISORY-FIRM ──────────────────────────────────────────────────────────
   if (templateId === 'advisory-firm' || templateId === 'consultant') {
     const svcTitles = (Array.isArray(c.services) ? c.services : [])
       .slice(0, 4)
@@ -369,36 +361,47 @@ function buildTemplateExtras(c, site, config) {
       .join('');
   }
 
-  // Property-estate: build listing cards with per-listing WhatsApp links
+  // ── PROPERTY-ESTATE ────────────────────────────────────────────────────────
   if (templateId === 'property-estate' || templateId === 'realestate') {
     const listings = Array.isArray(c.listings) ? c.listings : [];
-    // Sell band dynamic text
     extras.sell_heading = c.sell_heading || "Selling or renting out? Let's list it.";
     extras.sell_body    = c.sell_body    || c.tagline || 'Professional photos, local reach and honest valuations — your property in front of serious buyers.';
 
     if (listings.length) {
-      // Pre-process each listing with computed fields for the itemTemplate
-      // We inject computed fields directly onto each listing object
-      // so {{item.wa_link}}, {{item.badge_class}}, etc. resolve correctly
-      c.listings = listings.map(l => {
-        const type     = (l.type || 'For Sale').toLowerCase();
+      c.listings = listings.map((l, li) => {
+        const type       = (l.type || 'For Sale').toLowerCase();
         const badgeClass = type.includes('rent') || type.includes('let') ? 'badge-rent'
-                        : type.includes('sold')                           ? 'badge-sold'
-                        : 'badge-sale';
-        const typeLabel = l.type || 'For Sale';
+                         : type.includes('sold')                          ? 'badge-sold'
+                         : 'badge-sale';
+        const typeLabel  = l.type || 'For Sale';
 
-        // Per-listing WhatsApp: use listing agent phone if set, else site phone
         const rawPhone = (l.agent_phone || l.phone || c.phone || '').replace(/\D/g, '');
         const waPhone  = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
         const propMsg  = encodeURIComponent(`Hello, I'm interested in: ${l.name || l.title || 'the property'} — ${l.price || ''}. Please send more details.`);
         const waLink   = waPhone ? `https://wa.me/${waPhone}?text=${propMsg}` : '#';
 
-        // Build features string (beds / baths / size)
         const features = [];
         if (l.beds)      features.push(`🛏 ${l.beds} bed${l.beds == 1 ? '' : 's'}`);
         if (l.bathrooms) features.push(`🛁 ${l.bathrooms} bath${l.bathrooms == 1 ? '' : 's'}`);
         if (l.size)      features.push(`📐 ${l.size}`);
         const featuresHtml = features.map(f => `<span>${esc(f)}</span>`).join('');
+
+        const photos = Array.isArray(l.photos) && l.photos.length ? l.photos
+                     : l.photo ? [l.photo] : [];
+        let photosHtml = '';
+        if (photos.length === 1) {
+          photosHtml = `<img src="${esc(photos[0])}" alt="${esc(l.name || 'Property')}" loading="lazy">`;
+        } else if (photos.length > 1) {
+          const sid = `slider-${li}`;
+          const imgs = photos.map((u, pi) =>
+            `<img class="pslide" src="${esc(u)}" alt="${esc((l.name||'Property')+' photo '+(pi+1))}" loading="lazy" style="${pi===0?'':'display:none'}">`
+          ).join('');
+          photosHtml = `<div class="prop-slider" id="${sid}" data-idx="0">${imgs}`
+            + `<button class="ps-btn ps-prev" onclick="propSlide('${sid}',-1)" aria-label="Previous">‹</button>`
+            + `<button class="ps-btn ps-next" onclick="propSlide('${sid}',1)" aria-label="Next">›</button>`
+            + `<div class="ps-dots">${photos.map((_,pi)=>`<span class="ps-dot${pi===0?' active':''}" onclick="propSlideTo('${sid}',${pi})"></span>`).join('')}</div>`
+            + `</div>`;
+        }
 
         return {
           ...l,
@@ -406,6 +409,7 @@ function buildTemplateExtras(c, site, config) {
           type_label:    typeLabel,
           wa_link:       waLink,
           features_html: featuresHtml,
+          photos_html:   photosHtml,
           address:       l.address || l.location || l.name || '',
           description:   l.description || l.body || '',
         };
@@ -413,10 +417,158 @@ function buildTemplateExtras(c, site, config) {
     }
   }
 
-  // Grill-house / restaurant menu extras
+  // ── GRILL-HOUSE ────────────────────────────────────────────────────────────
   if (templateId === 'grill-house' || templateId === 'restaurant') {
     Object.assign(extras, buildGrillExtras(c, config));
   }
+
+  // ── BEAUTY-SALON ───────────────────────────────────────────────────────────
+  // Handles: beauty salon | barber shop | spa & massage | solo operator
+  if (templateId === 'beauty-salon') {
+    const svcs = Array.isArray(c.services) ? c.services : [];
+
+    // Detect structure: if first item has an `.items` array → categorised
+    const isCategorised = svcs.length > 0 && Array.isArray(svcs[0].items);
+
+    if (isCategorised) {
+      // Category-tabbed layout
+      const tabs = svcs.map((cat, ci) => {
+        const catId      = 'cat' + ci;
+        const activeClass = ci === 0 ? ' active' : '';
+        return `<button class="svc-tab${activeClass}" data-cat="${catId}" onclick="switchTab('${catId}')">${esc(cat.category || cat.name || 'Services')}</button>`;
+      }).join('');
+
+      const panels = svcs.map((cat, ci) => {
+        const catId      = 'cat' + ci;
+        const activeClass = ci === 0 ? ' active' : '';
+        const items      = Array.isArray(cat.items) ? cat.items : [];
+        const rows       = items.map(item => {
+          const name  = esc(item.name  || item.title || '');
+          const desc  = esc(item.description || item.body || '');
+          const price = esc(item.price || '');
+          return `<div class="svc-item">
+          <div>
+            <div class="svc-name">${name}</div>
+            ${desc ? `<div class="svc-desc">${desc}</div>` : ''}
+          </div>
+          ${price ? `<div class="svc-price">${price}</div>` : ''}
+        </div>`;
+        }).join('');
+        return `<div class="svc-panel${activeClass}" id="svc-${catId}">${rows}</div>`;
+      }).join('');
+
+      extras.services_html = `<div class="svc-tabs">${tabs}</div>${panels}`;
+
+    } else if (svcs.length > 0) {
+      // Flat grid — no categories
+      const rows = svcs.map(item => {
+        const name  = esc(item.name  || item.title || '');
+        const desc  = esc(item.description || item.body || '');
+        const price = esc(item.price || '');
+        return `<div class="svc-item">
+        <div>
+          <div class="svc-name">${name}</div>
+          ${desc ? `<div class="svc-desc">${desc}</div>` : ''}
+        </div>
+        ${price ? `<div class="svc-price">${price}</div>` : ''}
+      </div>`;
+      }).join('');
+      extras.services_html = `<div class="svc-flat">${rows}</div>`;
+
+    } else {
+      extras.services_html = '';
+    }
+
+    // Flatten all services into [{name, price}] for the booking modal JS dropdown
+    let bookingList = [];
+    if (isCategorised) {
+      svcs.forEach(cat => {
+        (cat.items || []).forEach(item => {
+          const n = item.name || item.title || '';
+          if (n) bookingList.push({ name: n, price: item.price || '' });
+        });
+      });
+    } else {
+      svcs.forEach(item => {
+        const n = item.name || item.title || '';
+        if (n) bookingList.push({ name: n, price: item.price || '' });
+      });
+    }
+    // Sensible fallback while owner hasn't filled in services yet
+    if (bookingList.length === 0) {
+      bookingList = [
+        { name: 'Hair service',   price: '' },
+        { name: 'Nail service',   price: '' },
+        { name: 'Skin treatment', price: '' },
+        { name: 'Other',          price: '' },
+      ];
+    }
+    extras.booking_services_json = JSON.stringify(bookingList);
+
+    // Gallery
+    const gallery = Array.isArray(c.gallery) ? c.gallery : [];
+    extras.gallery_html = gallery.map((url, gi) =>
+      `<img src="${esc(typeof url === 'string' ? url : url.url || '')}" alt="Gallery photo ${gi + 1}" loading="lazy">`
+    ).join('');
+
+    // Team
+    const teamMembers = Array.isArray(c.team) ? c.team : [];
+    extras.team_html = teamMembers.map(member => {
+      const name  = esc(member.name  || member.title || '');
+      const role  = esc(member.role  || member.description || member.body || '');
+      const bio   = esc(member.bio   || '');
+      const photo = member.photo || member.image_url || '';
+      const photoEl = photo
+        ? `<img class="team-photo" src="${esc(photo)}" alt="${name}" loading="lazy">`
+        : `<div class="team-photo-placeholder"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C96A7E" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>`;
+      return `<div class="team-card">
+        ${photoEl}
+        <div class="team-name">${name}</div>
+        ${role ? `<div class="team-role">${role}</div>` : ''}
+        ${bio  ? `<div class="team-bio">${bio}</div>`  : ''}
+      </div>`;
+    }).join('');
+
+    // Hours grid (reuses shared buildHoursGridHtml)
+    extras.hours_html = c.hours ? buildHoursGridHtml(c.hours) : '';
+
+    // Logo img tag
+    const logoUrl = c.images?.logo_url || c.logo_url || '';
+    extras.logo_img = logoUrl
+      ? `<img class="logo-img" src="${esc(logoUrl)}" alt="${esc(c.name || 'Logo')}">`
+      : '';
+
+    // wa_phone normalised (used in template JS)
+    const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
+    extras.wa_phone = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
+
+    // Scalar tokens the template uses directly
+    extras.site_name      = c.business_name || c.name || '';
+    extras.tagline        = c.tagline        || '';
+    extras.phone          = c.phone          || c.contact?.phone || '';
+    extras.address        = c.address        || c.location || c.contact?.address || '';
+    extras.hours_text     = c.hours_text     || '';
+    extras.hero_image_url = c.hero_image_url || c.hero_image || '';
+    extras.hero_eyebrow   = c.hero_eyebrow   || c.tagline || 'Hair · Nails · Skin';
+    extras.hero_headline  = c.hero_headline  || 'Where you leave feeling beautiful.';
+    extras.hero_subtext   = c.hero_subtext   || 'Expert stylists, honest prices, same-day bookings on WhatsApp.';
+    extras.hero_badge     = c.hero_badge     || 'Walk-ins welcome · Mon–Sat';
+    extras.services_intro = c.services_intro || 'Honest prices, no surprises. Walk-ins welcome when we have space.';
+    extras.team_heading   = c.team_heading   || 'Meet the team';
+    extras.team_subtext   = c.team_subtext   || 'Every stylist is trained, certified and passionate about their craft.';
+    extras.cta_heading    = c.cta_heading    || 'Ready to treat yourself?';
+    extras.cta_subtext    = c.cta_subtext    || "Book on WhatsApp and we'll confirm your slot right away.";
+    extras.map_embed_url  = c.map_embed_url  || c.contact?.map_embed_url || '';
+    extras.primary_color  = c.primary_color  || c.theme?.accent || '#C96A7E';
+
+    // Conditional section flags (used by <!--WCZ:--> markers in template)
+    extras.has_gallery   = gallery.length > 0      ? 'true' : '';
+    extras.has_team      = teamMembers.length > 0  ? 'true' : '';
+    extras.has_map       = extras.map_embed_url    ? 'true' : '';
+    // show Pro booking upsell when not on pro plan
+    extras.show_booking_upsell = (site.plan !== 'pro') ? 'true' : '';
+  }
+  // ── END BEAUTY-SALON ───────────────────────────────────────────────────────
 
   return extras;
 }
