@@ -7,176 +7,418 @@
 <meta name="description" content="{{seo_description}}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --navy: #152238;
-    --navy2: #1F3052;
-    --ink: #1A2236;
-    --ink2: #5A6478;
-    --paper: #fff;
-    --bg: #F4F6FA;
-    --gold: {{primary_color}};
-    --line: rgba(21,34,56,.1);
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: "Plus Jakarta Sans", sans-serif; color: var(--ink); background: var(--paper); line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  h1, h2, h3 { font-family: "Fraunces", serif; font-weight: 600; line-height: 1.08; letter-spacing: -.02em; }
-  a { color: inherit; text-decoration: none; }
-  img { display: block; max-width: 100%; }
-  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 26px; }
-  header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
-  .nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
-  .logo { font-family: "Fraunces", serif; font-weight: 700; font-size: 1.3rem; }
-  .logo b { color: var(--gold); }
-  .logo-img { height: 38px; width: auto; object-fit: contain; }
-  nav.main-nav { display: flex; gap: 28px; }
-  nav.main-nav a { font-size: .92rem; font-weight: 500; color: var(--ink2); transition: color .2s; }
-  nav.main-nav a:hover { color: var(--ink); }
-  .btn { display: inline-flex; align-items: center; gap: 8px; background: var(--navy); color: #fff; font-weight: 600; font-size: .92rem; padding: 11px 20px; border-radius: 8px; transition: background .2s; cursor: pointer; border: none; font-family: inherit; }
-  .btn:hover { background: var(--navy2); }
-  .ghost { border: 1px solid var(--line); color: var(--ink); background: #fff; }
-  .ghost:hover { border-color: var(--navy); }
-  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 50px; align-items: center; padding: 70px 0; }
-  .eyebrow { font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
-  .hero h1 { font-size: clamp(2.4rem, 5vw, 3.6rem); margin: 16px 0 18px; }
-  .hero-lead { font-size: 1.12rem; color: var(--ink2); max-width: 44ch; }
-  .hero-actions { display: flex; gap: 14px; margin-top: 28px; flex-wrap: wrap; }
-  .hero-img { width: 100%; border-radius: 16px; aspect-ratio: 4/3.4; object-fit: cover; box-shadow: 0 30px 60px -30px rgba(21,34,56,.4); }
-  .hero-img-ph { width: 100%; border-radius: 16px; aspect-ratio: 4/3.4; background: linear-gradient(135deg,#dde3ee,#c8d0e0); display: flex; align-items: center; justify-content: center; color: var(--ink2); font-size: .9rem; }
-  .stats { display: flex; gap: 40px; margin-top: 36px; flex-wrap: wrap; }
-  .stats b { font-family: "Fraunces", serif; font-size: 1.8rem; display: block; color: var(--navy); }
-  .stats span { font-size: .84rem; color: var(--ink2); }
-  section { padding: 64px 0; }
-  .sec-head { text-align: center; max-width: 620px; margin: 0 auto 44px; }
-  .sec-head h2 { font-size: clamp(1.9rem,3.5vw,2.6rem); }
-  .sec-head p { color: var(--ink2); margin-top: 12px; }
-  .services-bg { background: var(--bg); }
-  .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
-  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 28px 24px; transition: transform .3s, box-shadow .3s; }
-  .card:hover { transform: translateY(-4px); box-shadow: 0 24px 44px -28px rgba(21,34,56,.35); }
-  .card .ic { width: 46px; height: 46px; border-radius: 11px; background: #FBF1DE; color: var(--gold); display: grid; place-items: center; font-size: 1.3rem; margin-bottom: 16px; }
-  .card h3 { font-size: 1.18rem; }
-  .card p { font-size: .92rem; color: var(--ink2); margin-top: 8px; }
-  .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
-  .team-card { text-align: center; }
-  .team-card img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin: 0 auto 14px; border: 3px solid var(--line); }
-  .team-avatar { width: 90px; height: 90px; border-radius: 50%; background: var(--bg); margin: 0 auto 14px; border: 3px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
-  .t-name { font-family: "Fraunces",serif; font-size: 1.1rem; font-weight: 600; }
-  .t-role { font-size: .88rem; color: var(--gold); font-weight: 600; margin-top: 2px; }
-  .t-bio { font-size: .9rem; color: var(--ink2); margin-top: 8px; }
-  .band { background: var(--navy); color: #fff; border-radius: 24px; margin: 0 26px; padding: 60px 0; }
-  .band .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
-  .band h2 { color: #fff; font-size: 2.2rem; }
-  .band p { color: rgba(255,255,255,.75); margin-top: 14px; }
-  .band ul { list-style: none; margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
-  .band li { display: flex; gap: 10px; align-items: flex-start; font-size: .96rem; }
-  .band li::before { content: "✓"; color: var(--gold); font-weight: 800; flex-shrink: 0; }
-  .band-img { width: 100%; border-radius: 16px; aspect-ratio: 1/1; object-fit: cover; }
-  .band-img-ph { width: 100%; border-radius: 16px; aspect-ratio: 1/1; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.4); font-size: .9rem; }
-  .testi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
-  .testi-card { background: var(--bg); border-radius: 14px; padding: 26px 22px; }
-  .testi-text { font-size: .96rem; color: var(--ink2); font-style: italic; line-height: 1.65; }
-  .testi-name { font-weight: 700; font-size: .92rem; margin-top: 18px; color: var(--ink); }
-  .testi-role { font-size: .84rem; color: var(--ink2); }
-  .ai-badge { display: inline-block; background: #FBF1DE; color: var(--gold); font-size: .72rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; margin-top: 8px; }
-  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
-  .contact-info h2 { font-size: 2.2rem; margin-top: 12px; }
-  .contact-info p { color: var(--ink2); margin-top: 14px; }
-  .wa-btn { display: inline-flex; align-items: center; gap: 10px; background: #25D366; color: #fff; font-weight: 700; padding: 13px 22px; border-radius: 10px; margin-top: 18px; font-family: inherit; font-size: .96rem; }
-  .contact-meta { color: var(--ink2); font-size: .9rem; margin-top: 18px; line-height: 2; }
-  .contact-form { background: var(--bg); border-radius: 16px; padding: 28px; }
-  .contact-form-alt { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; text-align: center; gap: 16px; background: var(--bg); border-radius: 16px; padding: 28px; }
-  .field { margin-bottom: 14px; }
-  .field input, .field textarea, .field select { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; font-family: inherit; font-size: .95rem; background: #fff; color: var(--ink); }
-  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--gold); }
-  .field textarea { resize: vertical; }
-  .form-msg { display: none; padding: 12px 16px; border-radius: 8px; font-size: .92rem; margin-bottom: 12px; }
-  .form-msg.success { background: #d4edda; color: #155724; display: block; }
-  .form-msg.error { background: #f8d7da; color: #721c24; display: block; }
-  footer { background: #0E1726; color: rgba(255,255,255,.6); margin-top: 60px; padding: 40px 0; font-size: .9rem; }
-  .foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; align-items: center; }
-  .foot-logo { font-family: "Fraunces",serif; font-weight: 700; font-size: 1.2rem; color: #fff; }
-  .foot-logo b { color: var(--gold); }
-  @media (max-width: 860px) {
-    .hero, .band .wrap, .contact-grid { grid-template-columns: 1fr; }
-    .grid3, .team-grid, .testi-grid { grid-template-columns: 1fr; }
-    nav.main-nav { display: none; }
-    .hero-img, .hero-img-ph { order: -1; }
-    .band { margin: 0 12px; }
-  }
+:root {
+  --navy:   #10203A;
+  --navy2:  #1C2F4F;
+  --gold:   {{primary_color}};
+  --ink:    #1A2236;
+  --ink2:   #5A6478;
+  --paper:  #FFFFFF;
+  --bg:     #F5F7FA;
+  --bg2:    #EDF0F6;
+  --line:   rgba(16,32,58,.1);
+  --r:      10px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; -webkit-font-smoothing:antialiased; }
+body { font-family:"DM Sans",system-ui,sans-serif; color:var(--ink); background:var(--paper); line-height:1.65; }
+h1,h2,h3,h4 { font-family:"Cormorant Garamond",Georgia,serif; font-weight:600; line-height:1.1; letter-spacing:-.01em; }
+a { color:inherit; text-decoration:none; }
+img { display:block; max-width:100%; }
+ul { list-style:none; }
+
+.wrap { max-width:1120px; margin:0 auto; padding:0 28px; }
+
+/* ── NAV ── */
+.nav-bar {
+  position:sticky; top:0; z-index:100;
+  background:rgba(255,255,255,.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner {
+  display:flex; align-items:center; justify-content:space-between;
+  height:68px; gap:24px;
+}
+.nav-logo {
+  font-family:"Cormorant Garamond",serif;
+  font-size:1.35rem; font-weight:600; color:var(--navy);
+  flex-shrink:0;
+}
+.nav-logo img { height:36px; width:auto; object-fit:contain; }
+.nav-links { display:flex; gap:32px; align-items:center; }
+.nav-links a {
+  font-size:.88rem; font-weight:500; color:var(--ink2);
+  letter-spacing:.02em; transition:color .2s;
+}
+.nav-links a:hover { color:var(--navy); }
+.nav-cta {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--navy); color:#fff;
+  font-family:"DM Sans",sans-serif; font-size:.88rem; font-weight:500;
+  padding:10px 20px; border-radius:var(--r);
+  transition:background .2s; flex-shrink:0;
+}
+.nav-cta:hover { background:var(--navy2); }
+.nav-ham { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:6px; }
+.nav-ham span { display:block; width:22px; height:2px; background:var(--ink); border-radius:2px; }
+.mobile-menu {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:var(--paper); padding:24px 28px;
+  flex-direction:column; gap:24px;
+}
+.mobile-menu.open { display:flex; }
+.mobile-menu-close {
+  align-self:flex-end; font-size:1.4rem; cursor:pointer;
+  color:var(--ink2); background:none; border:none;
+}
+.mobile-menu a {
+  font-size:1.4rem; font-family:"Cormorant Garamond",serif;
+  font-weight:600; color:var(--navy); padding:6px 0;
+  border-bottom:1px solid var(--line);
+}
+.mobile-menu .mobile-cta {
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--navy); color:#fff; border-radius:var(--r);
+  padding:14px 24px; font-family:"DM Sans",sans-serif;
+  font-weight:600; font-size:1rem; margin-top:8px;
+}
+
+/* ── HERO ── */
+.hero {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:60px; align-items:center; padding:80px 0 72px;
+}
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:.78rem; font-weight:600; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--gold);
+  margin-bottom:22px;
+}
+.hero-eyebrow::before {
+  content:''; display:block; width:24px; height:1px; background:var(--gold);
+}
+.hero h1 { font-size:clamp(2.6rem,5vw,3.8rem); color:var(--navy); margin-bottom:20px; }
+.hero-lead { font-size:1.08rem; color:var(--ink2); max-width:46ch; line-height:1.7; margin-bottom:32px; }
+.hero-actions { display:flex; gap:14px; flex-wrap:wrap; }
+.btn-primary {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--navy); color:#fff;
+  font-weight:600; font-size:.92rem;
+  padding:13px 24px; border-radius:var(--r);
+  transition:background .2s;
+}
+.btn-primary:hover { background:var(--navy2); }
+.btn-outline {
+  display:inline-flex; align-items:center; gap:8px;
+  border:1.5px solid var(--line); color:var(--ink);
+  font-weight:600; font-size:.92rem;
+  padding:12px 22px; border-radius:var(--r);
+  transition:border-color .2s;
+}
+.btn-outline:hover { border-color:var(--navy); }
+.hero-img-wrap { position:relative; }
+.hero-img {
+  width:100%; border-radius:16px;
+  aspect-ratio:4/3.2; object-fit:cover;
+  box-shadow:0 32px 64px -24px rgba(16,32,58,.3);
+}
+.hero-img-ph {
+  width:100%; border-radius:16px;
+  aspect-ratio:4/3.2;
+  background:linear-gradient(135deg,#d8dfe8,#c4cdd9);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--ink2); font-size:.9rem;
+}
+.hero-badge {
+  position:absolute; bottom:-18px; left:24px;
+  background:var(--paper); border:1px solid var(--line);
+  border-radius:var(--r); padding:12px 18px;
+  box-shadow:0 8px 24px rgba(16,32,58,.12);
+  display:flex; align-items:center; gap:10px;
+}
+.hero-badge-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; flex-shrink:0; }
+.hero-badge-text { font-size:.82rem; font-weight:600; color:var(--ink); }
+
+/* ── SERVICES ── */
+.services-section { background:var(--bg); padding:80px 0; }
+.sec-head { text-align:center; max-width:580px; margin:0 auto 52px; }
+.sec-eyebrow {
+  display:inline-block; font-size:.75rem; font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--gold);
+  margin-bottom:14px;
+}
+.sec-head h2 { font-size:clamp(2rem,3.5vw,2.8rem); color:var(--navy); margin-bottom:14px; }
+.sec-head p { color:var(--ink2); font-size:1rem; }
+.services-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.service-card {
+  background:var(--paper); border:1px solid var(--line);
+  border-radius:14px; padding:28px 24px;
+  transition:transform .3s,box-shadow .3s;
+}
+.service-card:hover {
+  transform:translateY(-4px);
+  box-shadow:0 20px 40px -20px rgba(16,32,58,.2);
+}
+.service-icon {
+  width:44px; height:44px; border-radius:10px;
+  background:#EDF0F6; color:var(--gold);
+  display:grid; place-items:center;
+  font-size:1.25rem; margin-bottom:18px;
+}
+.service-card h3 { font-size:1.15rem; color:var(--navy); margin-bottom:10px; }
+.service-card p { font-size:.9rem; color:var(--ink2); line-height:1.65; }
+
+/* ── STATS ── */
+.stats-section { padding:72px 0; border-bottom:1px solid var(--line); }
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:32px; }
+.stat-item { text-align:center; }
+.stat-value {
+  font-family:"Cormorant Garamond",serif;
+  font-size:3rem; font-weight:600; color:var(--navy);
+  line-height:1; margin-bottom:8px;
+}
+.stat-label { font-size:.85rem; color:var(--ink2); font-weight:500; }
+
+/* ── TEAM ── */
+.team-section { padding:80px 0; }
+.team-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:28px; }
+.team-card { text-align:center; }
+.team-photo {
+  width:96px; height:96px; border-radius:50%;
+  object-fit:cover; margin:0 auto 16px;
+  border:3px solid var(--bg2);
+}
+.team-avatar {
+  width:96px; height:96px; border-radius:50%;
+  background:var(--bg2); margin:0 auto 16px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem; border:3px solid var(--bg2);
+}
+.team-name { font-family:"Cormorant Garamond",serif; font-size:1.15rem; font-weight:600; color:var(--navy); }
+.team-role { font-size:.84rem; color:var(--gold); font-weight:600; margin-top:3px; }
+.team-bio { font-size:.88rem; color:var(--ink2); margin-top:10px; line-height:1.6; }
+
+/* ── WHY US BAND ── */
+.band { background:var(--navy); color:#fff; padding:80px 0; }
+.band-inner { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; }
+.band h2 { color:#fff; font-size:clamp(2rem,3.5vw,2.8rem); margin-bottom:18px; }
+.band-lead { color:rgba(255,255,255,.7); font-size:1rem; line-height:1.7; margin-bottom:28px; }
+.band-points { display:flex; flex-direction:column; gap:14px; }
+.band-point {
+  display:flex; gap:12px; align-items:flex-start;
+  font-size:.94rem; color:rgba(255,255,255,.85);
+}
+.band-point-icon {
+  width:22px; height:22px; border-radius:50%;
+  background:var(--gold); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.7rem; font-weight:700; flex-shrink:0; margin-top:2px;
+}
+.band-img { width:100%; border-radius:14px; aspect-ratio:1; object-fit:cover; }
+.band-img-ph {
+  width:100%; border-radius:14px; aspect-ratio:1;
+  background:rgba(255,255,255,.06);
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,.3); font-size:.9rem;
+}
+
+/* ── TESTIMONIALS ── */
+.testi-section { background:var(--bg); padding:80px 0; }
+.testi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.testi-card {
+  background:var(--paper); border-radius:14px;
+  padding:28px 24px; border:1px solid var(--line);
+}
+.testi-quote {
+  font-family:"Cormorant Garamond",serif;
+  font-size:1.05rem; font-style:italic;
+  color:var(--ink); line-height:1.7; margin-bottom:20px;
+}
+.testi-name { font-weight:600; font-size:.9rem; color:var(--navy); }
+.testi-role { font-size:.82rem; color:var(--ink2); margin-top:2px; }
+
+/* ── CONTACT ── */
+.contact-section { padding:80px 0; }
+.contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:start; }
+.contact-left h2 { font-size:clamp(2rem,3.5vw,2.8rem); color:var(--navy); margin-bottom:16px; }
+.contact-left p { color:var(--ink2); font-size:1rem; margin-bottom:28px; }
+.wa-btn {
+  display:inline-flex; align-items:center; gap:10px;
+  background:#25D366; color:#fff;
+  font-weight:600; font-size:.95rem;
+  padding:14px 24px; border-radius:var(--r);
+  margin-bottom:24px; transition:background .2s;
+}
+.wa-btn:hover { background:#1fbb5a; }
+.contact-meta { display:flex; flex-direction:column; gap:10px; }
+.contact-meta-item {
+  display:flex; align-items:center; gap:10px;
+  font-size:.9rem; color:var(--ink2);
+}
+.contact-meta-icon {
+  width:32px; height:32px; border-radius:8px;
+  background:var(--bg2); display:flex;
+  align-items:center; justify-content:center;
+  font-size:.85rem; flex-shrink:0;
+}
+.contact-card {
+  background:var(--bg); border-radius:16px;
+  padding:32px; border:1px solid var(--line);
+  display:flex; flex-direction:column; gap:16px;
+  align-items:center; text-align:center; justify-content:center;
+  min-height:220px;
+}
+.contact-card p { color:var(--ink2); font-size:.95rem; max-width:30ch; }
+.contact-card .wa-btn { margin-bottom:0; }
+
+/* ── FOOTER ── */
+.site-footer {
+  background:#0B1927; color:rgba(255,255,255,.55);
+  padding:40px 0; font-size:.88rem;
+}
+.foot-inner {
+  display:flex; justify-content:space-between;
+  align-items:center; flex-wrap:wrap; gap:16px;
+}
+.foot-logo {
+  font-family:"Cormorant Garamond",serif;
+  font-size:1.2rem; font-weight:600; color:#fff;
+}
+.foot-copy a { color:rgba(255,255,255,.35); }
+.foot-copy a:hover { color:rgba(255,255,255,.6); }
+
+/* ── RESPONSIVE ── */
+@media (max-width:900px) {
+  .hero { grid-template-columns:1fr; gap:40px; padding:56px 0 48px; }
+  .hero-img-wrap { order:-1; }
+  .hero-badge { display:none; }
+  .services-grid { grid-template-columns:1fr; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .team-grid { grid-template-columns:1fr 1fr; }
+  .band-inner { grid-template-columns:1fr; gap:40px; }
+  .testi-grid { grid-template-columns:1fr; }
+  .contact-grid { grid-template-columns:1fr; gap:40px; }
+  .nav-links,.nav-cta { display:none; }
+  .nav-ham { display:flex; }
+  .foot-inner { flex-direction:column; text-align:center; gap:8px; }
+}
+@media (max-width:480px) {
+  .stats-grid { grid-template-columns:repeat(2,1fr); gap:20px; }
+  .team-grid { grid-template-columns:1fr; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap nav">
+<!-- NAV -->
+<header class="nav-bar">
+  <div class="wrap nav-inner">
     {{#if logo_url}}
-    <a href="#" class="logo"><img class="logo-img" src="{{logo_url}}" alt="{{business_name}}"></a>
+    <a href="#" class="nav-logo"><img src="{{logo_url}}" alt="{{business_name}}"></a>
     {{else}}
-    <div class="logo">{{business_name_first}}<b>.</b>{{business_name_rest}}</div>
+    <div class="nav-logo">{{business_name}}</div>
     {{/if}}
-    <nav class="main-nav">
+    <nav class="nav-links">
       <a href="#services">Services</a>
       {{#if has_team}}<a href="#team">Our team</a>{{/if}}
       <a href="#why">Why us</a>
       <a href="#contact">Contact</a>
     </nav>
-    <a href="#contact" class="btn">Book a consultation</a>
+    {{#if phone}}
+    <a href="{{whatsapp_wa_link}}" class="nav-cta" target="_blank" rel="noopener">
+      Book a consultation
+    </a>
+    {{/if}}
+    <div class="nav-ham" id="navHam" onclick="openMobileMenu()">
+      <span></span><span></span><span></span>
+    </div>
   </div>
 </header>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
+  <a href="#services" onclick="closeMobileMenu()">Services</a>
+  {{#if has_team}}<a href="#team" onclick="closeMobileMenu()">Our team</a>{{/if}}
+  <a href="#why" onclick="closeMobileMenu()">Why us</a>
+  <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+  {{#if phone}}
+  <a href="{{whatsapp_wa_link}}" class="mobile-cta" target="_blank" rel="noopener">Book a consultation</a>
+  {{/if}}
+</div>
 
-<div class="wrap hero">
+<!-- HERO -->
+<section class="wrap hero">
   <div>
-    <span class="eyebrow">{{business_type_label}}</span>
+    <div class="hero-eyebrow">{{business_type_label}}</div>
     <h1>{{tagline}}</h1>
     <p class="hero-lead">{{about}}</p>
     <div class="hero-actions">
-      <a href="#contact" class="btn">Book a consultation</a>
-      <a href="#services" class="btn ghost">Our services</a>
+      <a href="#contact" class="btn-primary">Book a consultation</a>
+      <a href="#services" class="btn-outline">Our services</a>
     </div>
-    {{#if has_stats}}
-    <div class="stats">
-      {{#each stats}}{{/each}}
-    </div>
-    {{/if}}
   </div>
-  <div>
+  <div class="hero-img-wrap">
     {{#if hero_image_url}}
     <img class="hero-img" src="{{hero_image_url}}" alt="{{business_name}}">
     {{else}}
     <div class="hero-img-ph">Add a hero photo in your dashboard</div>
     {{/if}}
-  </div>
-</div>
-
-<section id="services" class="services-bg">
-  <div class="wrap">
-    <div class="sec-head"><h2>What we do</h2><p>Practical, partner-led advisory across the areas that matter most to your business.</p></div>
-    <div class="grid3">{{#each services}}{{/each}}</div>
+    {{#if phone}}
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      <div class="hero-badge-text">Available on WhatsApp</div>
+    </div>
+    {{/if}}
   </div>
 </section>
 
-{{#if has_team}}
-<section id="team">
+<!-- SERVICES -->
+{{#if has_services}}
+<section class="services-section" id="services">
   <div class="wrap">
-    <div class="sec-head"><h2>Meet the team</h2><p>You work directly with experienced advisors — never passed to someone who doesn't know your business.</p></div>
+    <div class="sec-head">
+      <div class="sec-eyebrow">What we do</div>
+      <h2>Practice areas</h2>
+      <p>Practical, partner-led counsel across the legal and advisory areas that matter most.</p>
+    </div>
+    <div class="services-grid">{{#each services}}{{/each}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- STATS -->
+{{#if has_stats}}
+<section class="stats-section" id="credentials">
+  <div class="wrap">
+    <div class="stats-grid">{{#each stats}}{{/each}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- TEAM -->
+{{#if has_team}}
+<section class="team-section" id="team">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-eyebrow">The people</div>
+      <h2>Meet the team</h2>
+      <p>You work directly with experienced advisors — never passed to someone who doesn't know your matter.</p>
+    </div>
     <div class="team-grid">{{#each team}}{{/each}}</div>
   </div>
 </section>
 {{/if}}
 
+<!-- WHY US -->
 <section class="band" id="why">
-  <div class="wrap">
+  <div class="wrap band-inner">
     <div>
-      <h2>Advice you can build on.</h2>
-      <p>We're not a faceless firm — you work directly with advisors who understand your business and are reachable when you need them.</p>
-      <ul>
-        <li>Partner-led, not passed to juniors</li>
-        <li>Fixed, transparent fees</li>
-        <li>Reachable on WhatsApp</li>
-        <li>Deep local regulatory knowledge</li>
-      </ul>
+      <div class="sec-eyebrow" style="color:rgba(255,255,255,.5)">Why {{business_name}}</div>
+      <h2>Advice you can rely on.</h2>
+      <p class="band-lead">{{about}}</p>
+      <div class="band-points">{{service_points_html}}</div>
     </div>
     <div>
       {{#if band_image_url}}
@@ -188,88 +430,67 @@
   </div>
 </section>
 
+<!-- TESTIMONIALS -->
 {{#if has_testimonials}}
-<section id="testimonials">
+<section class="testi-section" id="testimonials">
   <div class="wrap">
-    <div class="sec-head"><h2>What clients say</h2><p>Trusted by businesses across Zimbabwe.</p></div>
+    <div class="sec-head">
+      <div class="sec-eyebrow">Client feedback</div>
+      <h2>What clients say</h2>
+    </div>
     <div class="testi-grid">{{#each testimonials}}{{/each}}</div>
   </div>
 </section>
 {{/if}}
 
-<section id="contact">
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
   <div class="wrap contact-grid">
-    <div class="contact-info">
-      <span class="eyebrow">Get in touch</span>
-      <h2>Let's talk about your business.</h2>
-      <p>Book a free consultation. Tell us where you are and where you want to go.</p>
-      <a href="https://wa.me/{{whatsapp_clean}}" class="wa-btn">💬 Chat on WhatsApp</a>
+    <div class="contact-left">
+      <div class="sec-eyebrow">Get in touch</div>
+      <h2>Let's talk about your matter.</h2>
+      <p>Book a free initial consultation. Tell us where you are and what you need.</p>
+      {{#if phone}}
+      <a href="{{wa_href_consult}}" class="wa-btn" target="_blank" rel="noopener">
+        💬 Chat on WhatsApp
+      </a>
+      {{/if}}
       <div class="contact-meta">
-        {{#if location}}📍 {{location}}<br>{{/if}}
-        {{#if email}}✉ {{email}}<br>{{/if}}
-        {{#if phone}}📞 {{phone}}{{/if}}
+        {{#if location}}<div class="contact-meta-item"><div class="contact-meta-icon">📍</div>{{location}}</div>{{/if}}
+        {{#if email}}<div class="contact-meta-item"><div class="contact-meta-icon">✉</div>{{email}}</div>{{/if}}
+        {{#if phone}}<div class="contact-meta-item"><div class="contact-meta-icon">📞</div>{{phone}}</div>{{/if}}
       </div>
     </div>
-    {{#if quote_form_enabled}}
-    <div class="contact-form">
-      <div class="form-msg" id="form-msg"></div>
-      <div class="field"><input type="text" id="f-name" placeholder="Your name"></div>
-      <div class="field"><input type="text" id="f-phone" placeholder="Phone or email"></div>
-      <div class="field">
-        <select id="f-service">
-          <option value="">What do you need help with?</option>
-          {{#each services}}{{/each}}
-          <option value="General enquiry">General enquiry</option>
-        </select>
-      </div>
-      <div class="field"><textarea id="f-message" rows="4" placeholder="Tell us more about your situation…"></textarea></div>
-      <button class="btn" style="width:100%;justify-content:center" onclick="submitQuote()">Request consultation</button>
+    <div class="contact-card">
+      <p>Reach us directly on WhatsApp — we respond the same business day.</p>
+      {{#if phone}}
+      <a href="{{wa_href_consult}}" class="wa-btn" target="_blank" rel="noopener">💬 Chat on WhatsApp</a>
+      {{/if}}
     </div>
-    {{else}}
-    <div class="contact-form-alt">
-      <p style="color:var(--ink2)">Reach us directly on WhatsApp or by phone — we respond same day.</p>
-      <a href="https://wa.me/{{whatsapp_clean}}" class="wa-btn">💬 Chat on WhatsApp</a>
-    </div>
-    {{/if}}
   </div>
 </section>
 
-<footer>
-  <div class="wrap foot">
-    <div>
-      <div class="foot-logo">{{business_name_first}}<b>.</b>{{business_name_rest}}</div>
-      <p style="margin-top:6px">{{business_type_label}} · {{location}}</p>
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="wrap foot-inner">
+    <div class="foot-logo">{{business_name}}</div>
+    <div class="foot-copy">
+      © {{current_year}} {{business_name}} · {{business_type_label}} · {{location}}
+      &nbsp;·&nbsp;
+      <a href="https://websites.co.zw">Built with websites.co.zw</a>
     </div>
-    <div>© 2026 {{business_name}} · <a href="https://websites.co.zw" style="color:rgba(255,255,255,.4)">Built with websites.co.zw</a></div>
   </div>
 </footer>
 
 <script>
-async function submitQuote() {
-  const msg = document.getElementById('form-msg');
-  msg.className = 'form-msg';
-  const name = document.getElementById('f-name').value.trim();
-  const phone = document.getElementById('f-phone').value.trim();
-  const service = document.getElementById('f-service').value;
-  const message = document.getElementById('f-message').value.trim();
-  if (!name || !phone) { msg.className = 'form-msg error'; msg.textContent = 'Please enter your name and contact details.'; return; }
-  try {
-    const res = await fetch('/forms/quote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ site_id: '{{site_id}}', name, phone, service, message })
-    });
-    if (res.ok) {
-      msg.className = 'form-msg success';
-      msg.textContent = 'Thanks — we\u2019ll be in touch within one business day.';
-      ['f-name','f-phone','f-message'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('f-service').value = '';
-    } else { throw new Error(); }
-  } catch {
-    msg.className = 'form-msg error';
-    msg.textContent = 'Something went wrong. Please call or WhatsApp us directly.';
+function openMobileMenu(){document.getElementById('mobileMenu').classList.add('open');}
+function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open');}
+window.addEventListener('click',function(e){
+  var m=document.getElementById('mobileMenu');
+  if(m.classList.contains('open')&&!m.contains(e.target)&&e.target.id!=='navHam'){
+    closeMobileMenu();
   }
-}
+});
 </script>
 </body>
 </html>
