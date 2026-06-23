@@ -1,10 +1,10 @@
 /**
- * websites.co.zw — Render Worker v9.2
- * Fixes applied vs v9.1:
- *   5. normalizeContent() — services items normalized so both .name/.title
- *      and .body/.description are always populated from whichever field
- *      exists (AI Worker outputs title+body, editor saves name+body).
- *      Fixes blank service cards on advisory-firm and all future templates.
+ * websites.co.zw — Render Worker v9.3
+ * Fixes applied vs v9.2:
+ *   6. getTemplate() — TEMPLATE_CACHE disabled (always fetches fresh).
+ *      ?v=3 query param added to bust Pages CDN cache on every request.
+ *      Permanent fix: cache will be re-enabled with a TTL in v9.4 once
+ *      all templates are stable.
  */
 
 export default {
@@ -67,27 +67,24 @@ async function serveAsset(request, env, key) {
 }
 
 // ─── TEMPLATE FETCHER ─────────────────────────────────────────────────────────
-
-const TEMPLATE_CACHE = new Map();
+// v9.3: in-memory cache disabled while templates are actively being updated.
+// ?v=3 busts any Pages CDN cache so we always get the latest config.json.
+// Re-enable caching in v9.4 once all 9 templates are stable.
 
 async function getTemplate(templateId, env) {
-  if (TEMPLATE_CACHE.has(templateId)) return TEMPLATE_CACHE.get(templateId);
-
   const origin = (env.PAGES_ORIGIN || 'https://www.websites.co.zw').replace(/\/$/, '');
   const base   = `${origin}/templates/${templateId}`;
 
   const [htmlRes, configRes] = await Promise.all([
-    fetch(`${base}/index.html`),
-    fetch(`${base}/config.json`),
+    fetch(`${base}/index.html?v=3`),
+    fetch(`${base}/config.json?v=3`),
   ]);
 
   if (!htmlRes.ok)   throw new Error(`Template HTML not found: ${templateId}`);
   if (!configRes.ok) throw new Error(`Template config not found: ${templateId}`);
 
   const [html, config] = await Promise.all([htmlRes.text(), configRes.json()]);
-  const result = { html, config };
-  TEMPLATE_CACHE.set(templateId, result);
-  return result;
+  return { html, config };
 }
 
 // ─── RENDER ENGINE ────────────────────────────────────────────────────────────
@@ -346,7 +343,6 @@ function buildTemplateExtras(c, site, config) {
     ).join('\n');
   }
 
-  // Grill-house / restaurant menu extras
   const templateId = site.template_id;
   if (templateId === 'grill-house' || templateId === 'restaurant') {
     Object.assign(extras, buildGrillExtras(c, config));
@@ -371,7 +367,6 @@ function buildGrillExtras(c, config) {
 
   if (!menu.length) return extras;
 
-  // Treat empty/missing category as 'Menu'
   const getcat = item =>
     (item.category && item.category.trim()) ? item.category.trim() : 'Menu';
 
@@ -556,9 +551,6 @@ function normalizeItemImages(arr) {
 }
 
 // ─── NORMALIZE SERVICES ───────────────────────────────────────────────────────
-// AI Worker outputs { title, body }; editor saves { name, body }.
-// Normalize so both .name/.title and .body/.description are always present,
-// whichever source the data came from. Configs can safely use either field name.
 
 function normalizeServices(arr) {
   if (!Array.isArray(arr)) return [];
@@ -688,8 +680,6 @@ function normalizeContent(raw) {
     primary_color:  inner.primary_color || theme.accent || '',
     images,
     gallery,
-    // ↓ v9.2: normalizeServices() ensures title/name and body/description
-    //   are always both populated regardless of which source wrote the data.
     services:       normalizeServices(normalizeItemImages(inner.services)),
     services_intro: inner.services_intro || '',
     menu:           normalizeItemImages(inner.menu),
