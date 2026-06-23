@@ -242,7 +242,6 @@ img{display:block;max-width:100%}
 .tpl-card-name{font-size:13px;font-weight:700;margin-bottom:3px}
 .tpl-card-desc{font-size:11.5px;color:var(--ink3);line-height:1.4}
 .preview-actions{display:flex;gap:4px;align-items:center}
-/* NEW: compact upload zones for menu + team repeater cards */
 .rep-upload-zone{border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface);transition:border-color .15s}
 .rep-upload-zone:hover{border-color:var(--green)}
 .rep-upload-thumb{width:100%;height:60px;object-fit:cover;display:block}
@@ -391,7 +390,8 @@ img{display:block;max-width:100%}
           <div class="two"><div class="fld-group"><label class="fld-label" for="f_phone">Phone number</label><input class="fld-input" id="f_phone" placeholder="0772 000 000" oninput="markDirty()"></div><div class="fld-group"><label class="fld-label" for="f_whatsapp">WhatsApp number</label><input class="fld-input" id="f_whatsapp" placeholder="0772 000 000" oninput="markDirty()"></div></div>
           <div class="fld-group"><label class="fld-label" for="f_email">Email address</label><input class="fld-input" id="f_email" placeholder="hello@yourbusiness.co.zw" oninput="markDirty()"></div>
           <div class="fld-group"><label class="fld-label" for="f_address">Physical address <span class="fld-hint">optional</span></label><input class="fld-input" id="f_address" placeholder="15 Main Street, Bulawayo" oninput="markDirty()"></div>
-          <div class="fld-group"><label class="fld-label">Business hours <span class="fld-hint">— set in the Hours tab</span></label><div style="background:var(--surface);border-radius:var(--r-sm);padding:9px 12px;font-size:13px;color:var(--ink3);border:1.5px solid var(--line)">Open the <strong>Hours</strong> tab on the left to set open &amp; close times per day. A live Open/Closed badge will show on your site.</div></div><div class="fld-group"><label class="fld-label" for="f_map_embed_url">Google Maps embed URL <span class="fld-hint">optional — shows a map on your site</span></label><input class="fld-input" id="f_map_embed_url" placeholder="Paste the URL from inside src=&quot;…&quot; in Google Maps embed code" oninput="markDirty()"><div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Google Maps → Share → Embed a map → copy the URL inside <code style="background:#f0f2f6;padding:1px 4px;border-radius:3px">src="..."</code></div></div>
+          <div class="fld-group"><label class="fld-label">Business hours <span class="fld-hint">— set in the Hours tab</span></label><div style="background:var(--surface);border-radius:var(--r-sm);padding:9px 12px;font-size:13px;color:var(--ink3);border:1.5px solid var(--line)">Open the <strong>Hours</strong> tab on the left to set open &amp; close times per day. A live Open/Closed badge will show on your site.</div></div>
+          <div class="fld-group"><label class="fld-label" for="f_map_embed_url">Google Maps embed URL <span class="fld-hint">optional — shows a map on your site</span></label><input class="fld-input" id="f_map_embed_url" placeholder="Paste the URL from inside src=&quot;…&quot; in Google Maps embed code" oninput="markDirty()"><div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Google Maps → Share → Embed a map → copy the URL inside <code style="background:#f0f2f6;padding:1px 4px;border-radius:3px">src="..."</code></div></div>
           <div class="fld-group"><label class="fld-label" for="f_location">City / Area</label><input class="fld-input" id="f_location" placeholder="Bulawayo" oninput="markDirty()"></div>
         </div>
       </div>
@@ -429,7 +429,7 @@ img{display:block;max-width:100%}
     </div>
     <div class="tab-section" id="tab-services"><div class="panel"><div class="panel-head"><div><h2 id="services-tab-title">Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="services-tab-sub">Each service becomes a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addService()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="services-rep-list"><div class="empty-state" id="services-rep-empty"><span class="es-icon">🛠️</span><p>No services yet. Add what you offer.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-menu"><div class="panel"><div class="panel-head"><div><h2>Menu Items</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Group by category — each becomes a tab on your site</div></div><button class="btn btn-green btn-sm" onclick="addMenuItem()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="menu-rep-list"><div class="empty-state" id="menu-rep-empty"><span class="es-icon">🍽️</span><p>No menu items yet.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-listings"><div class="panel"><div class="panel-head"><div><h2>Property Listings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each listing appears as a card at the top of your site</div></div><button class="btn btn-green btn-sm" onclick="addListing()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="listings-rep-list"><div class="empty-state" id="listings-rep-empty"><span class="es-icon">🏘️</span><p>No listings yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-listings"><div class="panel"><div class="panel-head"><div><h2>Property Listings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each listing appears as a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addListing()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="listings-rep-list"><div class="empty-state" id="listings-rep-empty"><span class="es-icon">🏘️</span><p>No listings yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-team"><div class="panel"><div class="panel-head"><div><h2 id="team-tab-title">Team</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="team-tab-sub">Hover cards flip to show bio on desktop</div></div><button class="btn btn-green btn-sm" onclick="addTeamMember()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="team-rep-list"><div class="empty-state" id="team-rep-empty"><span class="es-icon">👤</span><p>No team members yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-hours"><div class="panel"><div class="panel-head"><h2>Opening Hours</h2></div><div class="panel-body"><p style="font-size:12.5px;color:var(--ink3);margin-bottom:12px">A live Open/Closed badge shows on your site based on these times.</p><div class="hours-grid-wrap" id="hours-grid-wrap"><div class="hours-hdr">Day</div><div class="hours-hdr">Opens</div><div class="hours-hdr">Closes</div><div class="hours-hdr">Closed?</div></div></div></div></div>
     <div class="tab-section" id="tab-stats"><div class="panel"><div class="panel-head"><div><h2>Stats / Numbers</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Numbers animate (count up) when visitors scroll to them</div></div><button class="btn btn-green btn-sm" onclick="addStat()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="stats-rep-list"><div class="empty-state" id="stats-rep-empty"><span class="es-icon">📊</span><p>Add key numbers — e.g. 500+ students, 15 years, 98% pass rate</p></div></div></div></div></div>
@@ -453,7 +453,6 @@ img{display:block;max-width:100%}
 <div class="tpl-modal-overlay" id="tplModal" onclick="closeTplModalOutside(event)">
   <div class="tpl-modal-box"><div class="tpl-modal-head"><h2>Switch Template</h2><button class="btn btn-ghost btn-sm" onclick="closeTplModal()">✕ Close</button></div><div class="tpl-modal-body" id="tplModalBody"></div></div>
 </div>
-
 <script>
 (function(){
 "use strict";
@@ -690,8 +689,6 @@ async function uploadToR2(file,type){
   if(!r.ok)return null;
   try{var resp=await fetch(r.data.upload_url,{method:"PUT",body:file,headers:{"Content-Type":file.type}});if(!resp.ok)return null;return r.data.public_url;}catch(e){return null;}
 }
-// Expose uploadToR2 on window so the V3 script block (separate IIFE) can
-// call it for menu and team photo uploads without duplicating the S3 logic.
 window.uploadToR2=uploadToR2;
 function updateBudget(b){var el=document.getElementById("aiBudget");if(!b){var used=Number((state.site&&state.site.ai_generations_used)||0);el.innerHTML="Generations used: <b>"+used+" / 10</b> on this site.";if(used>=10){document.getElementById("generateBtn").disabled=true;}return;}var limit=b.limit||10;el.innerHTML="Generations: <b>"+b.used+" / "+limit+"</b>. "+Math.max(0,limit-b.used)+" remaining.";if(b.remaining===0||b.used>=limit){document.getElementById("generateBtn").disabled=true;document.getElementById("generateBtn").querySelector(".ai-ico").textContent="✦ No generations left";}}
 function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","grocery-fmcg":"market-fresh","grocery":"market-fresh","retail-hardware":"utility-slate","hardware":"utility-slate"};return m[t]||"clean-white";}
@@ -718,7 +715,6 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return
 })();
 document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="s"){e.preventDefault();if(window.onSave)onSave();}});
 </script>
-
 <script>
 (function(){
 "use strict";
@@ -763,12 +759,6 @@ function makeRepItemV3(title,bodyHTML,onDel){var div=document.createElement("div
 function fldV3(label,cls,val,ph,oninput,extra){return'<div class="fld-group"><label class="fld-label">'+label+'</label><input class="fld-input '+cls+'" value="'+escV3(val||'')+'" placeholder="'+escV3(ph||'')+'" oninput="'+oninput+'"'+(extra||'')+'></div>';}
 function taV3(label,cls,val,ph,oninput,rows){return'<div class="fld-group"><label class="fld-label">'+label+'</label><textarea class="fld-textarea '+cls+'" placeholder="'+escV3(ph||'')+'" rows="'+(rows||2)+'" oninput="'+oninput+'">'+escV3(val||'')+'</textarea></div>';}
 function row2V3(a,b){return'<div class="two">'+a+b+'</div>';}
-
-// ── Shared helper: compact upload zone for repeater cards (menu + team) ──────
-// Renders a thumbnail when a photo already exists, or an upload button if not.
-// The zone has a stable DOM id (zoneId) so the upload handler can swap it
-// in-place after a successful upload — keeping the card open without a full
-// list re-render.
 function repUploadZoneHtml(zoneId,existingUrl,handlerCall){
   if(existingUrl){
     return'<div class="rep-upload-zone" id="'+zoneId+'">'
@@ -783,27 +773,40 @@ function repUploadZoneHtml(zoneId,existingUrl,handlerCall){
     +'</label></div>';
 }
 
+// ── TUNE BUTTON HELPER ────────────────────────────────────────────────────────
+function tuneBtn(btnId,onclickCall){
+  return'<button type="button" id="'+btnId+'" onclick="'+onclickCall+'"'
+    +' style="margin-top:5px;font-size:11.5px;font-weight:600;color:var(--green-dk);'
+    +'background:var(--green-bg);border:none;border-radius:6px;padding:4px 9px;'
+    +'display:inline-flex;align-items:center;gap:4px;cursor:pointer;">✦ Tune</button>';
+}
+
+// ── SERVICES ─────────────────────────────────────────────────────────────────
 function renderServiceItemV3(s,idx){var body=row2V3(fldV3("Service Name","",s.name||s.title,"e.g. Haircut","updateServiceV3("+idx+",'name',this.value)"),fldV3("Price","",s.price,"$15","updateServiceV3("+idx+",'price',this.value)"))+taV3("Description","",s.body||s.description,"Brief description","updateServiceV3("+idx+",'body',this.value)")+fldV3("Icon <span class='fld-hint'>emoji</span>","",s.icon,"🔧","updateServiceV3("+idx+",'icon',this.value)",' style="width:70px"');return makeRepItemV3(s.name||s.title||"Service",body,"removeServiceV3("+idx+")");}
 window.addService=function(){v3state.services.push({name:"",body:"",price:"",icon:""});renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty");window.markDirty();};
 window.removeServiceV3=function(idx){v3state.services.splice(idx,1);renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty");window.markDirty();};
 window.updateServiceV3=function(idx,key,val){if(v3state.services[idx]){v3state.services[idx][key]=val;window.markDirty();}if(key==="name"){var item=document.querySelectorAll("#services-rep-list .rep-item")[idx];if(item){var t=item.querySelector(".rep-item-title");if(t)t.textContent=val||"Service";}}};
 
-// ── MENU — photo field upgraded from URL input to real R2 upload ─────────────
+// ── MENU (with description tune button) ──────────────────────────────────────
 function renderMenuRowV3(m,idx){
   var zoneId="menu-photo-zone-"+idx;
+  var descTaId="menu-desc-"+idx;
+  var descBtnId="menu-desc-tune-"+idx;
   var photoFld='<div class="fld-group"><label class="fld-label">Photo</label>'
     +repUploadZoneHtml(zoneId,m.photo,"handleMenuPhotoUpload("+idx+",this)")
     +'</div>';
   var body=row2V3(fldV3("Item Name","",m.name,"e.g. Grilled Chicken","updateMenuV3("+idx+",'name',this.value)"),fldV3("Category","",m.category,"e.g. Grills","updateMenuV3("+idx+",'category',this.value)"))
     +row2V3(fldV3("Price","",m.price,"$8","updateMenuV3("+idx+",'price',this.value)"),photoFld)
-    +fldV3("Description","",m.description||m.body,"Brief description","updateMenuV3("+idx+",'description',this.value)");
+    +'<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'
+    +'<textarea class="fld-textarea" id="'+descTaId+'" rows="2" placeholder="A short, appetising description…" '
+    +'oninput="updateMenuV3('+idx+',\'description\',this.value)">'+escV3(m.description||m.body||'')+'</textarea>'
+    +tuneBtn(descBtnId,"onTuneMenuDesc("+idx+")")
+    +'</div>';
   return makeRepItemV3(m.name||"Menu Item",body,"removeMenuV3("+idx+")");
 }
 window.addMenuItem=function(){v3state.menu.push({name:"",category:"",price:"",photo:"",description:""});renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");window.markDirty();};
 window.removeMenuV3=function(idx){v3state.menu.splice(idx,1);renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");window.markDirty();};
 window.updateMenuV3=function(idx,key,val){if(v3state.menu[idx]){v3state.menu[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#menu-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Menu Item";}}};
-// Upload handler: calls window.uploadToR2 (exposed from the first script
-// block), then swaps the zone HTML in-place so the card stays open.
 window.handleMenuPhotoUpload=async function(idx,input){
   var file=input.files[0];if(!file)return;
   var zoneId="menu-photo-zone-"+idx;
@@ -817,14 +820,20 @@ window.handleMenuPhotoUpload=async function(idx,input){
   toast("Photo uploaded ✓","ok");
 };
 
-// ── TEAM — photo field upgraded from URL input to real R2 upload ─────────────
+// ── TEAM (with bio tune button) ───────────────────────────────────────────────
 function renderTeamRowV3(p,idx){
   var zoneId="team-photo-zone-"+idx;
+  var bioTaId="team-bio-"+idx;
+  var bioBtnId="team-bio-tune-"+idx;
   var photoFld='<div class="fld-group"><label class="fld-label">Photo</label>'
     +repUploadZoneHtml(zoneId,p.photo,"handleTeamPhotoUpload("+idx+",this)")
     +'</div>';
-  var body=row2V3(fldV3("Full Name","",p.name,"e.g. Tendai Moyo","updateTeamV3("+idx+",'name',this.value)"),fldV3("Role","",p.role||p.title,"e.g. Head Chef","updateTeamV3("+idx+",'role',this.value)"))
-    +taV3("Bio","",p.bio,"Short bio shown on hover","updateTeamV3("+idx+",'bio',this.value)")
+  var body=row2V3(fldV3("Full Name","",p.name,"e.g. Tendai Moyo","updateTeamV3("+idx+",'name',this.value)"),fldV3("Role","",p.role||p.title,"e.g. Property Agent","updateTeamV3("+idx+",'role',this.value)"))
+    +'<div class="fld-group"><label class="fld-label">Bio <span class="fld-hint">shown on the site</span></label>'
+    +'<textarea class="fld-textarea" id="'+bioTaId+'" rows="2" placeholder="Short professional bio…" '
+    +'oninput="updateTeamV3('+idx+',\'bio\',this.value)">'+escV3(p.bio||'')+'</textarea>'
+    +tuneBtn(bioBtnId,"onTuneTeamBio("+idx+")")
+    +'</div>'
     +photoFld;
   return makeRepItemV3(p.name||"Person",body,"removeTeamV3("+idx+")");
 }
@@ -844,23 +853,147 @@ window.handleTeamPhotoUpload=async function(idx,input){
   toast("Photo uploaded ✓","ok");
 };
 
-function renderListingRowV3(l,idx){var typeOpts='<option value="For Sale"'+(l.type==="For Sale"?" selected":"")+'>For Sale</option><option value="To Rent"'+(l.type==="To Rent"?" selected":"")+'>To Rent</option><option value="Land"'+(l.type==="Land"?" selected":"")+'>Land</option>';var statusOpts='<option value="available"'+((!l.status||l.status==="available")?" selected":"")+'>Available</option><option value="sold"'+(l.status==="sold"?" selected":"")+'>Sold</option><option value="let"'+(l.status==="let"?" selected":"")+'>Let</option>';var body=row2V3(fldV3("Address / Title","",l.name||l.title||l.address,"e.g. 3-bed, Suburbs","updateListingV3("+idx+",'name',this.value)"),'<div class="fld-group"><label class="fld-label">Type</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'type\',this.value)">'+typeOpts+'</select></div>')+row2V3(fldV3("Price","",l.price,"USD 85,000","updateListingV3("+idx+",'price',this.value)"),'<div class="fld-group"><label class="fld-label">Status</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'status\',this.value)">'+statusOpts+'</select></div>')+'<div class="two"><div class="two">'+fldV3("Beds","",l.beds,"3","updateListingV3("+idx+",'beds',this.value)",' type="number" style="width:72px"')+fldV3("Baths","",l.bathrooms,"2","updateListingV3("+idx+",'bathrooms',this.value)",' type="number" style="width:72px"')+'</div>'+fldV3("Size","",l.size,"450m²","updateListingV3("+idx+",'size',this.value)")+'</div>'+fldV3("Photo URL","",l.photo||l.image,"https://…","updateListingV3("+idx+",'photo',this.value)");return makeRepItemV3(l.name||l.address||"Listing",body,"removeListingV3("+idx+")");}
-window.addListing=function(){v3state.listings.push({name:"",type:"For Sale",price:"",status:"available",beds:"",bathrooms:"",size:"",photo:""});renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");window.markDirty();};
+// ── LISTINGS (R2 upload + multi-photo Pro gate + description tune) ─────────────
+function listingPhotosHtml(photos,idx,isPro){
+  var html='<div class="fld-group"><label class="fld-label">Photos '
+    +(isPro?'<span class="fld-hint">— up to 5, Pro plan</span>':'<span class="fld-hint">— 1 photo on Starter</span>')
+    +'</label><div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">';
+  (photos||[]).forEach(function(url,pi){html+=listingPhotoThumb(url,idx,pi);});
+  var count=(photos||[]).length;
+  if(count===0){html+=listingPhotoAddZone(idx);}
+  else if(count<5){
+    if(isPro){html+=listingPhotoAddZone(idx);}
+    else if(count<1){html+=listingPhotoAddZone(idx);}
+    else{html+='<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add up to 5 photos per listing — upgrade to Pro</div>';}
+  }
+  html+='</div></div>';
+  return html;
+}
+function listingPhotoThumb(url,idx,pi){
+  return'<div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex-shrink:0">'
+    +'<img src="'+escV3(url)+'" style="width:100%;height:100%;object-fit:cover">'
+    +'<button type="button" onclick="removeListingPhoto('+idx+','+pi+')" '
+    +'style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;'
+    +'background:rgba(13,15,20,.7);color:#fff;border:none;font-size:11px;'
+    +'display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</button>'
+    +'</div>';
+}
+function listingPhotoAddZone(idx){
+  return'<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);'
+    +'display:flex;align-items:center;justify-content:center;cursor:pointer;'
+    +'font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden;'
+    +'transition:border-color .15s,background .15s" '
+    +'onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" '
+    +'onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'">'
+    +'📷<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" '
+    +'onchange="handleListingPhotoUpload('+idx+',this)">'
+    +'</label>';
+}
+function renderListingRowV3(l,idx){
+  var isPro=(window.state&&window.state.site&&window.state.site.plan==='pro');
+  var photos=Array.isArray(l.photos)?l.photos:(l.photo?[l.photo]:[]);
+  var typeOpts='<option value="For Sale"'+(l.type==="For Sale"?" selected":"")+'>For Sale</option>'
+    +'<option value="To Rent"'+(l.type==="To Rent"?" selected":"")+'>To Rent</option>'
+    +'<option value="Land"'+(l.type==="Land"?" selected":"")+'>Land</option>';
+  var statusOpts='<option value="available"'+((!l.status||l.status==="available")?" selected":"")+'>Available</option>'
+    +'<option value="sold"'+(l.status==="sold"?" selected":"")+'>Sold</option>'
+    +'<option value="let"'+(l.status==="let"?" selected":"")+'>Let</option>';
+  var descTaId='ldesc-'+idx;
+  var descBtnId='ldesc-tune-'+idx;
+  var body=row2V3(
+    fldV3("Address / Title","",l.name||l.title||l.address,"e.g. 3-bed in Suburbs","updateListingV3("+idx+",'name',this.value)"),
+    '<div class="fld-group"><label class="fld-label">Type</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'type\',this.value)">'+typeOpts+'</select></div>'
+  )
+  +row2V3(
+    fldV3("Price","",l.price,"USD 85,000","updateListingV3("+idx+",'price',this.value)"),
+    '<div class="fld-group"><label class="fld-label">Status</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'status\',this.value)">'+statusOpts+'</select></div>'
+  )
+  +'<div class="two"><div class="two">'
+  +fldV3("Beds","",l.beds,"3","updateListingV3("+idx+",'beds',this.value)",' type="number" style="width:72px"')
+  +fldV3("Baths","",l.bathrooms,"2","updateListingV3("+idx+",'bathrooms',this.value)",' type="number" style="width:72px"')
+  +'</div>'
+  +fldV3("Size","",l.size,"450m²","updateListingV3("+idx+",'size',this.value)")
+  +'</div>'
+  +'<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'
+  +'<textarea class="fld-textarea" id="'+descTaId+'" rows="2" placeholder="2-3 sentence property description…" '
+  +'oninput="updateListingV3('+idx+',\'description\',this.value)">'+escV3(l.description||l.body||'')+'</textarea>'
+  +tuneBtn(descBtnId,"onTuneListing("+idx+",'description')")
+  +'</div>'
+  +fldV3("Agent WhatsApp <span class='fld-hint'>optional — uses site phone if blank</span>","",l.agent_phone||"","0772 000 000","updateListingV3("+idx+",'agent_phone',this.value)")
+  +listingPhotosHtml(photos,idx,isPro);
+  return makeRepItemV3(l.name||l.address||"Listing",body,"removeListingV3("+idx+")");
+}
+window.addListing=function(){v3state.listings.push({name:"",type:"For Sale",price:"",status:"available",beds:"",bathrooms:"",size:"",description:"",agent_phone:"",photo:"",photos:[]});renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");window.markDirty();};
 window.removeListingV3=function(idx){v3state.listings.splice(idx,1);renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");window.markDirty();};
 window.updateListingV3=function(idx,key,val){if(v3state.listings[idx]){v3state.listings[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#listings-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Listing";}}};
+window.handleListingPhotoUpload=async function(idx,input){
+  var file=input.files[0];if(!file)return;
+  var isPro=(window.state&&window.state.site&&window.state.site.plan==='pro');
+  var listing=v3state.listings[idx];if(!listing)return;
+  if(!Array.isArray(listing.photos))listing.photos=listing.photo?[listing.photo]:[];
+  if(!isPro&&listing.photos.length>=1){toast("1 photo per listing on Starter — upgrade to Pro for up to 5","err");switchTab('publish',null);return;}
+  if(isPro&&listing.photos.length>=5){toast("Maximum 5 photos per listing","err");return;}
+  var container=document.getElementById("listing-photos-"+idx);
+  if(container){var spinner=document.createElement("div");spinner.id="listing-uploading-"+idx;spinner.style.cssText="width:72px;height:72px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3);flex-shrink:0";spinner.textContent="Uploading…";container.insertBefore(spinner,container.lastChild);}
+  var url=await window.uploadToR2(file,"listings");
+  var sp=document.getElementById("listing-uploading-"+idx);if(sp)sp.remove();
+  if(!url){toast("Upload failed — try again","err");return;}
+  listing.photos.push(url);listing.photo=listing.photos[0];window.markDirty();
+  var photosDiv=document.getElementById("listing-photos-"+idx);
+  if(photosDiv){photosDiv.outerHTML='<div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">'+listing.photos.map(function(u,pi){return listingPhotoThumb(u,idx,pi);}).join('')+(listing.photos.length<(isPro?5:1)?listingPhotoAddZone(idx):(!isPro&&listing.photos.length>=1?'<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add up to 5 photos per listing — upgrade to Pro</div>':''))+'</div>';}
+  toast("Photo uploaded ✓","ok");
+};
+window.removeListingPhoto=function(idx,pi){var listing=v3state.listings[idx];if(!listing)return;if(!Array.isArray(listing.photos))listing.photos=[];listing.photos.splice(pi,1);listing.photo=listing.photos[0]||"";window.markDirty();renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");};
+
+// ── AI TUNE HANDLERS ──────────────────────────────────────────────────────────
+window.onTuneListing=async function(idx,field){
+  var taId='ldesc-'+idx;var btnId='ldesc-tune-'+idx;
+  var ta=document.getElementById(taId);var btn=document.getElementById(btnId);
+  if(!ta||!ta.value.trim()){toast("Add a description first","err");return;}
+  if(btn){btn.disabled=true;btn.textContent="Tuning…";}
+  var improved=await tuneText("listing_description",ta.value);
+  if(btn){btn.disabled=false;btn.textContent="✦ Tune";}
+  if(!improved)return;ta.value=improved;updateListingV3(idx,field,improved);toast("Description tuned ✓","ok");
+};
+window.onTuneMenuDesc=async function(idx){
+  var taId='menu-desc-'+idx;var btnId='menu-desc-tune-'+idx;
+  var ta=document.getElementById(taId);var btn=document.getElementById(btnId);
+  if(!ta||!ta.value.trim()){toast("Add a description first","err");return;}
+  if(btn){btn.disabled=true;btn.textContent="Tuning…";}
+  var improved=await tuneText("menu_item_description",ta.value);
+  if(btn){btn.disabled=false;btn.textContent="✦ Tune";}
+  if(!improved)return;ta.value=improved;updateMenuV3(idx,"description",improved);toast("Description tuned ✓","ok");
+};
+window.onTuneTeamBio=async function(idx){
+  var taId='team-bio-'+idx;var btnId='team-bio-tune-'+idx;
+  var ta=document.getElementById(taId);var btn=document.getElementById(btnId);
+  if(!ta||!ta.value.trim()){toast("Add a bio first","err");return;}
+  if(btn){btn.disabled=true;btn.textContent="Tuning…";}
+  var improved=await tuneText("person_bio",ta.value);
+  if(btn){btn.disabled=false;btn.textContent="✦ Tune";}
+  if(!improved)return;ta.value=improved;updateTeamV3(idx,"bio",improved);toast("Bio tuned ✓","ok");
+};
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
 function renderStatRowV3(s,idx){var body='<div style="display:grid;grid-template-columns:80px 55px 1fr;gap:8px"><div class="fld-group"><label class="fld-label">Number</label><input class="fld-input" type="number" value="'+escV3(String(s.value||s.number||0))+'" oninput="updateStatV3('+idx+',\'value\',parseInt(this.value)||0)"></div><div class="fld-group"><label class="fld-label">Suffix</label><input class="fld-input" value="'+escV3(s.suffix||'')+'" placeholder="+" maxlength="5" oninput="updateStatV3('+idx+',\'suffix\',this.value)"></div><div class="fld-group"><label class="fld-label">Label</label><input class="fld-input" value="'+escV3(s.label||'')+'" placeholder="Years experience" oninput="updateStatLabelV3('+idx+',this)"></div></div>';return makeRepItemV3(s.label||(s.value+"+")||"Stat",body,"removeStatV3("+idx+")");}
 window.addStat=function(){v3state.stats.push({value:0,suffix:"",label:""});renderRepListV3("stats-rep-list",v3state.stats,renderStatRowV3,"stats-rep-empty");window.markDirty();};
 window.removeStatV3=function(idx){v3state.stats.splice(idx,1);renderRepListV3("stats-rep-list",v3state.stats,renderStatRowV3,"stats-rep-empty");window.markDirty();};
 window.updateStatV3=function(idx,key,val){if(v3state.stats[idx]){v3state.stats[idx][key]=val;window.markDirty();}};
 window.updateStatLabelV3=function(idx,input){if(v3state.stats[idx]){v3state.stats[idx].label=input.value;window.markDirty();}var items=document.querySelectorAll("#stats-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=input.value||"Stat";}};
+
+// ── EVENTS ────────────────────────────────────────────────────────────────────
 function renderEventRowV3(e,idx){var body=row2V3(fldV3("Title","",e.title||e.name,"e.g. Term 3 Starts","updateEventV3("+idx+",'title',this.value)"),'<div class="fld-group"><label class="fld-label">Date</label><input class="fld-input" type="date" value="'+escV3(e.date||'')+'" oninput="updateEventV3('+idx+',\'date\',this.value)"></div>')+fldV3("Details","",e.description||e.details,"Brief details","updateEventV3("+idx+",'description',this.value)");return makeRepItemV3(e.title||e.name||"Event",body,"removeEventV3("+idx+")");}
 window.addEvent=function(){v3state.events.push({title:"",date:"",description:""});renderRepListV3("events-rep-list",v3state.events,renderEventRowV3,"events-rep-empty");window.markDirty();};
 window.removeEventV3=function(idx){v3state.events.splice(idx,1);renderRepListV3("events-rep-list",v3state.events,renderEventRowV3,"events-rep-empty");window.markDirty();};
 window.updateEventV3=function(idx,key,val){if(v3state.events[idx]){v3state.events[idx][key]=val;window.markDirty();}if(key==="title"){var items=document.querySelectorAll("#events-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Event";}}};
+
+// ── TESTIMONIALS ──────────────────────────────────────────────────────────────
 function renderTestiRowV3(t,idx){var body=taV3("What they said","",t.text||t.quote,"Their service was outstanding…","updateTestiV3("+idx+",'text',this.value)",3)+row2V3(fldV3("Name","",t.name,"e.g. Amai Ncube","updateTestiV3("+idx+",'name',this.value)"),fldV3("Role / Company","",t.role||t.title,"e.g. Parent","updateTestiV3("+idx+",'role',this.value)"));return makeRepItemV3(t.name||"Review",body,"removeTestiV3("+idx+")");}
 window.addTestimonial=function(){v3state.testimonials.push({text:"",name:"",role:""});renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty");window.markDirty();};
 window.removeTestiV3=function(idx){v3state.testimonials.splice(idx,1);renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty");window.markDirty();};
 window.updateTestiV3=function(idx,key,val){if(v3state.testimonials[idx]){v3state.testimonials[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#testimonials-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Review";}}};
+
+// ── PREVIEW ───────────────────────────────────────────────────────────────────
 function upgradePreviewDrawer(){
   var bar=document.querySelector(".preview-bar");if(!bar||document.getElementById("preview-dev-btns"))return;
   var devBtns=document.createElement("div");devBtns.className="preview-device-btns";devBtns.id="preview-dev-btns";
@@ -874,16 +1007,20 @@ function upgradePreviewDrawer(){
 }
 window.setPreviewDevice=function(d){v3state.previewDevice=d;var outer=document.getElementById("preview-frame-outer");if(outer)outer.className="preview-frame-outer dv-"+d;["desktop","tablet","mobile"].forEach(function(x){var btn=document.getElementById("dev-"+x);if(btn)btn.classList.toggle("active",x===d);});};
 function openPreviewInNewTab(){var frame=document.getElementById("previewFrame");if(frame&&frame.src&&frame.src!==window.location.href)window.open(frame.src,"_blank");}
+
+// ── SAVE HOOK ─────────────────────────────────────────────────────────────────
 var _origOnSave=window.onSave;
 window.onSave=async function(){
   if(window.state&&window.state.content){var inner=window.state.content.content||{};inner.services=v3state.services;inner.menu=v3state.menu;inner.listings=v3state.listings;inner.team=v3state.team;inner.stats=v3state.stats;inner.events=v3state.events;inner.testimonials=v3state.testimonials;inner.hours=v3state.hours;window.state.content.content=inner;}
   if(_origOnSave)return _origOnSave.apply(this,arguments);
 };
+
+// ── LOAD FROM SITE ────────────────────────────────────────────────────────────
 function loadV3DataFromSite(){
   var raw=window.state&&window.state.content;if(!raw)return;var inner=raw.content||{};
   if(Array.isArray(inner.services))v3state.services=inner.services;
   if(Array.isArray(inner.menu))v3state.menu=inner.menu;
-  if(Array.isArray(inner.listings))v3state.listings=inner.listings;
+  if(Array.isArray(inner.listings))v3state.listings=inner.listings.map(function(l){if(!Array.isArray(l.photos))l.photos=l.photo?[l.photo]:[];return l;});
   if(Array.isArray(inner.team))v3state.team=inner.team;
   if(Array.isArray(inner.stats))v3state.stats=inner.stats;
   if(Array.isArray(inner.events))v3state.events=inner.events;
@@ -898,11 +1035,15 @@ function loadV3DataFromSite(){
   renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty");
   renderHoursGrid();
 }
+
+// ── SECTIONS ──────────────────────────────────────────────────────────────────
 var ALL_SECS_V3={"bold-retail":[{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"team",label:"Team"},{key:"testimonials",label:"Reviews"},{key:"gallery",label:"Gallery"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],"grill-house":[{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],"beauty-salon":[{key:"hero",label:"Hero banner"},{key:"services",label:"Services & prices"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],"school-institution":[{key:"hero",label:"Hero banner"},{key:"stats",label:"Key stats"},{key:"about",label:"About us"},{key:"services",label:"Programmes"},{key:"team",label:"Leadership"},{key:"events",label:"Term dates"},{key:"testimonials",label:"Reviews"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],"advisory-firm":[{key:"hero",label:"Hero banner"},{key:"services",label:"Practice areas"},{key:"about",label:"About us"},{key:"stats",label:"Credentials"},{key:"team",label:"The team"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],"property-estate":[{key:"hero",label:"Listings / Hero"},{key:"about",label:"About us"},{key:"team",label:"Our agents"},{key:"testimonials",label:"Reviews"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],"boutique-fashion":[{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],"grocery-fmcg":[{key:"hero",label:"Hero banner"},{key:"products",label:"Products"},{key:"about",label:"About us"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],"retail-hardware":[{key:"hero",label:"Hero banner"},{key:"products",label:"Products / Catalogue"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"contact",label:"Contact"}]};
 var REQUIRED_V3=["hero","contact"];
 window.buildSectionsList=function(){var list=document.getElementById("sectionsList");if(!list)return;var tpl=g("f_template")||"bold-retail";var allSecs=ALL_SECS_V3[tpl]||ALL_SECS_V3["bold-retail"];var raw=window.state&&window.state.content;var activeSecs=(raw&&raw.theme&&Array.isArray(raw.theme.sections))?raw.theme.sections:allSecs.map(function(s){return s.key;});var activeKeys=activeSecs.filter(function(k){return allSecs.some(function(s){return s.key===k;});});var inactiveKeys=allSecs.map(function(s){return s.key;}).filter(function(k){return activeKeys.indexOf(k)<0;});var ordered=activeKeys.concat(inactiveKeys);list.innerHTML=ordered.map(function(key,idx){var sec=allSecs.find(function(s){return s.key===key;});if(!sec)return"";var isActive=activeKeys.indexOf(key)>-1;var isReq=REQUIRED_V3.indexOf(key)>-1;return'<div class="sec-row'+(isActive?" active":"")+'"><label class="sec-toggle"><input type="checkbox"'+(isActive?" checked":"")+(isReq?" disabled":"")+' onchange="toggleSectionV3(\''+key+'\',this.checked)"><span class="sec-slider"></span></label><span class="sec-label">'+sec.label+'</span><div class="sec-arrows"><button class="sec-arr" onclick="moveSectionV3(\''+key+'\',-1)" '+(idx===0?"disabled":"")+'>↑</button><button class="sec-arr" onclick="moveSectionV3(\''+key+'\',1)" '+(idx===ordered.length-1?"disabled":"")+'>↓</button></div></div>';}).join("");};
 window.toggleSectionV3=function(key,on){var raw=window.state&&window.state.content;if(!raw)return;if(!raw.theme)raw.theme={};var tpl=g("f_template")||"bold-retail";if(!Array.isArray(raw.theme.sections))raw.theme.sections=ALL_SECS_V3[tpl].map(function(s){return s.key;});var secs=raw.theme.sections;if(on){if(secs.indexOf(key)<0)secs.push(key);}else{raw.theme.sections=secs.filter(function(k){return k!==key;});}window.markDirty();buildSectionsList();};
 window.moveSectionV3=function(key,dir){var raw=window.state&&window.state.content;if(!raw||!raw.theme||!Array.isArray(raw.theme.sections))return;var secs=raw.theme.sections,idx=secs.indexOf(key);if(idx<0)return;var ni=idx+dir;if(ni<0||ni>=secs.length)return;var tmp=secs[idx];secs[idx]=secs[ni];secs[ni]=tmp;window.markDirty();buildSectionsList();};
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
 function g(id){var e=document.getElementById(id);return e?e.value.trim():"";}
 function set(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}
 function escV3(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
