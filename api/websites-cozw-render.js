@@ -1,5 +1,8 @@
 /**
- * websites.co.zw — Render Worker v9.3
+ * websites.co.zw — Render Worker v9.4
+ * Fixes applied vs v9.3:
+ *   7. buildTemplateExtras() — advisory-firm service_points_html token
+ *      for dynamic "Why us" band bullet points.
  * Fixes applied vs v9.2:
  *   6. getTemplate() — TEMPLATE_CACHE disabled (always fetches fresh).
  *      ?v=3 query param added to bust Pages CDN cache on every request.
@@ -344,6 +347,25 @@ function buildTemplateExtras(c, site, config) {
   }
 
   const templateId = site.template_id;
+
+  // Advisory-firm: dynamic "Why us" bullet points from service titles
+  if (templateId === 'advisory-firm' || templateId === 'consultant') {
+    const svcTitles = (Array.isArray(c.services) ? c.services : [])
+      .slice(0, 4)
+      .map(s => s.title || s.name || '')
+      .filter(Boolean);
+    const points = svcTitles.length >= 2 ? svcTitles : [
+      'Partner-led — you work directly with experienced advisors',
+      'Practical advice grounded in local law and regulation',
+      'Reachable on WhatsApp — we respond same business day',
+      'Fixed, transparent fees with no hidden charges',
+    ];
+    extras.service_points_html = points
+      .map(p => `<div class="band-point"><div class="band-point-icon">✓</div><span>${esc(p)}</span></div>`)
+      .join('');
+  }
+
+  // Grill-house / restaurant menu extras
   if (templateId === 'grill-house' || templateId === 'restaurant') {
     Object.assign(extras, buildGrillExtras(c, config));
   }
