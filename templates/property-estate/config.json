@@ -1,0 +1,33 @@
+{
+  "templateId": "property-estate",
+  "defaultPrimaryColor": "#13392A",
+  "defaultTypeLabel": "Property · Sales · Rentals",
+  "bodyClass": "tpl-property",
+  "selfContainedNav": true,
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
+  "typeLabels": {
+    "property-estate": "Property · Sales · Rentals",
+    "realestate":      "Property · Sales · Rentals",
+    "estate-agent":    "Estate Agency · Valuations"
+  },
+  "scalars": [],
+  "lists": [
+    {
+      "key": "listings",
+      "emptyHtml": "<div style=\"grid-column:1/-1;text-align:center;padding:48px 20px;color:#5E6B63;font-size:.95rem\">No listings yet — add properties in your dashboard.</div>",
+      "itemTemplate": "<div class=\"prop-card\"><div class=\"prop-photo\">{{#if item.photo}}<img src=\"{{item.photo}}\" alt=\"{{item.name}}\">{{else}}<div class=\"prop-photo-ph\">🏡</div>{{/if}}<span class=\"prop-badge {{item.badge_class}}\">{{item.type_label}}</span></div><div class=\"prop-body\"><div class=\"prop-price\">{{item.price}}</div><div class=\"prop-name\">{{item.name}}</div><div class=\"prop-loc\">{{item.address}}</div>{{#if item.description}}<p class=\"prop-desc\">{{item.description}}</p>{{/if}}<div class=\"prop-features\">{{item.features_html}}</div><div class=\"prop-actions\"><a href=\"{{item.wa_link}}\" class=\"enq-btn\" target=\"_blank\" rel=\"noopener\">Enquire</a><a href=\"{{item.wa_link}}\" class=\"enq-wa\" target=\"_blank\" rel=\"noopener\">💬</a></div></div></div>"
+    },
+    {
+      "key": "team",
+      "itemTemplate": "<div class=\"agent-card\">{{#if item.photo}}<img class=\"agent-photo\" src=\"{{item.photo}}\" alt=\"{{item.name}}\">{{else}}<div class=\"agent-avatar\">👤</div>{{/if}}<div class=\"agent-name\">{{item.name}}</div><div class=\"agent-role\">{{item.role}}</div>{{#if item.bio}}<p class=\"agent-bio\">{{item.bio}}</p>{{/if}}</div>"
+    }
+  ],
+  "conditionals": [
+    { "flag": "logo_url",       "type": "computed",      "token": "logo_url" },
+    { "flag": "hero_image_url", "type": "computed",      "token": "hero_image_url" },
+    { "flag": "has_agents",     "type": "list_present",  "field": "team" },
+    { "flag": "phone",          "type": "field_present", "field": "phone" },
+    { "flag": "location",       "type": "field_present", "field": "location" },
+    { "flag": "email",          "type": "field_present", "field": "email" }
+  ]
+}
