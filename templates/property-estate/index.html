@@ -1,101 +1,412 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mvura Properties — Homes & Land across Zimbabwe</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{seo_title}}</title>
+<meta name="description" content="{{seo_description}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--forest:#13392A;--forest2:#1C4F3B;--cream:#F6F1E7;--gold:#B0852F;--ink:#1E2A24;--ink2:#5E6B63;--paper:#fff;--line:rgba(19,57,42,.12)}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:"Plus Jakarta Sans",sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased}
-  h1,h2,h3{font-family:"Fraunces",serif;font-weight:600;line-height:1.08;letter-spacing:-.02em}
-  a{color:inherit;text-decoration:none}.wrap{max-width:1160px;margin:0 auto;padding:0 26px}
-  header{position:sticky;top:0;z-index:50;background:rgba(246,241,231,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
-  .logo{font-family:"Fraunces",serif;font-weight:700;font-size:1.35rem}.logo b{color:var(--gold)}
-  .nav nav{display:flex;gap:26px}.nav nav a{font-size:.9rem;font-weight:500;color:var(--ink2)}.nav nav a:hover{color:var(--forest)}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--forest);color:#fff;font-weight:600;font-size:.9rem;padding:11px 20px;border-radius:8px;transition:.2s}.btn:hover{background:var(--forest2)}
-  .hero{position:relative;min-height:62vh;display:flex;align-items:center;color:#fff}
-  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(19,57,42,.85),rgba(19,57,42,.35))}
-  .hero .wrap{position:relative;z-index:2;padding:50px 26px}
-  .hero .eyebrow{font-size:.82rem;letter-spacing:.18em;text-transform:uppercase;color:#D8C18A;font-weight:700}
-  .hero h1{font-size:clamp(2.4rem,5vw,4rem);margin:14px 0 16px;max-width:18ch}
-  .hero p{font-size:1.12rem;max-width:42ch;color:rgba(255,255,255,.9)}
-  .search{background:#fff;border-radius:12px;padding:12px;display:flex;gap:10px;margin-top:30px;max-width:640px;box-shadow:0 24px 50px -24px rgba(0,0,0,.5)}
-  .search input,.search select{flex:1;border:none;font-family:inherit;font-size:.92rem;padding:8px 10px;color:var(--ink);background:transparent}
-  .search .btn{flex:none}
-  section{padding:60px 0}.sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:34px;flex-wrap:wrap;gap:12px}
-  .sec-head h2{font-size:clamp(1.9rem,3.5vw,2.6rem)}.sec-head p{color:var(--ink2);margin-top:6px}
-  .listings{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-  .prop{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:.3s}
-  .prop:hover{transform:translateY(-5px);box-shadow:0 26px 50px -28px rgba(19,57,42,.4)}
-  .prop .ph{position:relative}.prop .ph img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
-  .prop .badge{position:absolute;top:12px;left:12px;background:var(--gold);color:#fff;font-size:.74rem;font-weight:700;padding:4px 11px;border-radius:6px}
-  .prop .badge.rent{background:var(--forest)}
-  .prop .body{padding:18px}
-  .prop .price{font-family:"Fraunces",serif;font-size:1.5rem;font-weight:700;color:var(--forest)}
-  .prop h3{font-size:1.08rem;margin:4px 0 4px;font-family:"Plus Jakarta Sans";font-weight:700}
-  .prop .loc{font-size:.86rem;color:var(--ink2)}
-  .prop .feat{display:flex;gap:16px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:.84rem;color:var(--ink2)}
-  .prop .feat span{display:flex;align-items:center;gap:5px}
-  .prop .enq{margin-top:14px;display:flex;gap:8px}
-  .enqbtn{flex:1;text-align:center;background:var(--forest);color:#fff;font-weight:600;font-size:.84rem;padding:9px;border-radius:8px}
-  .enqwa{background:#25D366;color:#fff;font-weight:600;font-size:.84rem;padding:9px 12px;border-radius:8px}
-  .band{background:var(--forest);color:#fff;text-align:center;padding:58px 0;border-radius:0}
-  .band h2{color:#fff;font-size:clamp(2rem,4vw,2.6rem)}.band p{color:rgba(255,255,255,.72);margin:12px auto 0;max-width:46ch}
-  .wa{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:#fff;font-weight:700;padding:14px 26px;border-radius:10px;margin-top:24px}
-  footer{background:#0C261C;color:rgba(255,255,255,.6);padding:40px 0;font-size:.9rem}
-  .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
-  @media(max-width:860px){.listings{grid-template-columns:1fr}.nav nav{display:none}.search{flex-wrap:wrap}}
-</style></head>
-<body>
-<header><div class="wrap nav">
-  <div class="logo">Mvura<b>.</b>Properties</div>
-  <nav><a href="#listings">Listings</a><a href="#sell">Sell with us</a><a href="#contact">Contact</a></nav>
-  <a href="#contact" class="btn">List your property</a>
-</div></header>
+:root {
+  --forest: {{primary_color}};
+  --forest2: #1C4F3B;
+  --cream:  #F6F1E7;
+  --gold:   #B0852F;
+  --ink:    #1E2A24;
+  --ink2:   #5E6B63;
+  --paper:  #fff;
+  --line:   rgba(19,57,42,.12);
+  --r:      10px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; -webkit-font-smoothing:antialiased; }
+body { font-family:"Plus Jakarta Sans",sans-serif; color:var(--ink); background:var(--cream); line-height:1.6; }
+h1,h2,h3 { font-family:"Fraunces",serif; font-weight:600; line-height:1.08; letter-spacing:-.02em; }
+a { color:inherit; text-decoration:none; }
+img { display:block; max-width:100%; }
+.wrap { max-width:1160px; margin:0 auto; padding:0 26px; }
 
-<div class="hero">
-  <img src="https://picsum.photos/seed/mvura-home/1600/1000" alt="Modern home">
-  <div class="wrap">
-    <span class="eyebrow">Sales · Rentals · Land</span>
-    <h1>Find your place in Zimbabwe.</h1>
-    <p>Trusted property across Harare and beyond — for residents and the diaspora buying back home.</p>
-    <div class="search">
-      <select><option>Buy</option><option>Rent</option></select>
-      <input placeholder="Suburb or city">
-      <select><option>Any price</option><option>Up to $100k</option><option>$100k–250k</option></select>
-      <a class="btn">Search</a>
+/* ── NAV ── */
+.nav-bar {
+  position:sticky; top:0; z-index:100;
+  background:rgba(246,241,231,.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner {
+  display:flex; align-items:center;
+  justify-content:space-between; height:66px; gap:20px;
+}
+.nav-logo { font-family:"Fraunces",serif; font-weight:700; font-size:1.3rem; color:var(--ink); }
+.nav-logo img { height:34px; width:auto; object-fit:contain; }
+.nav-logo b { color:var(--gold); }
+.nav-links { display:flex; gap:26px; align-items:center; }
+.nav-links a { font-size:.9rem; font-weight:500; color:var(--ink2); transition:color .2s; }
+.nav-links a:hover { color:var(--forest); }
+.nav-cta {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--forest); color:#fff;
+  font-weight:600; font-size:.88rem;
+  padding:10px 20px; border-radius:var(--r);
+  transition:background .2s; flex-shrink:0;
+}
+.nav-cta:hover { background:var(--forest2); }
+.nav-ham { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:6px; }
+.nav-ham span { display:block; width:22px; height:2px; background:var(--ink); border-radius:2px; }
+.mobile-menu {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:var(--cream); padding:24px 28px;
+  flex-direction:column; gap:20px;
+}
+.mobile-menu.open { display:flex; }
+.mobile-menu-close { align-self:flex-end; font-size:1.4rem; cursor:pointer; background:none; border:none; }
+.mobile-menu a {
+  font-size:1.4rem; font-family:"Fraunces",serif;
+  font-weight:600; color:var(--ink); padding:6px 0;
+  border-bottom:1px solid var(--line);
+}
+.mobile-cta {
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--forest); color:#fff; border-radius:var(--r);
+  padding:13px 24px; font-family:"Plus Jakarta Sans",sans-serif;
+  font-weight:600; margin-top:8px;
+}
+
+/* ── HERO ── */
+.hero {
+  position:relative; min-height:58vh;
+  display:flex; align-items:center; color:#fff;
+}
+.hero-bg {
+  position:absolute; inset:0;
+  width:100%; height:100%; object-fit:cover;
+}
+.hero-bg-ph {
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,#13392A,#1C5240);
+}
+.hero::after {
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(90deg,rgba(19,57,42,.88),rgba(19,57,42,.3));
+}
+.hero-content { position:relative; z-index:2; padding:56px 0; }
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:.78rem; font-weight:700; letter-spacing:.18em;
+  text-transform:uppercase; color:#D8C18A; margin-bottom:18px;
+}
+.hero h1 { font-size:clamp(2.4rem,5vw,3.8rem); margin-bottom:16px; max-width:18ch; }
+.hero-lead { font-size:1.08rem; color:rgba(255,255,255,.88); max-width:44ch; margin-bottom:28px; }
+.hero-actions { display:flex; gap:12px; flex-wrap:wrap; }
+.btn-primary {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--gold); color:#fff;
+  font-weight:700; font-size:.92rem;
+  padding:13px 24px; border-radius:var(--r); transition:opacity .2s;
+}
+.btn-primary:hover { opacity:.9; }
+.btn-outline {
+  display:inline-flex; align-items:center; gap:8px;
+  border:1.5px solid rgba(255,255,255,.4); color:#fff;
+  font-weight:600; font-size:.92rem;
+  padding:12px 22px; border-radius:var(--r); transition:border-color .2s;
+}
+.btn-outline:hover { border-color:#fff; }
+
+/* ── SECTION HEADS ── */
+.sec-head { margin-bottom:36px; }
+.sec-head h2 { font-size:clamp(1.9rem,3.5vw,2.6rem); color:var(--ink); }
+.sec-head p { color:var(--ink2); margin-top:8px; }
+.sec-top {
+  display:flex; align-items:flex-end;
+  justify-content:space-between; gap:16px; flex-wrap:wrap;
+}
+
+/* ── LISTINGS GRID ── */
+.listings-section { padding:64px 0; }
+.listings-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+.prop-card {
+  background:var(--paper); border:1px solid var(--line);
+  border-radius:14px; overflow:hidden;
+  transition:transform .3s, box-shadow .3s;
+}
+.prop-card:hover {
+  transform:translateY(-5px);
+  box-shadow:0 26px 50px -28px rgba(19,57,42,.4);
+}
+.prop-photo { position:relative; }
+.prop-photo img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; }
+.prop-photo-ph {
+  width:100%; aspect-ratio:4/3;
+  background:linear-gradient(135deg,#d4ddd8,#c0cdc6);
+  display:flex; align-items:center; justify-content:center;
+  font-size:2rem; color:rgba(19,57,42,.3);
+}
+.prop-badge {
+  position:absolute; top:12px; left:12px;
+  font-size:.74rem; font-weight:700;
+  padding:4px 11px; border-radius:6px; color:#fff;
+}
+.badge-sale { background:var(--gold); }
+.badge-rent { background:var(--forest); }
+.badge-sold { background:#6b7180; }
+.badge-let  { background:#6b7180; }
+.prop-body { padding:18px; }
+.prop-price {
+  font-family:"Fraunces",serif;
+  font-size:1.5rem; font-weight:700; color:var(--forest);
+}
+.prop-name { font-size:1.05rem; font-weight:700; margin:4px 0 3px; }
+.prop-loc { font-size:.86rem; color:var(--ink2); }
+.prop-desc { font-size:.88rem; color:var(--ink2); margin-top:10px; line-height:1.55; }
+.prop-features {
+  display:flex; gap:14px; flex-wrap:wrap;
+  margin-top:14px; padding-top:14px;
+  border-top:1px solid var(--line);
+  font-size:.83rem; color:var(--ink2);
+}
+.prop-features span { display:flex; align-items:center; gap:4px; }
+.prop-actions { display:flex; gap:8px; margin-top:14px; }
+.enq-btn {
+  flex:1; text-align:center; background:var(--forest); color:#fff;
+  font-weight:600; font-size:.84rem; padding:9px 10px;
+  border-radius:8px; transition:background .2s;
+}
+.enq-btn:hover { background:var(--forest2); }
+.enq-wa {
+  display:inline-flex; align-items:center; justify-content:center;
+  background:#25D366; color:#fff;
+  font-weight:700; font-size:.84rem;
+  padding:9px 13px; border-radius:8px;
+}
+
+/* ── AGENTS ── */
+.agents-section { padding:64px 0; background:var(--paper); }
+.agents-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+.agent-card { text-align:center; }
+.agent-photo {
+  width:88px; height:88px; border-radius:50%;
+  object-fit:cover; margin:0 auto 14px;
+  border:3px solid var(--line);
+}
+.agent-avatar {
+  width:88px; height:88px; border-radius:50%;
+  background:#EAF1EC; margin:0 auto 14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem; border:3px solid var(--line);
+}
+.agent-name { font-family:"Fraunces",serif; font-size:1.1rem; font-weight:600; color:var(--ink); }
+.agent-role { font-size:.84rem; color:var(--gold); font-weight:600; margin-top:2px; }
+.agent-bio { font-size:.88rem; color:var(--ink2); margin-top:9px; line-height:1.6; }
+
+/* ── SELL BAND ── */
+.sell-band {
+  background:var(--forest); color:#fff;
+  padding:72px 0; text-align:center;
+}
+.sell-band h2 { color:#fff; font-size:clamp(2rem,4vw,2.6rem); margin-bottom:14px; }
+.sell-band p { color:rgba(255,255,255,.72); max-width:46ch; margin:0 auto 28px; }
+.wa-btn {
+  display:inline-flex; align-items:center; gap:10px;
+  background:var(--gold); color:#fff;
+  font-weight:700; font-size:.96rem;
+  padding:14px 26px; border-radius:var(--r);
+  transition:opacity .2s;
+}
+.wa-btn:hover { opacity:.9; }
+
+/* ── CONTACT ── */
+.contact-section { padding:64px 0; }
+.contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start; }
+.contact-left h2 { font-size:clamp(1.9rem,3vw,2.4rem); color:var(--ink); margin-bottom:14px; }
+.contact-left p { color:var(--ink2); margin-bottom:24px; }
+.contact-meta { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+.contact-meta-item {
+  display:flex; align-items:center; gap:10px;
+  font-size:.9rem; color:var(--ink2);
+}
+.contact-meta-icon {
+  width:32px; height:32px; border-radius:8px;
+  background:#EAF1EC; display:flex;
+  align-items:center; justify-content:center; font-size:.85rem; flex-shrink:0;
+}
+.contact-card {
+  background:var(--paper); border:1px solid var(--line);
+  border-radius:16px; padding:32px;
+  display:flex; flex-direction:column;
+  align-items:center; text-align:center; gap:14px;
+}
+.contact-card p { color:var(--ink2); font-size:.95rem; max-width:28ch; }
+
+/* ── FOOTER ── */
+.site-footer {
+  background:#0C261C; color:rgba(255,255,255,.55);
+  padding:38px 0; font-size:.88rem;
+}
+.foot-inner {
+  display:flex; justify-content:space-between;
+  align-items:center; flex-wrap:wrap; gap:14px;
+}
+.foot-logo { font-family:"Fraunces",serif; font-size:1.2rem; font-weight:700; color:#fff; }
+.foot-logo b { color:var(--gold); }
+.foot-copy a { color:rgba(255,255,255,.35); }
+.foot-copy a:hover { color:rgba(255,255,255,.6); }
+
+/* ── RESPONSIVE ── */
+@media (max-width:900px) {
+  .listings-grid { grid-template-columns:1fr; }
+  .agents-grid { grid-template-columns:1fr 1fr; }
+  .contact-grid { grid-template-columns:1fr; gap:36px; }
+  .nav-links,.nav-cta { display:none; }
+  .nav-ham { display:flex; }
+  .foot-inner { flex-direction:column; text-align:center; gap:8px; }
+}
+@media (max-width:480px) {
+  .agents-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav-bar">
+  <div class="wrap nav-inner">
+    {{#if logo_url}}
+    <a href="#" class="nav-logo"><img src="{{logo_url}}" alt="{{business_name}}"></a>
+    {{else}}
+    <div class="nav-logo">{{business_name_first}}<b>.</b>{{business_name_rest}}</div>
+    {{/if}}
+    <nav class="nav-links">
+      <a href="#listings">Listings</a>
+      {{#if has_agents}}<a href="#agents">Our agents</a>{{/if}}
+      <a href="#sell">Sell with us</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    {{#if phone}}
+    <a href="{{wa_href_enquiry}}" class="nav-cta" target="_blank" rel="noopener">List your property</a>
+    {{/if}}
+    <div class="nav-ham" id="navHam" onclick="openMobileMenu()">
+      <span></span><span></span><span></span>
     </div>
   </div>
+</header>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
+  <a href="#listings" onclick="closeMobileMenu()">Listings</a>
+  {{#if has_agents}}<a href="#agents" onclick="closeMobileMenu()">Our agents</a>{{/if}}
+  <a href="#sell" onclick="closeMobileMenu()">Sell with us</a>
+  <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+  {{#if phone}}
+  <a href="{{wa_href_enquiry}}" class="mobile-cta" target="_blank" rel="noopener">List your property</a>
+  {{/if}}
 </div>
 
-<section id="listings">
-  <div class="wrap">
-    <div class="sec-head"><div><h2>Featured listings</h2><p>Hand-picked homes and land, updated weekly.</p></div><a href="#" style="font-weight:600;color:var(--forest)">View all →</a></div>
-    <div class="listings">
-      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-borrowdale/600/450" alt=""><span class="badge">For sale</span></div><div class="body"><div class="price">$285,000</div><h3>4-bed family home</h3><div class="loc">Borrowdale, Harare</div><div class="feat"><span>🛏 4 beds</span><span>🛁 3 baths</span><span>📐 2,000m²</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
-      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-avondale/600/450" alt=""><span class="badge rent">To rent</span></div><div class="body"><div class="price">$650<span style="font-size:.9rem;color:var(--ink2)">/mo</span></div><h3>2-bed apartment</h3><div class="loc">Avondale, Harare</div><div class="feat"><span>🛏 2 beds</span><span>🛁 2 baths</span><span>🚗 Secure</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
-      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-land/600/450" alt=""><span class="badge">For sale</span></div><div class="body"><div class="price">$45,000</div><h3>Residential stand</h3><div class="loc">Ruwa, Harare</div><div class="feat"><span>📐 800m²</span><span>📄 Title deed</span><span>💧 Serviced</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
-      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-bulawayo/600/450" alt=""><span class="badge">For sale</span></div><div class="body"><div class="price">$135,000</div><h3>3-bed townhouse</h3><div class="loc">Hillside, Bulawayo</div><div class="feat"><span>🛏 3 beds</span><span>🛁 2 baths</span><span>🚗 Garage</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
-      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-cottage/600/450" alt=""><span class="badge rent">To rent</span></div><div class="body"><div class="price">$420<span style="font-size:.9rem;color:var(--ink2)">/mo</span></div><h3>Garden cottage</h3><div class="loc">Mount Pleasant, Harare</div><div class="feat"><span>🛏 1 bed</span><span>🛁 1 bath</span><span>🌿 Garden</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
-      <div class="prop"><div class="ph"><img src="https://picsum.photos/seed/prop-farm/600/450" alt=""><span class="badge">For sale</span></div><div class="body"><div class="price">$320,000</div><h3>Smallholding & house</h3><div class="loc">Goromonzi</div><div class="feat"><span>📐 4 ha</span><span>🛏 3 beds</span><span>💧 Borehole</span></div><div class="enq"><a class="enqbtn">Enquire</a><a href="https://wa.me/263770000000" class="enqwa">💬</a></div></div></div>
+<!-- HERO -->
+<section class="hero">
+  {{#if hero_image_url}}
+  <img class="hero-bg" src="{{hero_image_url}}" alt="{{business_name}}">
+  {{else}}
+  <div class="hero-bg-ph"></div>
+  {{/if}}
+  <div class="wrap hero-content">
+    <div class="hero-eyebrow">{{business_type_label}}</div>
+    <h1>{{tagline}}</h1>
+    <p class="hero-lead">{{about}}</p>
+    <div class="hero-actions">
+      <a href="#listings" class="btn-primary">View listings</a>
+      <a href="#contact" class="btn-outline">Contact us</a>
     </div>
   </div>
 </section>
 
-<section class="band" id="sell">
+<!-- LISTINGS -->
+<section class="listings-section" id="listings">
   <div class="wrap">
-    <h2>Selling or renting out? Let's list it.</h2>
-    <p>Professional photos, diaspora reach and honest valuations. Your property in front of serious buyers.</p>
-    <a href="https://wa.me/263770000000" class="wa">💬 List with us on WhatsApp</a>
+    <div class="sec-top">
+      <div class="sec-head">
+        <h2>Current listings</h2>
+        <p>Properties updated regularly — contact us for the latest availability.</p>
+      </div>
+    </div>
+    <div class="listings-grid">{{#each listings}}{{/each}}</div>
   </div>
 </section>
 
-<footer><div class="wrap foot">
-  <div><span class="logo" style="color:#fff">Mvura<b>.</b>Properties</span><p style="margin-top:8px" id="contact">📍 8 Borrowdale Road, Harare · ✉ info@mvura.co.zw</p></div>
-  <div>© 2026 Mvura Properties · Built with websites.co.zw</div>
-</div></footer>
-</body></html>
+<!-- AGENTS -->
+{{#if has_agents}}
+<section class="agents-section" id="agents">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Our agents</h2>
+      <p>Experienced property professionals ready to help you buy, sell or rent.</p>
+    </div>
+    <div class="agents-grid">{{#each team}}{{/each}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- SELL BAND -->
+<section class="sell-band" id="sell">
+  <div class="wrap">
+    <h2>{{sell_heading}}</h2>
+    <p>{{sell_body}}</p>
+    {{#if phone}}
+    <a href="{{wa_href_enquiry}}" class="wa-btn" target="_blank" rel="noopener">
+      💬 List your property on WhatsApp
+    </a>
+    {{/if}}
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="wrap contact-grid">
+    <div class="contact-left">
+      <h2>Get in touch</h2>
+      <p>Whether you're buying, renting or selling — we're here to help.</p>
+      {{#if phone}}
+      <a href="{{wa_href_enquiry}}" class="wa-btn" target="_blank" rel="noopener">
+        💬 Chat on WhatsApp
+      </a>
+      {{/if}}
+      <div class="contact-meta">
+        {{#if location}}<div class="contact-meta-item"><div class="contact-meta-icon">📍</div>{{location}}</div>{{/if}}
+        {{#if email}}<div class="contact-meta-item"><div class="contact-meta-icon">✉</div>{{email}}</div>{{/if}}
+        {{#if phone}}<div class="contact-meta-item"><div class="contact-meta-icon">📞</div>{{phone}}</div>{{/if}}
+      </div>
+    </div>
+    <div class="contact-card">
+      <p>Serious about a property? Reach us directly — we respond same day.</p>
+      {{#if phone}}
+      <a href="{{wa_href_enquiry}}" class="wa-btn" target="_blank" rel="noopener">💬 Chat on WhatsApp</a>
+      {{/if}}
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="wrap foot-inner">
+    <div class="foot-logo">{{business_name_first}}<b>.</b>{{business_name_rest}}</div>
+    <div class="foot-copy">
+      © {{current_year}} {{business_name}} · {{business_type_label}}
+      &nbsp;·&nbsp;
+      <a href="https://websites.co.zw">Built with websites.co.zw</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function openMobileMenu(){document.getElementById('mobileMenu').classList.add('open');}
+function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open');}
+window.addEventListener('click',function(e){
+  var m=document.getElementById('mobileMenu');
+  if(m.classList.contains('open')&&!m.contains(e.target)&&e.target.id!=='navHam'){
+    closeMobileMenu();
+  }
+});
+</script>
+</body>
+</html>
