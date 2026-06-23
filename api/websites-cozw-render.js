@@ -1,5 +1,5 @@
 /**
- * websites.co.zw — Render Worker v9.4
+ * websites.co.zw — Render Worker v9.5
  * Fixes applied vs v9.3:
  *   7. buildTemplateExtras() — advisory-firm service_points_html token
  *      for dynamic "Why us" band bullet points.
@@ -204,6 +204,10 @@ function processEach(html, def, c, tokens) {
         if (field === 'icon' && !item[field] && def.fallbackIcons) {
           return esc(def.fallbackIcons[i % def.fallbackIcons.length]);
         }
+        // Fields ending in _html or _link are pre-built safe values — skip escaping
+        if (field.endsWith('_html') || field.endsWith('_link') || field.endsWith('_class')) {
+          return String(item[field] ?? '');
+        }
         return esc(String(item[field] ?? ''));
       });
       block = block.replace(/\{\{item_index\}\}/g, String(i + 1));
@@ -363,6 +367,50 @@ function buildTemplateExtras(c, site, config) {
     extras.service_points_html = points
       .map(p => `<div class="band-point"><div class="band-point-icon">✓</div><span>${esc(p)}</span></div>`)
       .join('');
+  }
+
+  // Property-estate: build listing cards with per-listing WhatsApp links
+  if (templateId === 'property-estate' || templateId === 'realestate') {
+    const listings = Array.isArray(c.listings) ? c.listings : [];
+    // Sell band dynamic text
+    extras.sell_heading = c.sell_heading || "Selling or renting out? Let's list it.";
+    extras.sell_body    = c.sell_body    || c.tagline || 'Professional photos, local reach and honest valuations — your property in front of serious buyers.';
+
+    if (listings.length) {
+      // Pre-process each listing with computed fields for the itemTemplate
+      // We inject computed fields directly onto each listing object
+      // so {{item.wa_link}}, {{item.badge_class}}, etc. resolve correctly
+      c.listings = listings.map(l => {
+        const type     = (l.type || 'For Sale').toLowerCase();
+        const badgeClass = type.includes('rent') || type.includes('let') ? 'badge-rent'
+                        : type.includes('sold')                           ? 'badge-sold'
+                        : 'badge-sale';
+        const typeLabel = l.type || 'For Sale';
+
+        // Per-listing WhatsApp: use listing agent phone if set, else site phone
+        const rawPhone = (l.agent_phone || l.phone || c.phone || '').replace(/\D/g, '');
+        const waPhone  = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
+        const propMsg  = encodeURIComponent(`Hello, I'm interested in: ${l.name || l.title || 'the property'} — ${l.price || ''}. Please send more details.`);
+        const waLink   = waPhone ? `https://wa.me/${waPhone}?text=${propMsg}` : '#';
+
+        // Build features string (beds / baths / size)
+        const features = [];
+        if (l.beds)      features.push(`🛏 ${l.beds} bed${l.beds == 1 ? '' : 's'}`);
+        if (l.bathrooms) features.push(`🛁 ${l.bathrooms} bath${l.bathrooms == 1 ? '' : 's'}`);
+        if (l.size)      features.push(`📐 ${l.size}`);
+        const featuresHtml = features.map(f => `<span>${esc(f)}</span>`).join('');
+
+        return {
+          ...l,
+          badge_class:   badgeClass,
+          type_label:    typeLabel,
+          wa_link:       waLink,
+          features_html: featuresHtml,
+          address:       l.address || l.location || l.name || '',
+          description:   l.description || l.body || '',
+        };
+      });
+    }
   }
 
   // Grill-house / restaurant menu extras
