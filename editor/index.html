@@ -500,7 +500,8 @@ async function api(path,opts){
   badge.textContent=s==="published"?"Published":s==="pending_payment"?"Payment pending":"Draft";
   badge.className="status-badge "+(s==="published"?"status-published":s==="pending_payment"?"status-pending":"status-draft");
   if(window.innerWidth>=900){state.previewOpen=true;var pd=document.getElementById("previewDrawer");if(pd)pd.classList.add("open");loadPreview();startPreviewAutoRefresh();}
-})();
+
+
 function populateForm(){
   var c=(state.content&&state.content.content)||{};
   var b=c._brief||state.content._brief||null;
