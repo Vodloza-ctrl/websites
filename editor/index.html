@@ -268,26 +268,26 @@ img{display:block;max-width:100%}
 <div class="layout">
   <nav class="sidebar">
     <div class="nav-section">Build</div>
-    <div class="nav-item active" data-tab="basics" onclick="switchTab(\'basics\',this)">
+    <div class="nav-item active" data-tab="basics" onclick="switchTab('basics',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="10" y="2" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="2" y="10" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="10" y="10" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/></svg>Basics
     </div>
-    <div class="nav-item" data-tab="images" onclick="switchTab(\'images\',this)">
+    <div class="nav-item" data-tab="images" onclick="switchTab('images',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="6.5" cy="8" r="1.5" fill="currentColor"/><path d="M2 13l4-3 3 2 3-3 4 4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Images
     </div>
-    <div class="nav-item" data-tab="products" onclick="switchTab(\'products\',this)">
+    <div class="nav-item" data-tab="products" onclick="switchTab('products',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><path d="M3 5h12l-1.5 8H4.5L3 5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="7" cy="15" r="1" fill="currentColor"/><circle cx="12" cy="15" r="1" fill="currentColor"/><path d="M1 3h2l.5 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Products
     </div>
-    <div class="nav-item" data-tab="contact" onclick="switchTab(\'contact\',this)">
+    <div class="nav-item" data-tab="contact" onclick="switchTab('contact',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><path d="M3 4h12a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M2 5l7 5 7-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Contact
     </div>
-    <div class="nav-item" data-tab="social" onclick="switchTab(\'social\',this)">
+    <div class="nav-item" data-tab="social" onclick="switchTab('social',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><circle cx="13.5" cy="4.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="4.5" cy="9" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13.5" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 8l6-3M6 10l6 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Social
     </div>
-    <div class="nav-item" data-tab="design" onclick="switchTab(\'design\',this)">
+    <div class="nav-item" data-tab="design" onclick="switchTab('design',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="9" r="2.5" fill="currentColor"/><path d="M9 3v2M9 13v2M3 9h2M13 9h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Design
     </div>
     <div class="nav-section" style="margin-top:8px">Publish</div>
-    <div class="nav-item" data-tab="publish" onclick="switchTab(\'publish\',this)">
+    <div class="nav-item" data-tab="publish" onclick="switchTab('publish',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><path d="M9 2v10M5 6l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13v2a1 1 0 001 1h12a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Publish site
     </div>
   </nav>
@@ -350,13 +350,13 @@ img{display:block;max-width:100%}
         <div class="panel-body">
           <div class="fld-group">
             <label class="fld-label">Logo <span class="fld-hint">— shown in the nav bar</span></label>
-            <div class="upload-zone" id="logoZone" onclick="triggerUpload(\'logo\')"><input type="file" id="logoFile" accept="image/*" onchange="handleUpload(\'logo\',this)"><span class="uz-icon">🏷️</span><div class="uz-label">Tap to upload your logo</div><div class="uz-sub">PNG or SVG with transparent background works best</div></div>
-            <div id="logoPreview" style="display:none" class="upload-preview"><img id="logoImg" src="" alt="Logo"><button class="upload-remove" onclick="removeImage(\'logo\')">x</button></div>
+            <div class="upload-zone" id="logoZone" onclick="triggerUpload('logo')"><input type="file" id="logoFile" accept="image/*" onchange="handleUpload('logo',this)"><span class="uz-icon">🏷️</span><div class="uz-label">Tap to upload your logo</div><div class="uz-sub">PNG or SVG with transparent background works best</div></div>
+            <div id="logoPreview" style="display:none" class="upload-preview"><img id="logoImg" src="" alt="Logo"><button class="upload-remove" onclick="removeImage('logo')">x</button></div>
           </div>
           <div class="fld-group">
             <label class="fld-label">Hero image <span class="fld-hint">— big background photo at the top</span></label>
-            <div class="upload-zone" id="heroZone" onclick="triggerUpload(\'hero\')"><input type="file" id="heroFile" accept="image/*" onchange="handleUpload(\'hero\',this)"><span class="uz-icon">🖼️</span><div class="uz-label">Tap to upload a hero photo</div><div class="uz-sub">Landscape, at least 1200x600px recommended</div></div>
-            <div id="heroPreview" style="display:none" class="upload-preview"><img id="heroImg" src="" alt="Hero" style="max-height:180px"><button class="upload-remove" onclick="removeImage(\'hero\')">x</button></div>
+            <div class="upload-zone" id="heroZone" onclick="triggerUpload('hero')"><input type="file" id="heroFile" accept="image/*" onchange="handleUpload('hero',this)"><span class="uz-icon">🖼️</span><div class="uz-label">Tap to upload a hero photo</div><div class="uz-sub">Landscape, at least 1200x600px recommended</div></div>
+            <div id="heroPreview" style="display:none" class="upload-preview"><img id="heroImg" src="" alt="Hero" style="max-height:180px"><button class="upload-remove" onclick="removeImage('hero')">x</button></div>
             <div class="upload-progress" id="heroProgress"><div class="upload-progress-bar" id="heroProgressBar"></div></div>
           </div>
         </div>
@@ -379,7 +379,7 @@ img{display:block;max-width:100%}
         <div class="panel-head"><div><h2>Products &amp; Catalogue</h2><div style="font-size:12.5px;color:var(--ink3);margin-top:2px">Photos, prices, variants and stock status — no checkout needed</div></div><button class="btn btn-green btn-sm" onclick="addProduct()">+ Add</button></div>
         <div class="panel-body">
           <div class="product-list" id="productList"><div class="empty-state" id="productEmpty"><span class="es-icon">🛍️</span><p>No products yet.<br>Add items with photos, prices, variants and stock status.</p></div></div>
-          <div id="productLimitMsg" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico">⭐</div><div class="upsell-body"><strong>Starter plan: 6 products included</strong><p>Upgrade to <b>Pro</b> for unlimited products plus an online store with cart and Paynow payments.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab(\'publish\',null)">Upgrade to Pro</button></div></div></div>
+          <div id="productLimitMsg" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico">⭐</div><div class="upsell-body"><strong>Starter plan: 6 products included</strong><p>Upgrade to <b>Pro</b> for unlimited products plus an online store with cart and Paynow payments.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button></div></div></div>
         </div>
       </div>
     </div>
@@ -395,7 +395,7 @@ img{display:block;max-width:100%}
           <div class="fld-group"><label class="fld-label" for="f_location">City / Area</label><input class="fld-input" id="f_location" placeholder="Bulawayo" oninput="markDirty()"></div>
         </div>
       </div>
-      <div class="upsell"><div class="upsell-ico">📅</div><div class="upsell-body"><strong>Let customers book appointments online</strong><p>Add a booking form so clients can schedule directly from your site. Available on <b>Pro</b>.</p><button class="btn btn-sm" style="margin-top:8px;background:var(--gold-bg);color:var(--gold-dk);border:1.5px solid var(--gold)" onclick="switchTab(\'publish\',null)">See Pro features →</button></div></div>
+      <div class="upsell"><div class="upsell-ico">📅</div><div class="upsell-body"><strong>Let customers book appointments online</strong><p>Add a booking form so clients can schedule directly from your site. Available on <b>Pro</b>.</p><button class="btn btn-sm" style="margin-top:8px;background:var(--gold-bg);color:var(--gold-dk);border:1.5px solid var(--gold)" onclick="switchTab('publish',null)">See Pro features →</button></div></div>
     </div>
     <div class="tab-section" id="tab-social">
       <div class="panel">
@@ -442,12 +442,12 @@ img{display:block;max-width:100%}
   </div>
 </div>
 <nav class="dock">
-  <div class="dock-item active" data-tab="basics" onclick="switchTab(\'basics\',this)"><svg viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="12" y="3" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="3" y="12" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="12" y="12" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/></svg>Basics<div class="dock-dot"></div></div>
-  <div class="dock-item" data-tab="images" onclick="switchTab(\'images\',this)"><svg viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10" r="2" fill="currentColor"/><path d="M3 16l5-4 4 3 3-3 5 4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Images<div class="dock-dot"></div></div>
-  <div class="dock-item" data-tab="products" onclick="switchTab(\'products\',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M4 7h14l-2 9H6L4 7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.2" fill="currentColor"/><circle cx="15" cy="19" r="1.2" fill="currentColor"/><path d="M2 4h2.5L5 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Products<div class="dock-dot"></div></div>
-  <div class="dock-item" data-tab="contact" onclick="switchTab(\'contact\',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M4 5h14a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M3 6l8 6 8-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Contact<div class="dock-dot"></div></div>
-  <div class="dock-item" data-tab="publish" onclick="switchTab(\'publish\',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M11 3v12M7 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Publish<div class="dock-dot"></div></div>
-  <div class="dock-item" data-tab="design" onclick="switchTab(\'design\',this)"><svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="3" fill="currentColor"/><path d="M11 4v2M11 16v2M4 11h2M16 11h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Design<div class="dock-dot"></div></div>
+  <div class="dock-item active" data-tab="basics" onclick="switchTab('basics',this)"><svg viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="7" height="7" rx="2" fill="currentColor"/><rect x="12" y="3" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="3" y="12" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="12" y="12" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/></svg>Basics<div class="dock-dot"></div></div>
+  <div class="dock-item" data-tab="images" onclick="switchTab('images',this)"><svg viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10" r="2" fill="currentColor"/><path d="M3 16l5-4 4 3 3-3 5 4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Images<div class="dock-dot"></div></div>
+  <div class="dock-item" data-tab="products" onclick="switchTab('products',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M4 7h14l-2 9H6L4 7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.2" fill="currentColor"/><circle cx="15" cy="19" r="1.2" fill="currentColor"/><path d="M2 4h2.5L5 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Products<div class="dock-dot"></div></div>
+  <div class="dock-item" data-tab="contact" onclick="switchTab('contact',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M4 5h14a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M3 6l8 6 8-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Contact<div class="dock-dot"></div></div>
+  <div class="dock-item" data-tab="publish" onclick="switchTab('publish',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M11 3v12M7 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Publish<div class="dock-dot"></div></div>
+  <div class="dock-item" data-tab="design" onclick="switchTab('design',this)"><svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="3" fill="currentColor"/><path d="M11 4v2M11 16v2M4 11h2M16 11h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Design<div class="dock-dot"></div></div>
 </nav>
 <div class="toast-wrap" id="toastWrap"></div>
 <div class="tpl-modal-overlay" id="tplModal" onclick="closeTplModalOutside(event)">
@@ -641,7 +641,7 @@ window.togglePreset=function(id,val){var p=state.products.find(function(p){retur
 window.addVariant=function(id,val){if(!val||!val.trim())return;var p=state.products.find(function(p){return p.id===id;});if(!p)return;if(!Array.isArray(p.variants))p.variants=[];if(p.variants.indexOf(val.trim())>-1)return;p.variants.push(val.trim());markDirty();var card=document.querySelector('[data-pid="'+id+'"]');if(card)renderVariantChips(card,id,p.variants);};
 window.removeVariant=function(id,idx){var p=state.products.find(function(p){return p.id===id;});if(p&&Array.isArray(p.variants)){p.variants.splice(idx,1);markDirty();var card=document.querySelector('[data-pid="'+id+'"]');if(card)renderVariantChips(card,id,p.variants);}};
 window.addCustomVariant=function(id,inputId){var el=document.getElementById(inputId);if(!el)return;var val=el.value.trim();if(!val)return;val.split(",").forEach(function(v){window.addVariant(id,v.trim());});el.value="";};
-function renderVariantChips(card,id,variants){var wrap=card.querySelector(".variant-chips-wrap");if(!wrap)return;wrap.innerHTML=variants.map(function(v,i){return'<span class="variant-chip">'+esc(v)+'<button type="button" onclick="removeVariant(\''+id+'\','+i+')" aria-label="Remove">\xd7</button></span>';}).join("");}
+function renderVariantChips(card,id,variants){var wrap=card.querySelector(".variant-chips-wrap");if(!wrap)return;wrap.innerHTML=variants.map(function(v,i){return'<span class="variant-chip">'+esc(v)+'<button type="button" onclick="removeVariant(\''+id+'\','+i+')" aria-label="Remove">×</button></span>';}).join("");}
 window.handleProductUpload=async function(id,input){
   var file=input.files[0];if(!file)return;
   var card=document.querySelector('[data-pid="'+id+'"]');var zone=card?card.querySelector(".product-upload-zone"):null;
@@ -662,7 +662,7 @@ function renderProducts(){
     var card=document.createElement("div");card.className="product-card";card.dataset.pid=p.id;
     var thumbHtml=p.image?'<img class="product-thumb" src="'+esc(p.image)+'" alt="">':'<div class="product-thumb-placeholder">📦</div>';
     var variants=Array.isArray(p.variants)?p.variants:[];
-    var varChips=variants.map(function(v,i){return'<span class="variant-chip">'+esc(v)+'<button type="button" onclick="removeVariant(\''+p.id+'\','+i+')" aria-label="Remove">\xd7</button></span>';}).join("");
+    var varChips=variants.map(function(v,i){return'<span class="variant-chip">'+esc(v)+'<button type="button" onclick="removeVariant(\''+p.id+'\','+i+')" aria-label="Remove">×</button></span>';}).join("");
     var stock=p.stock||"in";
     var uploadZoneHtml=p.image?'<div class="product-upload-zone"><img src="'+esc(p.image)+'" style="width:100%;height:56px;object-fit:cover;border-radius:6px;display:block"><label style="font-size:11px;color:var(--ink3);cursor:pointer;display:block;text-align:center;margin-top:4px">Change photo<input type="file" id="pf_'+p.id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+p.id+'\',this)"></label></div>':'<div class="product-upload-zone"><label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 8px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink2)">📷 Upload photo<input type="file" id="pf_'+p.id+'" accept="image/*" style="display:none" onchange="handleProductUpload(\''+p.id+'\',this)"></label></div>';
     var sizeChips=SIZE_PRESETS.map(function(s){var active=variants.indexOf(s)>-1;return'<button type="button" class="vpreset'+(active?" vpreset-on":"")+'" onclick="togglePreset(\''+p.id+'\',\''+s+'\')" title="'+s+'">'+s+'</button>';}).join("");
@@ -677,7 +677,7 @@ function showProgress(type,show){var p=document.getElementById(type+"Progress");
 window.removeImage=function(type){delete state.images[type];renderImagePreviews();updateImgCount();markDirty();};
 function renderImagePreviews(){["logo","hero"].forEach(function(type){var preview=document.getElementById(type+"Preview"),zone=document.getElementById(type+"Zone"),img=document.getElementById(type+"Img");if(state.images[type]){if(img)img.src=state.images[type];if(preview)preview.style.display="block";if(zone)zone.style.display="none";}else{if(preview)preview.style.display="none";if(zone)zone.style.display="block";}});}
 function updateImgCount(){document.getElementById("imgCount").textContent=countImages()+" / "+STARTER_IMAGE_LIMIT+" uploaded";}
-function renderGallery(){var grid=document.getElementById("galleryGrid");grid.innerHTML="";state.gallery.forEach(function(url,i){var wrap=document.createElement("div");wrap.className="img-thumb-wrap";wrap.innerHTML='<img src="'+esc(url)+'" loading="lazy"><button class="img-thumb-remove" onclick="removeGalleryImg('+i+')">\xd7</button>';grid.appendChild(wrap);});if(state.gallery.length<8){var add=document.createElement("div");add.className="img-thumb-add";add.innerHTML='<input type="file" accept="image/*" onchange="handleGalleryUpload(this)"><span>+</span>';grid.appendChild(add);}}
+function renderGallery(){var grid=document.getElementById("galleryGrid");grid.innerHTML="";state.gallery.forEach(function(url,i){var wrap=document.createElement("div");wrap.className="img-thumb-wrap";wrap.innerHTML='<img src="'+esc(url)+'" loading="lazy"><button class="img-thumb-remove" onclick="removeGalleryImg('+i+')">×</button>';grid.appendChild(wrap);});if(state.gallery.length<8){var add=document.createElement("div");add.className="img-thumb-add";add.innerHTML='<input type="file" accept="image/*" onchange="handleGalleryUpload(this)"><span>+</span>';grid.appendChild(add);}}
 window.handleGalleryUpload=async function(input){var file=input.files[0];if(!file)return;if(countImages()>=STARTER_IMAGE_LIMIT){toast("10 image limit on Starter.","err");return;}var url=await uploadToR2(file,"gallery");if(!url){toast("Upload failed","err");return;}state.gallery.push(url);renderGallery();updateImgCount();markDirty();toast("Photo added ✓","ok");};
 window.removeGalleryImg=function(i){state.gallery.splice(i,1);renderGallery();updateImgCount();markDirty();};
 async function tuneText(fieldType,currentText,opts){opts=opts||{};if(!currentText||!currentText.trim()){toast("Add some text first","err");return null;}try{var r=await api("/api/ai/tune",{method:"POST",body:JSON.stringify({field_type:fieldType,current_text:currentText,business_name:(state.content&&state.content.content&&state.content.content.business_name)||"",industry:(document.getElementById("f_industry")||{}).value||"",site_id:siteId,})});if(!r.ok||!r.data.text){toast(r.data&&r.data.error==="tune_limit_reached"?"AI tune-up limit reached for this site":"Couldn't improve that text — try again","err");return null;}return r.data.text;}catch(e){toast("Network error — try again","err");return null;}}
@@ -911,7 +911,7 @@ function listingPhotoThumb(url,idx,pi){
     +'<button type="button" onclick="removeListingPhoto('+idx+','+pi+')" '
     +'style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;'
     +'background:rgba(13,15,20,.7);color:#fff;border:none;font-size:11px;'
-    +'display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">\xd7</button>'
+    +'display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</button>'
     +'</div>';
 }
 function listingPhotoAddZone(idx){
