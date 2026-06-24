@@ -44,11 +44,13 @@ ul { list-style:none; }
   height:68px; gap:24px;
 }
 .nav-logo {
+  display:flex; align-items:center; gap:10px;
   font-family:"Cormorant Garamond",serif;
   font-size:1.35rem; font-weight:600; color:var(--navy);
-  flex-shrink:0;
+  flex-shrink:0; text-decoration:none;
 }
-.nav-logo img { height:36px; width:auto; object-fit:contain; }
+.nav-logo img { height:36px; width:auto; object-fit:contain; flex-shrink:0; }
+.nav-logo-name { font-family:"Cormorant Garamond",serif; font-size:1.2rem; font-weight:600; color:var(--navy); white-space:nowrap; }
 .nav-links { display:flex; gap:32px; align-items:center; }
 .nav-links a {
   font-size:.88rem; font-weight:500; color:var(--ink2);
@@ -322,9 +324,9 @@ ul { list-style:none; }
 <header class="nav-bar">
   <div class="wrap nav-inner">
     {{#if logo_url}}
-    <a href="#" class="nav-logo"><img src="{{logo_url}}" alt="{{business_name}}"></a>
+    <a href="#" class="nav-logo"><img src="{{logo_url}}" alt="{{business_name}}"><span class="nav-logo-name">{{business_name}}</span></a>
     {{else}}
-    <div class="nav-logo">{{business_name}}</div>
+    <a href="#" class="nav-logo">{{business_name}}</a>
     {{/if}}
     <nav class="nav-links">
       <a href="#services">Services</a>
