@@ -1,26 +1,33 @@
 /**
- * websites.co.zw — Render Worker v10.0
+ * websites.co.zw — Render Worker v10.3
  *
- * v10.0 vs v9.9.2:
- *   - school-institution: full bespoke redesign. Template lives in
- *     templates/school-institution/ on Pages (WCZ syntax, same as beauty-salon).
- *     buildTemplateExtras() gains a school-institution branch that builds:
- *       - stat_1/2/3/4 number+label tokens (mapped from content fields)
- *       - show_* flag tokens for section visibility
- *       - __inject_script token: inlines dynamic HTML (programmes, team,
- *         events, gallery, testimonials) into placeholder containers via JS.
- *     getTemplate() and renderEngine() are unchanged — school-institution
- *     uses the existing WCZ pipeline already working for beauty-salon.
+ * v10.3 vs v10.2:
+ *   - buildGrillExtras(): dish-photo div gains onclick="lbOpen(...)" with
+ *     name/price/photo/desc payload for the lightbox. Mobile expand-hint
+ *     icon overlaid on thumbnail. Desktop photo click also opens lightbox.
  *
- * v9.9.2 vs v9.9.1:
- *   - property-estate: replaced emoji in featuresHtml with Lucide SVG icons.
+ * v10.2 vs v10.1:
+ *   - buildGrillExtras(): dish card onclick now passes `this` (the button element)
+ *     to ghAddToOrder() so the "Added ✓" feedback animation works without
+ *     relying on the deprecated global `event` object.
+ *   - grill-house/index.html: complete JS cart rewrite — buildWaHref()
+ *     builds the WhatsApp message with all items + total at send time,
+ *     not at add time. order-send href always reflects current cart state.
+ *     Nav CTA becomes cart-aware: turns green with item count when cart has
+ *     items, opens panel on click; plain "Order online" scrolls to menu.
+ *     WA FAB now uses wa_href_general (contact), not wa_href_order.
  *
- * v9.9.1 vs v9.9:
- *   - processEach(): triple-mustache {{{item.field}}} → raw HTML output.
- *
- * v9.9 vs v9.8.1:
- *   - renderEngine(): added <!--WCZ:flag-->...<!--WCZ:/flag--> conditional
- *     blocks and <!--WCZ:token--> scalar markers.
+ * v10.1 vs v10.0:
+ *   - buildGrillExtras(): fixed dish card onclick attribute. JSON.stringify
+ *     produces double-quoted keys/values which terminated the onclick=""
+ *     attribute early, silently breaking ghAddToOrder() on every dish.
+ *     Fix: build a single-quoted JS object literal instead of JSON.
+ *     e.g. onclick="ghAddToOrder({name:'T-bone',price:'$14'})"
+ *   - buildGrillExtras(): also sets has_menu / has_team / has_hours /
+ *     has_gallery / has_testimonials as extras tokens so {{#if}} blocks
+ *     in index.html resolve correctly from the Worker side.
+ *   - buildTemplateExtras() grill-house branch: passes whatsapp_clean
+ *     through to extras so the order panel's wa.me link is populated.
  */
 
 export default {
@@ -142,7 +149,6 @@ function renderEngine(templateHtml, site, config, extraTokens) {
   html = html.replace(/\{\{[^}]+\}\}/g, '');
 
   // 6. Process <!--WCZ:flag--> ... <!--WCZ:/flag--> conditional blocks
-  //    Show block only when tokens[flag] is truthy (non-empty string)
   html = html.replace(
     /<!--WCZ:(\w+)-->([\s\S]*?)<!--WCZ:\/\1-->/g,
     (_, flag, inner) => tokens[flag] ? inner : ''
@@ -324,13 +330,6 @@ async function handlePublic(request, env, slug, customDomain) {
     const extraTokens = buildTemplateExtras(content, site, config);
     const resolved = renderEngine(templateHtml, { ...site, content }, config, extraTokens);
 
-    // Self-contained templates (beauty-salon, school-institution etc) ship their own
-    // complete <html><head><style>...</style></head><body>...</body></html> document.
-    // Wrapping them in wrapWithShell would nest that full document inside another <body>,
-    // causing the browser to ignore the template's own <head> CSS entirely (making all
-    // CSS-sized SVG icons render at browser-default 300×150, appearing enormous).
-    // Detect: if the rendered output is already a full document, inject the preview
-    // banner directly and return it — skip wrapWithShell entirely.
     const isSelfContained = resolved.trimStart().startsWith('<!DOCTYPE') ||
                             resolved.trimStart().startsWith('<html');
     if (isSelfContained) {
@@ -487,6 +486,12 @@ function buildTemplateExtras(c, site, config) {
   // ── GRILL-HOUSE ────────────────────────────────────────────────────────────
   if (templateId === 'grill-house' || templateId === 'restaurant') {
     Object.assign(extras, buildGrillExtras(c, config));
+
+    // Pass whatsapp_clean through so the order panel send link works
+    const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
+    extras.whatsapp_clean = rawPhone.startsWith('263')
+      ? rawPhone
+      : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
   }
 
   // ── BEAUTY-SALON ───────────────────────────────────────────────────────────
@@ -547,7 +552,6 @@ function buildTemplateExtras(c, site, config) {
       extras.services_html = '';
     }
 
-    // Booking list for modal dropdown
     let bookingList = [];
     if (isOldGrouped) {
       svcs.forEach(cat => {
@@ -572,13 +576,11 @@ function buildTemplateExtras(c, site, config) {
     }
     extras.booking_services_json = JSON.stringify(bookingList);
 
-    // Gallery
     const gallery = Array.isArray(c.gallery) ? c.gallery : [];
     extras.gallery_html = gallery.map((url, gi) =>
       `<img src="${esc(typeof url === 'string' ? url : url.url || '')}" alt="Gallery photo ${gi + 1}" loading="lazy">`
     ).join('');
 
-    // Team
     const teamMembers = Array.isArray(c.team) ? c.team : [];
     extras.team_html = teamMembers.map(member => {
       const name  = esc(member.name  || member.title || '');
@@ -596,20 +598,16 @@ function buildTemplateExtras(c, site, config) {
       </div>`;
     }).join('');
 
-    // Hours
     extras.hours_html = c.hours ? buildHoursGridHtml(c.hours) : '';
 
-    // Logo
     const logoUrl = c.images?.logo || c.logo_url || '';
     extras.logo_img = logoUrl
       ? `<img class="logo-img" src="${esc(logoUrl)}" alt="${esc(c.name || 'Logo')}">`
       : '';
 
-    // wa_phone
     const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
     extras.wa_phone = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
 
-    // Scalar tokens
     extras.site_name      = c.business_name || c.name || '';
     extras.tagline        = c.tagline        || '';
     extras.phone          = c.phone          || c.contact?.phone || '';
@@ -635,7 +633,7 @@ function buildTemplateExtras(c, site, config) {
   }
   // ── END BEAUTY-SALON ───────────────────────────────────────────────────────
 
-  // ── SCHOOL-INSTITUTION (church / sports aliases) ───────────────────────────
+  // ── SCHOOL-INSTITUTION ─────────────────────────────────────────────────────
   if (
     templateId === 'school-institution' ||
     templateId === 'school'             ||
@@ -646,7 +644,6 @@ function buildTemplateExtras(c, site, config) {
     const sections = Array.isArray(theme.sections) ? theme.sections
                    : ['hero','about','programmes','team','events','gallery','testimonials','contact'];
 
-    // ── Stats tokens ────────────────────────────────────────────────────────
     extras.stat_1_number = c.stat_1_number || c.students_count  || '1 000';
     extras.stat_1_label  = c.stat_1_label  || 'Students Enrolled';
     extras.stat_2_number = c.stat_2_number || c.pass_rate       || '98%';
@@ -656,7 +653,6 @@ function buildTemplateExtras(c, site, config) {
     extras.stat_4_number = c.stat_4_number || c.staff_count     || '80';
     extras.stat_4_label  = c.stat_4_label  || 'Teaching Staff';
 
-    // ── Section visibility flags (truthy string = show) ──────────────────
     extras.show_stats        = 'true';
     extras.show_programmes   = (sections.includes('services') || sections.includes('programmes') || sections.includes('menu')) ? 'true' : '';
     extras.show_team         = sections.includes('team')         ? 'true' : '';
@@ -664,8 +660,6 @@ function buildTemplateExtras(c, site, config) {
     extras.show_gallery      = sections.includes('gallery')      ? 'true' : '';
     extras.show_testimonials = sections.includes('testimonials') ? 'true' : '';
 
-    // ── has_* flags: separate tokens for conditional blocks that also use
-    //    the value as a scalar inside — avoids the WCZ regex eating CSS ──────
     const _phone   = c.phone   || c.contact?.phone   || '';
     const _email   = c.email   || c.contact?.email   || '';
     const _address = c.address || c.location         || c.contact?.address || '';
@@ -683,7 +677,6 @@ function buildTemplateExtras(c, site, config) {
     extras.has_instagram = c.instagram_url ? 'true' : '';
     extras.has_twitter   = c.twitter_url   ? 'true' : '';
 
-    // Scalar values used inside the conditional blocks
     extras.phone        = _phone;
     extras.email        = _email;
     extras.address      = _address;
@@ -694,7 +687,6 @@ function buildTemplateExtras(c, site, config) {
     extras.instagram_url = c.instagram_url || '';
     extras.twitter_url   = c.twitter_url   || '';
 
-    // ── Dynamic container HTML injected via __inject_script ───────────────
     const programmesHtml = buildSchoolProgrammesHtml(c);
     const teamHtml       = buildSchoolTeamHtml(c);
     const eventsHtml     = buildSchoolEventsHtml(c);
@@ -801,6 +793,13 @@ function buildGrillExtras(c, config) {
     extras[k] = v;
   }
 
+  // Section visibility flags — needed so {{#if has_menu}} etc resolve
+  extras.has_menu         = menu.length > 0                                       ? 'true' : '';
+  extras.has_team         = (Array.isArray(c.team) && c.team.length > 0)          ? 'true' : '';
+  extras.has_gallery      = (Array.isArray(c.gallery) && c.gallery.length > 0)    ? 'true' : '';
+  extras.has_testimonials = (Array.isArray(c.testimonials) && c.testimonials.length > 0) ? 'true' : '';
+  extras.has_hours        = c.hours                                                ? 'true' : '';
+
   if (!menu.length) return extras;
 
   const getcat = item =>
@@ -822,21 +821,30 @@ function buildGrillExtras(c, config) {
       const tagHtml = tag
         ? `<span class="dish-tag">${esc(tag)}</span>`
         : `<span style="font-size:.84rem;color:var(--ink2)">${esc(item.serves || item.note || '')}</span>`;
-      const itemData = JSON.stringify({ name: item.name || '', price: item.price || '' })
-        .replace(/'/g, '&#39;');
+
+      // ── FIX: single-quoted JS object literal avoids double-quote collision
+      // with the onclick="" attribute wrapper. JSON.stringify produces
+      // {"name":"..."} which breaks the HTML attribute at the first inner ".
+      const safeName  = (item.name  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const safePrice = (item.price || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const onclickArg = `{name:'${safeName}',price:'${safePrice}'}`;
+
+      // Lightbox data — safe for data attribute (no HTML)
+      const safDesc  = (item.description || '').replace(/'/g,"\'").replace(/"/g,'&quot;');
+      const lbData   = `{name:'${safeName}',price:'${safePrice}',photo:'${esc(item.photo||item.image||item.photo_url||'')}',desc:'${safDesc}'}`;
 
       return `<div class="dish reveal">
-  <div class="dish-photo">${photo
+  <div class="dish-photo" onclick="lbOpen(${lbData})">${photo
     ? `<img src="${esc(photo)}" alt="${esc(item.name || '')}" loading="lazy">`
     : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem">${ICONS[i % ICONS.length]}</div>`
-  }</div>
+  }<span class="expand-hint"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span></div>
   <div class="dish-body">
     <div class="dish-title-row">
       <span class="dish-name">${esc(item.name || '')}</span>
       ${item.price ? `<span class="dish-price">${esc(item.price)}</span>` : ''}
     </div>
     ${item.description ? `<p class="dish-desc">${esc(item.description)}</p>` : ''}
-    <div class="dish-footer">${tagHtml}<button class="add-btn" onclick="ghAddToOrder(${itemData})">+ Add to order</button></div>
+    <div class="dish-footer">${tagHtml}<button class="add-btn" onclick="ghAddToOrder(${onclickArg},this)">+ Add to order</button></div>
   </div>
 </div>`;
     }).join('');
@@ -1137,7 +1145,6 @@ function normalizeContent(raw) {
     deal:           inner.deal         || null,
     badge:          inner.badge        || null,
     video_url:      inner.video        || inner.video_url || null,
-    // School-specific stat fields
     stat_1_number:  inner.stat_1_number || '',
     stat_1_label:   inner.stat_1_label  || '',
     stat_2_number:  inner.stat_2_number || '',
