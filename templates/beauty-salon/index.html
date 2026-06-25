@@ -72,7 +72,7 @@ section{padding:76px 0}
 .svc-tab:hover{color:var(--plum)}
 /* Service panels */
 .svc-panel{display:none}.svc-panel.active{display:grid;grid-template-columns:repeat(2,1fr);gap:0 48px}
-.svc-item{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0;border-bottom:1px dashed var(--line);gap:12px}
+.svc-item{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0;border-bottom:1px dashed var(--line);gap:12px;position:relative}
 .svc-name{font-family:"Playfair Display",serif;font-size:1.2rem;font-weight:500}
 .svc-desc{font-size:.82rem;color:var(--mink);margin-top:3px}
 .svc-price{font-family:"Playfair Display",serif;font-size:1.25rem;font-weight:700;color:var(--gold);white-space:nowrap;flex-shrink:0}
@@ -163,6 +163,11 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
   .foot-inner{flex-direction:column;text-align:center}
   .foot-links{justify-content:center}
 }
+/* ── FEATURED ITEM ── */
+.feat-badge{position:absolute;top:50%;right:0;transform:translateY(-50%);background:var(--primary-color,#c96a7e);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;z-index:2;white-space:nowrap;pointer-events:none}
+.svc-item.highlighted{border-bottom:2px solid var(--primary-color,#c96a7e);background:rgba(201,106,126,.04);margin:0 -12px;padding:18px 12px}
+.svc-item.highlighted .svc-name{color:var(--primary-color,#c96a7e);font-weight:700}
+.has-featured .svc-item:not(.highlighted){opacity:.88}
 </style>
 </head>
 <body>
