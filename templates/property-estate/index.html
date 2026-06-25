@@ -287,6 +287,11 @@ img { display:block; max-width:100%; }
 .ps-dots { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); display:flex; gap:5px; z-index:2; }
 .ps-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.55); cursor:pointer; transition:background .15s; }
 .ps-dot.active { background:#fff; }
+/* ── FEATURED LISTING ── */
+.feat-badge{position:absolute;top:12px;right:12px;background:var(--gold,#b0852f);color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;z-index:3;white-space:nowrap}
+.prop-card.highlighted{border:2px solid var(--gold,#b0852f);box-shadow:0 0 0 4px rgba(176,133,47,.12)}
+.prop-card.highlighted .prop-price{color:var(--gold,#b0852f)}
+.listings-grid:has(.highlighted) .prop-card:not(.highlighted){opacity:.88}
 </style>
 </head>
 <body>
@@ -351,7 +356,7 @@ img { display:block; max-width:100%; }
         <p>Properties updated regularly — contact us for the latest availability.</p>
       </div>
     </div>
-    <div class="listings-grid">{{#each listings}}{{/each}}</div>
+    <div class="listings-grid">{{listings_html}}</div>
   </div>
 </section>
 
