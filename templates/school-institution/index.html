@@ -194,6 +194,11 @@ ul{list-style:none}
   .si-hero{min-height:75vh}
 }
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* ── FEATURED ITEM ── */
+.feat-badge{position:absolute;top:10px;right:10px;background:var(--gold,#c99a2e);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;z-index:2;white-space:nowrap}
+.si-prog.highlighted{border:2px solid var(--gold,#c99a2e);box-shadow:0 0 0 4px rgba(201,154,46,.12);background:rgba(201,154,46,.04)}
+.si-prog.highlighted .si-prog__name{color:var(--gold,#c99a2e)}
+.si-programmes:has(.highlighted) .si-prog:not(.highlighted){opacity:.88}
 </style>
 </head>
 <body>
