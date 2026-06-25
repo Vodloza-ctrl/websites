@@ -224,8 +224,8 @@ header{position:sticky;top:0;z-index:200;background:rgba(34,26,20,.97);backdrop-
 /* ── GALLERY ─────────────────────────────────────────────────────────────── */
 .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:640px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
-.gallery-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--r-card);cursor:pointer;transition:transform .25s}
-.gallery-grid img:hover{transform:scale(1.03)}
+.gallery-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--r-card);cursor:pointer;transition:transform .25s,box-shadow .25s}
+.gallery-grid img:hover{transform:scale(1.03);box-shadow:var(--shadow-md)}
 
 /* ── TESTIMONIALS ────────────────────────────────────────────────────────── */
 .testi-wrap{background:#fff8ef;padding:60px 24px}
@@ -446,7 +446,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
     </div>
     <div class="gallery-grid">
       {{#each gallery}}
-      <img src="{{item.url}}" alt="{{item.caption}}" loading="lazy">
+      <img src="{{item.url}}" alt="{{item.caption}}" loading="lazy" onclick="lbOpenPhoto(this.src,this.alt)">
       {{/each}}
     </div>
   </div>
@@ -584,7 +584,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
     <div class="lb-name" id="lb-name"></div>
     <div class="lb-price" id="lb-price"></div>
     <div class="lb-desc" id="lb-desc"></div>
-    <div class="lb-actions">
+    <div class="lb-actions" id="lb-actions">
       <button class="lb-add" id="lb-add-btn" onclick="lbAddToOrder()">+ Add to order</button>
     </div>
   </div>
@@ -656,6 +656,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
     document.getElementById('lb-name').textContent  = item.name  || '';
     document.getElementById('lb-price').textContent = item.price || '';
     document.getElementById('lb-desc').textContent  = item.desc  || '';
+    document.getElementById('lb-actions').style.display = 'flex';
     var lb = document.getElementById('lb');
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -664,6 +665,19 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
     document.getElementById('lb').classList.remove('open');
     document.body.style.overflow = '';
     _lbItem = null;
+  };
+  // Gallery-only lightbox — no price, no add button
+  window.lbOpenPhoto = function(src, alt) {
+    _lbItem = null;
+    document.getElementById('lb-img').src  = src  || '';
+    document.getElementById('lb-img').alt  = alt  || '';
+    document.getElementById('lb-name').textContent  = alt  || '';
+    document.getElementById('lb-price').textContent = '';
+    document.getElementById('lb-desc').textContent  = '';
+    document.getElementById('lb-actions').style.display = 'none';
+    var lb = document.getElementById('lb');
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
   };
   window.lbAddToOrder = function() {
     if(_lbItem) {
