@@ -600,9 +600,9 @@ function showUndoBar(){var bar=document.getElementById("undoBar");if(bar){bar.st
 function hideUndoBar(){var bar=document.getElementById("undoBar");if(bar)bar.style.display="none";}
 window.onSave=async function(){
   var btn=document.getElementById("saveBtn");btn.disabled=true;btn.textContent="Saving…";
-  var brief=readBrief(),content=buildContent(brief);
+  var brief=readBrief(),built=buildContent(brief);
   try{
-    var r=await api("/api/sites/"+encodeURIComponent(siteId),{method:"PUT",body:JSON.stringify({site_name:brief.business_name||state.site.site_name,template_id:g("f_template"),content:content})});
+    var r=await api("/api/sites/"+encodeURIComponent(siteId),{method:"PUT",body:JSON.stringify({site_name:brief.business_name||state.site.site_name,template_id:g("f_template"),content:built})});
     if(!r.ok){toast("Couldn't save — try again","err");return;}
     state.dirty=false;if(r.data.site)state.site=r.data.site;
     var savedName=(state.site&&state.site.site_name)||brief.business_name||"Your site";
