@@ -1,0 +1,16 @@
+{
+  "templateId": "fashion-retail",
+  "selfContainedNav": true,
+  "defaultPalette": "clean-white",
+  "defaultPrimaryColor": "#0e0e0e",
+  "defaultTypeLabel": "Fashion",
+  "showOpenBadge": false,
+  "showHoursGrid": false,
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap",
+  "lists": [],
+  "conditionals": [],
+  "typeLabels": {
+    "fashion-retail": "Fashion",
+    "fashion": "Fashion"
+  }
+}
