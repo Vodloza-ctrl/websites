@@ -1,9 +1,26 @@
 /**
- * websites.co.zw — Render Worker v9.7
- * Added vs v9.6:
- *   - buildTemplateExtras(): beauty-salon extras block
- *     (services_html with category tabs or flat grid, booking_services_json,
- *      gallery_html, team_html, logo_img, hours_html)
+ * websites.co.zw — Render Worker v10.0
+ *
+ * v10.0 vs v9.9.2:
+ *   - school-institution: full bespoke redesign. Template lives in
+ *     templates/school-institution/ on Pages (WCZ syntax, same as beauty-salon).
+ *     buildTemplateExtras() gains a school-institution branch that builds:
+ *       - stat_1/2/3/4 number+label tokens (mapped from content fields)
+ *       - show_* flag tokens for section visibility
+ *       - __inject_script token: inlines dynamic HTML (programmes, team,
+ *         events, gallery, testimonials) into placeholder containers via JS.
+ *     getTemplate() and renderEngine() are unchanged — school-institution
+ *     uses the existing WCZ pipeline already working for beauty-salon.
+ *
+ * v9.9.2 vs v9.9.1:
+ *   - property-estate: replaced emoji in featuresHtml with Lucide SVG icons.
+ *
+ * v9.9.1 vs v9.9:
+ *   - processEach(): triple-mustache {{{item.field}}} → raw HTML output.
+ *
+ * v9.9 vs v9.8.1:
+ *   - renderEngine(): added <!--WCZ:flag-->...<!--WCZ:/flag--> conditional
+ *     blocks and <!--WCZ:token--> scalar markers.
  */
 
 export default {
@@ -121,8 +138,21 @@ function renderEngine(templateHtml, site, config, extraTokens) {
     }
   }
 
-  // 5. Strip unreplaced placeholders
+  // 5. Strip unreplaced {{placeholders}}
   html = html.replace(/\{\{[^}]+\}\}/g, '');
+
+  // 6. Process <!--WCZ:flag--> ... <!--WCZ:/flag--> conditional blocks
+  //    Show block only when tokens[flag] is truthy (non-empty string)
+  html = html.replace(
+    /<!--WCZ:(\w+)-->([\s\S]*?)<!--WCZ:\/\1-->/g,
+    (_, flag, inner) => tokens[flag] ? inner : ''
+  );
+
+  // 7. Replace remaining <!--WCZ:token--> scalar markers
+  html = html.replace(/<!--WCZ:(\w+)-->/g, (_, key) => {
+    const val = tokens[key];
+    return val !== undefined ? String(val) : '';
+  });
 
   return html;
 }
@@ -161,14 +191,16 @@ function buildComputedTokens(site, c, config) {
     accent_color:        primaryColor,
     tagline:             c.tagline          || '',
     about:               about,
+    about_text:          about,
     phone:               phone,
     email:               c.email || c.contact?.email || '',
     whatsapp:            whatsapp,
     whatsapp_clean:      whatsappClean,
     whatsapp_wa_link:    `https://wa.me/${whatsappClean}`,
     location:            location,
-    logo_url:            c.logo_url         || site.logo_url         || '',
-    hero_image_url:      c.hero_image_url   || c.hero_image          || site.hero_image_url || '',
+    address:             location,
+    logo_url:            c.logo_url         || c.images?.logo || site.logo_url || '',
+    hero_image_url:      c.hero_image_url   || c.hero_image   || c.images?.hero || site.hero_image_url || '',
     seo_title:           seoTitle,
     seo_description:     seoDesc,
     business_type_label: typeLabel,
@@ -185,6 +217,16 @@ function processEach(html, def, c, tokens) {
     if (!items.length) return def.emptyHtml || '';
     return items.map((item, i) => {
       let block = def.itemTemplate;
+
+      // triple-mustache {{{item.field}}} → raw HTML, no escaping
+      block = block.replace(/\{\{\{item\.(\w+)\}\}\}/g, (_, field) => {
+        if (field === 'icon' && !item[field] && def.fallbackIcons) {
+          return def.fallbackIcons[i % def.fallbackIcons.length];
+        }
+        return String(item[field] ?? '');
+      });
+
+      // {{#if item.field}} conditionals
       block = block.replace(
         /\{\{#if item\.(\w+)\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g,
         (_, field, t, f) => item[field] ? t : f
@@ -193,6 +235,8 @@ function processEach(html, def, c, tokens) {
         /\{\{#if item\.(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
         (_, field, content) => item[field] ? content : ''
       );
+
+      // {{item.field}} → escaped
       block = block.replace(/\{\{item\.(\w+)\}\}/g, (_, field) => {
         if (field === 'icon' && !item[field] && def.fallbackIcons) {
           return esc(def.fallbackIcons[i % def.fallbackIcons.length]);
@@ -202,6 +246,7 @@ function processEach(html, def, c, tokens) {
         }
         return esc(String(item[field] ?? ''));
       });
+
       block = block.replace(/\{\{item_index\}\}/g, String(i + 1));
       return block;
     }).join('\n');
@@ -277,8 +322,27 @@ async function handlePublic(request, env, slug, customDomain) {
   try {
     const { html: templateHtml, config } = await getTemplate(templateId, env);
     const extraTokens = buildTemplateExtras(content, site, config);
-    const resolved    = renderEngine(templateHtml, { ...site, content }, config, extraTokens);
-    html = wrapWithShell(resolved, content, site, config, isPreview);
+    const resolved = renderEngine(templateHtml, { ...site, content }, config, extraTokens);
+
+    // Self-contained templates (beauty-salon, school-institution etc) ship their own
+    // complete <html><head><style>...</style></head><body>...</body></html> document.
+    // Wrapping them in wrapWithShell would nest that full document inside another <body>,
+    // causing the browser to ignore the template's own <head> CSS entirely (making all
+    // CSS-sized SVG icons render at browser-default 300×150, appearing enormous).
+    // Detect: if the rendered output is already a full document, inject the preview
+    // banner directly and return it — skip wrapWithShell entirely.
+    const isSelfContained = resolved.trimStart().startsWith('<!DOCTYPE') ||
+                            resolved.trimStart().startsWith('<html');
+    if (isSelfContained) {
+      if (isPreview) {
+        const banner = `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600">Preview mode — <a href="https://app.websites.co.zw" style="color:#fff;text-decoration:underline">Go to dashboard</a> to publish</div>`;
+        html = resolved.replace('</body>', banner + '</body>');
+      } else {
+        html = resolved;
+      }
+    } else {
+      html = wrapWithShell(resolved, content, site, config, isPreview);
+    }
   } catch (err) {
     console.error('Template error:', err);
     return new Response(`Template error: ${err.message}`, { status: 500 });
@@ -357,7 +421,7 @@ function buildTemplateExtras(c, site, config) {
       'Fixed, transparent fees with no hidden charges',
     ];
     extras.service_points_html = points
-      .map(p => `<div class="band-point"><div class="band-point-icon">✓</div><span>${esc(p)}</span></div>`)
+      .map(p => `<div class="band-point"><div class="band-point-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span>${esc(p)}</span></div>`)
       .join('');
   }
 
@@ -380,11 +444,14 @@ function buildTemplateExtras(c, site, config) {
         const propMsg  = encodeURIComponent(`Hello, I'm interested in: ${l.name || l.title || 'the property'} — ${l.price || ''}. Please send more details.`);
         const waLink   = waPhone ? `https://wa.me/${waPhone}?text=${propMsg}` : '#';
 
+        const SVG_BED  = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>`;
+        const SVG_BATH = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="3" y1="13" x2="21" y2="13"/></svg>`;
+        const SVG_SIZE = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>`;
         const features = [];
-        if (l.beds)      features.push(`🛏 ${l.beds} bed${l.beds == 1 ? '' : 's'}`);
-        if (l.bathrooms) features.push(`🛁 ${l.bathrooms} bath${l.bathrooms == 1 ? '' : 's'}`);
-        if (l.size)      features.push(`📐 ${l.size}`);
-        const featuresHtml = features.map(f => `<span>${esc(f)}</span>`).join('');
+        if (l.beds)      features.push([SVG_BED,  `${l.beds} bed${l.beds == 1 ? '' : 's'}`]);
+        if (l.bathrooms) features.push([SVG_BATH, `${l.bathrooms} bath${l.bathrooms == 1 ? '' : 's'}`]);
+        if (l.size)      features.push([SVG_SIZE, esc(String(l.size))]);
+        const featuresHtml = features.map(([svg, text]) => `<span>${svg}${text}</span>`).join('');
 
         const photos = Array.isArray(l.photos) && l.photos.length ? l.photos
                      : l.photo ? [l.photo] : [];
@@ -423,65 +490,66 @@ function buildTemplateExtras(c, site, config) {
   }
 
   // ── BEAUTY-SALON ───────────────────────────────────────────────────────────
-  // Handles: beauty salon | barber shop | spa & massage | solo operator
   if (templateId === 'beauty-salon') {
     const svcs = Array.isArray(c.services) ? c.services : [];
 
-    // Detect structure: if first item has an `.items` array → categorised
-    const isCategorised = svcs.length > 0 && Array.isArray(svcs[0].items);
+    const isOldGrouped  = svcs.length > 0 && Array.isArray(svcs[0].items);
+    const hasCategories = !isOldGrouped && svcs.some(s => s.category && s.category.trim());
 
-    if (isCategorised) {
-      // Category-tabbed layout
-      const tabs = svcs.map((cat, ci) => {
-        const catId      = 'cat' + ci;
+    let grouped = [];
+    if (isOldGrouped) {
+      grouped = svcs;
+    } else if (hasCategories) {
+      const catMap = new Map();
+      svcs.forEach(item => {
+        const cat = (item.category || '').trim() || 'Services';
+        if (!catMap.has(cat)) catMap.set(cat, []);
+        catMap.get(cat).push(item);
+      });
+      catMap.forEach((items, category) => grouped.push({ category, items }));
+    }
+
+    function renderSvcItem(item) {
+      const name  = esc(item.name  || item.title || '');
+      const desc  = esc(item.description || item.body || '');
+      const price = esc(item.price || '');
+      const photo = item.photo || item.image || '';
+      return `<div class="svc-item">
+        ${photo ? `<img class="svc-photo" src="${esc(photo)}" alt="${name}" loading="lazy">` : ''}
+        <div class="svc-item-body">
+          <div class="svc-name">${name}</div>
+          ${desc ? `<div class="svc-desc">${desc}</div>` : ''}
+        </div>
+        ${price ? `<div class="svc-price">${price}</div>` : ''}
+      </div>`;
+    }
+
+    if (grouped.length > 0) {
+      const tabs = grouped.map((cat, ci) => {
+        const catId       = 'cat' + ci;
         const activeClass = ci === 0 ? ' active' : '';
         return `<button class="svc-tab${activeClass}" data-cat="${catId}" onclick="switchTab('${catId}')">${esc(cat.category || cat.name || 'Services')}</button>`;
       }).join('');
 
-      const panels = svcs.map((cat, ci) => {
-        const catId      = 'cat' + ci;
+      const panels = grouped.map((cat, ci) => {
+        const catId       = 'cat' + ci;
         const activeClass = ci === 0 ? ' active' : '';
-        const items      = Array.isArray(cat.items) ? cat.items : [];
-        const rows       = items.map(item => {
-          const name  = esc(item.name  || item.title || '');
-          const desc  = esc(item.description || item.body || '');
-          const price = esc(item.price || '');
-          return `<div class="svc-item">
-          <div>
-            <div class="svc-name">${name}</div>
-            ${desc ? `<div class="svc-desc">${desc}</div>` : ''}
-          </div>
-          ${price ? `<div class="svc-price">${price}</div>` : ''}
-        </div>`;
-        }).join('');
+        const items       = Array.isArray(cat.items) ? cat.items : [];
+        const rows        = items.map(renderSvcItem).join('');
         return `<div class="svc-panel${activeClass}" id="svc-${catId}">${rows}</div>`;
       }).join('');
 
       extras.services_html = `<div class="svc-tabs">${tabs}</div>${panels}`;
 
     } else if (svcs.length > 0) {
-      // Flat grid — no categories
-      const rows = svcs.map(item => {
-        const name  = esc(item.name  || item.title || '');
-        const desc  = esc(item.description || item.body || '');
-        const price = esc(item.price || '');
-        return `<div class="svc-item">
-        <div>
-          <div class="svc-name">${name}</div>
-          ${desc ? `<div class="svc-desc">${desc}</div>` : ''}
-        </div>
-        ${price ? `<div class="svc-price">${price}</div>` : ''}
-      </div>`;
-      }).join('');
-      extras.services_html = `<div class="svc-flat">${rows}</div>`;
-
+      extras.services_html = `<div class="svc-flat">${svcs.map(renderSvcItem).join('')}</div>`;
     } else {
       extras.services_html = '';
     }
 
-    // Flatten all services into [{name, price}] for the booking modal JS dropdown
+    // Booking list for modal dropdown
     let bookingList = [];
-    if (isCategorised) {
+    if (isOldGrouped) {
       svcs.forEach(cat => {
         (cat.items || []).forEach(item => {
           const n = item.name || item.title || '';
@@ -494,7 +562,6 @@ function buildTemplateExtras(c, site, config) {
         if (n) bookingList.push({ name: n, price: item.price || '' });
       });
     }
-    // Sensible fallback while owner hasn't filled in services yet
     if (bookingList.length === 0) {
       bookingList = [
         { name: 'Hair service',   price: '' },
@@ -529,26 +596,26 @@ function buildTemplateExtras(c, site, config) {
       </div>`;
     }).join('');
 
-    // Hours grid (reuses shared buildHoursGridHtml)
+    // Hours
     extras.hours_html = c.hours ? buildHoursGridHtml(c.hours) : '';
 
-    // Logo img tag
-    const logoUrl = c.images?.logo_url || c.logo_url || '';
+    // Logo
+    const logoUrl = c.images?.logo || c.logo_url || '';
     extras.logo_img = logoUrl
       ? `<img class="logo-img" src="${esc(logoUrl)}" alt="${esc(c.name || 'Logo')}">`
       : '';
 
-    // wa_phone normalised (used in template JS)
+    // wa_phone
     const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
     extras.wa_phone = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
 
-    // Scalar tokens the template uses directly
+    // Scalar tokens
     extras.site_name      = c.business_name || c.name || '';
     extras.tagline        = c.tagline        || '';
     extras.phone          = c.phone          || c.contact?.phone || '';
     extras.address        = c.address        || c.location || c.contact?.address || '';
     extras.hours_text     = c.hours_text     || '';
-    extras.hero_image_url = c.hero_image_url || c.hero_image || '';
+    extras.hero_image_url = c.hero_image_url || c.hero_image || c.images?.hero || '';
     extras.hero_eyebrow   = c.hero_eyebrow   || c.tagline || 'Hair · Nails · Skin';
     extras.hero_headline  = c.hero_headline  || 'Where you leave feeling beautiful.';
     extras.hero_subtext   = c.hero_subtext   || 'Expert stylists, honest prices, same-day bookings on WhatsApp.';
@@ -561,16 +628,163 @@ function buildTemplateExtras(c, site, config) {
     extras.map_embed_url  = c.map_embed_url  || c.contact?.map_embed_url || '';
     extras.primary_color  = c.primary_color  || c.theme?.accent || '#C96A7E';
 
-    // Conditional section flags (used by <!--WCZ:--> markers in template)
-    extras.has_gallery   = gallery.length > 0      ? 'true' : '';
-    extras.has_team      = teamMembers.length > 0  ? 'true' : '';
-    extras.has_map       = extras.map_embed_url    ? 'true' : '';
-    // show Pro booking upsell when not on pro plan
-    extras.show_booking_upsell = (site.plan !== 'pro') ? 'true' : '';
+    extras.has_gallery          = gallery.length > 0     ? 'true' : '';
+    extras.has_team             = teamMembers.length > 0 ? 'true' : '';
+    extras.has_map              = extras.map_embed_url   ? 'true' : '';
+    extras.show_booking_upsell  = (site.plan !== 'pro')  ? 'true' : '';
   }
   // ── END BEAUTY-SALON ───────────────────────────────────────────────────────
 
+  // ── SCHOOL-INSTITUTION (church / sports aliases) ───────────────────────────
+  if (
+    templateId === 'school-institution' ||
+    templateId === 'school'             ||
+    templateId === 'church'             ||
+    templateId === 'sports'
+  ) {
+    const theme    = c.theme    || {};
+    const sections = Array.isArray(theme.sections) ? theme.sections
+                   : ['hero','about','programmes','team','events','gallery','testimonials','contact'];
+
+    // ── Stats tokens ────────────────────────────────────────────────────────
+    extras.stat_1_number = c.stat_1_number || c.students_count  || '1 000';
+    extras.stat_1_label  = c.stat_1_label  || 'Students Enrolled';
+    extras.stat_2_number = c.stat_2_number || c.pass_rate       || '98%';
+    extras.stat_2_label  = c.stat_2_label  || 'Pass Rate';
+    extras.stat_3_number = c.stat_3_number || c.years_open      || '20';
+    extras.stat_3_label  = c.stat_3_label  || 'Years of Excellence';
+    extras.stat_4_number = c.stat_4_number || c.staff_count     || '80';
+    extras.stat_4_label  = c.stat_4_label  || 'Teaching Staff';
+
+    // ── Section visibility flags (truthy string = show) ──────────────────
+    extras.show_stats        = 'true';
+    extras.show_programmes   = (sections.includes('services') || sections.includes('programmes') || sections.includes('menu')) ? 'true' : '';
+    extras.show_team         = sections.includes('team')         ? 'true' : '';
+    extras.show_events       = (sections.includes('events') || sections.includes('products')) ? 'true' : '';
+    extras.show_gallery      = sections.includes('gallery')      ? 'true' : '';
+    extras.show_testimonials = sections.includes('testimonials') ? 'true' : '';
+
+    // ── has_* flags: separate tokens for conditional blocks that also use
+    //    the value as a scalar inside — avoids the WCZ regex eating CSS ──────
+    const _phone   = c.phone   || c.contact?.phone   || '';
+    const _email   = c.email   || c.contact?.email   || '';
+    const _address = c.address || c.location         || c.contact?.address || '';
+    const _wa      = c.whatsapp || c.contact?.whatsapp || _phone;
+    const _logo    = c.images?.logo || c.logo_url    || '';
+    const _hero    = c.images?.hero || c.hero_image_url || c.hero_image || '';
+
+    extras.has_phone     = _phone   ? 'true' : '';
+    extras.has_email     = _email   ? 'true' : '';
+    extras.has_address   = _address ? 'true' : '';
+    extras.has_whatsapp  = _wa      ? 'true' : '';
+    extras.has_logo      = _logo    ? 'true' : '';
+    extras.has_hero      = _hero    ? 'true' : '';
+    extras.has_facebook  = c.facebook_url  ? 'true' : '';
+    extras.has_instagram = c.instagram_url ? 'true' : '';
+    extras.has_twitter   = c.twitter_url   ? 'true' : '';
+
+    // Scalar values used inside the conditional blocks
+    extras.phone        = _phone;
+    extras.email        = _email;
+    extras.address      = _address;
+    extras.whatsapp     = (()=>{ const d=_wa.replace(/\D/g,''); return d.startsWith('263')?d:d?'263'+d.replace(/^0/,''):''; })();
+    extras.logo_url     = _logo;
+    extras.hero_image_url = _hero;
+    extras.facebook_url  = c.facebook_url  || '';
+    extras.instagram_url = c.instagram_url || '';
+    extras.twitter_url   = c.twitter_url   || '';
+
+    // ── Dynamic container HTML injected via __inject_script ───────────────
+    const programmesHtml = buildSchoolProgrammesHtml(c);
+    const teamHtml       = buildSchoolTeamHtml(c);
+    const eventsHtml     = buildSchoolEventsHtml(c);
+    const galleryHtml    = buildSchoolGalleryHtml(c);
+    const testiHtml      = buildSchoolTestiHtml(c);
+
+    extras.__inject_script = `<script>
+(function(){
+  function inj(id,h){var el=document.getElementById(id);if(el&&h)el.innerHTML=h;}
+  inj('siProgrammes',${JSON.stringify(programmesHtml)});
+  inj('siTeam',${JSON.stringify(teamHtml)});
+  inj('siEvents',${JSON.stringify(eventsHtml)});
+  inj('siGallery',${JSON.stringify(galleryHtml)});
+  inj('siTestimonials',${JSON.stringify(testiHtml)});
+})();
+<\/script>`;
+  }
+  // ── END SCHOOL-INSTITUTION ─────────────────────────────────────────────────
+
   return extras;
+}
+
+// ─── SCHOOL HTML BUILDERS ─────────────────────────────────────────────────────
+
+function buildSchoolProgrammesHtml(c) {
+  const items = c.services || c.programmes || c.menu || [];
+  if (!Array.isArray(items) || !items.length) return '';
+  return items.map(s => {
+    const photo = s.photo
+      ? `<div class="si-prog__img"><img src="${esc(s.photo)}" alt="${esc(s.name||'')}" loading="lazy"></div>`
+      : '';
+    const cat   = s.category ? `<div class="si-prog__cat">${esc(s.category)}</div>` : '';
+    const price = s.price    ? `<div class="si-prog__price">${esc(s.price)}</div>`   : '';
+    return `<div class="si-prog">${photo}<div class="si-prog__body">${cat}<div class="si-prog__name">${esc(s.name||'')}</div><div class="si-prog__desc">${esc(s.description||s.desc||'')}</div>${price}</div></div>`;
+  }).join('');
+}
+
+function buildSchoolTeamHtml(c) {
+  const team = c.team || c.staff || [];
+  if (!Array.isArray(team) || !team.length) return '';
+  return team.map(m => {
+    const photo = m.photo
+      ? `<div class="si-member__photo"><img src="${esc(m.photo)}" alt="${esc(m.name||'')}" loading="lazy"></div>`
+      : `<div class="si-member__photo" style="background:var(--surface);display:flex;align-items:center;justify-content:center;max-width:140px;aspect-ratio:1;border-radius:50%;margin:0 auto 14px;font-size:2.5rem;">👤</div>`;
+    return `<div class="si-member">${photo}<div class="si-member__name">${esc(m.name||'')}</div><div class="si-member__role">${esc(m.role||m.position||'')}</div><div class="si-member__bio">${esc(m.bio||m.description||'')}</div></div>`;
+  }).join('');
+}
+
+function buildSchoolEventsHtml(c) {
+  const events = c.events || c.products || [];
+  if (!Array.isArray(events) || !events.length) return '';
+  return events.slice(0, 6).map(ev => {
+    let day = '', month = '';
+    const rawDate = ev.date || ev.event_date || '';
+    if (rawDate) {
+      try {
+        const d = new Date(rawDate);
+        if (!isNaN(d)) {
+          day   = d.getDate();
+          month = d.toLocaleString('en-GB', { month: 'short' }).toUpperCase();
+        }
+      } catch (e) { /* skip */ }
+    }
+    const dateBlock = day
+      ? `<div class="si-event__date"><div class="si-event__day">${day}</div><div class="si-event__month">${month}</div></div>`
+      : `<div class="si-event__date" style="background:var(--gold);display:flex;align-items:center;justify-content:center;"><span style="font-size:1.8rem;">📅</span></div>`;
+    const meta = ev.time || ev.location || ev.venue || '';
+    return `<div class="si-event">${dateBlock}<div><div class="si-event__title">${esc(ev.name||ev.title||'')}</div>${meta?`<div class="si-event__meta">${esc(meta)}</div>`:''}<div class="si-event__desc">${esc(ev.description||ev.desc||'')}</div></div></div>`;
+  }).join('');
+}
+
+function buildSchoolGalleryHtml(c) {
+  const gallery = c.gallery || [];
+  if (!Array.isArray(gallery) || !gallery.length) return '';
+  return gallery.map(img => {
+    const src = typeof img === 'string' ? img : (img.url || img.src || '');
+    const alt = typeof img === 'object' ? (img.alt || img.caption || '') : '';
+    return src ? `<div class="si-gallery__item"><img src="${esc(src)}" alt="${esc(alt)}" loading="lazy"></div>` : '';
+  }).filter(Boolean).join('');
+}
+
+function buildSchoolTestiHtml(c) {
+  const testimonials = c.testimonials || [];
+  if (!Array.isArray(testimonials) || !testimonials.length) return '';
+  return testimonials.map(t => {
+    const photo = t.photo
+      ? `<div class="si-testi__avatar"><img src="${esc(t.photo)}" alt="${esc(t.name||'')}" loading="lazy"></div>`
+      : `<div class="si-testi__avatar" style="background:rgba(201,154,46,.2);"></div>`;
+    return `<div class="si-testi"><div class="si-testi__text">${esc(t.text||t.quote||t.review||'')}</div><div class="si-testi__author">${photo}<div><div class="si-testi__name">${esc(t.name||'')}</div><div class="si-testi__role">${esc(t.role||t.position||'')}</div></div></div></div>`;
+  }).join('');
 }
 
 // ─── GRILL EXTRAS ─────────────────────────────────────────────────────────────
@@ -677,7 +891,7 @@ function wrapWithShell(body, c, site, config, isPreview) {
   var btn=document.getElementById('wcz-hamburger'),menu=document.getElementById('wcz-mobile-menu'),close=document.getElementById('wcz-mobile-close');
   if(btn&&menu){btn.addEventListener('click',function(){menu.classList.add('open');});if(close)close.addEventListener('click',function(){menu.classList.remove('open');});menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){menu.classList.remove('open');});});}
 })();
-</script>`;
+<\/script>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -923,6 +1137,19 @@ function normalizeContent(raw) {
     deal:           inner.deal         || null,
     badge:          inner.badge        || null,
     video_url:      inner.video        || inner.video_url || null,
+    // School-specific stat fields
+    stat_1_number:  inner.stat_1_number || '',
+    stat_1_label:   inner.stat_1_label  || '',
+    stat_2_number:  inner.stat_2_number || '',
+    stat_2_label:   inner.stat_2_label  || '',
+    stat_3_number:  inner.stat_3_number || '',
+    stat_3_label:   inner.stat_3_label  || '',
+    stat_4_number:  inner.stat_4_number || '',
+    stat_4_label:   inner.stat_4_label  || '',
+    students_count: inner.students_count || '',
+    pass_rate:      inner.pass_rate      || '',
+    years_open:     inner.years_open     || '',
+    staff_count:    inner.staff_count    || '',
   };
 }
 
