@@ -29,11 +29,11 @@
   "lists": [
     {
       "key": "team",
-      "itemTemplate": "<div class=\"team-card reveal\"><div class=\"team-photo\">{{#if item.photo}}<img src=\"{{item.photo}}\" alt=\"{{item.name}}\" loading=\"lazy\">{{else}}<span>&#x1F468;&#x200D;&#x1F373;</span>{{/if}}</div><div class=\"team-name\">{{item.name}}</div><div class=\"team-role\">{{item.role}}</div></div>"
+      "itemTemplate": "<div class=\"team-card reveal\"><div class=\"team-photo\">{{#if item.photo}}<img src=\"{{item.photo}}\" alt=\"{{item.name}}\" loading=\"lazy\">{{else}}<svg viewBox=\"0 0 24 24\" width=\"48\" height=\"48\" fill=\"none\" stroke=\"rgba(210,84,31,.4)\" stroke-width=\"1.5\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></svg>{{/if}}</div><div class=\"team-name\">{{item.name}}</div><div class=\"team-role\">{{item.role}}</div></div>"
     },
     {
       "key": "gallery",
-      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\" loading=\"lazy\">"
+      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\" loading=\"lazy\" onclick=\"lbOpenPhoto(this.src,this.alt)\">"
     },
     {
       "key": "testimonials",
