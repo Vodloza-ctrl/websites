@@ -1,33 +1,31 @@
 /**
- * websites.co.zw — Render Worker v10.3
+ * websites.co.zw — Render Worker v10.10
  *
- * v10.3 vs v10.2:
- *   - buildGrillExtras(): dish-photo div gains onclick="lbOpen(...)" with
- *     name/price/photo/desc payload for the lightbox. Mobile expand-hint
- *     icon overlaid on thumbnail. Desktop photo click also opens lightbox.
+ * v10.10 vs v10.9:
+ *   - extractFeatured() shared helper: finds first item with non-empty
+ *     tag/badge, returns {sorted, hasFeatured}. Used by all 4 templates.
+ *   - beauty-salon: services sorted featured-first per tab panel.
+ *     Featured .svc-item gets .highlighted class + .feat-badge pill.
+ *     Flat list also sorted featured-first.
+ *   - advisory-firm: c.services mutated featured-first before processEach
+ *     runs. extras.has_featured_service token set for template conditional.
+ *     Featured service card gets .highlighted class via pre-built
+ *     services_highlighted token injected into extras.
+ *   - property-estate: listings sorted featured-first. Featured prop card
+ *     gets .highlighted class + .feat-badge pill over photo.
+ *     .has-featured container dims others to 88%.
+ *   - school-institution: buildSchoolProgrammesHtml() sorts featured-first.
+ *     Featured .si-prog gets .highlighted + .feat-badge pill.
  *
- * v10.2 vs v10.1:
- *   - buildGrillExtras(): dish card onclick now passes `this` (the button element)
- *     to ghAddToOrder() so the "Added ✓" feedback animation works without
- *     relying on the deprecated global `event` object.
- *   - grill-house/index.html: complete JS cart rewrite — buildWaHref()
- *     builds the WhatsApp message with all items + total at send time,
- *     not at add time. order-send href always reflects current cart state.
- *     Nav CTA becomes cart-aware: turns green with item count when cart has
- *     items, opens panel on click; plain "Order online" scrolls to menu.
- *     WA FAB now uses wa_href_general (contact), not wa_href_order.
- *
- * v10.1 vs v10.0:
- *   - buildGrillExtras(): fixed dish card onclick attribute. JSON.stringify
- *     produces double-quoted keys/values which terminated the onclick=""
- *     attribute early, silently breaking ghAddToOrder() on every dish.
- *     Fix: build a single-quoted JS object literal instead of JSON.
- *     e.g. onclick="ghAddToOrder({name:'T-bone',price:'$14'})"
- *   - buildGrillExtras(): also sets has_menu / has_team / has_hours /
- *     has_gallery / has_testimonials as extras tokens so {{#if}} blocks
- *     in index.html resolve correctly from the Worker side.
- *   - buildTemplateExtras() grill-house branch: passes whatsapp_clean
- *     through to extras so the order panel's wa.me link is populated.
+ * v10.9 vs v10.8:
+ *   - custom_accent now overrides the BRAND colour (--char for grill-house,
+ *     --navy for school-institution etc) not accent1 (--ember/prices).
+ *     TEMPLATE_VAR_MAP gains a "brand" slot for this.
+ *   - Font injection system: FONT_MAP maps 6 editor font_pair keys to
+ *     Google Fonts URLs + CSS font-family declarations. buildFontOverride()
+ *     replaces the template's hardcoded fonts link and injects a
+ *     body+heading font-family override block. Works for both self-contained
+ *     and shell-wrapped templates.
  */
 
 export default {
@@ -117,12 +115,10 @@ function renderEngine(templateHtml, site, config, extraTokens) {
 
   let html = templateHtml;
 
-  // 1. Process {{#each}} blocks defined in config.lists
   for (const def of (config.lists || [])) {
     html = processEach(html, def, c, tokens);
   }
 
-  // 2. Inject pre-built _html tokens (replaces leftover {{#each}} blocks)
   for (const [key, val] of Object.entries(extraTokens || {})) {
     if (key.endsWith('_html') && val) {
       const eachKey = key.replace(/_html$/, '');
@@ -133,28 +129,23 @@ function renderEngine(templateHtml, site, config, extraTokens) {
     }
   }
 
-  // 3. Process {{#if}} / {{else}} / {{/if}} blocks
   for (const def of (config.conditionals || [])) {
     html = processConditional(html, def, c, tokens, computed);
   }
 
-  // 4. Replace scalar {{token}} placeholders
   for (const [key, val] of Object.entries(tokens)) {
     if (!key.endsWith('_html') || typeof val === 'string') {
       html = html.split(`{{${key}}}`).join(String(val ?? ''));
     }
   }
 
-  // 5. Strip unreplaced {{placeholders}}
   html = html.replace(/\{\{[^}]+\}\}/g, '');
 
-  // 6. Process <!--WCZ:flag--> ... <!--WCZ:/flag--> conditional blocks
   html = html.replace(
     /<!--WCZ:(\w+)-->([\s\S]*?)<!--WCZ:\/\1-->/g,
     (_, flag, inner) => tokens[flag] ? inner : ''
   );
 
-  // 7. Replace remaining <!--WCZ:token--> scalar markers
   html = html.replace(/<!--WCZ:(\w+)-->/g, (_, key) => {
     const val = tokens[key];
     return val !== undefined ? String(val) : '';
@@ -165,7 +156,13 @@ function renderEngine(templateHtml, site, config, extraTokens) {
 
 function buildComputedTokens(site, c, config) {
   const businessName  = c.business_name || c.name || '';
-  const primaryColor  = c.primary_color || site.primary_color || config.defaultPrimaryColor || '#1a3a5c';
+  const theme         = c.theme || (site.content && site.content.theme) || {};
+  const paletteKey    = theme.palette || '';
+  const customAccent  = theme.custom_accent || '';
+  const paletteColors = resolvePalette(paletteKey || config.defaultPalette || 'ember-cream', customAccent);
+  const primaryColor  = customAccent || (paletteKey ? paletteColors.primary : null)
+                        || c.primary_color || site.primary_color
+                        || config.defaultPrimaryColor || '#1a3a5c';
   const phone         = c.phone || c.contact?.phone || '';
   const whatsapp      = c.whatsapp || c.contact?.whatsapp || phone;
   const location      = c.location || c.address || c.contact?.address || '';
@@ -224,7 +221,6 @@ function processEach(html, def, c, tokens) {
     return items.map((item, i) => {
       let block = def.itemTemplate;
 
-      // triple-mustache {{{item.field}}} → raw HTML, no escaping
       block = block.replace(/\{\{\{item\.(\w+)\}\}\}/g, (_, field) => {
         if (field === 'icon' && !item[field] && def.fallbackIcons) {
           return def.fallbackIcons[i % def.fallbackIcons.length];
@@ -232,7 +228,6 @@ function processEach(html, def, c, tokens) {
         return String(item[field] ?? '');
       });
 
-      // {{#if item.field}} conditionals
       block = block.replace(
         /\{\{#if item\.(\w+)\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{\/if\}\}/g,
         (_, field, t, f) => item[field] ? t : f
@@ -242,7 +237,6 @@ function processEach(html, def, c, tokens) {
         (_, field, content) => item[field] ? content : ''
       );
 
-      // {{item.field}} → escaped
       block = block.replace(/\{\{item\.(\w+)\}\}/g, (_, field) => {
         if (field === 'icon' && !item[field] && def.fallbackIcons) {
           return esc(def.fallbackIcons[i % def.fallbackIcons.length]);
@@ -332,15 +326,46 @@ async function handlePublic(request, env, slug, customDomain) {
 
     const isSelfContained = resolved.trimStart().startsWith('<!DOCTYPE') ||
                             resolved.trimStart().startsWith('<html');
+
+    const rawTheme      = content.theme || {};
+    const paletteBlock  = buildPaletteOverride(
+      templateId,
+      rawTheme.palette || '',
+      rawTheme.custom_accent || ''
+    );
+
+    const { styleBlock: fontBlock, fontsUrl } = buildFontOverride(rawTheme.font_pair || '');
+
     if (isSelfContained) {
+      let out = resolved;
+      if (fontsUrl) {
+        out = out.replace(
+          /https:\/\/fonts\.googleapis\.com\/css2\?[^"]+/,
+          fontsUrl
+        );
+      }
+      const headInsert = (paletteBlock || '') + (fontBlock || '');
+      if (headInsert) {
+        out = out.replace('</head>', headInsert + '</head>');
+      }
       if (isPreview) {
         const banner = `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600">Preview mode — <a href="https://app.websites.co.zw" style="color:#fff;text-decoration:underline">Go to dashboard</a> to publish</div>`;
-        html = resolved.replace('</body>', banner + '</body>');
+        html = out.replace('</body>', banner + '</body>');
       } else {
-        html = resolved;
+        html = out;
       }
     } else {
-      html = wrapWithShell(resolved, content, site, config, isPreview);
+      let shellOut = wrapWithShell(resolved, content, site, config, isPreview);
+      if (fontsUrl) {
+        shellOut = shellOut.replace(
+          /https:\/\/fonts\.googleapis\.com\/css2\?[^"]+/,
+          fontsUrl
+        );
+      }
+      if (fontBlock) {
+        shellOut = shellOut.replace('</head>', fontBlock + '</head>');
+      }
+      html = shellOut;
     }
   } catch (err) {
     console.error('Template error:', err);
@@ -355,6 +380,29 @@ async function handlePublic(request, env, slug, customDomain) {
         : 'public, max-age=300, stale-while-revalidate=3600',
     }
   });
+}
+
+// ─── SHARED FEATURED ITEM HELPER ─────────────────────────────────────────────
+// Used by beauty-salon, advisory-firm, property-estate, school-institution.
+// Finds the first item with a non-empty tag/badge field, sorts it first,
+// and returns metadata for rendering the featured badge + highlighted class.
+
+function extractFeatured(items) {
+  if (!Array.isArray(items) || !items.length) {
+    return { sorted: items || [], hasFeatured: false, featuredTag: '' };
+  }
+  const idx = items.findIndex(item => (item.tag || item.badge || '').trim());
+  if (idx < 0) return { sorted: items, hasFeatured: false, featuredTag: '' };
+  const featuredTag = (items[idx].tag || items[idx].badge || '').trim();
+  const sorted = [items[idx], ...items.filter((_, i) => i !== idx)];
+  return { sorted, hasFeatured: true, featuredTag };
+}
+
+// Shared badge HTML — matches grill-house design language
+const FEAT_STAR_SVG = `<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+
+function featBadgeHtml(tag) {
+  return `<span class="feat-badge">${FEAT_STAR_SVG}${esc(tag)}</span>`;
 }
 
 // ─── TEMPLATE EXTRAS ─────────────────────────────────────────────────────────
@@ -409,8 +457,15 @@ function buildTemplateExtras(c, site, config) {
 
   // ── ADVISORY-FIRM ──────────────────────────────────────────────────────────
   if (templateId === 'advisory-firm' || templateId === 'consultant') {
-    const svcTitles = (Array.isArray(c.services) ? c.services : [])
-      .slice(0, 4)
+    const rawSvcs  = Array.isArray(c.services) ? c.services : [];
+    const { sorted: sortedSvcs, hasFeatured: hasFeatSvc } = extractFeatured(rawSvcs);
+
+    // Mutate content so processEach picks up sorted order
+    c.services = sortedSvcs;
+    extras.has_featured_service = hasFeatSvc ? 'true' : '';
+
+    // Build service_points_html from first 4 sorted services
+    const svcTitles = sortedSvcs.slice(0, 4)
       .map(s => s.title || s.name || '')
       .filter(Boolean);
     const points = svcTitles.length >= 2 ? svcTitles : [
@@ -422,21 +477,40 @@ function buildTemplateExtras(c, site, config) {
     extras.service_points_html = points
       .map(p => `<div class="band-point"><div class="band-point-icon"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span>${esc(p)}</span></div>`)
       .join('');
+
+    // Build services_html manually so we can inject .highlighted on featured card
+    if (sortedSvcs.length) {
+      extras.services_html = sortedSvcs.map((s, i) => {
+        const isFeat   = hasFeatSvc && i === 0;
+        const tag      = (s.tag || s.badge || '').trim();
+        const name     = esc(s.name || s.title || '');
+        const body     = esc(s.body || s.description || '');
+        const icon     = s.icon_html || s.icon || '';
+        const badge    = isFeat ? featBadgeHtml(tag) : '';
+        const hlClass  = isFeat ? ' highlighted' : '';
+        return `<div class="svc-card${hlClass}" style="position:relative">${badge}<div class="svc-icon">${icon}</div><div class="svc-name">${name}</div><div class="svc-body">${body}</div></div>`;
+      }).join('');
+    }
   }
 
   // ── PROPERTY-ESTATE ────────────────────────────────────────────────────────
   if (templateId === 'property-estate' || templateId === 'realestate') {
-    const listings = Array.isArray(c.listings) ? c.listings : [];
+    const rawListings = Array.isArray(c.listings) ? c.listings : [];
+    const { sorted: sortedListings, hasFeatured: hasFeatListing } = extractFeatured(rawListings);
+
     extras.sell_heading = c.sell_heading || "Selling or renting out? Let's list it.";
     extras.sell_body    = c.sell_body    || c.tagline || 'Professional photos, local reach and honest valuations — your property in front of serious buyers.';
+    extras.has_featured_listing = hasFeatListing ? 'true' : '';
 
-    if (listings.length) {
-      c.listings = listings.map((l, li) => {
+    if (sortedListings.length) {
+      c.listings = sortedListings.map((l, li) => {
         const type       = (l.type || 'For Sale').toLowerCase();
         const badgeClass = type.includes('rent') || type.includes('let') ? 'badge-rent'
                          : type.includes('sold')                          ? 'badge-sold'
                          : 'badge-sale';
         const typeLabel  = l.type || 'For Sale';
+        const isFeat     = hasFeatListing && li === 0;
+        const featTag    = (l.tag || l.badge || '').trim();
 
         const rawPhone = (l.agent_phone || l.phone || c.phone || '').replace(/\D/g, '');
         const waPhone  = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
@@ -469,15 +543,22 @@ function buildTemplateExtras(c, site, config) {
             + `</div>`;
         }
 
+        // Featured badge overlaid on photo
+        const photoFeatBadge = isFeat && featTag
+          ? featBadgeHtml(featTag)
+          : '';
+
         return {
           ...l,
-          badge_class:   badgeClass,
-          type_label:    typeLabel,
-          wa_link:       waLink,
-          features_html: featuresHtml,
-          photos_html:   photosHtml,
-          address:       l.address || l.location || l.name || '',
-          description:   l.description || l.body || '',
+          badge_class:      badgeClass,
+          type_label:       typeLabel,
+          wa_link:          waLink,
+          features_html:    featuresHtml,
+          photos_html:      photosHtml,
+          photo_feat_badge: photoFeatBadge,
+          highlighted_class: isFeat ? 'highlighted' : '',
+          address:          l.address || l.location || l.name || '',
+          description:      l.description || l.body || '',
         };
       });
     }
@@ -485,9 +566,18 @@ function buildTemplateExtras(c, site, config) {
 
   // ── GRILL-HOUSE ────────────────────────────────────────────────────────────
   if (templateId === 'grill-house' || templateId === 'restaurant') {
-    Object.assign(extras, buildGrillExtras(c, config));
+    const ghTheme   = c.theme || {};
+    const ghPalette = resolvePalette(ghTheme.palette || 'ember-cream', ghTheme.custom_accent || '');
+    const grillConfig = Object.assign({}, config, {
+      paletteTokens: {
+        ember_color: ghPalette.accent1,
+        amber_color: ghPalette.accent2,
+      },
+      defaultPrimaryColor: ghPalette.primary,
+    });
+    Object.assign(extras, buildGrillExtras(c, grillConfig));
+    extras.primary_color = ghPalette.primary;
 
-    // Pass whatsapp_clean through so the order panel send link works
     const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
     extras.whatsapp_clean = rawPhone.startsWith('263')
       ? rawPhone
@@ -514,12 +604,16 @@ function buildTemplateExtras(c, site, config) {
       catMap.forEach((items, category) => grouped.push({ category, items }));
     }
 
-    function renderSvcItem(item) {
+    // Featured item renderer — adds .highlighted class + badge pill
+    function renderSvcItem(item, isFeatured) {
       const name  = esc(item.name  || item.title || '');
       const desc  = esc(item.description || item.body || '');
       const price = esc(item.price || '');
       const photo = item.photo || item.image || '';
-      return `<div class="svc-item">
+      const tag   = (item.tag || item.badge || '').trim();
+      const badge = isFeatured && tag ? featBadgeHtml(tag) : '';
+      const hlCls = isFeatured ? ' highlighted' : '';
+      return `<div class="svc-item${hlCls}" style="position:relative">${badge}
         ${photo ? `<img class="svc-photo" src="${esc(photo)}" alt="${name}" loading="lazy">` : ''}
         <div class="svc-item-body">
           <div class="svc-name">${name}</div>
@@ -539,15 +633,25 @@ function buildTemplateExtras(c, site, config) {
       const panels = grouped.map((cat, ci) => {
         const catId       = 'cat' + ci;
         const activeClass = ci === 0 ? ' active' : '';
-        const items       = Array.isArray(cat.items) ? cat.items : [];
-        const rows        = items.map(renderSvcItem).join('');
-        return `<div class="svc-panel${activeClass}" id="svc-${catId}">${rows}</div>`;
+        const rawItems    = Array.isArray(cat.items) ? cat.items : [];
+        // Sort featured first within each tab panel
+        const { sorted: sortedItems, hasFeatured } = extractFeatured(rawItems);
+        const rows = sortedItems.map((item, i) =>
+          renderSvcItem(item, hasFeatured && i === 0)
+        ).join('');
+        const panelClass = `svc-panel${activeClass}${hasFeatured ? ' has-featured' : ''}`;
+        return `<div class="${panelClass}" id="svc-${catId}">${rows}</div>`;
       }).join('');
 
       extras.services_html = `<div class="svc-tabs">${tabs}</div>${panels}`;
 
     } else if (svcs.length > 0) {
-      extras.services_html = `<div class="svc-flat">${svcs.map(renderSvcItem).join('')}</div>`;
+      // Flat list — sort featured first
+      const { sorted: sortedSvcs, hasFeatured } = extractFeatured(svcs);
+      const rows = sortedSvcs.map((item, i) =>
+        renderSvcItem(item, hasFeatured && i === 0)
+      ).join('');
+      extras.services_html = `<div class="svc-flat${hasFeatured ? ' has-featured' : ''}">${rows}</div>`;
     } else {
       extras.services_html = '';
     }
@@ -714,13 +818,21 @@ function buildTemplateExtras(c, site, config) {
 function buildSchoolProgrammesHtml(c) {
   const items = c.services || c.programmes || c.menu || [];
   if (!Array.isArray(items) || !items.length) return '';
-  return items.map(s => {
-    const photo = s.photo
+
+  // Sort featured first
+  const { sorted, hasFeatured } = extractFeatured(items);
+
+  return sorted.map((s, i) => {
+    const isFeat = hasFeatured && i === 0;
+    const tag    = (s.tag || s.badge || '').trim();
+    const badge  = isFeat && tag ? featBadgeHtml(tag) : '';
+    const hlCls  = isFeat ? ' highlighted' : '';
+    const photo  = s.photo
       ? `<div class="si-prog__img"><img src="${esc(s.photo)}" alt="${esc(s.name||'')}" loading="lazy"></div>`
       : '';
-    const cat   = s.category ? `<div class="si-prog__cat">${esc(s.category)}</div>` : '';
-    const price = s.price    ? `<div class="si-prog__price">${esc(s.price)}</div>`   : '';
-    return `<div class="si-prog">${photo}<div class="si-prog__body">${cat}<div class="si-prog__name">${esc(s.name||'')}</div><div class="si-prog__desc">${esc(s.description||s.desc||'')}</div>${price}</div></div>`;
+    const cat    = s.category ? `<div class="si-prog__cat">${esc(s.category)}</div>` : '';
+    const price  = s.price    ? `<div class="si-prog__price">${esc(s.price)}</div>`  : '';
+    return `<div class="si-prog${hlCls}" style="position:relative">${badge}${photo}<div class="si-prog__body">${cat}<div class="si-prog__name">${esc(s.name||'')}</div><div class="si-prog__desc">${esc(s.description||s.desc||'')}</div>${price}</div></div>`;
   }).join('');
 }
 
@@ -793,7 +905,6 @@ function buildGrillExtras(c, config) {
     extras[k] = v;
   }
 
-  // Section visibility flags — needed so {{#if has_menu}} etc resolve
   extras.has_menu         = menu.length > 0                                       ? 'true' : '';
   extras.has_team         = (Array.isArray(c.team) && c.team.length > 0)          ? 'true' : '';
   extras.has_gallery      = (Array.isArray(c.gallery) && c.gallery.length > 0)    ? 'true' : '';
@@ -814,42 +925,49 @@ function buildGrillExtras(c, config) {
     ).join('');
 
   extras.menu_by_category_html = categories.map((catName, catIdx) => {
-    const items     = menu.filter(item => getcat(item) === catName);
-    const itemsHtml = items.map((item, i) => {
-      const photo   = item.photo || item.image || item.photo_url || '';
-      const tag     = item.tag   || item.badge || '';
-      const tagHtml = tag
-        ? `<span class="dish-tag">${esc(tag)}</span>`
-        : `<span style="font-size:.84rem;color:var(--ink2)">${esc(item.serves || item.note || '')}</span>`;
+    const items = menu.filter(item => getcat(item) === catName);
 
-      // ── FIX: single-quoted JS object literal avoids double-quote collision
-      // with the onclick="" attribute wrapper. JSON.stringify produces
-      // {"name":"..."} which breaks the HTML attribute at the first inner ".
-      const safeName  = (item.name  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const safePrice = (item.price || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const onclickArg = `{name:'${safeName}',price:'${safePrice}'}`;
+    const featuredIdx = items.findIndex(item => (item.tag || item.badge || '').trim());
+    const hasFeatured = featuredIdx >= 0;
 
-      // Lightbox data — safe for data attribute (no HTML)
-      const safDesc  = (item.description || '').replace(/'/g,"\'").replace(/"/g,'&quot;');
-      const lbData   = `{name:'${safeName}',price:'${safePrice}',photo:'${esc(item.photo||item.image||item.photo_url||'')}',desc:'${safDesc}'}`;
+    const sorted = hasFeatured
+      ? [items[featuredIdx], ...items.filter((_, i) => i !== featuredIdx)]
+      : items;
 
-      return `<div class="dish reveal">
+    const itemsHtml = sorted.map((item, i) => {
+      const isFeatured = hasFeatured && i === 0;
+      const photo      = item.photo || item.image || item.photo_url || '';
+      const tag        = item.tag || item.badge || '';
+
+      const sn = (item.name  || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const sp = (item.price || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const sd = (item.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const onclickArg = `{name:'${sn}',price:'${sp}'}`;
+      const lbData     = `{name:'${sn}',price:'${sp}',photo:'${esc(photo)}',desc:'${sd}'}`;
+
+      const STAR_SVG = `<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+      const badgeHtml = isFeatured
+        ? `<span class="dish-badge">${STAR_SVG}${esc(tag)}</span>`
+        : '';
+      const highlightClass = isFeatured ? ' highlighted' : '';
+
+      return `<div class="dish reveal${highlightClass}">
   <div class="dish-photo" onclick="lbOpen(${lbData})">${photo
     ? `<img src="${esc(photo)}" alt="${esc(item.name || '')}" loading="lazy">`
     : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem">${ICONS[i % ICONS.length]}</div>`
-  }<span class="expand-hint"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span></div>
-  <div class="dish-body">
+  }${badgeHtml}<span class="expand-hint"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span></div>
+  <div class="dish-body"${isFeatured && tag ? ` data-badge="★ ${esc(tag)}"` : ""}>
     <div class="dish-title-row">
       <span class="dish-name">${esc(item.name || '')}</span>
       ${item.price ? `<span class="dish-price">${esc(item.price)}</span>` : ''}
     </div>
     ${item.description ? `<p class="dish-desc">${esc(item.description)}</p>` : ''}
-    <div class="dish-footer">${tagHtml}<button class="add-btn" onclick="ghAddToOrder(${onclickArg},this)">+ Add to order</button></div>
+    <div class="dish-footer"><span></span><button class="add-btn" onclick="ghAddToOrder(${onclickArg},this)">+ Add to order</button></div>
   </div>
 </div>`;
     }).join('');
 
-    return `<div class="menu-cat reveal" data-cat="${esc(catName)}"${catIdx > 0 ? ' style="display:none"' : ''}>
+    return `<div class="menu-cat reveal${hasFeatured ? ' has-featured' : ''}" data-cat="${esc(catName)}"${catIdx > 0 ? ' style="display:none"' : ''}>
   <div class="menu-grid">${itemsHtml}</div>
 </div>`;
   }).join('');
@@ -897,7 +1015,7 @@ function wrapWithShell(body, c, site, config, isPreview) {
   function s(){if(nav)nav.classList.toggle('scrolled',window.scrollY>60);}
   window.addEventListener('scroll',s,{passive:true});s();
   var btn=document.getElementById('wcz-hamburger'),menu=document.getElementById('wcz-mobile-menu'),close=document.getElementById('wcz-mobile-close');
-  if(btn&&menu){btn.addEventListener('click',function(){menu.classList.add('open');});if(close)close.addEventListener('click',function(){menu.classList.remove('open');});menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){menu.classList.remove('open');});});}
+  if(btn&&menu){btn.addEventListener('click',function(){menu.classList.add('open');});if(close)close.addEventListener('click',function(){menu.classList.remove('open');});menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){menu.classList.remove('open');});}); }
 })();
 <\/script>`;
 
@@ -964,6 +1082,116 @@ function icon(name, size = 20, color = 'currentColor') {
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" ${attrs} aria-hidden="true">${paths}</svg>`;
 }
 
+// ─── PALETTE RESOLUTION ───────────────────────────────────────────────────────
+
+const SITE_PALETTES = {
+  'black-white-gold': {primary:'#0c0c0c',accent1:'#c8a24a',accent2:'#a87030',bg:'#f5f5f5',surface:'#fff'},
+  'midnight-purple':  {primary:'#0d0a14',accent1:'#a855f7',accent2:'#7c3aed',bg:'#f8f5ff',surface:'#fff'},
+  'deep-teal':        {primary:'#061a1a',accent1:'#14b8a6',accent2:'#0891b2',bg:'#f0fafa',surface:'#fff'},
+  'sky-blue':         {primary:'#0f1b2d',accent1:'#3da5e0',accent2:'#1d7cb8',bg:'#f0f7ff',surface:'#fff'},
+  'elite-sports':     {primary:'#0a0a0a',accent1:'#16a34a',accent2:'#15803d',bg:'#f4faf5',surface:'#fff'},
+  'rose-noir':        {primary:'#0e0b0d',accent1:'#e8a0b0',accent2:'#c96a7e',bg:'#fff5f7',surface:'#fff'},
+  'clean-white':      {primary:'#1a1a1a',accent1:'#1a1a1a',accent2:'#3d3d3d',bg:'#ffffff',surface:'#f6f6f4'},
+  'warm-terracotta':  {primary:'#3a1606',accent1:'#c0440e',accent2:'#a03a0a',bg:'#fdf6f0',surface:'#fff'},
+  'ember-cream':      {primary:'#221A14',accent1:'#D2541F',accent2:'#E0A12E',bg:'#FBF4E9',surface:'#fff'},
+  'blush-plum':       {primary:'#2d1620',accent1:'#c96a7e',accent2:'#B08D57',bg:'#ffffff',surface:'#F7ECEC'},
+  'soft-pink':        {primary:'#3a0f24',accent1:'#e91e8c',accent2:'#c0156e',bg:'#fff9fb',surface:'#fdeef3'},
+  'navy-gold':        {primary:'#0a2540',accent1:'#C99A2E',accent2:'#a87d1a',bg:'#ffffff',surface:'#EAF1F9'},
+  'slate-gold':       {primary:'#20262f',accent1:'#C08A2D',accent2:'#a87020',bg:'#ffffff',surface:'#F4F6FA'},
+  'medical-teal':     {primary:'#063a3f',accent1:'#0891b2',accent2:'#0e7490',bg:'#f4fbfb',surface:'#e8f6f6'},
+  'forest-cream':     {primary:'#1f3320',accent1:'#B0852F',accent2:'#8a6520',bg:'#F6F1E7',surface:'#fff'},
+  'market-fresh':     {primary:'#0f3d1a',accent1:'#1e8c3a',accent2:'#166e2c',bg:'#ffffff',surface:'#f4faf5'},
+  'bright-orange':    {primary:'#2b1400',accent1:'#ea580c',accent2:'#c04800',bg:'#ffffff',surface:'#fff8f3'},
+  'utility-slate':    {primary:'#0f1729',accent1:'#1a56db',accent2:'#1447b8',bg:'#f7f8fa',surface:'#ffffff'},
+};
+
+const TEMPLATE_VAR_MAP = {
+  'grill-house':        {primary:'--char', accent1:'--ember', accent2:'--amber', bg:'--cream', brand:'--char'},
+  'restaurant':         {primary:'--char', accent1:'--ember', accent2:'--amber', bg:'--cream', brand:'--char'},
+  'beauty-salon':       {primary:'--primary-color', accent1:'--primary-color', accent2:'--accent-color', brand:'--primary-color'},
+  'school-institution': {primary:'--navy', accent1:'--gold', accent2:'--gold-lt', brand:'--navy'},
+  'advisory-firm':      {primary:'--slate', accent1:'--gold', accent2:'--gold-lt', brand:'--slate'},
+  'property-estate':    {primary:'--forest', accent1:'--gold', accent2:'--gold-lt', brand:'--forest'},
+};
+
+function resolvePalette(paletteKey, customAccent) {
+  const p = SITE_PALETTES[paletteKey] || SITE_PALETTES['ember-cream'];
+  return {
+    primary:  p.primary,
+    accent1:  customAccent || p.accent1,
+    accent2:  p.accent2,
+    bg:       p.bg,
+    surface:  p.surface,
+  };
+}
+
+function buildPaletteOverride(templateId, paletteKey, customAccent) {
+  if (!paletteKey && !customAccent) return '';
+  const colors = resolvePalette(paletteKey || 'ember-cream', null);
+  const map    = TEMPLATE_VAR_MAP[templateId];
+
+  if (map) {
+    const overrides = [];
+    if (map.primary)  overrides.push(`${map.primary}:${colors.primary}`);
+    if (map.accent1)  overrides.push(`${map.accent1}:${colors.accent1}`);
+    if (map.accent2 && map.accent2 !== map.accent1) {
+      overrides.push(`${map.accent2}:${colors.accent2}`);
+    }
+    if (map.bg)       overrides.push(`${map.bg}:${colors.bg}`);
+    if (customAccent && map.brand) {
+      overrides.push(`${map.brand}:${customAccent}`);
+    }
+    if (!overrides.length) return '';
+    return `<style>:root{${overrides.join(';')}}</style>`;
+  }
+
+  const fallbackColors = resolvePalette(paletteKey || 'ember-cream', customAccent);
+  return `<style>:root{--accent:${fallbackColors.accent1};--primary:${fallbackColors.primary};--bg:${fallbackColors.bg}}</style>`;
+}
+
+// ─── FONT MAP ─────────────────────────────────────────────────────────────────
+
+const FONT_MAP = {
+  'clean-sans': {
+    url: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap',
+    body: '"Space Grotesk",system-ui,sans-serif',
+    head: '"Space Grotesk",system-ui,sans-serif',
+  },
+  'grotesk-serif': {
+    url: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,800;1,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap',
+    body: '"Hanken Grotesk",system-ui,sans-serif',
+    head: '"Fraunces",Georgia,serif',
+  },
+  'playfair-jakarta': {
+    url: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
+    body: '"Plus Jakarta Sans",system-ui,sans-serif',
+    head: '"Playfair Display",Georgia,serif',
+  },
+  'garamond-jost': {
+    url: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Jost:wght@400;500;600;700&display=swap',
+    body: '"Jost",system-ui,sans-serif',
+    head: '"Cormorant Garamond",Georgia,serif',
+  },
+  'sports-sans': {
+    url: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap',
+    body: '"Barlow",system-ui,sans-serif',
+    head: '"Barlow Condensed",system-ui,sans-serif',
+  },
+  'display-mono': {
+    url: 'https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap',
+    body: '"DM Sans",system-ui,sans-serif',
+    head: '"DM Mono",monospace',
+  },
+};
+
+function buildFontOverride(fontPairKey) {
+  if (!fontPairKey) return { styleBlock: '', fontsUrl: '' };
+  const f = FONT_MAP[fontPairKey];
+  if (!f) return { styleBlock: '', fontsUrl: '' };
+  const styleBlock = `<style>body,button,input,select,textarea{font-family:${f.body}}h1,h2,h3,h4{font-family:${f.head}}</style>`;
+  return { styleBlock, fontsUrl: f.url };
+}
+
 // ─── SHARED HELPERS ───────────────────────────────────────────────────────────
 
 function esc(s) {
@@ -993,8 +1221,6 @@ function normalizeItemImages(arr) {
     return { ...item, photo: item.photo || resolved, image: item.image || resolved };
   });
 }
-
-// ─── NORMALIZE SERVICES ───────────────────────────────────────────────────────
 
 function normalizeServices(arr) {
   if (!Array.isArray(arr)) return [];
