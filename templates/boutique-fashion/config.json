@@ -1,0 +1,17 @@
+{
+  "templateId": "boutique-fashion",
+  "selfContainedNav": true,
+  "defaultPalette": "black-white-gold",
+  "defaultPrimaryColor": "#0c0c0c",
+  "defaultTypeLabel": "Fashion",
+  "showOpenBadge": false,
+  "showHoursGrid": false,
+  "googleFonts": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap",
+  "lists": [],
+  "conditionals": [],
+  "typeLabels": {
+    "boutique-fashion": "Fashion",
+    "boutique": "Fashion",
+    "fashion": "Fashion"
+  }
+}
