@@ -1,0 +1,38 @@
+{
+  "template_id": "school-institution",
+  "name": "School & Institution",
+  "description": "For schools, churches, sports clubs, and community organisations",
+  "palette": "navy-gold",
+  "font_pair": "fraunces-jakarta",
+  "sections": ["hero", "about", "programmes", "team", "events", "gallery", "testimonials", "contact"],
+  "tokens": {
+    "business_name": "Sunrise Academy",
+    "tagline": "Shaping Tomorrow's Leaders Today",
+    "about_text": "We are committed to nurturing excellence in every student through world-class education, character development, and a vibrant learning community.",
+    "hero_image_url": "",
+    "logo_url": "",
+    "phone": "+263 77 000 0000",
+    "email": "info@sunriseacademy.ac.zw",
+    "address": "14 Academy Drive, Bulawayo",
+    "whatsapp": "+263770000000",
+    "facebook_url": "",
+    "instagram_url": "",
+    "twitter_url": "",
+    "stat_1_number": "1 200",
+    "stat_1_label": "Students Enrolled",
+    "stat_2_number": "98%",
+    "stat_2_label": "Pass Rate",
+    "stat_3_number": "45",
+    "stat_3_label": "Years of Excellence",
+    "stat_4_number": "120",
+    "stat_4_label": "Teaching Staff"
+  },
+  "flags": {
+    "show_stats": true,
+    "show_programmes": true,
+    "show_team": true,
+    "show_events": true,
+    "show_gallery": true,
+    "show_testimonials": true
+  }
+}
