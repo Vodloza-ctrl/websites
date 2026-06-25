@@ -1,798 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{seo_title}}</title>
-<meta name="description" content="{{seo_description}}">
-<meta property="og:title" content="{{business_name}}">
-<meta property="og:description" content="{{about}}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --char:{{primary_color}};
-  --ember:{{ember_color}};
-  --amber:{{amber_color}};
-  --cream:#FBF4E9;
-  --ink:#2A211A;
-  --ink2:#6E6055;
-  --paper:#fff;
-  --line:rgba(34,26,20,.12);
-  --shadow-sm:0 2px 12px rgba(34,26,20,.08);
-  --shadow-md:0 20px 44px -20px rgba(34,26,20,.35);
-  --r-card:14px;
-  --r-pill:999px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-img{display:block;max-width:100%}
-a{color:inherit;text-decoration:none}
-button{cursor:pointer;border:none;background:none;font:inherit}
-body{font-family:"Plus Jakarta Sans",sans-serif;color:var(--ink);background:var(--cream);line-height:1.6}
-h1,h2,h3{font-family:"Playfair Display",serif;font-weight:700;line-height:1.06}
-
-/* ── NAV ─────────────────────────────────────────────────────────────────── */
-header{position:sticky;top:0;z-index:200;background:rgba(34,26,20,.97);backdrop-filter:blur(10px)}
-.nav{display:flex;align-items:center;justify-content:space-between;max-width:1140px;margin:0 auto;padding:12px 24px;gap:16px}
-.logo-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0;min-width:0}
-.logo-img{height:40px;width:auto;object-fit:contain;flex-shrink:0}
-.logo-text{font-family:"Playfair Display",serif;font-weight:800;font-size:1.15rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.logo-text b{color:var(--amber)}
-.nav-links{display:flex;gap:20px;align-items:center;flex:1;justify-content:center}
-.nav-links a{font-size:.85rem;font-weight:500;color:rgba(255,255,255,.75);transition:color .2s;white-space:nowrap}
-.nav-links a:hover{color:#fff}
-.nav-cta{display:inline-flex;align-items:center;gap:6px;background:var(--ember);color:#fff;font-weight:700;font-size:.84rem;padding:9px 16px;border-radius:var(--r-pill);transition:background .2s,transform .15s;white-space:nowrap;flex-shrink:0;cursor:pointer;border:none;font-family:inherit}
-.nav-cta:hover{background:#B5440F}
-.nav-cta.has-items{background:#25D366}
-.nav-cta-count{background:rgba(255,255,255,.22);border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;margin-left:2px}
-.hamburger{display:none;align-items:center;justify-content:center;width:40px;height:40px;cursor:pointer;flex-shrink:0}
-@media(max-width:820px){.nav-links{display:none}.nav-cta{display:none}.hamburger{display:flex}}
-@media(max-width:480px){.nav{padding:10px 16px}.logo-img{height:34px}.logo-text{font-size:1rem}}
-
-/* ── MOBILE MENU ─────────────────────────────────────────────────────────── */
-.mob-menu{display:none;position:fixed;inset:0;z-index:999;background:rgba(34,26,20,.98);flex-direction:column;align-items:center;justify-content:center;gap:2rem}
-.mob-menu.open{display:flex}
-.mob-menu a{font-size:1.25rem;font-weight:700;color:#fff}
-.mob-menu a:hover{color:var(--amber)}
-.mob-close{position:absolute;top:1.25rem;right:1.25rem;color:rgba(255,255,255,.6);cursor:pointer;padding:8px}
-.mob-order-btn{display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;font-weight:700;font-size:1rem;padding:12px 28px;border-radius:var(--r-pill);border:none;font-family:inherit;cursor:pointer;margin-top:.5rem}
-
-/* ── HERO — DESKTOP full bleed, MOBILE compact strip ─────────────────────── */
-.gh-hero{position:relative;min-height:88vh;display:flex;align-items:flex-end;overflow:hidden}
-.gh-hero-bg{position:absolute;inset:0}
-.gh-hero-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.gh-hero-bg-ph{position:absolute;inset:0;background:linear-gradient(135deg,var(--char),var(--ember))}
-.gh-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,14,8,.96) 0%,rgba(20,14,8,.55) 45%,rgba(20,14,8,.15) 100%)}
-.gh-hero-text{position:relative;z-index:1;color:#fff;padding:0 8% 5rem;max-width:780px;width:100%}
-.eyebrow{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--amber);display:block;margin-bottom:8px}
-.gh-hero-text h1{font-size:clamp(2rem,5vw,4.2rem);margin-bottom:14px;text-shadow:0 2px 16px rgba(0,0,0,.4)}
-.gh-hero-text p{font-size:.97rem;max-width:46ch;color:rgba(255,255,255,.82);line-height:1.72;text-shadow:0 1px 8px rgba(0,0,0,.5)}
-.hero-btns{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
-/* Solid amber — high contrast on any hero image */
-.btn-amber{display:inline-flex;align-items:center;gap:7px;background:var(--amber);color:#1a100a;font-weight:800;font-size:.88rem;padding:12px 22px;border-radius:var(--r-pill);transition:filter .2s;border:none;font-family:inherit;cursor:pointer}
-.btn-amber:hover{filter:brightness(1.08)}
-.btn-wa{display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;font-weight:700;font-size:.88rem;padding:12px 22px;border-radius:var(--r-pill)}
-/* Ghost only used below the fold where bg is light */
-.btn-ghost{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.4);color:#fff;font-weight:600;font-size:.88rem;padding:10px 20px;border-radius:var(--r-pill)}
-
-/* MOBILE HERO — compact strip, menu gets the screen */
-@media(max-width:640px){
-  .gh-hero{min-height:0;flex-direction:column;align-items:stretch}
-  .gh-hero-bg{position:relative;height:52vw;min-height:200px;max-height:260px;flex-shrink:0}
-  .gh-hero-bg img{position:absolute}
-  .gh-overlay{background:linear-gradient(to top,rgba(20,14,8,.85) 0%,rgba(20,14,8,.2) 100%)}
-  .gh-hero-text{background:var(--char);padding:1.4rem 1.25rem 1.75rem;max-width:100%}
-  .gh-hero-text h1{font-size:1.55rem;text-shadow:none;margin-bottom:8px}
-  .gh-hero-text p{display:none} /* hide long about on mobile — story is below */
-  .hero-btns .btn-ghost{display:none} /* hide Find Us — contact is one scroll away */
-  .hero-btns{gap:10px;margin-top:14px}
-  .btn-amber,.btn-wa{font-size:.82rem;padding:10px 18px}
-}
-
-/* ── LAYOUT ─────────────────────────────────────────────────────────────── */
-.sec{padding:60px 0}
-.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
-.sec-head{text-align:center;max-width:560px;margin:0 auto 40px}
-.sec-head h2{font-size:clamp(1.7rem,3.5vw,2.4rem);margin-top:6px}
-.sec-head p{color:var(--ink2);margin-top:10px;font-size:.92rem}
-
-/* ── MENU — CATEGORY TABS ────────────────────────────────────────────────── */
-.cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;justify-content:center}
-.cat-tab{background:var(--paper);border:1.5px solid var(--line);border-radius:var(--r-pill);padding:7px 16px;font-size:.84rem;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s;font-family:inherit}
-.cat-tab.on{background:var(--char);color:#fff;border-color:var(--char)}
-.cat-tab:hover:not(.on){border-color:var(--ember);color:var(--ember)}
-
-/* ── DISH CARDS — DESKTOP 3-col grid ────────────────────────────────────── */
-.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-@media(max-width:900px){.menu-grid{grid-template-columns:repeat(2,1fr)}}
-
-.dish{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-sm);transition:transform .28s,box-shadow .28s}
-.dish:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
-.dish-photo{aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(210,84,31,.1),rgba(224,161,46,.15));display:flex;align-items:center;justify-content:center;cursor:pointer}
-.dish-photo img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
-.dish:hover .dish-photo img{transform:scale(1.06)}
-.dish-body{padding:16px;flex:1;display:flex;flex-direction:column}
-.dish-title-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.dish-name{font-size:.97rem;font-weight:700;line-height:1.3}
-.dish-price{color:var(--ember);font-weight:800;font-size:.97rem;white-space:nowrap;flex-shrink:0}
-.dish-desc{font-size:.83rem;color:var(--ink2);margin:6px 0 12px;flex:1;line-height:1.55}
-.dish-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:8px}
-.dish-tag{font-size:.69rem;background:#FBF1DE;color:#92580A;padding:3px 8px;border-radius:6px;font-weight:600}
-.add-btn{background:var(--char);color:#fff;font-weight:700;font-size:.77rem;padding:7px 13px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:5px;transition:background .2s,transform .15s;flex-shrink:0;border:none;font-family:inherit;cursor:pointer}
-.add-btn:hover{background:var(--ember);transform:translateY(-1px)}
-
-/* ── DISH ROWS — MOBILE compact list ─────────────────────────────────────── */
-@media(max-width:640px){
-  .menu-grid{
-    display:flex;
-    flex-direction:column;
-    gap:0;
-    border:1px solid var(--line);
-    border-radius:var(--r-card);
-    overflow:hidden;
-    background:var(--paper);
-    box-shadow:var(--shadow-sm);
-  }
-  /* Each dish becomes a horizontal row */
-  .dish{
-    flex-direction:row;
-    align-items:center;
-    border-radius:0;
-    border:none;
-    border-bottom:1px solid var(--line);
-    box-shadow:none;
-    transform:none!important;
-    gap:0;
-    min-height:80px;
-  }
-  .dish:last-child{border-bottom:none}
-  /* Thumbnail — square, tappable to open lightbox */
-  .dish-photo{
-    width:80px;
-    height:80px;
-    min-width:80px;
-    aspect-ratio:1/1;
-    border-radius:0;
-    flex-shrink:0;
-    position:relative;
-  }
-  .dish-photo::after{
-    content:'';
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,.08);
-    transition:background .2s;
-  }
-  .dish-photo:active::after{background:rgba(0,0,0,.2)}
-  /* Tap hint icon on thumbnail */
-  .dish-photo .expand-hint{
-    position:absolute;
-    bottom:4px;right:4px;
-    width:18px;height:18px;
-    background:rgba(0,0,0,.5);
-    border-radius:4px;
-    display:flex;align-items:center;justify-content:center;
-    z-index:1;
-  }
-  .dish-photo .expand-hint svg{display:block}
-  .dish-body{padding:12px 12px 12px 12px;flex-direction:column;gap:2px}
-  .dish-title-row{flex-wrap:nowrap;align-items:center}
-  .dish-name{font-size:.9rem;font-weight:700;line-height:1.25}
-  .dish-price{font-size:.9rem}
-  .dish-desc{font-size:.78rem;margin:3px 0 8px;-webkit-line-clamp:2;line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
-  .dish-footer{margin-top:0}
-  .dish-tag{font-size:.67rem}
-  .add-btn{font-size:.75rem;padding:6px 11px}
-}
-
-/* ── LIGHTBOX ─────────────────────────────────────────────────────────────── */
-.lb{display:none;position:fixed;inset:0;z-index:2000;background:rgba(14,9,4,.92);flex-direction:column;align-items:center;justify-content:center;padding:20px}
-.lb.open{display:flex}
-.lb-img-wrap{position:relative;max-width:min(520px,100%);width:100%;border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.6)}
-.lb-img-wrap img{width:100%;display:block;max-height:60vh;object-fit:cover}
-.lb-body{max-width:min(520px,100%);width:100%;background:#fff;border-radius:0 0 16px 16px;padding:20px}
-.lb-name{font-family:"Playfair Display",serif;font-size:1.35rem;font-weight:700;color:var(--ink)}
-.lb-price{color:var(--ember);font-weight:800;font-size:1.1rem;margin-top:2px}
-.lb-desc{font-size:.88rem;color:var(--ink2);margin-top:8px;line-height:1.6}
-.lb-actions{display:flex;gap:10px;margin-top:16px}
-.lb-add{flex:1;background:var(--char);color:#fff;font-weight:700;font-size:.92rem;padding:13px 20px;border-radius:var(--r-pill);border:none;font-family:inherit;cursor:pointer;text-align:center;transition:background .2s}
-.lb-add:hover{background:var(--ember)}
-.lb-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;z-index:10;font-size:1.1rem}
-/* On desktop lightbox triggered by clicking dish photo */
-@media(min-width:641px){
-  .dish-photo{cursor:pointer}
-  .expand-hint{display:none!important}
-}
-
-/* ── CTA BAND ────────────────────────────────────────────────────────────── */
-.band{background:var(--char);color:#fff;text-align:center;padding:60px 24px}
-.band h2{color:#fff;font-size:clamp(1.7rem,3.5vw,2.3rem)}
-.band p{color:rgba(255,255,255,.68);margin:12px auto 0;max-width:44ch;line-height:1.7}
-.band-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
-
-/* ── TEAM ────────────────────────────────────────────────────────────────── */
-.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:16px}
-.team-card{background:var(--paper);border-radius:var(--r-card);overflow:hidden;text-align:center;box-shadow:var(--shadow-sm);transition:transform .28s,box-shadow .28s}
-.team-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
-.team-photo{aspect-ratio:3/4;overflow:hidden;background:linear-gradient(135deg,rgba(210,84,31,.12),rgba(224,161,46,.18));display:flex;align-items:center;justify-content:center}
-.team-photo img{width:100%;height:100%;object-fit:cover}
-.team-name{font-weight:700;font-size:.92rem;padding:11px 10px 2px}
-.team-role{color:var(--ember);font-weight:600;font-size:.74rem;padding:0 10px 12px}
-
-/* ── GALLERY ─────────────────────────────────────────────────────────────── */
-.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media(max-width:640px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
-.gallery-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--r-card);cursor:pointer;transition:transform .25s,box-shadow .25s}
-.gallery-grid img:hover{transform:scale(1.03);box-shadow:var(--shadow-md)}
-
-/* ── TESTIMONIALS ────────────────────────────────────────────────────────── */
-.testi-wrap{background:#fff8ef;padding:60px 24px}
-.testi-card{background:var(--paper);border-radius:var(--r-card);padding:2rem;position:relative;box-shadow:var(--shadow-sm);max-width:680px;margin:0 auto}
-.testi-quote{font-size:2.8rem;line-height:1;color:var(--ember);opacity:.14;font-family:Georgia,serif;position:absolute;top:.6rem;left:1.2rem}
-.testi-text{font-size:.96rem;line-height:1.75;padding-top:1.3rem;color:var(--ink)}
-.testi-author{display:flex;align-items:center;gap:.75rem;margin-top:1.3rem}
-.testi-avatar{width:40px;height:40px;border-radius:50%;background:var(--ember);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.95rem}
-.testi-name{font-weight:700;font-size:.88rem}
-.testi-role{font-size:.74rem;color:var(--ink2);margin-top:.1rem}
-.testi-dots{display:flex;gap:.5rem;justify-content:center;margin-top:1.4rem}
-.testi-dot{width:8px;height:8px;border-radius:50%;background:var(--ember);opacity:.25;cursor:pointer;transition:opacity .2s,transform .2s}
-.testi-dot.on{opacity:1;transform:scale(1.3)}
-
-/* ── HOURS ───────────────────────────────────────────────────────────────── */
-.hours-wrap{background:var(--char);color:#fff;padding:60px 24px}
-.hours-wrap h2{color:#fff;text-align:center;margin-bottom:1.8rem;font-size:clamp(1.7rem,3.5vw,2.3rem)}
-.hours-inner{max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.12);border-radius:var(--r-card);padding:.5rem}
-.hours-badge-wrap{text-align:center;padding:.7rem 0}
-.hours-row{display:flex;justify-content:space-between;align-items:center;padding:.58rem .82rem;border-radius:8px;font-size:.86rem}
-.hours-row.today{background:rgba(255,255,255,.1);font-weight:700}
-.hours-row .day,.hours-row .time{opacity:.7}
-.hours-row.today .day,.hours-row.today .time{opacity:1}
-.today-pill{font-size:.64rem;background:var(--ember);color:#fff;padding:.1rem .4rem;border-radius:var(--r-pill);margin-left:.4rem;vertical-align:middle}
-.badge-open,.badge-closed{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;padding:.22rem .8rem;border-radius:var(--r-pill)}
-.badge-open{background:#d1fae5;color:#065f46}
-.badge-closed{background:#fee2e2;color:#991b1b}
-.badge-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
-.badge-open .badge-dot{animation:pulse-dot 2s infinite}
-@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
-
-/* ── CONTACT ─────────────────────────────────────────────────────────────── */
-.contact-wrap{background:var(--cream);padding:60px 24px}
-.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;max-width:800px;margin:0 auto 1.8rem}
-.contact-card{background:var(--paper);border-radius:var(--r-card);padding:1.4rem;display:flex;align-items:center;gap:.85rem;box-shadow:var(--shadow-sm);text-decoration:none;color:inherit;transition:transform .2s,box-shadow .2s}
-.contact-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-.contact-icon{width:42px;height:42px;border-radius:10px;background:var(--ember);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.contact-label{font-weight:700;font-size:.86rem}
-.contact-val{font-size:.79rem;color:var(--ink2);margin-top:.1rem;line-height:1.4}
-.contact-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
-.map-wrap{max-width:800px;margin:1.8rem auto 0;border-radius:var(--r-card);overflow:hidden;box-shadow:var(--shadow-sm)}
-.map-wrap iframe{width:100%;height:300px;border:0;display:block}
-
-/* ── FOOTER ──────────────────────────────────────────────────────────────── */
-footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size:.84rem}
-.foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;max-width:1140px;margin:0 auto;align-items:center}
-.foot-logo{font-family:"Playfair Display",serif;font-weight:800;font-size:1.1rem;color:#fff}
-.foot-logo b{color:var(--amber)}
-
-/* ── WA FAB ──────────────────────────────────────────────────────────────── */
-.wa-fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:900;width:54px;height:54px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.4);opacity:0;transform:scale(.8);transition:opacity .3s,transform .3s;pointer-events:none}
-.wa-fab.visible{opacity:1;transform:scale(1);pointer-events:auto}
-.wa-fab-pulse{position:absolute;inset:0;border-radius:50%;border:2px solid #25D366;animation:fabpulse 2s infinite}
-@keyframes fabpulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.8);opacity:0}}
-
-/* ── ORDER FAB + PANEL ───────────────────────────────────────────────────── */
-.order-fab{position:fixed;bottom:1.5rem;left:1.5rem;z-index:950;background:var(--char);color:#fff;border-radius:var(--r-pill);padding:.68rem 1.2rem;display:none;align-items:center;gap:.5rem;font-weight:700;font-size:.83rem;box-shadow:0 8px 24px rgba(34,26,20,.4);cursor:pointer;transition:transform .2s;border:none;font-family:inherit}
-.order-count{background:var(--ember);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800}
-.order-panel{position:fixed;bottom:0;right:0;z-index:1100;width:min(380px,100%);max-height:82vh;background:#fff;border-radius:var(--r-card) 0 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.18);transform:translateY(110%);transition:transform .35s ease;display:flex;flex-direction:column}
-.order-panel.open{transform:translateY(0)}
-.order-hdr{background:linear-gradient(135deg,var(--char),#3a2a1a);color:#fff;padding:.88rem 1.2rem;display:flex;justify-content:space-between;align-items:center;font-weight:700;border-radius:var(--r-card) 0 0 0}
-.order-hdr button{color:#fff;background:rgba(255,255,255,.15);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem}
-.order-items{padding:.88rem 1.2rem;overflow-y:auto;flex:1}
-.order-row{display:flex;justify-content:space-between;align-items:center;gap:.7rem;padding:.48rem 0;border-bottom:1px solid var(--line)}
-.order-row-name{font-weight:600;font-size:.81rem;flex:1}
-.order-qty{display:flex;align-items:center;gap:.35rem;flex-shrink:0}
-.order-qty button{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);font-weight:700;font-size:.78rem;cursor:pointer;background:#fff}
-.order-empty{text-align:center;opacity:.36;padding:2rem 0;font-size:.81rem}
-.order-total{padding:.72rem 1.2rem;font-weight:800;border-top:2px solid var(--amber);display:flex;justify-content:space-between;font-size:.95rem;background:#fffdf7}
-.order-actions{padding:.78rem 1.2rem 1.2rem;display:flex;gap:.5rem}
-.order-clear{flex-shrink:0;font-size:.73rem;opacity:.55;background:#f5f0e8;border-radius:var(--r-pill);padding:.42rem .82rem;border:none;cursor:pointer;font-family:inherit}
-.order-send{flex:1;text-align:center;background:#25D366;color:#fff;border-radius:var(--r-pill);padding:.62rem 1rem;font-weight:700;font-size:.82rem;text-decoration:none;display:block}
-
-/* ── REVEAL ──────────────────────────────────────────────────────────────── */
-.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
-.reveal.in{opacity:1;transform:none}
-</style>
-</head>
-<body>
-
-<!-- NAV -->
-<header>
-  <div class="nav">
-    <a href="/" class="logo-wrap">
-      {{#if logo_url}}
-      <img src="{{logo_url}}" alt="{{business_name}}" class="logo-img">
-      {{else}}
-      <span class="logo-text">{{business_name_first}} <b>{{business_name_rest}}</b></span>
-      {{/if}}
-    </a>
-    <nav class="nav-links">
-      <a href="#menu">Menu</a>
-      {{#if has_team}}<a href="#team">Team</a>{{/if}}
-      {{#if has_hours}}<a href="#hours">Hours</a>{{/if}}
-      <a href="#contact">Visit us</a>
-    </nav>
-    <button class="nav-cta" id="nav-order-btn" onclick="ghNavCta()">
-      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      <span id="nav-cta-label">Order online</span>
-      <span class="nav-cta-count" id="nav-cta-count" style="display:none">0</span>
-    </button>
-    <div class="hamburger" id="gh-hamburger" role="button" aria-label="Open menu">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </div>
-  </div>
-</header>
-
-<!-- MOBILE MENU -->
-<div class="mob-menu" id="gh-mob-menu">
-  <div class="mob-close" id="gh-mob-close">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </div>
-  <a href="#menu">Menu</a>
-  {{#if has_team}}<a href="#team">Team</a>{{/if}}
-  {{#if has_hours}}<a href="#hours">Hours</a>{{/if}}
-  <a href="#contact">Visit us</a>
-  <button class="mob-order-btn" id="mob-order-btn" onclick="ghMobOrder()">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-    <span id="mob-order-label">View Menu &amp; Order</span>
-  </button>
-</div>
-
-<!-- HERO -->
-<section class="gh-hero">
-  <div class="gh-hero-bg">
-    {{#if hero_image_url}}
-    <img src="{{hero_image_url}}" alt="{{business_name}}">
-    {{else}}
-    <div class="gh-hero-bg-ph"></div>
-    {{/if}}
-    <div class="gh-overlay"></div>
-  </div>
-  <div class="gh-hero-text">
-    {{open_badge_html}}
-    <span class="eyebrow">{{business_type_label}}</span>
-    <h1>{{tagline}}</h1>
-    <p>{{about}}</p>
-    <div class="hero-btns">
-      <button class="btn-amber" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-        View Menu
-      </button>
-      <a href="{{wa_href_order}}" class="btn-wa" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-        Order now
-      </a>
-      <a href="#contact" class="btn-ghost">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Find us
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- MENU -->
-{{#if has_menu}}
-<section class="sec" id="menu">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">What we serve</span>
-      <h2>Our Menu</h2>
-    </div>
-    <div class="cat-tabs" id="cat-tabs">{{menu_categories_html}}</div>
-    {{menu_by_category_html}}
-  </div>
-</section>
-{{/if}}
-
-<!-- ORDER CTA BAND -->
-<section class="band" id="order">
-  <div class="wrap">
-    <h2>Ready to order?</h2>
-    <p>Add dishes from the menu above, then send your order straight to our kitchen on WhatsApp.</p>
-    <div class="band-btns">
-      <button onclick="ghNavCta()" class="btn-amber" style="font-size:.88rem">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        View my order
-      </button>
-      <a href="#menu" class="btn-ghost">Back to menu</a>
-    </div>
-  </div>
-</section>
-
-<!-- TEAM -->
-{{#if has_team}}
-<section class="sec" id="team">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Our people</span>
-      <h2>Meet the team</h2>
-    </div>
-    <div class="team-grid">
-      {{#each team}}
-      <div class="team-card reveal">
-        <div class="team-photo">
-          {{#if item.photo}}
-          <img src="{{item.photo}}" alt="{{item.name}}" loading="lazy">
-          {{else}}
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="rgba(210,84,31,.4)" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          {{/if}}
-        </div>
-        <div class="team-name">{{item.name}}</div>
-        <div class="team-role">{{item.role}}</div>
-      </div>
-      {{/each}}
-    </div>
-  </div>
-</section>
-{{/if}}
-
-<!-- GALLERY -->
-{{#if has_gallery}}
-<section class="sec" id="gallery">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">From our kitchen</span>
-      <h2>Gallery</h2>
-    </div>
-    <div class="gallery-grid">
-      {{#each gallery}}
-      <img src="{{item.url}}" alt="{{item.caption}}" loading="lazy" onclick="lbOpenPhoto(this.src,this.alt)">
-      {{/each}}
-    </div>
-  </div>
-</section>
-{{/if}}
-
-<!-- TESTIMONIALS -->
-{{#if has_testimonials}}
-<div class="testi-wrap" id="testimonials">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">What people say</span>
-      <h2>Reviews</h2>
-    </div>
-    {{#each testimonials}}
-    <div class="testi-card reveal">
-      <span class="testi-quote">&ldquo;</span>
-      <p class="testi-text">{{item.text}}</p>
-      <div class="testi-author">
-        <div class="testi-avatar">{{item.name_initial}}</div>
-        <div>
-          <div class="testi-name">{{item.name}}</div>
-          <div class="testi-role">{{item.role}}</div>
-        </div>
-      </div>
-    </div>
-    {{/each}}
-    <div class="testi-dots" id="testi-dots"></div>
-  </div>
-</div>
-{{/if}}
-
-<!-- HOURS -->
-{{#if has_hours}}
-<div class="hours-wrap" id="hours">
-  <div class="wrap">
-    <h2>Opening Hours</h2>
-    <div class="hours-inner">
-      <div class="hours-badge-wrap">{{open_badge_html}}</div>
-      {{hours_grid_html}}
-    </div>
-  </div>
-</div>
-{{/if}}
-
-<!-- CONTACT -->
-<section class="contact-wrap" id="contact">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Visit us</span>
-      <h2>Come find us</h2>
-    </div>
-    <div class="contact-grid reveal">
-      {{#if phone}}
-      <a href="tel:{{phone}}" class="contact-card">
-        <div class="contact-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
-        <div><div class="contact-label">Call us</div><div class="contact-val">{{phone}}</div></div>
-      </a>
-      {{/if}}
-      {{#if email}}
-      <a href="mailto:{{email}}" class="contact-card">
-        <div class="contact-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
-        <div><div class="contact-label">Email</div><div class="contact-val">{{email}}</div></div>
-      </a>
-      {{/if}}
-      {{#if location}}
-      <a href="{{maps_href}}" class="contact-card" target="_blank" rel="noopener">
-        <div class="contact-icon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-        <div><div class="contact-label">Find us</div><div class="contact-val">{{location}}</div></div>
-      </a>
-      {{/if}}
-    </div>
-    <div class="contact-actions">
-      {{#if phone}}
-      <a href="{{wa_href_general}}" class="btn-wa" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-        WhatsApp us
-      </a>
-      {{/if}}
-    </div>
-    {{#if map_embed_url}}
-    <div class="map-wrap"><iframe src="{{map_embed_url}}" allowfullscreen loading="lazy"></iframe></div>
-    {{/if}}
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="foot">
-    <div>
-      <div class="foot-logo">{{business_name_first}} <b>{{business_name_rest}}</b></div>
-      <p style="margin-top:4px;opacity:.45;font-size:.8rem">{{location}}</p>
-    </div>
-    <div>&copy; {{current_year}} {{business_name}} &middot; <a href="https://websites.co.zw" style="color:rgba(255,255,255,.3)">Built with websites.co.zw</a></div>
-  </div>
-</footer>
-
-<!-- WA FAB — general enquiries -->
-{{#if phone}}
-<a class="wa-fab" id="wa-fab" href="{{wa_href_general}}" aria-label="Chat on WhatsApp" target="_blank" rel="noopener">
-  <div class="wa-fab-pulse"></div>
-  <svg viewBox="0 0 24 24" width="26" height="26" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-</a>
-{{/if}}
-
-<!-- ORDER FAB + PANEL -->
-{{#if has_menu}}
-<button class="order-fab" id="order-fab" onclick="ghToggle()">
-  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-  My order <span class="order-count" id="order-count">0</span>
-</button>
-<div class="order-panel" id="order-panel">
-  <div class="order-hdr">
-    <span>Your order</span>
-    <button onclick="ghToggle()">&#x2715;</button>
-  </div>
-  <div class="order-items" id="order-items">
-    <div class="order-empty">Your order is empty.<br>Tap + Add to order on any dish.</div>
-  </div>
-  <div class="order-total" id="order-total" style="display:none"></div>
-  <div class="order-actions">
-    <button class="order-clear" onclick="ghClear()">Clear</button>
-    <a class="order-send" id="order-send" href="#" target="_blank">Send on WhatsApp &#x1F4AC;</a>
-  </div>
-</div>
-{{/if}}
-
-<!-- DISH LIGHTBOX -->
-<div class="lb" id="lb" role="dialog" aria-modal="true">
-  <button class="lb-close" onclick="lbClose()">&#x2715;</button>
-  <div class="lb-img-wrap">
-    <img id="lb-img" src="" alt="">
-  </div>
-  <div class="lb-body">
-    <div class="lb-name" id="lb-name"></div>
-    <div class="lb-price" id="lb-price"></div>
-    <div class="lb-desc" id="lb-desc"></div>
-    <div class="lb-actions" id="lb-actions">
-      <button class="lb-add" id="lb-add-btn" onclick="lbAddToOrder()">+ Add to order</button>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  /* ── GENERAL UI ──────────────────────────────────────────────────────── */
-  var wafab = document.getElementById('wa-fab');
-  window.addEventListener('scroll', function(){
-    if(wafab) wafab.classList.toggle('visible', window.scrollY > 300);
-  }, {passive:true});
-
-  var hbtn = document.getElementById('gh-hamburger'),
-      hmenu = document.getElementById('gh-mob-menu'),
-      hcl = document.getElementById('gh-mob-close');
-  if(hbtn && hmenu){
-    hbtn.addEventListener('click', function(){ hmenu.classList.add('open'); document.body.style.overflow='hidden'; });
-    function closeMob(){ hmenu.classList.remove('open'); document.body.style.overflow=''; }
-    if(hcl) hcl.addEventListener('click', closeMob);
-    hmenu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMob); });
-  }
-
-  /* Scroll reveal */
-  var rvl = document.querySelectorAll('.reveal');
-  if(rvl.length){
-    var obs = new IntersectionObserver(function(e){
-      e.forEach(function(x){ if(x.isIntersecting){ x.target.classList.add('in'); obs.unobserve(x.target); } });
-    }, {threshold:.08});
-    rvl.forEach(function(el){ obs.observe(el); });
-  }
-
-  /* Category tabs */
-  var tabs = document.querySelectorAll('.cat-tab'), cats = document.querySelectorAll('.menu-cat');
-  tabs.forEach(function(tab){
-    tab.addEventListener('click', function(){
-      var cat = tab.dataset.cat;
-      tabs.forEach(function(t){ t.classList.toggle('on', t.dataset.cat===cat); });
-      cats.forEach(function(c){ c.style.display = c.dataset.cat===cat ? 'block' : 'none'; });
-    });
-  });
-
-  /* Testimonials carousel */
-  var cards = document.querySelectorAll('.testi-card'), dotsEl = document.getElementById('testi-dots');
-  if(cards.length && dotsEl){
-    var cur = 0;
-    cards.forEach(function(c,i){ if(i>0) c.style.display='none'; });
-    dotsEl.innerHTML = Array.from(cards).map(function(_,i){
-      return '<span class="testi-dot'+(i===0?' on':'')+'" data-i="'+i+'"></span>';
-    }).join('');
-    dotsEl.querySelectorAll('.testi-dot').forEach(function(d){
-      d.addEventListener('click', function(){
-        cards[cur].style.display='none'; cur=parseInt(d.dataset.i); cards[cur].style.display='block';
-        dotsEl.querySelectorAll('.testi-dot').forEach(function(x){ x.classList.toggle('on', x.dataset.i==cur); });
-      });
-    });
-    if(cards.length>1) setInterval(function(){
-      cards[cur].style.display='none'; cur=(cur+1)%cards.length; cards[cur].style.display='block';
-      dotsEl.querySelectorAll('.testi-dot').forEach(function(x){ x.classList.toggle('on', x.dataset.i==cur); });
-    }, 5000);
-  }
-
-  /* ── LIGHTBOX ────────────────────────────────────────────────────────── */
-  var _lbItem = null;
-  window.lbOpen = function(item) {
-    _lbItem = item;
-    document.getElementById('lb-img').src  = item.photo || '';
-    document.getElementById('lb-img').alt  = item.name  || '';
-    document.getElementById('lb-name').textContent  = item.name  || '';
-    document.getElementById('lb-price').textContent = item.price || '';
-    document.getElementById('lb-desc').textContent  = item.desc  || '';
-    document.getElementById('lb-actions').style.display = 'flex';
-    var lb = document.getElementById('lb');
-    lb.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  };
-  window.lbClose = function() {
-    document.getElementById('lb').classList.remove('open');
-    document.body.style.overflow = '';
-    _lbItem = null;
-  };
-  // Gallery-only lightbox — no price, no add button
-  window.lbOpenPhoto = function(src, alt) {
-    _lbItem = null;
-    document.getElementById('lb-img').src  = src  || '';
-    document.getElementById('lb-img').alt  = alt  || '';
-    document.getElementById('lb-name').textContent  = alt  || '';
-    document.getElementById('lb-price').textContent = '';
-    document.getElementById('lb-desc').textContent  = '';
-    document.getElementById('lb-actions').style.display = 'none';
-    var lb = document.getElementById('lb');
-    lb.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  };
-  window.lbAddToOrder = function() {
-    if(_lbItem) {
-      ghAddToOrder({name:_lbItem.name, price:_lbItem.price}, document.getElementById('lb-add-btn'));
-      lbClose();
+{
+  "templateId": "grill-house",
+  "defaultPrimaryColor": "#221A14",
+  "defaultTypeLabel": "Flame-grilled · Zimbabwe",
+  "bodyClass": "tpl-grill-house",
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+  "navTextColor": "#fff",
+  "navCtaLabel": "Order online",
+  "navLinks": [
+    "#menu:Menu",
+    "#team:Team",
+    "#hours:Hours",
+    "#contact:Visit us"
+  ],
+  "showOpenBadge": true,
+  "showHoursGrid": true,
+  "paletteTokens": {
+    "ember_color": "#D2541F",
+    "amber_color": "#E0A12E"
+  },
+  "typeLabels": {
+    "grill-house": "Flame-grilled · Zimbabwe",
+    "restaurant": "Restaurant · Zimbabwe",
+    "takeaway": "Takeaway & Delivery"
+  },
+  "extraTokens": {
+    "order_cta_text": "Build your order below, then send it straight to our kitchen on WhatsApp."
+  },
+  "lists": [
+    {
+      "key": "team",
+      "itemTemplate": "<div class=\"team-card reveal\"><div class=\"team-photo\">{{#if item.photo}}<img src=\"{{item.photo}}\" alt=\"{{item.name}}\" loading=\"lazy\">{{else}}<svg viewBox=\"0 0 24 24\" width=\"48\" height=\"48\" fill=\"none\" stroke=\"rgba(210,84,31,.4)\" stroke-width=\"1.5\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></svg>{{/if}}</div><div class=\"team-name\">{{item.name}}</div><div class=\"team-role\">{{item.role}}</div></div>"
+    },
+    {
+      "key": "gallery",
+      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\" loading=\"lazy\" onclick=\"lbOpenPhoto(this.src,this.alt)\">"
+    },
+    {
+      "key": "testimonials",
+      "itemTemplate": "<div class=\"testi-card reveal\"><span class=\"testi-quote\">“</span><p class=\"testi-text\">{{item.text}}</p><div class=\"testi-author\"><div class=\"testi-avatar\">{{item.name_initial}}</div><div><div class=\"testi-name\">{{item.name}}</div><div class=\"testi-role\">{{item.role}}</div></div></div></div>"
     }
-  };
-  /* close on backdrop tap */
-  document.getElementById('lb').addEventListener('click', function(e){
-    if(e.target === this) lbClose();
-  });
-  /* close on Escape */
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape') lbClose(); });
-
-})();
-
-/* ── ORDER CART ──────────────────────────────────────────────────────────── */
-(function(){
-  var _o = [];
-  var waNum = '{{whatsapp_clean}}';
-
-  function buildWaHref() {
-    if(!waNum || !_o.length) return '#';
-    var msg = 'Hello, I would like to place an order:\n'
-      + _o.map(function(i){ return '- '+i.name+' x'+i.qty+(i.price?' ('+i.price+')':''); }).join('\n');
-    var allNum = _o.every(function(i){ return pP(i.price)!==null; });
-    if(allNum){
-      var sym=cS(_o[0].price), tot=_o.reduce(function(a,i){return a+(pP(i.price)*i.qty);},0);
-      msg += '\n\nTotal: '+sym+tot.toFixed(2);
+  ],
+  "conditionals": [
+    {
+      "flag": "logo_url",
+      "type": "computed",
+      "token": "logo_url"
+    },
+    {
+      "flag": "hero_image_url",
+      "type": "computed",
+      "token": "hero_image_url"
+    },
+    {
+      "flag": "has_menu",
+      "type": "list_present",
+      "field": "menu"
+    },
+    {
+      "flag": "has_team",
+      "type": "list_present",
+      "field": "team"
+    },
+    {
+      "flag": "has_gallery",
+      "type": "list_present",
+      "field": "gallery"
+    },
+    {
+      "flag": "has_testimonials",
+      "type": "list_present",
+      "field": "testimonials"
+    },
+    {
+      "flag": "has_hours",
+      "type": "field_present",
+      "field": "hours"
+    },
+    {
+      "flag": "phone",
+      "type": "field_present",
+      "field": "phone"
+    },
+    {
+      "flag": "email",
+      "type": "field_present",
+      "field": "email"
+    },
+    {
+      "flag": "location",
+      "type": "field_present",
+      "field": "location"
+    },
+    {
+      "flag": "map_embed_url",
+      "type": "field_present",
+      "field": "map_embed_url"
     }
-    return 'https://wa.me/'+waNum+'?text='+encodeURIComponent(msg);
-  }
-  function pP(p){ if(!p)return null; var m=String(p).match(/[\d.,]+/); return m?parseFloat(m[0].replace(/,/g,'')):null; }
-  function cS(p){ var m=String(p||'').match(/^[^\d\s]+/); return m?m[0]:''; }
-
-  function render(){
-    var iEl=document.getElementById('order-items'),
-        cEl=document.getElementById('order-count'),
-        tEl=document.getElementById('order-total'),
-        sEl=document.getElementById('order-send'),
-        navCountEl=document.getElementById('nav-cta-count'),
-        navBtn=document.getElementById('nav-order-btn'),
-        navLabel=document.getElementById('nav-cta-label'),
-        fabEl=document.getElementById('order-fab'),
-        mobLabel=document.getElementById('mob-order-label'),
-        mobBtn=document.getElementById('mob-order-btn');
-
-    var cnt = _o.reduce(function(a,b){return a+b.qty;},0);
-
-    if(cEl) cEl.textContent = cnt;
-    if(navCountEl){ navCountEl.textContent=cnt; navCountEl.style.display=cnt>0?'inline-flex':'none'; }
-    if(navBtn) navBtn.classList.toggle('has-items', cnt>0);
-    if(navLabel) navLabel.textContent = cnt>0 ? 'My order' : 'Order online';
-    if(fabEl) fabEl.style.display = cnt>0 ? 'flex' : 'none';
-    if(mobLabel) mobLabel.textContent = cnt>0 ? 'View my order ('+cnt+')' : 'View Menu & Order';
-    if(mobBtn) mobBtn.style.background = cnt>0 ? '#1a6b3c' : '#25D366';
-
-    if(!iEl) return;
-    if(!_o.length){
-      iEl.innerHTML='<div class="order-empty">Your order is empty.<br>Tap + Add to order on any dish.</div>';
-      if(tEl) tEl.style.display='none';
-      if(sEl) sEl.href='#';
-      return;
-    }
-    iEl.innerHTML = _o.map(function(item,idx){
-      return '<div class="order-row">'
-        +'<span class="order-row-name">'+item.name+(item.price?' \u2014 '+item.price:'')+'</span>'
-        +'<span class="order-qty">'
-        +'<button onclick="ghQ('+idx+',-1)">\u2212</button>'
-        +'<span>'+item.qty+'</span>'
-        +'<button onclick="ghQ('+idx+',1)">+</button>'
-        +'</span></div>';
-    }).join('');
-    var allNum=_o.every(function(i){return pP(i.price)!==null;});
-    if(allNum && tEl){
-      var sym=cS(_o[0].price), tot=_o.reduce(function(a,i){return a+(pP(i.price)*i.qty);},0);
-      tEl.style.display='flex';
-      tEl.innerHTML='<span>Total</span><span>'+sym+tot.toFixed(2)+'</span>';
-    } else if(tEl){ tEl.style.display='none'; }
-    if(sEl) sEl.href = buildWaHref();
-  }
-
-  window.ghNavCta = function(){
-    if(_o.length>0){ ghToggle(); }
-    else{ var m=document.getElementById('menu'); if(m) m.scrollIntoView({behavior:'smooth'}); }
-  };
-  window.ghMobOrder = function(){
-    var mm=document.getElementById('gh-mob-menu');
-    if(mm){mm.classList.remove('open');document.body.style.overflow='';}
-    setTimeout(function(){ghNavCta();},150);
-  };
-  window.ghAddToOrder = function(item, btnEl){
-    var ex=_o.find(function(i){return i.name===item.name;});
-    if(ex){ex.qty++;}else{_o.push({name:item.name,price:item.price,qty:1});}
-    render();
-    if(btnEl){
-      var orig=btnEl.textContent;
-      btnEl.textContent='Added \u2713';
-      btnEl.style.background='#1a6b3c';
-      setTimeout(function(){btnEl.textContent=orig;btnEl.style.background='';},1400);
-    }
-  };
-  window.ghToggle = function(){ var p=document.getElementById('order-panel'); if(p) p.classList.toggle('open'); };
-  window.ghClear = function(){
-    _o=[];render();
-    var p=document.getElementById('order-panel'); if(p) p.classList.remove('open');
-  };
-  window.ghQ = function(idx,d){
-    if(!_o[idx]) return;
-    _o[idx].qty+=d;
-    if(_o[idx].qty<=0) _o.splice(idx,1);
-    render();
-  };
-  render();
-})();
-</script>
-</body>
-</html>
+  ],
+  "selfContainedNav": true
+}
