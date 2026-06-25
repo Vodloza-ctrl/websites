@@ -174,9 +174,27 @@ header{position:sticky;top:0;z-index:200;background:rgba(34,26,20,.97);backdrop-
     background:linear-gradient(to bottom,var(--amber),var(--ember));
     z-index:1;
   }
-  .dish.highlighted .dish-body{background:none}
-  .dish-badge{top:6px;left:6px;font-size:.65rem;padding:3px 7px 3px 5px}
-  .dish-badge svg{width:9px;height:9px}
+  .dish.highlighted .dish-body{background:none;padding-top:8px}
+  /* Hide badge from the photo on mobile — 80px thumbnail is too small */
+  .dish.highlighted .dish-photo .dish-badge{display:none}
+  /* Render badge as inline label inside body, above the dish name */
+  .dish.highlighted .dish-body::before{
+    content:attr(data-badge);
+    display:inline-flex;
+    align-items:center;
+    background:var(--amber);
+    color:#1a100a;
+    font-size:.62rem;
+    font-weight:800;
+    padding:2px 8px;
+    border-radius:var(--r-pill);
+    letter-spacing:.04em;
+    margin-bottom:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+  }
 }
 .add-btn{background:var(--char);color:#fff;font-weight:700;font-size:.77rem;padding:7px 13px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:5px;transition:background .2s,transform .15s;flex-shrink:0;border:none;font-family:inherit;cursor:pointer}
 .add-btn:hover{background:var(--ember);transform:translateY(-1px)}
