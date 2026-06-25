@@ -110,7 +110,7 @@ header{position:sticky;top:0;z-index:200;background:rgba(34,26,20,.97);backdrop-
 
 .dish{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-sm);transition:transform .28s,box-shadow .28s}
 .dish:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
-.dish-photo{aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(210,84,31,.1),rgba(224,161,46,.15));display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dish-photo{aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(210,84,31,.1),rgba(224,161,46,.15));display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
 .dish-photo img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
 .dish:hover .dish-photo img{transform:scale(1.06)}
 .dish-body{padding:16px;flex:1;display:flex;flex-direction:column}
@@ -120,6 +120,14 @@ header{position:sticky;top:0;z-index:200;background:rgba(34,26,20,.97);backdrop-
 .dish-desc{font-size:.83rem;color:var(--ink2);margin:6px 0 12px;flex:1;line-height:1.55}
 .dish-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:8px}
 .dish-tag{font-size:.69rem;background:#FBF1DE;color:#92580A;padding:3px 8px;border-radius:6px;font-weight:600}
+/* ── ITEM HIGHLIGHT BADGE ───────────────────────────────────────────────── */
+.dish.highlighted{border-color:var(--amber);box-shadow:0 0 0 1.5px var(--amber),var(--shadow-sm)}
+.dish-badge{position:absolute;top:8px;left:8px;z-index:2;background:var(--amber);color:#1a100a;font-size:.65rem;font-weight:800;padding:3px 7px;border-radius:var(--r-pill);letter-spacing:.03em;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(0,0,0,.22);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.dish-badge svg{flex-shrink:0}
+/* Mobile row: badge sits above the thumbnail */
+@media(max-width:640px){
+  .dish-badge{top:4px;left:4px;font-size:.6rem;padding:2px 6px;max-width:72px}
+}
 .add-btn{background:var(--char);color:#fff;font-weight:700;font-size:.77rem;padding:7px 13px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:5px;transition:background .2s,transform .15s;flex-shrink:0;border:none;font-family:inherit;cursor:pointer}
 .add-btn:hover{background:var(--ember);transform:translateY(-1px)}
 
