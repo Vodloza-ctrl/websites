@@ -375,6 +375,39 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
 .order-clear{flex-shrink:0;font-size:.73rem;opacity:.55;background:#f5f0e8;border-radius:var(--r-pill);padding:.42rem .82rem;border:none;cursor:pointer;font-family:inherit}
 .order-send{flex:1;text-align:center;background:#25D366;color:#fff;border-radius:var(--r-pill);padding:.62rem 1rem;font-weight:700;font-size:.82rem;text-decoration:none;display:block}
 
+/* ── TEAM LIGHTBOX ───────────────────────────────────────────────────────── */
+.team-card{cursor:pointer}
+.tlb{display:none;position:fixed;inset:0;z-index:2000;background:rgba(14,9,4,.92);
+  align-items:center;justify-content:center;padding:20px}
+.tlb.open{display:flex}
+.tlb-inner{background:var(--paper);border-radius:16px;overflow:hidden;
+  width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;max-height:90vh}
+.tlb-photo{width:100%;aspect-ratio:4/3;overflow:hidden;
+  background:linear-gradient(135deg,rgba(210,84,31,.12),rgba(224,161,46,.2));
+  flex-shrink:0;position:relative}
+.tlb-photo img{width:100%;height:100%;object-fit:cover;object-position:top}
+.tlb-photo-ph{width:100%;height:100%;display:flex;align-items:center;
+  justify-content:center;opacity:.35}
+.tlb-body{padding:22px 22px 26px;overflow-y:auto}
+.tlb-name{font-family:"Playfair Display",serif;font-size:1.4rem;font-weight:700;
+  color:var(--ink);line-height:1.15}
+.tlb-role{color:var(--ember);font-weight:700;font-size:.82rem;
+  text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.tlb-bio{font-size:.9rem;color:var(--ink2);line-height:1.7;
+  margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.tlb-close{position:absolute;top:12px;right:12px;width:34px;height:34px;
+  border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;cursor:pointer;z-index:1;transition:background .2s}
+.tlb-close:hover{background:rgba(0,0,0,.75)}
+/* On mobile, lightbox slides up from bottom */
+@media(max-width:500px){
+  .tlb{align-items:flex-end;padding:0}
+  .tlb-inner{max-width:100%;border-radius:20px 20px 0 0;max-height:92vh}
+  .tlb-photo{aspect-ratio:16/9}
+}
+
 /* ── REVEAL ──────────────────────────────────────────────────────────────── */
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
 .reveal.in{opacity:1;transform:none}
@@ -666,6 +699,24 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
   </div>
 </div>
 
+<!-- TEAM LIGHTBOX -->
+<div class="tlb" id="tlb" role="dialog" aria-modal="true">
+  <div class="tlb-inner">
+    <div class="tlb-photo" id="tlb-photo">
+      <button class="tlb-close" onclick="tlbClose()">&#x2715;</button>
+      <img id="tlb-img" src="" alt="" style="display:none">
+      <div class="tlb-photo-ph" id="tlb-photo-ph">
+        <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="var(--ember)" stroke-width="1.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+    <div class="tlb-body">
+      <div class="tlb-name" id="tlb-name"></div>
+      <div class="tlb-role" id="tlb-role"></div>
+      <div class="tlb-bio" id="tlb-bio" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   /* ── GENERAL UI ──────────────────────────────────────────────────────── */
@@ -723,7 +774,48 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
     }, 5000);
   }
 
-  /* ── LIGHTBOX ────────────────────────────────────────────────────────── */
+  /* ── TEAM LIGHTBOX ──────────────────────────────────────────────────── */
+  // Read from data attributes — safe for names/bios containing apostrophes
+  window.tlbOpenFromCard = function(card) {
+    var name  = card.dataset.name  || '';
+    var role  = card.dataset.role  || '';
+    var bio   = card.dataset.bio   || '';
+    var photo = card.dataset.photo || '';
+    tlbOpen(name, role, bio, photo);
+  };
+  window.tlbOpen = function(name, role, bio, photo) {
+    var img   = document.getElementById('tlb-img');
+    var ph    = document.getElementById('tlb-photo-ph');
+    var nameEl= document.getElementById('tlb-name');
+    var roleEl= document.getElementById('tlb-role');
+    var bioEl = document.getElementById('tlb-bio');
+    if (photo) {
+      img.src = photo; img.alt = name || '';
+      img.style.display = 'block'; if (ph) ph.style.display = 'none';
+    } else {
+      img.style.display = 'none'; if (ph) ph.style.display = 'flex';
+    }
+    if (nameEl) nameEl.textContent = name  || '';
+    if (roleEl) roleEl.textContent = role  || '';
+    if (bioEl) {
+      bioEl.textContent = bio || '';
+      bioEl.style.display = bio ? 'block' : 'none';
+    }
+    var tlb = document.getElementById('tlb');
+    if (tlb) { tlb.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  };
+  window.tlbClose = function() {
+    var tlb = document.getElementById('tlb');
+    if (tlb) { tlb.classList.remove('open'); document.body.style.overflow = ''; }
+  };
+  document.getElementById('tlb').addEventListener('click', function(e) {
+    if (e.target === this) tlbClose();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { tlbClose(); lbClose(); }
+  });
+
+  /* ── DISH LIGHTBOX ───────────────────────────────────────────────────── */
   var _lbItem = null;
   window.lbOpen = function(item) {
     _lbItem = item;
@@ -765,8 +857,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
   document.getElementById('lb').addEventListener('click', function(e){
     if(e.target === this) lbClose();
   });
-  /* close on Escape */
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape') lbClose(); });
+  /* Escape closes both lightboxes — handled above in team lightbox section */
 
 })();
 
