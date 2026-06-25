@@ -839,10 +839,15 @@ function renderMenuRowV3(m,idx){
     +'<textarea class="fld-textarea" id="'+descTaId+'" rows="2" placeholder="A short, appetising description…" '
     +'oninput="updateMenuV3('+idx+',\'description\',this.value)">'+escV3(m.description||m.body||'')+'</textarea>'
     +tuneBtn(descBtnId,"onTuneMenuDesc("+idx+")")
+    +'</div>'
+    +'<div class="fld-group"><label class="fld-label">Badge / highlight <span class="fld-hint">optional — shows a ★ badge on this item</span></label>'
+    +'<input class="fld-input" value="'+escV3(m.tag||m.badge||'')+'" placeholder="e.g. Today\'s Special, New, Popular, Last one" '
+    +'oninput="updateMenuV3('+idx+',\'tag\',this.value)" style="font-size:13px">'
+    +'<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Any text shows an amber ★ badge on the dish photo. Leave blank for no badge.</div>'
     +'</div>';
   return makeRepItemV3(m.name||"Menu Item",body,"removeMenuV3("+idx+")");
 }
-window.addMenuItem=function(){v3state.menu.push({name:"",category:"",price:"",photo:"",description:""});renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");window.markDirty();};
+window.addMenuItem=function(){v3state.menu.push({name:"",category:"",price:"",photo:"",description:"",tag:""});renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");window.markDirty();};
 window.removeMenuV3=function(idx){v3state.menu.splice(idx,1);renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");window.markDirty();};
 window.updateMenuV3=function(idx,key,val){if(v3state.menu[idx]){v3state.menu[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#menu-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Menu Item";}}};
 window.handleMenuPhotoUpload=async function(idx,input){
