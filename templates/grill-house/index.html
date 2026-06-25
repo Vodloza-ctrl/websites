@@ -120,13 +120,63 @@ header{position:sticky;top:0;z-index:200;background:rgba(34,26,20,.97);backdrop-
 .dish-desc{font-size:.83rem;color:var(--ink2);margin:6px 0 12px;flex:1;line-height:1.55}
 .dish-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:8px}
 .dish-tag{font-size:.69rem;background:#FBF1DE;color:#92580A;padding:3px 8px;border-radius:6px;font-weight:600}
-/* ── ITEM HIGHLIGHT BADGE ───────────────────────────────────────────────── */
-.dish.highlighted{border-color:var(--amber);box-shadow:0 0 0 1.5px var(--amber),var(--shadow-sm)}
-.dish-badge{position:absolute;top:8px;left:8px;z-index:2;background:var(--amber);color:#1a100a;font-size:.65rem;font-weight:800;padding:3px 7px;border-radius:var(--r-pill);letter-spacing:.03em;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(0,0,0,.22);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
-.dish-badge svg{flex-shrink:0}
-/* Mobile row: badge sits above the thumbnail */
+/* ── FEATURED ITEM — inline highlight, no layout disruption ──────────────── */
+/* Desktop: same grid slot, amber border glow + warm body tint */
+.dish.highlighted{
+  border-color:var(--amber);
+  box-shadow:0 0 0 2px var(--amber),0 10px 32px rgba(224,161,46,.2);
+  order:-1; /* floats to front of grid naturally */
+}
+.dish.highlighted .dish-body{
+  background:linear-gradient(160deg,rgba(224,161,46,.07) 0%,transparent 55%);
+}
+.dish.highlighted .dish-name{font-size:1.04rem}
+/* Nudge non-featured items back when one is highlighted */
+.menu-cat.has-featured .dish:not(.highlighted){opacity:.85;transition:opacity .2s}
+.menu-cat.has-featured .dish:not(.highlighted):hover{opacity:1}
+
+/* Badge pill: star + text, no truncation issue */
+.dish-badge{
+  position:absolute;
+  top:10px;left:10px;
+  z-index:2;
+  background:var(--amber);
+  color:#1a100a;
+  font-size:.7rem;
+  font-weight:800;
+  padding:4px 10px 4px 7px;
+  border-radius:var(--r-pill);
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  box-shadow:0 2px 10px rgba(0,0,0,.3);
+  letter-spacing:.03em;
+  white-space:nowrap;
+  max-width:calc(100% - 20px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.dish-badge svg{flex-shrink:0;width:10px;height:10px}
+
+/* Mobile: left amber bar + tinted row, no size change */
 @media(max-width:640px){
-  .dish-badge{top:4px;left:4px;font-size:.6rem;padding:2px 6px;max-width:72px}
+  .dish.highlighted{
+    background:rgba(224,161,46,.08);
+    box-shadow:none;
+    border-color:transparent;
+    border-bottom:1px solid rgba(224,161,46,.3);
+    position:relative;
+  }
+  .dish.highlighted::before{
+    content:'';
+    position:absolute;
+    left:0;top:0;bottom:0;width:3px;
+    background:linear-gradient(to bottom,var(--amber),var(--ember));
+    z-index:1;
+  }
+  .dish.highlighted .dish-body{background:none}
+  .dish-badge{top:6px;left:6px;font-size:.65rem;padding:3px 7px 3px 5px}
+  .dish-badge svg{width:9px;height:9px}
 }
 .add-btn{background:var(--char);color:#fff;font-weight:700;font-size:.77rem;padding:7px 13px;border-radius:var(--r-pill);display:inline-flex;align-items:center;gap:5px;transition:background .2s,transform .15s;flex-shrink:0;border:none;font-family:inherit;cursor:pointer}
 .add-btn:hover{background:var(--ember);transform:translateY(-1px)}
