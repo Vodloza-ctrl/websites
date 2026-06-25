@@ -316,6 +316,11 @@ ul { list-style:none; }
   .stats-grid { grid-template-columns:repeat(2,1fr); gap:20px; }
   .team-grid { grid-template-columns:1fr; }
 }
+/* ── FEATURED ITEM ── */
+.feat-badge{position:absolute;top:10px;right:10px;background:var(--gold,#c08a2d);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;z-index:2;white-space:nowrap}
+.service-card.highlighted{border:2px solid var(--gold,#c08a2d);box-shadow:0 0 0 4px rgba(192,138,45,.1);background:rgba(192,138,45,.04)}
+.service-card.highlighted h3{color:var(--gold,#c08a2d)}
+.services-grid:has(.highlighted) .service-card:not(.highlighted){opacity:.88}
 </style>
 </head>
 <body>
@@ -390,7 +395,7 @@ ul { list-style:none; }
       <h2>Practice areas</h2>
       <p>Practical, partner-led counsel across the legal and advisory areas that matter most.</p>
     </div>
-    <div class="services-grid">{{#each services}}{{/each}}</div>
+    <div class="services-grid">{{services_html}}</div>
   </div>
 </section>
 {{/if}}
