@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+{{wcz_commerce_css}}
 <style>
 /* ── TOKENS ─────────────────────────────────────────── */
 :root {
@@ -195,56 +196,9 @@ ul{list-style:none}
 .col-name{font-family:var(--mono);font-size:1.05rem;font-weight:500;line-height:1.3;margin-bottom:12px}
 .col-body{font-size:.9rem;opacity:.55;line-height:1.7}
 
-/* ── DROPS (products) ───────────────────────────────── */
+/* ── DROPS (products — SDK-driven) ──────────────────── */
 #drops{padding:100px 0;border-top:1px solid var(--line)}
-.drops-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:32px;
-}
-.drop-card{background:var(--ink2);border-radius:var(--r);overflow:hidden;transition:transform .2s}
-.drop-card:hover{transform:translateY(-4px)}
-.drop-photo{
-  position:relative;aspect-ratio:3/4;background:var(--ink3);overflow:hidden;cursor:pointer;
-}
-.drop-photo img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
-.drop-card:hover .drop-photo img{transform:scale(1.04)}
-.drop-photo-ph{
-  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-  opacity:.2;
-}
-.drop-stock-out{
-  position:absolute;inset:0;background:rgba(12,12,12,.65);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--paper);
-}
-.drop-body{padding:24px}
-.drop-name{font-family:var(--mono);font-size:.95rem;font-weight:500;margin-bottom:6px;line-height:1.3}
-.drop-desc{font-size:.85rem;opacity:.5;line-height:1.6;margin-bottom:16px}
-.drop-price{
-  font-family:var(--mono);font-size:1.1rem;color:var(--gold);font-weight:500;margin-bottom:18px;
-}
-.drop-variants{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
-.var-pill{
-  font-family:var(--mono);font-size:.65rem;letter-spacing:.06em;
-  padding:5px 12px;border:1px solid var(--line);border-radius:2px;
-  cursor:pointer;transition:border-color .15s,background .15s,color .15s;user-select:none;
-}
-.var-pill:hover{border-color:rgba(255,255,255,.4)}
-.var-pill.active{border-color:var(--gold);color:var(--gold);background:rgba(200,162,74,.08)}
-.drop-actions{display:flex;gap:10px}
-.btn-order{
-  flex:1;font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;
-  padding:12px 16px;background:var(--gold);color:var(--ink);border-radius:2px;
-  text-align:center;transition:background .2s;
-}
-.btn-order:hover{background:var(--gold2)}
-.btn-order:disabled{background:var(--ink3);color:rgba(255,255,255,.3);cursor:not-allowed}
-.btn-order-ghost{
-  font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
-  padding:12px 14px;border:1px solid var(--line);border-radius:2px;
-  transition:border-color .2s,background .2s;
-}
-.btn-order-ghost:hover{border-color:rgba(255,255,255,.5);background:var(--dim)}
+.drops-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
 
 /* ── GALLERY ─────────────────────────────────────────── */
 #gallery{padding:100px 0;border-top:1px solid var(--line)}
@@ -259,28 +213,6 @@ ul{list-style:none}
 .gallery-grid .g-item:hover img{transform:scale(1.06);opacity:1}
 .gallery-grid .g-item:nth-child(1){grid-column:span 2;grid-row:span 2}
 .gallery-grid .g-item:nth-child(5){grid-column:span 2}
-
-/* ── LIGHTBOX ────────────────────────────────────────── */
-#lb{
-  display:none;position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,.94);
-  align-items:center;justify-content:center;
-  flex-direction:column;
-}
-#lb.open{display:flex}
-#lb-img{max-height:85vh;max-width:90vw;object-fit:contain;border-radius:2px}
-#lb-close{
-  position:absolute;top:20px;right:28px;font-size:1.8rem;opacity:.5;cursor:pointer;
-  font-family:var(--mono);transition:opacity .2s;
-}
-#lb-close:hover{opacity:1}
-#lb-prev,#lb-next{
-  position:absolute;top:50%;transform:translateY(-50%);
-  font-size:2rem;opacity:.4;cursor:pointer;padding:16px;font-family:var(--mono);
-  transition:opacity .2s;
-}
-#lb-prev{left:12px}#lb-next{right:12px}
-#lb-prev:hover,#lb-next:hover{opacity:1}
 
 /* ── TESTIMONIALS ────────────────────────────────────── */
 #testimonials{padding:100px 0;border-top:1px solid var(--line)}
@@ -342,33 +274,6 @@ footer{
 .footer-links a:hover{opacity:.8}
 .footer-copy{font-family:var(--mono);font-size:.6rem;opacity:.25;letter-spacing:.05em;margin-top:16px}
 
-/* ── CART TOAST ──────────────────────────────────────── */
-#cart-toast{
-  display:none;position:fixed;bottom:88px;left:50%;transform:translateX(-50%);z-index:150;
-  background:var(--ink2);border:1px solid var(--gold);border-radius:var(--r);
-  padding:14px 20px;min-width:260px;max-width:90vw;
-  box-shadow:0 8px 40px rgba(0,0,0,.6);
-}
-#cart-toast.show{display:block}
-.toast-head{
-  font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:10px;
-}
-.toast-items{font-size:.85rem;opacity:.75;margin-bottom:14px;line-height:1.6;max-height:120px;overflow-y:auto}
-.toast-actions{display:flex;gap:8px}
-.toast-send{
-  flex:1;font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;
-  padding:9px 14px;background:var(--gold);color:var(--ink);border-radius:2px;
-  text-align:center;font-weight:500;transition:background .2s;
-}
-.toast-send:hover{background:var(--gold2)}
-.toast-clear{
-  font-family:var(--mono);font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;
-  padding:9px 12px;border:1px solid var(--line);border-radius:2px;opacity:.6;
-  transition:opacity .2s;
-}
-.toast-clear:hover{opacity:1}
-
 /* ── FLOATING WA ─────────────────────────────────────── */
 #wa-fab{
   position:fixed;bottom:24px;right:24px;z-index:120;
@@ -395,7 +300,6 @@ footer{
   .nav-links{display:none}
   .nav-ham{display:flex}
   .hero-h1{font-size:2.6rem}
-  .drops-grid{grid-template-columns:1fr}
   .collections-grid{grid-template-columns:1fr}
   .testi-grid{grid-template-columns:1fr}
   .footer-inner{flex-direction:column;align-items:flex-start;gap:12px}
@@ -432,7 +336,7 @@ footer{
 
 <!-- MOBILE NAV -->
 <div id="nav-mob">
-  <span class="mob-close" id="mob-close">✕</span>
+  <span class="mob-close" id="mob-close">&#x2715;</span>
   <a href="#collections" class="mob-link">Collections</a>
   <a href="#drops" class="mob-link">Drops</a>
   <a href="#gallery" class="mob-link">Gallery</a>
@@ -506,7 +410,7 @@ footer{
 </section>
 {{/if}}
 
-<!-- DROPS -->
+<!-- DROPS — SDK-driven -->
 {{#if has_products}}
 <section id="drops">
   <div class="wrap">
@@ -515,7 +419,10 @@ footer{
       <h2 class="sec-h2">The drops</h2>
       <p class="sec-sub">Order on WhatsApp — we confirm same day.</p>
     </div>
-    <div class="drops-grid" id="bf-drops">
+    <div class="drops-filter-bar" id="wcz-cat-filters">
+      {{fr_category_filters_html}}
+    </div>
+    <div id="wcz-products">
       {{bf_products_html}}
     </div>
   </div>
@@ -617,7 +524,7 @@ footer{
         <a href="#contact">Contact</a>
       </div>
     </div>
-    <div class="footer-copy">© {{current_year}} {{business_name}} — powered by websites.co.zw</div>
+    <div class="footer-copy">&#169; {{current_year}} {{business_name}} &#8212; powered by websites.co.zw</div>
   </div>
 </footer>
 
@@ -626,24 +533,14 @@ footer{
   <svg viewBox="0 0 24 24" width="26" height="26" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
 </a>
 
-<!-- CART TOAST -->
-<div id="cart-toast">
-  <div class="toast-head">Your order</div>
-  <div class="toast-items" id="toast-items"></div>
-  <div class="toast-actions">
-    <button class="toast-send" id="toast-send">Send on WhatsApp</button>
-    <button class="toast-clear" id="toast-clear">Clear</button>
-  </div>
+<!-- SDK OVERLAYS: drawer + lightbox injected by render worker -->
+<div id="wcz-qv-overlay"></div>
+<div id="wcz-qv-drawer">
+  {{wcz_qv_drawer_html}}
 </div>
+{{wcz_lb_html}}
 
-<!-- LIGHTBOX -->
-<div id="lb" role="dialog" aria-modal="true" aria-label="Image viewer">
-  <span id="lb-close" aria-label="Close">✕</span>
-  <span id="lb-prev" aria-label="Previous">‹</span>
-  <img id="lb-img" src="" alt="">
-  <span id="lb-next" aria-label="Next">›</span>
-</div>
-
+<!-- GALLERY LIGHTBOX JS + NAV + REVEAL + SDK script -->
 <script>
 (function(){
 'use strict';
@@ -674,50 +571,7 @@ var obs = new IntersectionObserver(function(entries){
 }, {threshold:0.12});
 document.querySelectorAll('.reveal').forEach(function(el){ obs.observe(el); });
 
-// ── CART ───────────────────────────────────────────────
-var BF_WA = '{{whatsapp_clean}}';
-var BF_BIZ = '{{business_name}}';
-var cart = [];
-
-function cartRender(){
-  var toast = document.getElementById('cart-toast');
-  var items = document.getElementById('toast-items');
-  if(!cart.length){ toast.classList.remove('show'); return; }
-  toast.classList.add('show');
-  items.innerHTML = cart.map(function(i){ return '• '+i.qty+'× '+i.name+(i.variant?' ('+i.variant+')':'')+(i.price?' — '+i.price:''); }).join('<br>');
-}
-
-window.bfSelectVariant = function(btn){
-  var card = btn.closest('.drop-card');
-  card.querySelectorAll('.var-pill').forEach(function(p){ p.classList.remove('active'); });
-  btn.classList.add('active');
-  card.querySelector('.btn-order').disabled = false;
-};
-
-window.bfAddToOrder = function(btn, name, price){
-  var card = btn.closest('.drop-card');
-  var active = card.querySelector('.var-pill.active');
-  var variant = active ? active.textContent.trim() : '';
-  var existing = cart.find(function(i){ return i.name===name && i.variant===variant; });
-  if(existing){ existing.qty++; }
-  else{ cart.push({name:name, price:price, variant:variant, qty:1}); }
-  cartRender();
-  btn.textContent = 'Added ✓';
-  setTimeout(function(){ btn.textContent = '+ Add to order'; }, 1400);
-};
-
-var tsend = document.getElementById('toast-send');
-if(tsend) tsend.addEventListener('click', function(){
-  if(!cart.length) return;
-  var lines = cart.map(function(i){ return i.qty+'× '+i.name+(i.variant?' ('+i.variant+')':'')+(i.price?' — '+i.price:''); });
-  var msg = 'Hello '+BF_BIZ+', I would like to order:\n'+lines.join('\n')+'\n\nPlease confirm availability and payment details.';
-  window.open('https://wa.me/'+BF_WA+'?text='+encodeURIComponent(msg), '_blank');
-});
-
-var tclr = document.getElementById('toast-clear');
-if(tclr) tclr.addEventListener('click', function(){ cart=[]; cartRender(); });
-
-// ── GALLERY LIGHTBOX ───────────────────────────────────
+// ── GALLERY LIGHTBOX (bespoke bf-gallery, separate from SDK wcz-lb) ────────
 var lbEl    = document.getElementById('lb');
 var lbImg   = document.getElementById('lb-img');
 var lbClose = document.getElementById('lb-close');
@@ -726,45 +580,65 @@ var lbNext  = document.getElementById('lb-next');
 var lbItems = [];
 var lbIdx   = 0;
 
-function lbShow(idx){
-  lbIdx = ((idx % lbItems.length) + lbItems.length) % lbItems.length;
-  lbImg.src = lbItems[lbIdx];
-  lbImg.alt = 'Gallery photo '+(lbIdx+1);
-  lbEl.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function lbHide(){
-  lbEl.classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-document.querySelectorAll('#bf-gallery .g-item').forEach(function(item, i){
-  var img = item.querySelector('img');
-  if(img) lbItems.push(img.src);
-  item.addEventListener('click', function(){ lbShow(i); });
-});
-
-if(lbClose) lbClose.addEventListener('click', lbHide);
-if(lbPrev)  lbPrev.addEventListener('click', function(){ lbShow(lbIdx-1); });
-if(lbNext)  lbNext.addEventListener('click', function(){ lbShow(lbIdx+1); });
-lbEl.addEventListener('click', function(e){ if(e.target===lbEl) lbHide(); });
-document.addEventListener('keydown', function(e){
-  if(!lbEl.classList.contains('open')) return;
-  if(e.key==='Escape') lbHide();
-  if(e.key==='ArrowLeft') lbShow(lbIdx-1);
-  if(e.key==='ArrowRight') lbShow(lbIdx+1);
-});
-
-// ── VARIANT INIT ───────────────────────────────────────
-document.querySelectorAll('.drop-card').forEach(function(card){
-  var first = card.querySelector('.var-pill');
-  if(first){
-    first.classList.add('active');
-    card.querySelector('.btn-order').disabled = false;
+if (lbEl) {
+  function lbShow(idx){
+    lbIdx = ((idx % lbItems.length) + lbItems.length) % lbItems.length;
+    lbImg.src = lbItems[lbIdx];
+    lbImg.alt = 'Gallery photo '+(lbIdx+1);
+    lbEl.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
-});
+  function lbHide(){
+    lbEl.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('#bf-gallery .g-item').forEach(function(item, i){
+    var img = item.querySelector('img');
+    if(img) lbItems.push(img.src);
+    item.addEventListener('click', function(){ lbShow(i); });
+  });
+
+  if(lbClose) lbClose.addEventListener('click', lbHide);
+  if(lbPrev)  lbPrev.addEventListener('click', function(){ lbShow(lbIdx-1); });
+  if(lbNext)  lbNext.addEventListener('click', function(){ lbShow(lbIdx+1); });
+  lbEl.addEventListener('click', function(e){ if(e.target===lbEl) lbHide(); });
+  document.addEventListener('keydown', function(e){
+    if(!lbEl.classList.contains('open')) return;
+    if(e.key==='Escape') lbHide();
+    if(e.key==='ArrowLeft') lbShow(lbIdx-1);
+    if(e.key==='ArrowRight') lbShow(lbIdx+1);
+  });
+}
+
+// ── CATEGORY FILTER (SDK cards) ────────────────────────
+var filterBar = document.getElementById('wcz-cat-filters');
+if (filterBar) {
+  filterBar.querySelectorAll('.fr-cat').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      filterBar.querySelectorAll('.fr-cat').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var cat = btn.dataset.cat || '';
+      document.querySelectorAll('#wcz-products .wcz-prod-card').forEach(function(card){
+        card.style.display = (!cat || card.dataset.cat === cat) ? '' : 'none';
+      });
+    });
+  });
+}
 
 })();
 </script>
+
+<!-- SDK product script injected by render worker -->
+{{wcz_products_script}}
+
+<!-- GALLERY LIGHTBOX ELEMENT (bespoke, for bf-gallery) -->
+<div id="lb" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <span id="lb-close" aria-label="Close">&#x2715;</span>
+  <span id="lb-prev" aria-label="Previous">&#8249;</span>
+  <img id="lb-img" src="" alt="">
+  <span id="lb-next" aria-label="Next">&#8250;</span>
+</div>
+
 </body>
 </html>
