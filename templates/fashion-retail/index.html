@@ -486,12 +486,15 @@ footer{
 }
 
 /* ── CARD ADD TO CART BUTTON ─────────────────────────── */
-.wcz-card-btn{width:100%;margin-top:10px;padding:9px 12px;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--r);cursor:pointer;transition:background var(--t),color var(--t);border:none;font-family:var(--sans)}
-.wcz-card-btn-add{background:var(--text);color:var(--white)}
-.wcz-card-btn-add:hover{background:var(--sand)}
-.wcz-card-btn-opts{background:transparent;border:1px solid var(--border)!important;color:var(--text2)}
-.wcz-card-btn-opts:hover{border-color:var(--text)!important;color:var(--text)}
-.wcz-card-btn-out{background:transparent;border:1px solid var(--border)!important;color:var(--mid);cursor:not-allowed}
+.wcz-add-btn{width:100%;margin-top:10px;padding:8px 12px;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--r);cursor:pointer;transition:background var(--t),transform var(--t);border:none;font-family:var(--sans);background:var(--text);color:var(--white)}
+.wcz-add-btn:hover{background:var(--sand);transform:translateY(-1px)}
+.wcz-add-btn:disabled{background:var(--off);border:1px solid var(--border);color:var(--mid);cursor:not-allowed;transform:none}
+/* Order panel light-theme overrides */
+.wcz-order-panel{color:var(--text) !important}
+.wcz-order-hdr{background:var(--text) !important}
+.wcz-order-total{border-top-color:var(--sand) !important;background:rgba(184,149,106,.08) !important}
+.wcz-order-row-name{color:var(--text)}
+.wcz-order-qty button{background:var(--white)}
 @media(prefers-reduced-motion:reduce){
   .reveal{opacity:1;transform:none;transition:none}
   *{transition-duration:.01ms!important}
