@@ -293,6 +293,101 @@ button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
   margin-top:12px;line-height:1.5;
 }
 
+/* ── DRAWER THUMBSTRIP (thumbs layout) ───────────────── */
+.wcz-qv-imgs-thumbs{display:flex;height:min(52vh,400px);gap:6px;background:var(--off)}
+.wcz-qv-main-img{position:relative;flex:1;overflow:hidden}
+.wcz-qv-main-img img{width:100%;height:100%;object-fit:cover}
+.wcz-qv-thumbstrip{display:flex;flex-direction:column;gap:4px;width:72px;overflow-y:auto;padding:4px 0;flex-shrink:0}
+.wcz-qv-thumbstrip::-webkit-scrollbar{width:3px}
+.wcz-qv-thumbstrip::-webkit-scrollbar-thumb{background:var(--mid);border-radius:2px}
+.wcz-qv-thumb{width:64px;height:64px;flex-shrink:0;border:2px solid transparent;cursor:pointer;overflow:hidden;transition:border-color var(--t)}
+.wcz-qv-thumb.active{border-color:var(--text)}
+.wcz-qv-thumb img{width:100%;height:100%;object-fit:cover}
+
+/* ── DRAWER SINGLE IMAGE (grocery) ───────────────────── */
+.wcz-qv-imgs-single{position:relative;height:min(52vh,400px);background:var(--off)}
+.wcz-qv-imgs-single .wcz-qv-img{position:absolute;inset:0}
+.wcz-qv-imgs-single img{width:100%;height:100%;object-fit:cover}
+
+/* ── DETAILS BULLET LIST ─────────────────────────────── */
+.wcz-qv-details{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:18px}
+.wcz-qv-detail-item{font-size:.84rem;color:var(--text2);line-height:1.5;padding-left:16px;position:relative}
+.wcz-qv-detail-item::before{content:'';position:absolute;left:0;top:8px;width:4px;height:4px;border-radius:50%;background:var(--sand)}
+
+/* ── SPECS TABLE ─────────────────────────────────────── */
+.wcz-qv-specs-table{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:.83rem}
+.wcz-spec-key{padding:7px 10px 7px 0;color:var(--text2);font-weight:500;text-align:left;border-bottom:1px solid var(--border);width:40%}
+.wcz-spec-val{padding:7px 0;color:var(--text);border-bottom:1px solid var(--border)}
+
+/* ── QTY SELECTOR ────────────────────────────────────── */
+.wcz-qv-qty-wrap{margin-bottom:18px}
+.wcz-qv-qty-row{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--r);width:fit-content;overflow:hidden}
+.wcz-qv-qty-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--text);transition:background var(--t)}
+.wcz-qv-qty-btn:hover{background:var(--off)}
+.wcz-qv-qty-val{min-width:32px;text-align:center;font-size:.88rem;font-weight:600;border-left:1px solid var(--border);border-right:1px solid var(--border);padding:0 6px}
+
+/* ── WARRANTY ────────────────────────────────────────── */
+.wcz-qv-warranty{font-size:.84rem;color:var(--text2);padding:10px 14px;background:var(--off);border-radius:var(--r);margin-bottom:18px}
+
+/* ── RELATED PRODUCTS ────────────────────────────────── */
+.wcz-qv-related{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;margin-bottom:18px}
+.wcz-related-card{cursor:pointer;text-align:center}
+.wcz-related-card img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--r);border:1px solid var(--border);transition:border-color var(--t)}
+.wcz-related-card:hover img{border-color:var(--text)}
+.wcz-related-ph{width:100%;aspect-ratio:1/1;background:var(--off);border-radius:var(--r)}
+.wcz-related-name{font-size:.68rem;color:var(--text2);margin-top:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wcz-related-price{font-size:.72rem;font-weight:600;color:var(--text);margin-top:2px}
+
+/* ── CARD SPEC CHIPS ─────────────────────────────────── */
+.wcz-prod-card-specs{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.wcz-prod-spec-chip{font-size:.62rem;letter-spacing:.04em;padding:2px 7px;background:var(--off);border:1px solid var(--border);border-radius:2px;color:var(--text2)}
+
+/* ── CARD META ROW ───────────────────────────────────── */
+.wcz-prod-meta-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:5px}
+.wcz-prod-stock{font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.wcz-prod-stock-in{color:#16a34a}
+.wcz-prod-stock-out{color:var(--mid)}
+
+/* ── STOCK OVERLAY ───────────────────────────────────── */
+.wcz-prod-stock-overlay{position:absolute;inset:0;background:rgba(255,255,255,.65);display:flex;align-items:center;justify-content:center;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--text2)}
+
+/* ── PRICE OVERLAY (hardware) ────────────────────────── */
+.wcz-prod-price-overlay{position:absolute;bottom:10px;left:10px;background:var(--text);color:var(--white);font-size:.8rem;font-weight:700;padding:4px 10px;border-radius:2px}
+
+/* ── PRICE PROMINENT (grocery) ───────────────────────── */
+.wcz-prod-price-prominent{font-size:1.05rem;font-weight:700;color:var(--text)}
+
+/* ── LIGHTBOX ────────────────────────────────────────── */
+#wcz-lb{display:none;position:fixed;inset:0;z-index:200;flex-direction:column;background:rgba(0,0,0,.96)}
+#wcz-lb.open{display:flex}
+.wcz-lb-close{position:absolute;top:16px;right:20px;z-index:2;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:background .2s}
+.wcz-lb-close:hover{background:rgba(255,255,255,.2)}
+.wcz-lb-stage{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 64px 12px;overflow:hidden}
+#wcz-lb-img{max-height:100%;max-width:100%;object-fit:contain;border-radius:2px;user-select:none}
+.wcz-lb-arr{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;z-index:2;transition:background .2s}
+.wcz-lb-arr:hover{background:rgba(255,255,255,.2)}
+.wcz-lb-prev{left:14px}
+.wcz-lb-next{right:14px}
+.wcz-lb-footer{padding:10px 64px 20px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.wcz-lb-thumbs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.wcz-lb-thumb{width:52px;height:52px;object-fit:cover;border-radius:2px;cursor:pointer;opacity:.5;border:2px solid transparent;transition:opacity .2s,border-color .2s}
+.wcz-lb-thumb.active{opacity:1;border-color:#fff}
+.wcz-lb-thumb:hover{opacity:.8}
+.wcz-lb-count{font-size:.72rem;color:rgba(255,255,255,.5);letter-spacing:.08em}
+#wcz-lb-overlay{display:none;position:fixed;inset:0;z-index:199}
+#wcz-lb-overlay.open{display:block}
+
+/* ── EMPTY GRID ──────────────────────────────────────── */
+.wcz-prod-empty{padding:80px 20px;text-align:center;color:var(--text2);grid-column:1/-1}
+.wcz-prod-empty p{font-size:.9rem}
+
+@media(max-width:680px){
+  .wcz-lb-stage{padding:48px 44px 8px}
+  .wcz-lb-footer{padding:8px 16px 16px}
+  .wcz-lb-prev{left:6px}
+  .wcz-lb-next{right:6px}
+}
+
 /* ── ABOUT STRIP ─────────────────────────────────────── */
 #fr-about{
   padding:72px 32px;
@@ -548,6 +643,9 @@ footer{
 <a id="wa-fab" href="{{wa_href_general}}" target="_blank" rel="noopener" aria-label="WhatsApp">
   <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
 </a>
+
+<!-- LIGHTBOX — universal module mount point -->
+{{wcz_lb_html}}
 
 <!-- UNIVERSAL PRODUCT MODULE SCRIPT — injected by worker via {{wcz_products_script}} -->
 {{wcz_products_script}}
