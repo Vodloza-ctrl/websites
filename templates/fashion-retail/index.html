@@ -484,6 +484,14 @@ footer{
 @media(max-width:380px){
   .wcz-prod-grid{grid-template-columns:1fr}
 }
+
+/* ── CARD ADD TO CART BUTTON ─────────────────────────── */
+.wcz-card-btn{width:100%;margin-top:10px;padding:9px 12px;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--r);cursor:pointer;transition:background var(--t),color var(--t);border:none;font-family:var(--sans)}
+.wcz-card-btn-add{background:var(--text);color:var(--white)}
+.wcz-card-btn-add:hover{background:var(--sand)}
+.wcz-card-btn-opts{background:transparent;border:1px solid var(--border)!important;color:var(--text2)}
+.wcz-card-btn-opts:hover{border-color:var(--text)!important;color:var(--text)}
+.wcz-card-btn-out{background:transparent;border:1px solid var(--border)!important;color:var(--mid);cursor:not-allowed}
 @media(prefers-reduced-motion:reduce){
   .reveal{opacity:1;transform:none;transition:none}
   *{transition-duration:.01ms!important}
