@@ -1,0 +1,1240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>{{business_name}} — Book Your Stay</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ── ROOT VARIABLES ────────────────────────────────────────────────────── */
+:root {
+  --font-head: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* These are overridden by template config / palette */
+  --primary: #1a1a2e;
+  --accent: #c8a24a;
+  --accent2: #a87d1a;
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --text: #1a1a2e;
+  --text-secondary: #4a4a5a;
+  --text-muted: #8a8a9a;
+  --border: rgba(0,0,0,0.08);
+  --shadow: 0 4px 20px rgba(0,0,0,0.06);
+  --shadow-hover: 0 8px 40px rgba(0,0,0,0.12);
+  --radius: 16px;
+  --radius-sm: 8px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font: inherit; }
+ul { list-style: none; }
+
+/* ── UTILITY ───────────────────────────────────────────────────────────── */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.section { padding: 72px 0; }
+.section-title {
+  font-family: var(--font-head);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.section-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 560px;
+}
+.section-header { margin-bottom: 40px; }
+.text-center { text-align: center; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── NAVIGATION ────────────────────────────────────────────────────────── */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 16px 0;
+  transition: var(--transition);
+  background: transparent;
+}
+.nav.scrolled {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 10px 0;
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.nav-logo {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-logo .logo-img {
+  max-height: 40px;
+  width: auto;
+}
+.nav-logo .logo-text {
+  color: var(--text);
+}
+.nav-logo .logo-text .highlight {
+  color: var(--accent);
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.nav-links a {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  position: relative;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: var(--transition);
+}
+.nav-links a:hover::after { transform: scaleX(1); }
+
+.nav-cta {
+  background: var(--accent);
+  color: #fff !important;
+  padding: 8px 20px;
+  border-radius: 40px;
+  font-weight: 600;
+  transition: var(--transition);
+}
+.nav-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(200, 162, 74, 0.35);
+}
+.nav-cta::after { display: none !important; }
+
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  cursor: pointer;
+}
+.nav-hamburger span {
+  width: 26px;
+  height: 2.5px;
+  background: var(--text);
+  border-radius: 4px;
+  transition: var(--transition);
+}
+.nav-hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.nav-hamburger.active span:nth-child(2) { opacity: 0; }
+.nav-hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  background: var(--surface);
+  box-shadow: var(--shadow-hover);
+  padding: 80px 32px 40px;
+  z-index: 999;
+  transform: translateX(100%);
+  transition: var(--transition);
+  flex-direction: column;
+  gap: 16px;
+}
+.mobile-menu.open { transform: translateX(0); display: flex; }
+.mobile-menu a {
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.mobile-menu .nav-cta {
+  display: inline-block;
+  text-align: center;
+  margin-top: 8px;
+}
+.mobile-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: var(--transition);
+}
+.mobile-close:hover { opacity: 1; }
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  .mobile-menu { display: flex; transform: translateX(100%); }
+  .mobile-menu.open { transform: translateX(0); }
+}
+
+/* ── HERO ───────────────────────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 120px 0 80px;
+  background: var(--bg);
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 100%);
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  max-width: 640px;
+}
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  padding: 6px 16px;
+  border-radius: 40px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.hero h1 {
+  font-family: var(--font-head);
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.hero h1 .highlight {
+  color: var(--accent);
+}
+.hero p {
+  font-size: 1.15rem;
+  opacity: 0.85;
+  max-width: 480px;
+  margin-bottom: 32px;
+  line-height: 1.7;
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.hero-actions .btn-primary {
+  background: var(--accent);
+  color: #fff;
+  padding: 14px 34px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-actions .btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(200, 162, 74, 0.4);
+}
+.hero-actions .btn-secondary {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 14px 34px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: var(--transition);
+}
+.hero-actions .btn-secondary:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-3px);
+}
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+.hero-stats .stat {
+  text-align: center;
+}
+.hero-stats .stat-number {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 700;
+  display: block;
+  color: var(--accent);
+}
+.hero-stats .stat-label {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .hero { min-height: auto; padding: 140px 0 60px; }
+  .hero h1 { font-size: 2.6rem; }
+  .hero p { font-size: 1rem; }
+  .hero-stats { gap: 24px; flex-wrap: wrap; }
+  .hero-stats .stat-number { font-size: 1.5rem; }
+}
+
+/* ── ROOMS / ACCOMMODATION ─────────────────────────────────────────────── */
+.rooms-section { background: var(--surface); }
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px;
+}
+.room-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+  position: relative;
+}
+.room-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
+}
+.room-card.highlighted {
+  border-color: var(--accent);
+  box-shadow: 0 4px 24px rgba(200, 162, 74, 0.15);
+}
+.room-card .feat-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.room-photo {
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  background: var(--border);
+  position: relative;
+}
+.room-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.room-card:hover .room-photo img { transform: scale(1.04); }
+.room-photo-ph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  opacity: 0.3;
+}
+.room-status {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 40px;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  color: #fff;
+}
+.room-status.available { background: rgba(22, 163, 74, 0.9); }
+.room-status.limited { background: rgba(217, 119, 6, 0.9); }
+.room-status.booked { background: rgba(107, 114, 128, 0.9); }
+
+.room-body { padding: 20px 22px 24px; }
+.room-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.room-name {
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.room-price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.room-price-unit {
+  font-size: 0.65rem;
+  font-weight: 500;
+  opacity: 0.5;
+  margin-left: 2px;
+}
+.room-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 8px 0 14px;
+}
+.room-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.room-amenity {
+  font-size: 0.68rem;
+  background: var(--border);
+  padding: 3px 10px 3px 8px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+}
+.room-book-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: #25D366;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+.room-book-btn:hover {
+  background: #1fb357;
+  transform: scale(1.02);
+}
+.room-book-btn:active { transform: scale(0.97); }
+.room-book-btn.booked {
+  background: var(--text-muted);
+  cursor: not-allowed;
+}
+.room-book-btn.booked:hover { transform: none; }
+
+@media (max-width: 480px) {
+  .rooms-grid { grid-template-columns: 1fr; }
+  .room-head { flex-direction: column; }
+}
+
+/* ── ABOUT ──────────────────────────────────────────────────────────────── */
+.about-section {
+  background: var(--bg);
+}
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+.about-image {
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  background: var(--border);
+}
+.about-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.about-content h2 {
+  font-family: var(--font-head);
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.about-content p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+.about-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  margin: 20px 0 28px;
+}
+.about-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.about-features li::before {
+  content: '✓';
+  color: var(--accent);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .about-grid { grid-template-columns: 1fr; gap: 32px; }
+  .about-features { grid-template-columns: 1fr; }
+}
+
+/* ── GALLERY ────────────────────────────────────────────────────────────── */
+.gallery-section { background: var(--surface); }
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.gallery-item {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--border);
+}
+.gallery-item:first-child {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+.gallery-item:hover img { transform: scale(1.04); }
+
+@media (max-width: 768px) {
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  .gallery-item:first-child { grid-column: span 1; grid-row: span 1; }
+}
+
+/* ── TESTIMONIALS ───────────────────────────────────────────────────────── */
+.testimonials-section { background: var(--bg); }
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+.testimonial-card {
+  background: var(--surface);
+  padding: 28px 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+.testimonial-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+.testi-stars {
+  color: var(--accent);
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.testi-text {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  font-style: italic;
+}
+.testi-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.testi-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.testi-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.testi-avatar-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.testi-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.testi-role {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── HOURS ──────────────────────────────────────────────────────────────── */
+.hours-section { background: var(--surface); }
+.hours-grid {
+  max-width: 480px;
+  margin: 0 auto;
+}
+.hours-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.hours-row:last-child { border-bottom: none; }
+.hours-row.today .day {
+  font-weight: 700;
+  color: var(--accent);
+}
+.hours-row .day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.hours-row .today-pill {
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 40px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.hours-row .time {
+  color: var(--text-secondary);
+}
+
+/* ── CONTACT ────────────────────────────────────────────────────────────── */
+.contact-section { background: var(--bg); }
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+.contact-info h2 {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.contact-info p {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.contact-details .detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+.contact-details .detail-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.contact-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #25D366;
+  color: #fff;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-weight: 700;
+  margin-top: 20px;
+  transition: var(--transition);
+}
+.contact-wa-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(37, 211, 102, 0.35);
+}
+.contact-map {
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  background: var(--border);
+}
+.contact-map iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ── FOOTER ──────────────────────────────────────────────────────────────── */
+.footer {
+  background: var(--primary);
+  color: rgba(255,255,255,0.7);
+  padding: 48px 0 24px;
+}
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 32px;
+}
+.footer-brand .logo {
+  font-family: var(--font-head);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.footer-brand .logo .highlight { color: var(--accent); }
+.footer-brand p { font-size: 0.85rem; max-width: 280px; }
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.footer-links a {
+  font-size: 0.85rem;
+  transition: var(--transition);
+}
+.footer-links a:hover { color: #fff; }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 20px;
+  margin-top: 32px;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+/* ── WHATSAPP FAB ───────────────────────────────────────────────────────── */
+.wa-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 900;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 24px rgba(37, 211, 102, 0.45);
+  transition: var(--transition);
+  animation: fab-pulse 2.5s infinite;
+}
+.wa-fab:hover {
+  transform: scale(1.08);
+}
+.wa-fab svg {
+  width: 30px;
+  height: 30px;
+  fill: #fff;
+}
+@keyframes fab-pulse {
+  0% { box-shadow: 0 4px 24px rgba(37, 211, 102, 0.4); }
+  50% { box-shadow: 0 4px 40px rgba(37, 211, 102, 0.7); }
+  100% { box-shadow: 0 4px 24px rgba(37, 211, 102, 0.4); }
+}
+
+/* ── RESPONSIVE FINE-TUNE ───────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .section { padding: 48px 0; }
+  .section-title { font-size: 1.8rem; }
+  .container { padding: 0 16px; }
+  .wa-fab { width: 50px; height: 50px; bottom: 16px; right: 16px; }
+  .wa-fab svg { width: 24px; height: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAVIGATION ──────────────────────────────────────────────────────── -->
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <div class="nav-logo">
+      {{#if logo_url}}
+        <img class="logo-img" src="{{logo_url}}" alt="{{business_name}}">
+      {{else}}
+        <span class="logo-text">{{business_name_first}}<span class="highlight">{{business_name_rest}}</span></span>
+      {{/if}}
+    </div>
+    <div class="nav-links">
+      <a href="#rooms">Rooms</a>
+      <a href="#about">About</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#testimonials">Reviews</a>
+      <a href="#contact">Contact</a>
+      <a href="{{whatsapp_wa_link}}" class="nav-cta" target="_blank" rel="noopener">Book Now</a>
+    </div>
+    <div class="nav-hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <span class="mobile-close" id="mobileClose">✕</span>
+  <a href="#rooms">Rooms</a>
+  <a href="#about">About</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#testimonials">Reviews</a>
+  <a href="#contact">Contact</a>
+  <a href="{{whatsapp_wa_link}}" class="nav-cta" target="_blank" rel="noopener">Book Now</a>
+</div>
+
+<!-- ─── HERO ────────────────────────────────────────────────────────────── -->
+<section class="hero" id="hero">
+  {{#if hero_image_url}}
+    <div class="hero-bg" style="background-image: url('{{hero_image_url}}');"></div>
+  {{else}}
+    <div class="hero-bg" style="background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);"></div>
+  {{/if}}
+  <div class="container hero-content">
+    <span class="hero-badge">✦ {{hi_hero_badge}}</span>
+    <h1>{{hi_hero_headline}}</h1>
+    <p>{{hi_hero_subtext}}</p>
+    <div class="hero-actions">
+      <a href="{{whatsapp_wa_link}}" class="btn-primary" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+        Book Now
+      </a>
+      <a href="#rooms" class="btn-secondary">View Rooms ↓</a>
+    </div>
+    {{#if has_stats}}
+      <div class="hero-stats">
+        {{#each stats}}
+          <div class="stat">
+            <span class="stat-number">{{this.value}}{{this.suffix}}</span>
+            <span class="stat-label">{{this.label}}</span>
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+  </div>
+</section>
+
+<!-- ─── ROOMS SECTION ──────────────────────────────────────────────────── -->
+<section class="section rooms-section" id="rooms">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Our Rooms</h2>
+      <p class="section-subtitle">Comfortable, well-appointed rooms designed for a relaxing stay.</p>
+    </div>
+    {{#if has_rooms}}
+      <div class="rooms-grid">
+        {{#each rooms}}
+          <div class="room-card{{#if @first}}{{#if ../has_featured_room}} highlighted{{/if}}{{/if}} reveal">
+            {{#if @first}}
+              {{#if tag}}
+                <span class="feat-badge">✦ {{tag}}</span>
+              {{/if}}
+            {{/if}}
+            <div class="room-photo">
+              {{#if photo}}
+                <img src="{{photo}}" alt="{{name}}" loading="lazy">
+              {{else}}
+                <div class="room-photo-ph">🏨</div>
+              {{/if}}
+              <span class="room-status {{status}}">
+                {{#if_eq status "available"}}✓ Available{{/if_eq}}
+                {{#if_eq status "limited"}}⚠ Limited{{/if_eq}}
+                {{#if_eq status "booked"}}✗ Booked{{/if_eq}}
+                {{#unless status}}✓ Available{{/unless}}
+              </span>
+            </div>
+            <div class="room-body">
+              <div class="room-head">
+                <div class="room-name">{{name}}</div>
+                <div class="room-price">{{price}} <span class="room-price-unit">/night</span></div>
+              </div>
+              {{#if description}}
+                <p class="room-desc">{{description}}</p>
+              {{/if}}
+              {{#if amenities}}
+                <div class="room-amenities">
+                  {{#each amenities}}
+                    <span class="room-amenity">• {{this}}</span>
+                  {{/each}}
+                </div>
+              {{/if}}
+              {{#if_eq status "booked"}}
+                <button class="room-book-btn booked" disabled>Fully Booked</button>
+              {{else}}
+                <a href="{{../whatsapp_wa_link}}?text={{urlencode (concat 'Hello, I would like to book: ' name ' - ' price '/night')}}" class="room-book-btn" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                  Book Now
+                </a>
+              {{/if_eq}}
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="rooms-empty" style="text-align:center;padding:40px 0;opacity:0.5;">
+        <p>Room details coming soon. Contact us directly to book.</p>
+      </div>
+    {{/if}}
+  </div>
+</section>
+
+<!-- ─── ABOUT ───────────────────────────────────────────────────────────── -->
+<section class="section about-section" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-image reveal">
+        {{#if hero_image_url}}
+          <img src="{{hero_image_url}}" alt="{{business_name}}" loading="lazy">
+        {{else}}
+          <div style="width:100%;height:100%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:4rem;opacity:0.3;">🏨</div>
+        {{/if}}
+      </div>
+      <div class="about-content reveal">
+        <h2>Welcome to {{business_name}}</h2>
+        <p>{{about}}</p>
+        <ul class="about-features">
+          <li>Comfortable Rooms</li>
+          <li>Free WiFi</li>
+          <li>Breakfast Included</li>
+          <li>24/7 Support</li>
+          <li>Secure Parking</li>
+          <li>Prime Location</li>
+        </ul>
+        <a href="{{whatsapp_wa_link}}" class="contact-wa-btn" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+          Ask us anything
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GALLERY ──────────────────────────────────────────────────────────── -->
+<section class="section gallery-section" id="gallery">
+  <div class="container">
+    <div class="section-header text-center">
+      <h2 class="section-title">Photo Gallery</h2>
+      <p class="section-subtitle mx-auto">Take a visual tour of our property.</p>
+    </div>
+    {{#if has_gallery}}
+      <div class="gallery-grid">
+        {{#each gallery}}
+          <div class="gallery-item reveal">
+            <img src="{{this}}" alt="Gallery photo" loading="lazy">
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div style="text-align:center;padding:40px 0;opacity:0.5;">
+        <p>Gallery photos coming soon.</p>
+      </div>
+    {{/if}}
+  </div>
+</section>
+
+<!-- ─── TESTIMONIALS ────────────────────────────────────────────────────── -->
+<section class="section testimonials-section" id="testimonials">
+  <div class="container">
+    <div class="section-header text-center">
+      <h2 class="section-title">Guest Reviews</h2>
+      <p class="section-subtitle mx-auto">What our guests say about their stay.</p>
+    </div>
+    {{#if has_testimonials}}
+      <div class="testimonials-grid">
+        {{#each testimonials}}
+          <div class="testimonial-card reveal">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">"{{text}}"</p>
+            <div class="testi-author">
+              {{#if photo}}
+                <div class="testi-avatar"><img src="{{photo}}" alt="{{name}}" loading="lazy"></div>
+              {{else}}
+                <div class="testi-avatar-placeholder">{{name_char}}</div>
+              {{/if}}
+              <div>
+                <div class="testi-name">{{name}}</div>
+                {{#if role}}<div class="testi-role">{{role}}</div>{{/if}}
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div style="text-align:center;padding:40px 0;opacity:0.5;">
+        <p>Guest reviews coming soon.</p>
+      </div>
+    {{/if}}
+  </div>
+</section>
+
+<!-- ─── HOURS ───────────────────────────────────────────────────────────── -->
+{{#if hours}}
+<section class="section hours-section" id="hours">
+  <div class="container">
+    <div class="section-header text-center">
+      <h2 class="section-title">Reception Hours</h2>
+      <p class="section-subtitle mx-auto">We're here to welcome you.</p>
+    </div>
+    <div class="hours-grid">
+      {{#each hours}}
+        <div class="hours-row{{#if this.is_today}} today{{/if}}">
+          <span class="day">{{this.day}}{{#if this.is_today}}<span class="today-pill">Today</span>{{/if}}</span>
+          <span class="time">{{this.hours}}</span>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- ─── CONTACT ──────────────────────────────────────────────────────────── -->
+<section class="section contact-section" id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-info reveal">
+        <h2>Get in Touch</h2>
+        <p>Have questions or need help with your booking? Reach out to us — we're here to help.</p>
+        <div class="contact-details">
+          <div class="detail">
+            <span class="detail-icon">📞</span>
+            <span>{{phone}}</span>
+          </div>
+          {{#if email}}
+            <div class="detail">
+              <span class="detail-icon">✉️</span>
+              <span>{{email}}</span>
+            </div>
+          {{/if}}
+          {{#if address}}
+            <div class="detail">
+              <span class="detail-icon">📍</span>
+              <span>{{address}}</span>
+            </div>
+          {{/if}}
+        </div>
+        <a href="{{whatsapp_wa_link}}" class="contact-wa-btn" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+          Message us on WhatsApp
+        </a>
+      </div>
+      <div class="contact-map reveal">
+        {{#if map_embed_url}}
+          <iframe src="{{map_embed_url}}" allowfullscreen loading="lazy"></iframe>
+        {{else}}
+          <div style="width:100%;height:100%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text-muted);">
+            Map coming soon
+          </div>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ───────────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="logo">{{business_name_first}} <span class="highlight">{{business_name_rest}}</span></div>
+        <p>{{tagline}}</p>
+      </div>
+      <div class="footer-links">
+        <a href="#rooms">Rooms</a>
+        <a href="#about">About</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#testimonials">Reviews</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer-links">
+        <a href="{{whatsapp_wa_link}}" target="_blank" rel="noopener">Book Now</a>
+        <a href="tel:{{phone}}">Call us</a>
+        <a href="mailto:{{email}}">Email</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; {{current_year}} {{business_name}}. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<!-- ─── WHATSAPP FAB ────────────────────────────────────────────────────── -->
+{{#if whatsapp_clean}}
+  <a class="wa-fab" href="{{whatsapp_wa_link}}" target="_blank" rel="noopener" aria-label="Book on WhatsApp">
+    <svg viewBox="0 0 24 24" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+  </a>
+{{/if}}
+
+<!-- ─── SCRIPT ──────────────────────────────────────────────────────────── -->
+<script>
+(function(){
+  'use strict';
+
+  // ── NAVIGATION ──────────────────────────────────────────────────────────
+  const nav = document.getElementById('nav');
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileClose = document.getElementById('mobileClose');
+
+  function handleScroll() {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+
+  if (hamburger && mobileMenu) {
+    hamburger.addEventListener('click', function() {
+      hamburger.classList.toggle('active');
+      mobileMenu.classList.toggle('open');
+    });
+  }
+  if (mobileClose && mobileMenu) {
+    mobileClose.addEventListener('click', function() {
+      hamburger.classList.remove('active');
+      mobileMenu.classList.remove('open');
+    });
+  }
+  mobileMenu && mobileMenu.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      hamburger && hamburger.classList.remove('active');
+      mobileMenu && mobileMenu.classList.remove('open');
+    });
+  });
+
+  // ── REVEAL ON SCROLL ──────────────────────────────────────────────────
+  const revealEls = document.querySelectorAll('.reveal');
+  function checkReveal() {
+    const winHeight = window.innerHeight;
+    revealEls.forEach(function(el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < winHeight - 80) {
+        el.classList.add('visible');
+      }
+    });
+  }
+  window.addEventListener('scroll', checkReveal, { passive: true });
+  window.addEventListener('resize', checkReveal, { passive: true });
+  checkReveal();
+
+})();
+</script>
+
+{{#if wcz_commerce_css}}
+  {{{wcz_commerce_css}}}
+{{/if}}
+
+{{#if wcz_qv_drawer_html}}
+  {{{wcz_qv_drawer_html}}}
+{{/if}}
+
+{{#if wcz_lb_html}}
+  {{{wcz_lb_html}}}
+{{/if}}
+
+{{#if wcz_products_script}}
+  {{{wcz_products_script}}}
+{{/if}}
+
+</body>
+</html>
