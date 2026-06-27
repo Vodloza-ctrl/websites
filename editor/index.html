@@ -929,6 +929,7 @@ function renderProducts() {
     var stock      = p.stock || 'in';
 
     card.innerHTML =
+      // ── CARD HEAD ──────────────────────────────────────────────────────────
       '<div class="product-card-head" onclick="toggleProduct(\'' + p.id + '\')" style="cursor:pointer">'
       + thumbHtml
       + '<div class="product-name">' + (p.name || '<em style="color:var(--ink3)">Tap to edit</em>') + '</div>'
@@ -936,8 +937,10 @@ function renderProducts() {
       + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:.4"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       + '</div>'
 
+      // ── CARD BODY ──────────────────────────────────────────────────────────
       + '<div class="product-card-body">'
 
+      // Name + Category
       + '<div class="two">'
       + '<div class="fld-group"><label class="fld-label">Item name</label>'
       + '<input class="fld-input" placeholder="e.g. Home Jersey" value="' + esc(p.name || '') + '"'
@@ -947,6 +950,7 @@ function renderProducts() {
       + ' oninput="updateProduct(\'' + p.id + '\',\'category\',this.value)"></div>'
       + '</div>'
 
+      // Price + Compare price
       + '<div class="two">'
       + '<div class="fld-group"><label class="fld-label">Price</label>'
       + '<input class="fld-input" placeholder="$20" value="' + esc(p.price || '') + '"'
@@ -956,6 +960,7 @@ function renderProducts() {
       + ' oninput="updateProduct(\'' + p.id + '\',\'price_was\',this.value)"></div>'
       + '</div>'
 
+      // Description
       + '<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'
       + '<textarea class="fld-textarea" id="pdesc_' + p.id + '" style="min-height:52px"'
       + ' placeholder="Brief description…"'
@@ -964,10 +969,12 @@ function renderProducts() {
       + ' style="margin-top:6px;font-size:12px;font-weight:600;color:var(--green-dk);background:var(--green-bg);border:none;border-radius:6px;padding:5px 10px;display:inline-flex;align-items:center;gap:5px">✦ Tune with AI</button>'
       + '</div>'
 
+      // Product images
       + '<div class="fld-group"><label class="fld-label">Product photos <span class="fld-hint">— up to 5, first is the main photo</span></label>'
       + '<div class="prod-img-grid" id="pimggrid_' + p.id + '">' + imgGrid + '</div>'
       + '</div>'
 
+      // Sizes (variants)
       + '<div class="fld-group"><label class="fld-label">Sizes <span class="fld-hint">— tap to add, tap again to remove</span></label>'
       + '<div class="variant-chips-wrap" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:4px">' + varChips + '</div>'
       + '<div class="vpreset-section"><div class="vpreset-label">Quick add</div>'
@@ -979,6 +986,7 @@ function renderProducts() {
       + '</div>'
       + '</div>'
 
+      // Colours
       + '<div class="fld-group"><label class="fld-label">Colours <span class="fld-hint">— name + hex, shown as swatches in the product drawer</span></label>'
       + '<div class="color-chips-wrap" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:4px">' + colorChips + '</div>'
       + '<div class="color-add-row">'
@@ -990,6 +998,7 @@ function renderProducts() {
       + '<div style="font-size:11.5px;color:var(--ink3);margin-top:5px">Customers can select a colour in the product drawer. Each colour can also be linked to a specific product photo (coming soon).</div>'
       + '</div>'
 
+      // Stock
       + '<div class="fld-group"><label class="fld-label">Stock status</label>'
       + '<div class="stock-row">'
       + '<button type="button" class="stock-opt ' + (stock === 'in' ? 'active-in' : '') + '" onclick="setStock(\'' + p.id + '\',\'in\',this)">✓ In stock</button>'
@@ -997,8 +1006,9 @@ function renderProducts() {
       + '<button type="button" class="stock-opt ' + (stock === 'out' ? 'active-out' : '') + '" onclick="setStock(\'' + p.id + '\',\'out\',this)">✗ Out of stock</button>'
       + '</div></div>'
 
+      // Remove button
       + '<div style="margin-top:12px"><button type="button" class="product-del" onclick="removeProduct(\'' + p.id + '\')">Remove item</button></div>'
-      + '</div>';
+      + '</div>'; // end card-body
 
     list.insertBefore(card, empty);
   });
@@ -1387,13 +1397,6 @@ function loadV3DataFromSite(){
   if(Array.isArray(inner.services))v3state.services=inner.services.map(function(s){
     return Object.assign({photo:"",category:"",description:"",body:""},s);
   });
-  if(Array.isArray(inner.menu))v3state.menu=inner.menu;
-  if(Array.isArray(inner.listings))v3state.listings=inner.listings.map(function(l){if(!Array.isArray(l.photos))l.photos=l.photo?[l.photo]:[];return l;});
-  if(Array.isArray(inner.team))v3state.team=inner.team;
-  if(Array.isArray(inner.stats))v3state.stats=inner.stats;
-  if(Array.isArray(inner.events))v3state.events=inner.events;
-  if(Array.isArray(inner.testimonials))v3state.testimonials=inner.testimonials;
-  if(inner.hours&&typeof inner.hours==="object")v3state.hours=inner.hours;
   // Normalise product images/colors on load
   if(Array.isArray(window.state.products))window.state.products=window.state.products.map(function(p){
     if(!Array.isArray(p.images))p.images=p.image?[p.image]:[];
@@ -1401,6 +1404,13 @@ function loadV3DataFromSite(){
     if(!p.price_was)p.price_was="";
     return p;
   });
+  if(Array.isArray(inner.menu))v3state.menu=inner.menu;
+  if(Array.isArray(inner.listings))v3state.listings=inner.listings.map(function(l){if(!Array.isArray(l.photos))l.photos=l.photo?[l.photo]:[];return l;});
+  if(Array.isArray(inner.team))v3state.team=inner.team;
+  if(Array.isArray(inner.stats))v3state.stats=inner.stats;
+  if(Array.isArray(inner.events))v3state.events=inner.events;
+  if(Array.isArray(inner.testimonials))v3state.testimonials=inner.testimonials;
+  if(inner.hours&&typeof inner.hours==="object")v3state.hours=inner.hours;
   renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty");
   renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");
   renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");
