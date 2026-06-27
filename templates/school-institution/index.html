@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Commerce SDK CSS -->
+{{wcz_commerce_css}}
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -137,6 +139,27 @@ ul{list-style:none}
 .si-gallery__item img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
 .si-gallery__item:hover img{transform:scale(1.05)}
 
+/* ── SHOP / PRODUCTS ── */
+.si-shop{padding:80px 5%;background:var(--surface)}
+.si-shop .si-section__head{margin-bottom:40px}
+.shop-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
+.shop-filter-bar .fr-cat{
+  font-family:var(--ff-body);
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:8px 18px;
+  border:1.5px solid rgba(15,42,74,.15);
+  border-radius:var(--radius);
+  color:var(--muted);
+  cursor:pointer;
+  transition:all var(--transition);
+  background:var(--white);
+}
+.shop-filter-bar .fr-cat:hover{border-color:var(--gold);color:var(--navy)}
+.shop-filter-bar .fr-cat.active{border-color:var(--gold);background:var(--gold);color:var(--white)}
+
 /* ── Testimonials ── */
 .si-testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .si-testi{background:var(--navy);padding:32px;border-radius:var(--radius);position:relative}
@@ -214,6 +237,7 @@ ul{list-style:none}
     <!--WCZ:show_programmes--><a href="#programmes">Programmes</a><!--WCZ:/show_programmes-->
     <!--WCZ:show_team--><a href="#team">Our Team</a><!--WCZ:/show_team-->
     <!--WCZ:show_events--><a href="#events">Events</a><!--WCZ:/show_events-->
+    <!--WCZ:show_shop--><a href="#shop">Shop</a><!--WCZ:/show_shop-->
     <a href="#contact">Contact</a>
     <!--WCZ:has_whatsapp--><a href="https://wa.me/<!--WCZ:whatsapp-->" class="si-btn si-btn--gold si-nav__cta" target="_blank">Enquire Now</a><!--WCZ:/has_whatsapp-->
   </div>
@@ -226,6 +250,7 @@ ul{list-style:none}
   <!--WCZ:show_programmes--><a href="#programmes" onclick="closeMobileMenu()">Programmes</a><!--WCZ:/show_programmes-->
   <!--WCZ:show_team--><a href="#team" onclick="closeMobileMenu()">Our Team</a><!--WCZ:/show_team-->
   <!--WCZ:show_events--><a href="#events" onclick="closeMobileMenu()">Events</a><!--WCZ:/show_events-->
+  <!--WCZ:show_shop--><a href="#shop" onclick="closeMobileMenu()">Shop</a><!--WCZ:/show_shop-->
   <a href="#contact" onclick="closeMobileMenu()">Contact</a>
   <!--WCZ:has_whatsapp--><a href="https://wa.me/<!--WCZ:whatsapp-->" target="_blank">Enquire on WhatsApp</a><!--WCZ:/has_whatsapp-->
 </div>
@@ -242,7 +267,7 @@ ul{list-style:none}
     <p class="si-hero__sub"><!--WCZ:about_text--></p>
     <div class="si-hero__actions">
       <a href="#programmes" class="si-btn si-btn--gold">View Programmes</a>
-      <a href="#contact" class="si-btn si-btn--outline">Get In Touch</a>
+      <a href="#shop" class="si-btn si-btn--outline">Shop Merch</a>
     </div>
   </div>
 </section>
@@ -332,6 +357,23 @@ ul{list-style:none}
 </section>
 <!--WCZ:/show_gallery-->
 
+<!-- SHOP / PRODUCTS -->
+<!--WCZ:show_shop-->
+<section class="si-shop" id="shop">
+  <div class="si-section__head">
+    <div class="si-label">Merchandise</div>
+    <h2 class="si-h2">School <em>Shop</em></h2>
+    <p class="si-lead">Get your official merchandise — order on WhatsApp and we'll confirm availability.</p>
+  </div>
+  <div class="shop-filter-bar" id="shopFilters">
+    {{si_shop_filters_html}}
+  </div>
+  <div id="siShopProducts">
+    {{si_shop_products_html}}
+  </div>
+</section>
+<!--WCZ:/show_shop-->
+
 <!-- TESTIMONIALS -->
 <!--WCZ:show_testimonials-->
 <section class="si-section si-section--alt" id="testimonials">
@@ -405,6 +447,16 @@ ul{list-style:none}
 </a>
 <!--WCZ:/has_whatsapp-->
 
+<!-- SDK OVERLAYS: drawer + lightbox -->
+<div id="wcz-qv-overlay"></div>
+<div id="wcz-qv-drawer">
+  {{wcz_qv_drawer_html}}
+</div>
+{{wcz_lb_html}}
+
+<!-- PRODUCT SCRIPT -->
+{{wcz_products_script}}
+
 <!--WCZ:__inject_script-->
 <script>
 (function(){
@@ -416,6 +468,28 @@ ul{list-style:none}
       ham.classList.toggle('open');
       mob.classList.toggle('open');
       document.body.style.overflow = mob.classList.contains('open') ? 'hidden' : '';
+    });
+  }
+
+  function inj(id,h){var el=document.getElementById(id);if(el&&h)el.innerHTML=h;}
+  inj('siProgrammes', '<!--WCZ:si_programmes_json-->' ? JSON.parse(<!--WCZ:si_programmes_json-->) : '');
+  inj('siTeam', '<!--WCZ:si_team_json-->' ? JSON.parse(<!--WCZ:si_team_json-->) : '');
+  inj('siEvents', '<!--WCZ:si_events_json-->' ? JSON.parse(<!--WCZ:si_events_json-->) : '');
+  inj('siGallery', '<!--WCZ:si_gallery_json-->' ? JSON.parse(<!--WCZ:si_gallery_json-->) : '');
+  inj('siTestimonials', '<!--WCZ:si_testi_json-->' ? JSON.parse(<!--WCZ:si_testi_json-->) : '');
+
+  // Shop category filters
+  var filterBar = document.getElementById('shopFilters');
+  if (filterBar) {
+    filterBar.querySelectorAll('.fr-cat').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        filterBar.querySelectorAll('.fr-cat').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        var cat = btn.dataset.cat || '';
+        document.querySelectorAll('#siShopProducts .wcz-prod-card').forEach(function(card){
+          card.style.display = (!cat || card.dataset.cat === cat) ? '' : 'none';
+        });
+      });
     });
   }
 })();
