@@ -305,6 +305,7 @@ var INDS=[
   {id:"fashion",ic:"&#128087;",lb:"Fashion & Boutique"},
   {id:"grocery",ic:"&#128722;",lb:"Grocery & Retail"},
   {id:"hardware",ic:"&#128295;",lb:"Hardware & Trade"},
+  {id:"hospitality",ic:"&#127976;",lb:"Lodge / B&B / Hotel"},
   {id:"general",ic:"&#127962;",lb:"General Business"},
 ];
 var TPLS=[
@@ -316,7 +317,8 @@ var TPLS=[
   {id:"boutique-fashion",ic:"&#128087;",nm:"Boutique Fashion",ds:"Dark editorial, masonry grid",bg:"linear-gradient(160deg,#1a0010,#3d0025)",ct:"#e8c9a0",inds:["fashion"],rec:["fashion"]},
   {id:"grocery-fmcg",ic:"&#128722;",nm:"Grocery & Spaza",ds:"Category nav, stock badges",bg:"linear-gradient(160deg,#0a2a0a,#1a5a1a)",ct:"#4ade80",inds:["grocery"],rec:["grocery"]},
   {id:"retail-hardware",ic:"&#128295;",nm:"Hardware & Retail",ds:"Dense catalogue, quote builder",bg:"linear-gradient(160deg,#0d1a2e,#1a3366)",ct:"#60a5fa",inds:["hardware","grocery","general"],rec:["hardware"]},
-  {id:"bold-retail",ic:"&#127962;",nm:"General Business",ds:"Split hero, service cards, team",bg:"linear-gradient(160deg,#1a1a2e,#16213e)",ct:"#e94560",inds:["food","beauty","education","professional","property","fashion","grocery","hardware","general"],rec:["general"]},
+  {id:"bold-retail",ic:"&#127962;",nm:"General Business",ds:"Split hero, service cards, team",bg:"linear-gradient(160deg,#1a1a2e,#16213e)",ct:"#e94560",inds:["food","beauty","education","professional","property","fashion","grocery","hardware","hospitality","general"],rec:["general"]},
+  {id:"hospitality-inn",ic:"&#127976;",nm:"Lodge / B&B / Hotel",ds:"Room cards, WhatsApp booking, availability badges",bg:"linear-gradient(160deg,#0a1f1a,#1a4a3a)",ct:"#c8a24a",inds:["hospitality"],rec:["hospitality"]},
 ];
 var CITIES=["Bulawayo","Harare","Gweru","Mutare","Masvingo","Kwekwe","Kadoma","Vic Falls"];
 var AI_STEPS=[
@@ -374,14 +376,7 @@ function renderAllTpls(){
   }).join("");
 }
 
-// ── AI template recommendation (real AI, not the static `rec` array) ─────
-// The static sort above renders INSTANTLY so there's never a loading delay
-// the user has to wait through. This call then asks the AI Worker's
-// /recommend-template endpoint (via the auth Worker's proxy route) for its
-// actual pick, and if it answers in time, silently re-sorts the grid and
-// swaps the generic "Best match" label for the AI's own one-line reason.
-// Any failure, timeout, or unconfigured route changes nothing — the
-// static fallback already on screen simply stands as-is.
+// ── AI template recommendation ────────────────────────────────────────────
 var _aiRecAbortController=null;
 function fetchAiRecommendation(industryId,industryLabel,description){
   if(_aiRecAbortController)_aiRecAbortController.abort();
@@ -394,15 +389,12 @@ function fetchAiRecommendation(industryId,industryLabel,description){
     signal:_aiRecAbortController.signal,
   }).then(function(r){return r.ok?r.json():null;})
     .then(function(data){
-      if(!data||!data.template_id)return; // silent fallback — static order already showing
+      if(!data||!data.template_id)return;
       reorderTplsWithAiPick(industryId,data.template_id,data.reason);
     })
-    .catch(function(){ /* network error or abort — static fallback stands, no UI disruption */ });
+    .catch(function(){});
 }
 
-// Debounced — fires ~600ms after the user stops typing, so a recommendation
-// call isn't sent on every keystroke. Reuses the same abort logic as the
-// initial call, so a fast typer can't pile up stale in-flight requests.
 var _descDebounce=null;
 window.onDescInput=function(){
   st.description=document.getElementById("f-desc").value.trim();
@@ -417,7 +409,7 @@ window.onDescInput=function(){
 function reorderTplsWithAiPick(indId,pickedId,reason){
   var relevant=TPLS.filter(function(t){return t.inds.indexOf(indId)>-1;});
   var has=relevant.some(function(t){return t.id===pickedId;});
-  if(!has)return; // AI picked something not offered for this industry — ignore, keep static order
+  if(!has)return;
   relevant.sort(function(a,b){
     if(a.id===pickedId)return -1;
     if(b.id===pickedId)return 1;
@@ -426,7 +418,6 @@ function reorderTplsWithAiPick(indId,pickedId,reason){
   document.getElementById("templateGrid").innerHTML=relevant.map(function(t){
     return buildTplCard(t,t.id===pickedId);
   }).join("");
-  // Swap the generic badge for the AI's actual one-line reason, when given.
   if(reason){
     var card=document.querySelector('.tpl-card[data-id="'+pickedId+'"] .tpl-rec');
     if(card)card.textContent="\u2605 "+reason;
@@ -470,7 +461,7 @@ window.goTo=function(id){
     document.getElementById("indSelIcon").innerHTML=ind?ind.ic:"";
     document.getElementById("indSelName").textContent=ind?ind.lb:"";
     document.getElementById("f-desc").value=st.description||"";
-    renderTpls(st.industry); // immediate render with the static fallback order
+    renderTpls(st.industry);
     fetchAiRecommendation(st.industry, ind ? ind.lb : "", st.description);
   }
   if(id==="details"&&st.template){
