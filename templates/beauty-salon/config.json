@@ -1,39 +1,85 @@
 {
-  "templateId": "beauty-salon",
+  "template_id": "beauty-salon",
+  "name": "Beauty & Wellness",
+  "description": "For salons, spas, clinics, and wellness studios",
+  "palette": "blush-plum",
+  "font_pair": "playfair-jakarta",
   "selfContainedNav": true,
-  "slots": {
-    "site_name":      { "type": "text", "fallback": "Beauty Studio" },
-    "tagline":        { "type": "text", "fallback": "Hair · Nails · Skin" },
-    "logo_url":       { "type": "image", "fallback": "" },
-    "hero_image_url": { "type": "image", "fallback": "" },
-    "hero_eyebrow":   { "type": "text", "fallback": "Hair · Nails · Skin" },
-    "hero_headline":  { "type": "text", "fallback": "Where you leave feeling beautiful." },
-    "hero_subtext":   { "type": "text", "fallback": "Expert stylists, honest prices, same-day bookings on WhatsApp." },
-    "hero_badge":     { "type": "text", "fallback": "Walk-ins welcome · Mon–Sat" },
-    "services_intro": { "type": "text", "fallback": "Honest prices, no surprises. Walk-ins welcome when we have space." },
-    "team_heading":   { "type": "text", "fallback": "Meet the team" },
-    "team_subtext":   { "type": "text", "fallback": "Every stylist is trained, certified and passionate about their craft." },
-    "cta_heading":    { "type": "text", "fallback": "Ready to treat yourself?" },
-    "cta_subtext":    { "type": "text", "fallback": "Book on WhatsApp and we'll confirm your slot right away." },
-    "address":        { "type": "text", "fallback": "" },
-    "phone":          { "type": "text", "fallback": "" },
-    "wa_phone":       { "type": "text", "fallback": "" },
-    "hours_text":     { "type": "text", "fallback": "Mon – Sat · 9am – 6pm" },
-    "map_embed_url":  { "type": "text", "fallback": "" },
-    "primary_color":  { "type": "color", "fallback": "#C96A7E" }
+  "sections": ["hero", "services", "gallery", "team", "shop", "book", "visit"],
+  "tokens": {
+    "site_name": "Beauty Studio",
+    "tagline": "Hair · Nails · Skin",
+    "logo_url": "",
+    "hero_image_url": "",
+    "hero_eyebrow": "Hair · Nails · Skin",
+    "hero_headline": "Where you leave feeling beautiful.",
+    "hero_subtext": "Expert stylists, honest prices, same-day bookings on WhatsApp.",
+    "hero_badge": "Walk-ins welcome · Mon–Sat",
+    "services_intro": "Honest prices, no surprises. Walk-ins welcome when we have space.",
+    "team_heading": "Meet the team",
+    "team_subtext": "Every stylist is trained, certified and passionate about their craft.",
+    "cta_heading": "Ready to treat yourself?",
+    "cta_subtext": "Book on WhatsApp and we'll confirm your slot right away.",
+    "address": "",
+    "phone": "",
+    "wa_phone": "",
+    "hours_text": "Mon – Sat · 9am – 6pm",
+    "map_embed_url": "",
+    "primary_color": "#C96A7E"
   },
-  "sections": {
-    "has_gallery":          { "token": "gallery",  "minItems": 1 },
-    "has_team":             { "token": "team",     "minItems": 1 },
-    "has_map":              { "token": "map_embed_url", "nonEmpty": true },
-    "show_booking_upsell":  { "token": "plan", "notEquals": "pro" }
+  "flags": {
+    "show_gallery": true,
+    "show_team": true,
+    "show_shop": true,
+    "show_map": true
   },
-  "extras": [
-    "services_html",
-    "gallery_html",
-    "team_html",
-    "hours_html",
-    "booking_services_json",
-    "logo_img"
-  ]
+  "conditionals": [
+    {
+      "flag": "has_gallery",
+      "type": "list_present",
+      "field": "gallery"
+    },
+    {
+      "flag": "has_team",
+      "type": "list_present",
+      "field": "team"
+    },
+    {
+      "flag": "has_map",
+      "type": "field_present",
+      "field": "map_embed_url"
+    },
+    {
+      "flag": "show_booking_upsell",
+      "type": "computed",
+      "token": "plan",
+      "notEquals": "pro"
+    },
+    {
+      "flag": "show_shop",
+      "type": "list_present",
+      "field": "products"
+    }
+  ],
+  "lists": [
+    {
+      "key": "services",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"svc-item\"><div class=\"svc-item-body\"><div class=\"svc-name\">{{item.name}}</div>{{#if item.description}}<div class=\"svc-desc\">{{item.description}}</div>{{/if}}</div>{{#if item.price}}<div class=\"svc-price\">{{item.price}}</div>{{/if}}</div>"
+    },
+    {
+      "key": "gallery",
+      "emptyHtml": "",
+      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\">"
+    },
+    {
+      "key": "team",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"team-card\">{{#if item.photo}}<img class=\"team-photo\" src=\"{{item.photo}}\" alt=\"{{item.name}}\">{{/if}}<div class=\"team-name\">{{item.name}}</div>{{#if item.role}}<div class=\"team-role\">{{item.role}}</div>{{/if}}{{#if item.bio}}<div class=\"team-bio\">{{item.bio}}</div>{{/if}}</div>"
+    }
+  ],
+  "typeLabels": {
+    "beauty-salon": "Beauty & Wellness"
+  },
+  "defaultTypeLabel": "Beauty Studio"
 }
