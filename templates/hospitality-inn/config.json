@@ -5,10 +5,10 @@
   "defaultPalette": "navy-gold",
   "defaultPrimaryColor": "#1a1a2e",
   "defaultTypeLabel": "Lodge",
-  "googleFonts": "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&family=Inter:wght@300;400;500;600;700;800&display=swap",
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap",
   "bodyClass": "hospitality-inn",
   "navTextColor": "#ffffff",
-  "navCtaLabel": "Book Now",
+  "navCtaLabel": "Reserve",
   "selfContainedNav": false,
   "showOpenBadge": true,
   "showHoursGrid": true,
@@ -16,23 +16,75 @@
     "hospitality-inn": "Lodge"
   },
   "extraTokens": {
-    "hi_hero_badge": "🏨 Book Direct — Best Price Guaranteed",
-    "hi_hero_headline": "Your Home Away From Home",
-    "hi_hero_subtext": "Comfortable rooms, warm hospitality, and a location that makes your stay unforgettable."
+    "hi_hero_headline": "Your Private Retreat",
+    "hi_hero_subtext": "Unwind in timeless elegance, where every detail is crafted for your comfort and peace."
   },
   "navLinks": [
-    "#rooms:Rooms",
-    "#about:About",
+    "#rooms:Suites",
+    "#about:Our Story",
+    "#amenities:Amenities",
+    "#dining:Dining",
     "#gallery:Gallery",
-    "#testimonials:Reviews",
+    "#reviews:Reviews",
     "#contact:Contact"
   ],
-  "lists": [],
+  "lists": [
+    {
+      "key": "rooms",
+      "itemTemplate": "",
+      "emptyHtml": ""
+    },
+    {
+      "key": "gallery",
+      "itemTemplate": "",
+      "emptyHtml": ""
+    },
+    {
+      "key": "testimonials",
+      "itemTemplate": "",
+      "emptyHtml": ""
+    },
+    {
+      "key": "hours",
+      "itemTemplate": "",
+      "emptyHtml": ""
+    },
+    {
+      "key": "stats",
+      "itemTemplate": "",
+      "emptyHtml": ""
+    },
+    {
+      "key": "amenities",
+      "itemTemplate": "",
+      "emptyHtml": ""
+    },
+    {
+      "key": "experiences",
+      "itemTemplate": "",
+      "emptyHtml": ""
+    },
+    {
+      "key": "dining_highlights",
+      "itemTemplate": "",
+      "emptyHtml": ""
+    }
+  ],
   "conditionals": [
     {
       "flag": "has_rooms",
       "type": "computed",
       "token": "has_rooms"
+    },
+    {
+      "flag": "has_multiple_rooms",
+      "type": "computed",
+      "token": "has_multiple_rooms"
+    },
+    {
+      "flag": "has_about",
+      "type": "computed",
+      "token": "has_about"
     },
     {
       "flag": "has_gallery",
@@ -53,6 +105,21 @@
       "flag": "has_featured_room",
       "type": "computed",
       "token": "has_featured_room"
+    },
+    {
+      "flag": "has_amenities",
+      "type": "computed",
+      "token": "has_amenities"
+    },
+    {
+      "flag": "has_dining",
+      "type": "computed",
+      "token": "has_dining"
+    },
+    {
+      "flag": "has_experiences",
+      "type": "computed",
+      "token": "has_experiences"
     }
   ]
 }
