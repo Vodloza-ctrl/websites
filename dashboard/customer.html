@@ -18,6 +18,7 @@
     --suspend:#b23b30; --suspend-bg:#f7e3e0;
     --pay:#2f6fb0; --pay-bg:#e4eef8;
     --demo:#6d28d9; --demo-bg:#ede9fe;
+    --red:#c0392b; --red-bg:#fde8e6;
     --radius:14px; --r-sm:9px;
     --shadow:0 1px 2px rgba(20,22,30,.04), 0 8px 24px rgba(20,22,30,.05);
   }
@@ -54,6 +55,8 @@
   .btn-ghost:hover{border-color:var(--ink-soft)}
   .btn-quiet{background:transparent;border-color:transparent;color:var(--ink-soft);padding:10px 10px}
   .btn-quiet:hover{color:var(--ink)}
+  .btn-danger{background:transparent;border-color:transparent;color:var(--red);padding:10px 10px}
+  .btn-danger:hover{color:var(--red);background:var(--red-bg);border-radius:var(--r-sm)}
 
   /* ── site grid ── */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
@@ -117,30 +120,52 @@
   @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
   @media(prefers-reduced-motion:reduce){.skeleton{animation:none}*{transition:none!important}}
   @media(max-width:520px){.head h1{font-size:23px}.who .nm{max-width:26vw}}
+
+  /* ── delete confirmation modal ── */
+  .del-overlay{display:none;position:fixed;inset:0;background:rgba(13,15,20,.6);z-index:300;align-items:center;justify-content:center;padding:20px}
+  .del-overlay.open{display:flex}
+  .del-modal{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:28px 24px 24px;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+  .del-modal h2{font-family:"Space Grotesk";font-size:20px;margin:0 0 8px;color:var(--red)}
+  .del-modal p{color:var(--ink-soft);font-size:14px;line-height:1.6;margin:0 0 20px}
+  .del-modal .del-warning{background:var(--red-bg);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--red);margin-bottom:18px}
+  .del-modal .del-actions{display:flex;gap:10px;justify-content:flex-end}
+  .del-modal .del-actions .btn{padding:10px 20px}
 </style>
 </head>
 <body>
 <div id="app"></div>
 
+<!-- ─── DELETE CONFIRMATION MODAL ─────────────────────────────────────────── -->
+<div class="del-overlay" id="delOverlay">
+  <div class="del-modal">
+    <h2>🗑️ Delete site?</h2>
+    <p>This will permanently delete <strong id="delSiteName"></strong> and all its content.</p>
+    <div class="del-warning">
+      ⚠️ This action <strong>cannot be undone</strong>. All pages, images, products, and settings will be lost forever.
+    </div>
+    <div class="del-actions">
+      <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn" id="delConfirmBtn" style="background:var(--red);color:#fff;border-color:var(--red)">Delete permanently</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
-  // ── API endpoints — always the custom domain, never workers.dev ──────────────
-  // AUTH/API are fetch() targets (cross-origin reads, governed by CORS) so they
-  // stay on app.websites.co.zw where the Worker lives.
+  // ── API endpoints ──────────────────────────────────────────────────────────
   var AUTH = "https://app.websites.co.zw/auth";
   var API  = "https://app.websites.co.zw/api";
-  // PAGES is for page NAVIGATION (Edit, Preview, New site, Switch template).
-  // This dashboard runs on www.websites.co.zw and the session token lives in
-  // localStorage there, which is origin-scoped — so any link the user clicks
-  // must stay on www, not app, or the destination page won't see the token.
   var PAGES = "https://www.websites.co.zw";
-  var APP   = "https://app.websites.co.zw"; // kept for preview iframe URLs (server-rendered, no token needed)
+  var APP   = "https://app.websites.co.zw";
   var NEW   = PAGES + "/new/";
   var now  = Math.floor(Date.now()/1000);
   var DEMO = false;
   var state = { owner:null, channel:"whatsapp", phone:"", step:"phone" };
   var app   = document.getElementById("app");
+
+  // ── Delete state ──────────────────────────────────────────────────────────
+  var deleteTarget = null;
 
   /* ---------- helpers ---------- */
   function el(html){ var t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
@@ -151,17 +176,70 @@
     if (s.draft_subdomain) return "https://"+s.draft_subdomain+".websites.co.zw";
     return null;
   }
-  // Preview is served by the auth Worker on app.websites.co.zw and is gated by
-  // an HMAC-signed cookie minted at login, not by the localStorage token — so
-  // this one is fine to stay on APP.
   function previewUrl(s){ return APP+"/preview/"+(s.draft_subdomain||s.id); }
-  // Edit and template-switch are full-page navigations into pages that read
-  // localStorage.getItem("wcz_token") — these must stay on PAGES (www).
   function editorUrl(s) { return PAGES+"/editor/?site="+s.id; }
   function switchTemplateUrl(s){ return NEW+"?switch=1&site="+encodeURIComponent(s.id); }
 
   window.createNewSite = function(){ location.href = NEW; };
   window.switchTemplate = function(siteId){ location.href = NEW+"?switch=1&site="+encodeURIComponent(siteId); };
+
+  // ── DELETE SITE ───────────────────────────────────────────────────────────
+  window.openDeleteModal = function(siteId, siteName) {
+    deleteTarget = { id: siteId, name: siteName };
+    document.getElementById("delSiteName").textContent = siteName || "Untitled site";
+    document.getElementById("delOverlay").classList.add("open");
+  };
+
+  window.closeDeleteModal = function() {
+    document.getElementById("delOverlay").classList.remove("open");
+    deleteTarget = null;
+  };
+
+  window.confirmDelete = async function() {
+    if (!deleteTarget) return;
+    var siteId = deleteTarget.id;
+    var siteName = deleteTarget.name;
+
+    var btn = document.getElementById("delConfirmBtn");
+    btn.disabled = true;
+    btn.textContent = "Deleting…";
+
+    try {
+      var token = localStorage.getItem("wcz_token");
+      var r = await fetch(API + "/sites/" + encodeURIComponent(siteId), {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + (token || "") }
+      });
+      var data = {}; try { data = await r.json(); } catch(e) {}
+
+      if (r.ok) {
+        closeDeleteModal();
+        // Show a brief toast/notification
+        var sub = document.getElementById("subcount");
+        if (sub) sub.textContent = "Deleting…";
+        doRefresh();
+      } else {
+        alert(data.message || data.error || "Couldn't delete site. Try again.");
+        btn.disabled = false;
+        btn.textContent = "Delete permanently";
+      }
+    } catch(e) {
+      alert("Network error. Check your connection and try again.");
+      btn.disabled = false;
+      btn.textContent = "Delete permanently";
+    }
+  };
+
+  // Wire up delete confirm button
+  document.addEventListener("DOMContentLoaded", function() {
+    var btn = document.getElementById("delConfirmBtn");
+    if (btn) btn.addEventListener("click", window.confirmDelete);
+  });
+
+  // Close modal on overlay click
+  document.getElementById("delOverlay").addEventListener("click", function(e) {
+    if (e.target === this) closeDeleteModal();
+  });
 
   function statusInfo(s){
     if (s._is_demo) return {label:"Demo", tone:"demo", meaning:"This is a demo site used to showcase this template."};
@@ -403,10 +481,16 @@
       ? "Demo site — no billing"
       : (s.expires_at ? (d>0 ? "Renews in "+d+" day"+(d===1?"":"s") : "Expired") : "Not published");
 
+    // ── Actions with Delete button ────────────────────────────────────────
     var actions =
       '<a class="btn btn-ghost" href="'+esc(previewUrl(s))+'" target="_blank" rel="noopener">Preview</a>'+
       '<a class="btn btn-ghost" href="'+esc(editorUrl(s))+'">Edit</a>'+
       '<a class="btn btn-quiet" href="'+esc(switchTemplateUrl(s))+'" title="Switch template">&#x229E;</a>';
+
+    // Only show delete for non-demo sites
+    if (!s._is_demo) {
+      actions += '<button class="btn btn-danger" onclick="openDeleteModal(\''+esc(s.id)+'\',\''+esc(s.site_name||s.id)+'\')" title="Delete site">🗑️</button>';
+    }
 
     if (!s._is_demo) {
       if (s.status==="draft" || s.status==="pending_payment") {
@@ -470,9 +554,6 @@
 
 <!-- ═══════════════════════════════════════════════════════════════════════
   PUBLISH / DOMAIN WISH / EMAIL ROUTING MODAL
-  Prices: $30 Starter · $60 Pro — mirrored from server PLAN_PRICES constant.
-  Amount is NOT sent to server — server derives it from plan name.
-  Flow: Plan picker → Domain wish (3 choices) → Paynow → Email routing setup
 ════════════════════════════════════════════════════════════════════════ -->
 <div id="pub-overlay" style="display:none;position:fixed;inset:0;background:rgba(13,15,20,.55);z-index:200;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18);max-height:92vh;display:flex;flex-direction:column">
@@ -614,7 +695,6 @@
       var r = await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/publish", {
         method: "POST", headers: headers,
         body: JSON.stringify({ plan: pubPlan, currency: "USD" })
-        // NOTE: no 'amount' field — server uses PLAN_PRICES[plan] internally
       });
       var data = {}; try { data = await r.json(); } catch(e) {}
 
