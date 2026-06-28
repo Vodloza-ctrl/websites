@@ -32,6 +32,8 @@ img{display:block;max-width:100%}
 .btn-green:disabled{opacity:.5;cursor:default}
 .btn-ghost{background:transparent;color:var(--ink2);border-color:var(--line2)}
 .btn-ghost:hover{border-color:var(--ink3);color:var(--ink)}
+.btn-danger{background:transparent;color:var(--red);border-color:transparent}
+.btn-danger:hover{color:var(--red);background:#fde8e6;border-color:var(--red)}
 .btn-gold{background:var(--gold);color:#fff;border-color:var(--gold)}
 .btn-gold:hover{background:var(--gold-dk)}
 .btn-pro{background:var(--pro-bg);color:var(--pro);border-color:var(--pro-bg)}
@@ -279,6 +281,9 @@ img{display:block;max-width:100%}
       Preview
     </button>
     <button class="btn btn-green btn-sm" id="saveBtn" onclick="onSave()">Save</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteCurrentSite()" title="Delete this site">
+      🗑️ Delete
+    </button>
   </div>
 </header>
 <div class="layout">
@@ -492,6 +497,40 @@ async function api(path,opts){
   if(r.status===401){location.href=DASH_URL;return{ok:false,status:401,data:{}};}
   return{ok:r.ok,status:r.status,data:data};
 }
+
+// ── DELETE SITE ──────────────────────────────────────────────────────────────
+window.deleteCurrentSite = async function() {
+  if (!siteId) {
+    toast("No site to delete.", "err");
+    return;
+  }
+  var siteName = state.site ? state.site.site_name : "this site";
+  
+  var confirmed = confirm(
+    "🗑️ Delete \"" + siteName + "\" permanently?\n\n" +
+    "This will remove your entire site, including:\n" +
+    "• All content and pages\n" +
+    "• All uploaded images\n" +
+    "• Products and services\n" +
+    "• This action CANNOT be undone!"
+  );
+  if (!confirmed) return;
+
+  try {
+    var r = await api("/api/sites/" + encodeURIComponent(siteId), { method: "DELETE" });
+    if (!r.ok) {
+      toast(r.data.error || r.data.message || "Couldn't delete site.", "err");
+      return;
+    }
+    toast("Site deleted. Redirecting to dashboard...", "ok");
+    setTimeout(function() {
+      location.href = DASH_URL;
+    }, 1500);
+  } catch(e) {
+    toast("Network error. Try again.", "err");
+  }
+};
+
 (async function init(){
   if(!getToken()){location.href=DASH_URL;return;}
   if(!siteId){
