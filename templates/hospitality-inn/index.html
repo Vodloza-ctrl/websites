@@ -151,6 +151,76 @@ svg { display: block; flex-shrink: 0; }
 .hero-scroll svg { color: rgba(255,255,255,0.35); }
 @media (max-width: 640px) { .hero-content { padding-bottom: var(--sp-7); } .hero-headline { font-size: 2.4rem; } .btn-reserve { padding: 14px 28px; } }
 
+/* ── VIDEO SECTION ── */
+.video-section { padding: var(--sp-9) 0; background: var(--ink); position: relative; overflow: hidden; }
+.video-section::before { content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(184,150,60,0.07) 0%, transparent 70%);
+  pointer-events: none; }
+.video-section-inner { display: grid; grid-template-columns: 1fr 2fr; gap: var(--sp-7); align-items: center; }
+.video-editorial { display: flex; flex-direction: column; gap: var(--sp-3); }
+.video-editorial .section-headline { color: var(--white); }
+.video-editorial .section-body { color: rgba(255,255,255,0.5); max-width: 100%; }
+.video-runtime { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: var(--sp-1); }
+.video-runtime::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--gold); }
+
+.video-stage { position: relative; border-radius: var(--r-md); overflow: hidden;
+  background: #000; cursor: pointer; box-shadow: 0 32px 80px rgba(0,0,0,0.6); }
+.video-stage::after { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.4) 100%);
+  transition: opacity var(--t-mid); pointer-events: none; }
+.video-stage.playing::after { opacity: 0; }
+.video-stage-ratio { aspect-ratio: 16/9; position: relative; }
+.video-thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.9s var(--ease), opacity var(--t-mid); display: block; }
+.video-stage.playing .video-thumb { opacity: 0; pointer-events: none; }
+.video-stage:hover:not(.playing) .video-thumb { transform: scale(1.03); }
+
+.video-embed { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0;
+  transition: opacity var(--t-mid); border: none; }
+.video-stage.playing .video-embed { opacity: 1; }
+
+.video-play-btn { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center;
+  justify-content: center; flex-direction: column; gap: var(--sp-2); transition: opacity var(--t-mid); }
+.video-stage.playing .video-play-btn { opacity: 0; pointer-events: none; }
+.video-play-ring { width: 80px; height: 80px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.35);
+  display: flex; align-items: center; justify-content: center; position: relative;
+  transition: border-color var(--t-fast), transform var(--t-fast); }
+.video-play-ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: rgba(184,150,60,0.15); transform: scale(0.9); transition: transform 0.6s var(--ease-out), opacity 0.6s; }
+.video-stage:hover .video-play-ring::before { transform: scale(1.18); opacity: 0; }
+.video-play-ring::after { content: ''; position: absolute; inset: -10px; border-radius: 50%;
+  border: 1px solid rgba(184,150,60,0.2); animation: ring-pulse 2.8s ease-in-out infinite; }
+@keyframes ring-pulse { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.18); opacity: 0; } }
+.video-stage:hover .video-play-ring { border-color: var(--gold); transform: scale(1.06); }
+.video-play-icon { width: 0; height: 0; border-style: solid;
+  border-width: 11px 0 11px 20px; border-color: transparent transparent transparent #fff;
+  margin-left: 4px; transition: border-left-color var(--t-fast); }
+.video-stage:hover .video-play-icon { border-left-color: var(--gold-light); }
+.video-play-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.16em;
+  text-transform: uppercase; color: rgba(255,255,255,0.55); transition: color var(--t-fast); }
+.video-stage:hover .video-play-label { color: rgba(255,255,255,0.9); }
+
+.video-meta { position: absolute; bottom: 0; left: 0; right: 0; z-index: 4;
+  padding: var(--sp-5) var(--sp-4) var(--sp-3);
+  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+  transition: opacity var(--t-mid); }
+.video-stage.playing .video-meta { opacity: 0; pointer-events: none; }
+.video-meta-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 400;
+  color: var(--white); letter-spacing: 0.01em; margin-bottom: 4px; }
+.video-meta-sub { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.45); }
+.video-gold-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.5; }
+
+@media (max-width: 800px) {
+  .video-section-inner { grid-template-columns: 1fr; gap: var(--sp-5); }
+  .video-editorial { text-align: center; align-items: center; }
+  .video-runtime::before { display: none; }
+  .video-play-ring { width: 64px; height: 64px; }
+  .video-play-icon { border-width: 9px 0 9px 16px; }
+}
+
 /* ── EXPERIENCE INTRO / ABOUT ── */
 .experience-intro { padding: var(--sp-9) 0; background: var(--cream); }
 .experience-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: stretch; }
@@ -478,6 +548,7 @@ svg { display: block; flex-shrink: 0; }
       {{#if has_dining}}<a href="#dining">{{nav_dining_label}}</a>{{/if}}
       {{#if has_gallery}}<a href="#gallery">{{nav_gallery_label}}</a>{{/if}}
       {{#if has_testimonials}}<a href="#reviews">{{nav_reviews_label}}</a>{{/if}}
+      {{#if has_video}}<a href="#video">{{nav_video_label}}</a>{{/if}}
       <a href="#contact">{{nav_contact_label}}</a>
       <a href="{{whatsapp_wa_link}}" class="nav-reserve" target="_blank" rel="noopener">{{nav_cta_label}}</a>
     </div>
@@ -498,6 +569,7 @@ svg { display: block; flex-shrink: 0; }
     {{#if has_dining}}<a href="#dining" class="drawer-link">{{nav_dining_label}}</a>{{/if}}
     {{#if has_gallery}}<a href="#gallery" class="drawer-link">{{nav_gallery_label}}</a>{{/if}}
     {{#if has_testimonials}}<a href="#reviews" class="drawer-link">{{nav_reviews_label}}</a>{{/if}}
+    {{#if has_video}}<a href="#video" class="drawer-link">{{nav_video_label}}</a>{{/if}}
     <a href="#contact" class="drawer-link">{{nav_contact_label}}</a>
     <a href="{{whatsapp_wa_link}}" class="mobile-reserve-btn" target="_blank" rel="noopener">{{nav_cta_label}}</a>
   </div>
@@ -536,6 +608,25 @@ svg { display: block; flex-shrink: 0; }
       <h2 class="section-headline">{{about_heading}}</h2>
       <p class="section-body">{{about_text}}</p>
       {{about_stats_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- VIDEO SECTION -->
+{{#if has_video}}
+<section class="video-section" id="video">
+  <div class="container">
+    <div class="video-section-inner">
+      <div class="video-editorial reveal">
+        <span class="label-eyebrow">{{video_eyebrow}}</span>
+        <h2 class="section-headline">{{video_heading}}</h2>
+        {{video_sub_html}}
+        {{video_runtime_html}}
+      </div>
+      <div class="reveal reveal-delay-2">
+        {{video_stage_html}}
+      </div>
     </div>
   </div>
 </section>
@@ -732,6 +823,7 @@ svg { display: block; flex-shrink: 0; }
           {{#if has_dining}}<a href="#dining">{{nav_dining_label}}</a>{{/if}}
           {{#if has_gallery}}<a href="#gallery">{{nav_gallery_label}}</a>{{/if}}
           {{#if has_testimonials}}<a href="#reviews">{{nav_reviews_label}}</a>{{/if}}
+          {{#if has_video}}<a href="#video">{{nav_video_label}}</a>{{/if}}
         </div>
       </div>
       <div>
@@ -826,6 +918,24 @@ svg { display: block; flex-shrink: 0; }
     a.addEventListener('click', function(e) {
       var target = document.querySelector(a.getAttribute('href'));
       if (target) { e.preventDefault(); var offset = nav ? nav.offsetHeight + 16 : 80; window.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' }); }
+    });
+  });
+
+  /* VIDEO SECTION — inline play */
+  document.querySelectorAll('.video-stage[data-src]').forEach(function(stage) {
+    stage.addEventListener('click', function() {
+      if (stage.classList.contains('playing')) return;
+      var src  = stage.getAttribute('data-src');
+      var type = stage.getAttribute('data-type') || 'native';
+      var embed = stage.querySelector('.video-embed');
+      if (!embed) return;
+      if (type === 'iframe') {
+        var sep = src.indexOf('?') === -1 ? '?' : '&';
+        embed.src = src + sep + 'autoplay=1&rel=0&modestbranding=1';
+      } else {
+        embed.play && embed.play().catch(function(){});
+      }
+      stage.classList.add('playing');
     });
   });
 })();
