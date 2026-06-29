@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>{{business_name}} — A Private Retreat</title>
+<title>{{business_name}} — {{hi_hero_headline}}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
 /* ═══════════════════════════════════════════════════════════════════════════
-   DESIGN TOKENS — Hospitality V3
-   websites.co.zw Flagship Theme
+   DESIGN TOKENS — Hospitality V3 (websites.co.zw)
+   Palette vars (--ink / --gold / --gold-light / --cream) are overridden per
+   tenant at render time via TEMPLATE_VAR_MAP. Defaults below are the fallback
+   look when no palette is selected.
 ═══════════════════════════════════════════════════════════════════════════ */
 :root {
-  /* Typography */
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 
-  /* Palette — overrideable per tenant */
   --ink: #0f0f0d;
   --ink-2: #3a3832;
   --ink-3: #7a7870;
@@ -28,49 +28,28 @@
   --cream: #faf8f3;
   --cream-2: #f4f1ea;
   --white: #ffffff;
-  --glass-bg: rgba(255,255,255,0.06);
   --glass-border: rgba(255,255,255,0.12);
-  --overlay-light: rgba(15,15,13,0.38);
-  --overlay-mid: rgba(15,15,13,0.55);
-  --overlay-dark: rgba(15,15,13,0.72);
 
-  /* Spacing Scale */
-  --sp-1: 8px;
-  --sp-2: 16px;
-  --sp-3: 24px;
-  --sp-4: 32px;
-  --sp-5: 48px;
-  --sp-6: 64px;
-  --sp-7: 96px;
-  --sp-8: 128px;
-  --sp-9: 160px;
+  --sp-1: 8px;  --sp-2: 16px; --sp-3: 24px; --sp-4: 32px; --sp-5: 48px;
+  --sp-6: 64px; --sp-7: 96px; --sp-8: 128px; --sp-9: 160px;
 
-  /* Radii */
-  --r-xs: 4px;
-  --r-sm: 8px;
-  --r-md: 16px;
-  --r-lg: 24px;
-  --r-pill: 999px;
+  --r-xs: 4px; --r-sm: 8px; --r-md: 16px; --r-lg: 24px; --r-pill: 999px;
 
-  /* Shadows */
   --sh-soft: 0 2px 20px rgba(0,0,0,0.06);
   --sh-mid: 0 8px 40px rgba(0,0,0,0.10);
   --sh-deep: 0 20px 60px rgba(0,0,0,0.18);
   --sh-gold: 0 8px 32px rgba(184,150,60,0.25);
 
-  /* Transitions */
   --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --t-fast: 0.2s var(--ease);
   --t-mid: 0.4s var(--ease);
   --t-slow: 0.7s var(--ease);
 
-  /* Container */
   --max-w: 1200px;
   --max-w-text: 680px;
 }
 
-/* ── RESET ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 body { font-family: var(--font-body); background: var(--cream); color: var(--ink); line-height: 1.6; }
@@ -80,816 +59,217 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
 ul, ol { list-style: none; }
 svg { display: block; flex-shrink: 0; }
 
-/* ── UTILITY ── */
 .container { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--sp-3); }
 .container--narrow { max-width: var(--max-w-text); margin: 0 auto; padding: 0 var(--sp-3); }
 
 .label-eyebrow {
-  display: inline-block;
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: var(--sp-2);
+  display: inline-block; font-family: var(--font-body); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: var(--sp-2);
 }
-
 .section-headline {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--ink);
+  font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 500;
+  line-height: 1.15; letter-spacing: -0.01em; color: var(--ink);
 }
+.section-body { font-size: 1rem; color: var(--ink-3); line-height: 1.85; max-width: 520px; margin-top: var(--sp-2); }
 
-.section-body {
-  font-size: 1rem;
-  color: var(--ink-3);
-  line-height: 1.85;
-  max-width: 520px;
-  margin-top: var(--sp-2);
-}
-
-/* Reveal animations */
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
-}
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out); }
 .reveal.visible { opacity: 1; transform: translateY(0); }
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-1 { transition-delay: 0.1s; } .reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; } .reveal-delay-4 { transition-delay: 0.4s; }
 .reveal-delay-5 { transition-delay: 0.5s; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   GLASS NAVIGATION
-═══════════════════════════════════════════════════════════════════════════ */
-.nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 1000;
-  padding: var(--sp-3) 0;
+/* ── GLASS NAVIGATION ── */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: var(--sp-3) 0;
   transition: background var(--t-mid), backdrop-filter var(--t-mid), border-color var(--t-mid), padding var(--t-mid);
-  border-bottom: 1px solid transparent;
-}
-.nav.scrolled {
-  background: rgba(15,15,13,0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom-color: var(--glass-border);
-  padding: var(--sp-2) 0;
-}
-.nav-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-}
-.nav-logo {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-}
+  border-bottom: 1px solid transparent; }
+.nav.scrolled { background: rgba(15,15,13,0.72); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom-color: var(--glass-border); padding: var(--sp-2) 0; }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.nav-logo { display: flex; align-items: center; gap: var(--sp-1); }
 .nav-logo img { max-height: 36px; width: auto; }
-.nav-logo-text {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: var(--white);
-  letter-spacing: 0.02em;
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-}
-.nav-links a {
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.72);
-  transition: color var(--t-fast);
-}
+.nav-logo-text { font-family: var(--font-display); font-size: 1.2rem; font-weight: 500; color: var(--white); letter-spacing: 0.02em; }
+.nav-links { display: flex; align-items: center; gap: var(--sp-4); }
+.nav-links a { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.72); transition: color var(--t-fast); }
 .nav-links a:hover { color: var(--white); }
-.nav-reserve {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--gold-light) !important;
-  border: 1px solid rgba(184,150,60,0.4);
-  padding: 10px 22px;
-  border-radius: var(--r-pill);
-  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast) !important;
-}
-.nav-reserve:hover {
-  background: var(--gold);
-  color: var(--white) !important;
-  border-color: var(--gold) !important;
-}
-.nav-hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  cursor: pointer;
-  padding: 4px;
-}
-.nav-hamburger span {
-  display: block;
-  width: 22px;
-  height: 1.5px;
-  background: var(--white);
-  border-radius: 2px;
-  transition: var(--t-fast);
-}
+.nav-reserve { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold-light) !important; border: 1px solid rgba(184,150,60,0.4); padding: 10px 22px; border-radius: var(--r-pill);
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast) !important; }
+.nav-reserve:hover { background: var(--gold); color: var(--white) !important; border-color: var(--gold) !important; }
+.nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+.nav-hamburger span { display: block; width: 22px; height: 1.5px; background: var(--white); border-radius: 2px; transition: var(--t-fast); }
 .nav-hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(4.5px, 4.5px); }
 .nav-hamburger.open span:nth-child(2) { opacity: 0; }
 .nav-hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(4.5px, -4.5px); }
 
-/* Mobile drawer */
-.mobile-drawer {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  pointer-events: none;
-}
+.mobile-drawer { display: none; position: fixed; inset: 0; z-index: 999; pointer-events: none; }
 .mobile-drawer.open { pointer-events: all; }
-.mobile-drawer-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  opacity: 0;
-  transition: opacity var(--t-mid);
-}
+.mobile-drawer-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; transition: opacity var(--t-mid); }
 .mobile-drawer.open .mobile-drawer-overlay { opacity: 1; }
-.mobile-drawer-panel {
-  position: absolute;
-  top: 0; right: 0; bottom: 0;
-  width: min(320px, 90vw);
-  background: var(--ink);
-  padding: var(--sp-8) var(--sp-4) var(--sp-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  transform: translateX(100%);
-  transition: transform var(--t-slow);
-}
+.mobile-drawer-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(320px, 90vw); background: var(--ink);
+  padding: var(--sp-8) var(--sp-4) var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-2);
+  transform: translateX(100%); transition: transform var(--t-slow); }
 .mobile-drawer.open .mobile-drawer-panel { transform: translateX(0); }
-.mobile-drawer-close {
-  position: absolute;
-  top: var(--sp-3);
-  right: var(--sp-3);
-  color: rgba(255,255,255,0.5);
-  font-size: 1.4rem;
-  cursor: pointer;
-  transition: color var(--t-fast);
-}
+.mobile-drawer-close { position: absolute; top: var(--sp-3); right: var(--sp-3); color: rgba(255,255,255,0.5); font-size: 1.4rem; cursor: pointer; transition: color var(--t-fast); }
 .mobile-drawer-close:hover { color: var(--white); }
-.mobile-drawer-panel a {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: rgba(255,255,255,0.7);
-  padding: var(--sp-2) 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  transition: color var(--t-fast);
-}
+.mobile-drawer-panel a { font-family: var(--font-display); font-size: 1.3rem; font-weight: 400; color: rgba(255,255,255,0.7);
+  padding: var(--sp-2) 0; border-bottom: 1px solid rgba(255,255,255,0.08); transition: color var(--t-fast); }
 .mobile-drawer-panel a:hover { color: var(--white); }
-.mobile-reserve-btn {
-  display: inline-block;
-  margin-top: var(--sp-3);
-  background: var(--gold);
-  color: var(--white) !important;
-  border: none !important;
-  padding: 14px var(--sp-4);
-  border-radius: var(--r-pill);
-  text-align: center;
-  font-family: var(--font-body) !important;
-  font-size: 0.8rem !important;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
+.mobile-reserve-btn { display: inline-block; margin-top: var(--sp-3); background: var(--gold); color: var(--white) !important;
+  border: none !important; padding: 14px var(--sp-4); border-radius: var(--r-pill); text-align: center;
+  font-family: var(--font-body) !important; font-size: 0.8rem !important; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
 
-@media (max-width: 900px) {
-  .nav-links { display: none; }
-  .nav-hamburger { display: flex; }
-  .mobile-drawer { display: block; }
-}
+@media (max-width: 900px) { .nav-links { display: none; } .nav-hamburger { display: flex; } .mobile-drawer { display: block; } }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   CINEMATIC HERO
-═══════════════════════════════════════════════════════════════════════════ */
-.hero {
-  position: relative;
-  height: 100svh;
-  min-height: 620px;
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-}
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  background-color: #1a1812;
-  animation: hero-zoom 18s ease-in-out infinite alternate;
-  will-change: transform;
-}
-@keyframes hero-zoom {
-  from { transform: scale(1); }
-  to   { transform: scale(1.06); }
-}
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(10,9,8,0.85) 0%,
-    rgba(10,9,8,0.35) 50%,
-    rgba(10,9,8,0.15) 100%
-  );
-}
-.hero-content {
-  position: relative;
-  z-index: 2;
-  padding: 0 0 var(--sp-8);
-  width: 100%;
-}
-.hero-location {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
-  margin-bottom: var(--sp-3);
-}
+/* ── CINEMATIC HERO ── */
+.hero { position: relative; height: 100svh; min-height: 620px; display: flex; align-items: flex-end; overflow: hidden; }
+.hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center; background-color: #1a1812;
+  animation: hero-zoom 18s ease-in-out infinite alternate; will-change: transform; }
+@keyframes hero-zoom { from { transform: scale(1); } to { transform: scale(1.06); } }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,9,8,0.85) 0%, rgba(10,9,8,0.35) 50%, rgba(10,9,8,0.15) 100%); }
+.hero-content { position: relative; z-index: 2; padding: 0 0 var(--sp-8); width: 100%; }
+.hero-location { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: var(--sp-3); }
 .hero-location svg { color: var(--gold); }
-.hero-headline {
-  font-family: var(--font-display);
-  font-size: clamp(2.8rem, 7vw, 5.5rem);
-  font-weight: 400;
-  line-height: 1.05;
-  color: var(--white);
-  letter-spacing: -0.02em;
-  max-width: 720px;
-  margin-bottom: var(--sp-3);
-}
-.hero-headline em {
-  font-style: italic;
-  color: var(--gold-light);
-}
-.hero-sub {
-  font-size: 1rem;
-  color: rgba(255,255,255,0.62);
-  line-height: 1.7;
-  max-width: 420px;
-  margin-bottom: var(--sp-5);
-  font-weight: 300;
-}
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-}
-.btn-reserve {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--gold);
-  color: var(--white);
-  padding: 16px 36px;
-  border-radius: var(--r-pill);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
-}
-.btn-reserve:hover {
-  background: var(--gold-light);
-  transform: translateY(-2px);
-  box-shadow: var(--sh-gold);
-}
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255,255,255,0.75);
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  border-bottom: 1px solid rgba(255,255,255,0.25);
-  padding-bottom: 2px;
-  transition: color var(--t-fast), border-color var(--t-fast);
-}
+.hero-headline { font-family: var(--font-display); font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 400; line-height: 1.05;
+  color: var(--white); letter-spacing: -0.02em; max-width: 720px; margin-bottom: var(--sp-3); }
+.hero-headline em { font-style: italic; color: var(--gold-light); }
+.hero-sub { font-size: 1rem; color: rgba(255,255,255,0.62); line-height: 1.7; max-width: 420px; margin-bottom: var(--sp-5); font-weight: 300; }
+.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
+.btn-reserve { display: inline-flex; align-items: center; gap: 10px; background: var(--gold); color: var(--white);
+  padding: 16px 36px; border-radius: var(--r-pill); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast); }
+.btn-reserve:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: var(--sh-gold); }
+.btn-ghost { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.75); font-size: 0.8rem; font-weight: 500;
+  letter-spacing: 0.06em; border-bottom: 1px solid rgba(255,255,255,0.25); padding-bottom: 2px; transition: color var(--t-fast), border-color var(--t-fast); }
 .btn-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.6); }
-.hero-scroll {
-  position: absolute;
-  bottom: var(--sp-4);
-  right: var(--sp-4);
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-1);
-  color: rgba(255,255,255,0.4);
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  animation: scroll-bob 2.5s ease-in-out infinite;
-}
-@keyframes scroll-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(6px); }
-}
+.hero-scroll { position: absolute; bottom: var(--sp-4); right: var(--sp-4); z-index: 2; display: flex; flex-direction: column;
+  align-items: center; gap: var(--sp-1); color: rgba(255,255,255,0.4); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+  animation: scroll-bob 2.5s ease-in-out infinite; }
+@keyframes scroll-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
 .hero-scroll svg { color: rgba(255,255,255,0.35); }
+@media (max-width: 640px) { .hero-content { padding-bottom: var(--sp-7); } .hero-headline { font-size: 2.4rem; } .btn-reserve { padding: 14px 28px; } }
 
-@media (max-width: 640px) {
-  .hero-content { padding-bottom: var(--sp-7); }
-  .hero-headline { font-size: 2.4rem; }
-  .btn-reserve { padding: 14px 28px; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   EXPERIENCE INTRO — alternating image / text
-═══════════════════════════════════════════════════════════════════════════ */
-.experience-intro {
-  padding: var(--sp-9) 0;
-  background: var(--cream);
-}
-.experience-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  align-items: stretch;
-}
-.experience-split.reverse { direction: rtl; }
-.experience-split.reverse > * { direction: ltr; }
-.experience-image {
-  aspect-ratio: 4/3;
-  overflow: hidden;
-  background: var(--cream-2);
-}
-.experience-image img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  transition: transform 0.9s var(--ease);
-}
+/* ── EXPERIENCE INTRO / ABOUT ── */
+.experience-intro { padding: var(--sp-9) 0; background: var(--cream); }
+.experience-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: stretch; }
+.experience-image { aspect-ratio: 4/3; overflow: hidden; background: var(--cream-2); }
+.experience-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease); }
 .experience-image:hover img { transform: scale(1.04); }
-.experience-text {
-  padding: var(--sp-8) var(--sp-7);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--white);
-}
+.experience-text { padding: var(--sp-8) var(--sp-7); display: flex; flex-direction: column; justify-content: center; background: var(--white); }
 .experience-text .section-body { max-width: 400px; }
-.experience-text .stat-row {
-  display: flex;
-  gap: var(--sp-5);
-  margin-top: var(--sp-5);
-  padding-top: var(--sp-5);
-  border-top: 1px solid rgba(0,0,0,0.07);
-}
-.experience-text .stat-item {}
-.experience-text .stat-number {
-  font-family: var(--font-display);
-  font-size: 2.2rem;
-  font-weight: 500;
-  color: var(--gold);
-  line-height: 1;
-  display: block;
-}
-.experience-text .stat-label {
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-top: 4px;
-  display: block;
-}
-
+.stat-row { display: flex; gap: var(--sp-5); margin-top: var(--sp-5); padding-top: var(--sp-5); border-top: 1px solid rgba(0,0,0,0.07); }
+.stat-number { font-family: var(--font-display); font-size: 2.2rem; font-weight: 500; color: var(--gold); line-height: 1; display: block; }
+.stat-label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; display: block; }
 @media (max-width: 800px) {
-  .experience-split { grid-template-columns: 1fr; direction: ltr !important; }
+  .experience-split { grid-template-columns: 1fr; }
   .experience-image { aspect-ratio: 16/9; }
   .experience-text { padding: var(--sp-5) var(--sp-3); }
-  .experience-text .stat-row { gap: var(--sp-4); }
+  .stat-row { gap: var(--sp-4); }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   FEATURED SUITE — full-bleed editorial showcase
-═══════════════════════════════════════════════════════════════════════════ */
-.featured-suite {
-  background: var(--ink);
-  color: var(--white);
-}
-.suite-editorial {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 600px;
-}
-.suite-photo {
-  position: relative;
-  overflow: hidden;
-  background: rgba(255,255,255,0.05);
-}
-.suite-photo img {
-  position: absolute;
-  inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  transition: transform 0.9s var(--ease);
-}
+/* ── FEATURED SUITE ── */
+.featured-suite { background: var(--ink); color: var(--white); }
+.suite-editorial { display: grid; grid-template-columns: 1fr 1fr; min-height: 600px; }
+.suite-photo { position: relative; overflow: hidden; background: rgba(255,255,255,0.05); }
+.suite-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease); }
 .suite-photo:hover img { transform: scale(1.04); }
-.suite-photo-ph {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.04);
-}
-.suite-info {
-  padding: var(--sp-8) var(--sp-7);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--sp-4);
-}
-.suite-name {
-  font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-  font-weight: 400;
-  line-height: 1.15;
-  color: var(--white);
-}
-.suite-desc {
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.55);
-  line-height: 1.8;
-  max-width: 380px;
-}
-.suite-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-.suite-detail-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.65);
-}
+.suite-photo-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.04); }
+.suite-info { padding: var(--sp-8) var(--sp-7); display: flex; flex-direction: column; justify-content: center; gap: var(--sp-4); }
+.suite-name { font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 400; line-height: 1.15; color: var(--white); }
+.suite-desc { font-size: 0.95rem; color: rgba(255,255,255,0.55); line-height: 1.8; max-width: 380px; }
+.suite-details { display: flex; flex-direction: column; gap: var(--sp-2); }
+.suite-detail-row { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: rgba(255,255,255,0.65); }
 .suite-detail-row svg { color: var(--gold); flex-shrink: 0; }
-.suite-price-row {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: var(--sp-1);
-}
-.suite-price {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 400;
-  color: var(--gold-light);
-}
-.suite-price-unit {
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.suite-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  border-radius: var(--r-pill);
-  font-weight: 600;
-}
+.suite-price-row { display: flex; align-items: baseline; gap: 6px; margin-top: var(--sp-1); }
+.suite-price { font-family: var(--font-display); font-size: 2rem; font-weight: 400; color: var(--gold-light); }
+.suite-price-unit { font-size: 0.75rem; color: rgba(255,255,255,0.35); letter-spacing: 0.06em; text-transform: uppercase; }
+.suite-status { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 14px; border-radius: var(--r-pill); font-weight: 600; }
 .suite-status.available { background: rgba(34,197,94,0.15); color: #86efac; }
-.suite-status.limited   { background: rgba(251,146,60,0.15); color: #fcd34d; }
-.suite-status.booked    { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); }
-
-.btn-reserve-dark {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  align-self: flex-start;
-  background: var(--gold);
-  color: var(--white);
-  padding: 14px 32px;
-  border-radius: var(--r-pill);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
-}
-.btn-reserve-dark:hover {
-  background: var(--gold-light);
-  transform: translateY(-2px);
-  box-shadow: var(--sh-gold);
-}
-.btn-reserve-dark.booked-state {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.3);
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
+.suite-status.limited { background: rgba(251,146,60,0.15); color: #fcd34d; }
+.suite-status.booked { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); }
+.btn-reserve-dark { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; background: var(--gold); color: var(--white);
+  padding: 14px 32px; border-radius: var(--r-pill); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast); }
+.btn-reserve-dark:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: var(--sh-gold); }
+.btn-reserve-dark.booked-state { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.3); cursor: not-allowed; pointer-events: none; }
 @media (max-width: 800px) {
   .suite-editorial { grid-template-columns: 1fr; }
-  .suite-photo { aspect-ratio: 16/9; position: relative; min-height: 300px; }
-  .suite-photo img { position: absolute; }
+  .suite-photo { aspect-ratio: 16/9; min-height: 300px; }
   .suite-info { padding: var(--sp-5) var(--sp-3); }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   ROOM COLLECTION — alternating editorial rows
-═══════════════════════════════════════════════════════════════════════════ */
-.rooms-collection {
-  padding: var(--sp-9) 0;
-  background: var(--cream);
-}
-.rooms-collection-header {
-  text-align: center;
-  margin-bottom: var(--sp-7);
-}
-.rooms-collection-header .section-body { margin: var(--sp-2) auto 0; text-align: left; }
-
-.room-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 480px;
-  margin-bottom: 2px;
-}
+/* ── ROOM COLLECTION ── */
+.rooms-collection { padding: var(--sp-9) 0; background: var(--cream); }
+.rooms-collection-header { text-align: center; margin-bottom: var(--sp-7); }
+.room-row { display: grid; grid-template-columns: 1fr 1fr; min-height: 480px; margin-bottom: 2px; }
 .room-row.row-reverse { direction: rtl; }
 .room-row.row-reverse > * { direction: ltr; }
-.room-row-photo {
-  overflow: hidden;
-  background: var(--cream-2);
-  position: relative;
-}
-.room-row-photo img {
-  position: absolute;
-  inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  transition: transform 0.9s var(--ease);
-}
+.room-row-photo { overflow: hidden; background: var(--cream-2); position: relative; }
+.room-row-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease); }
 .room-row-photo:hover img { transform: scale(1.04); }
-.room-row-photo-ph {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-3);
-}
-.room-row-status {
-  position: absolute;
-  top: var(--sp-3);
-  left: var(--sp-3);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 5px 14px;
-  border-radius: var(--r-pill);
-  z-index: 2;
-}
+.room-row-photo-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ink-3); }
+.room-row-status { position: absolute; top: var(--sp-3); left: var(--sp-3); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 5px 14px; border-radius: var(--r-pill); z-index: 2; }
 .room-row-status.available { background: rgba(22,163,74,0.9); color: #fff; }
-.room-row-status.limited   { background: rgba(217,119,6,0.9); color: #fff; }
-.room-row-status.booked    { background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.6); }
-
-.room-row-info {
-  padding: var(--sp-7) var(--sp-6);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--sp-3);
-  background: var(--white);
-}
-.room-row-name {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 2.5vw, 2.2rem);
-  font-weight: 400;
-  line-height: 1.2;
-  color: var(--ink);
-}
-.room-row-desc {
-  font-size: 0.92rem;
-  color: var(--ink-3);
-  line-height: 1.8;
-  max-width: 360px;
-}
-.room-row-features {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-}
-.room-feature-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.83rem;
-  color: var(--ink-2);
-}
+.room-row-status.limited { background: rgba(217,119,6,0.9); color: #fff; }
+.room-row-status.booked { background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.6); }
+.room-row-info { padding: var(--sp-7) var(--sp-6); display: flex; flex-direction: column; justify-content: center; gap: var(--sp-3); background: var(--white); }
+.room-row-name { font-family: var(--font-display); font-size: clamp(1.5rem, 2.5vw, 2.2rem); font-weight: 400; line-height: 1.2; color: var(--ink); }
+.room-row-desc { font-size: 0.92rem; color: var(--ink-3); line-height: 1.8; max-width: 360px; }
+.room-row-features { display: flex; flex-direction: column; gap: var(--sp-1); }
+.room-feature-item { display: flex; align-items: center; gap: 10px; font-size: 0.83rem; color: var(--ink-2); }
 .room-feature-item svg { color: var(--gold); flex-shrink: 0; }
-.room-row-price {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.room-price-fig {
-  font-family: var(--font-display);
-  font-size: 1.8rem;
-  font-weight: 400;
-  color: var(--gold);
-}
-.room-price-unit {
-  font-size: 0.72rem;
-  color: var(--ink-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.btn-reserve-outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  align-self: flex-start;
-  color: var(--ink);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--ink);
-  padding-bottom: 3px;
-  transition: color var(--t-fast), border-color var(--t-fast), gap var(--t-fast);
-}
+.room-row-price { display: flex; align-items: baseline; gap: 6px; }
+.room-price-fig { font-family: var(--font-display); font-size: 1.8rem; font-weight: 400; color: var(--gold); }
+.room-price-unit { font-size: 0.72rem; color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; }
+.btn-reserve-outline { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; color: var(--ink); font-size: 0.78rem;
+  font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--ink); padding-bottom: 3px;
+  transition: color var(--t-fast), border-color var(--t-fast), gap var(--t-fast); }
 .btn-reserve-outline:hover { color: var(--gold); border-color: var(--gold); gap: 14px; }
-.btn-reserve-outline.disabled {
-  color: var(--ink-3);
-  border-color: var(--ink-3);
-  pointer-events: none;
-}
-
+.btn-reserve-outline.disabled { color: var(--ink-3); border-color: var(--ink-3); pointer-events: none; }
 @media (max-width: 800px) {
-  .room-row { grid-template-columns: 1fr; direction: ltr !important; }
-  .room-row-photo { min-height: 260px; position: relative; aspect-ratio: 16/9; }
-  .room-row-photo img { position: absolute; }
+  .room-row { grid-template-columns: 1fr; }
+  .room-row.row-reverse { direction: ltr; }
+  .room-row-photo { min-height: 260px; aspect-ratio: 16/9; }
   .room-row-info { padding: var(--sp-5) var(--sp-3); }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   AMENITIES GRID
-═══════════════════════════════════════════════════════════════════════════ */
-.amenities-section {
-  padding: var(--sp-9) 0;
-  background: var(--ink);
-  color: var(--white);
-}
+/* ── AMENITIES ── */
+.amenities-section { padding: var(--sp-9) 0; background: var(--ink); color: var(--white); }
 .amenities-header { text-align: center; margin-bottom: var(--sp-7); }
 .amenities-header .section-headline { color: var(--white); }
 .amenities-header .section-body { color: rgba(255,255,255,0.5); margin: var(--sp-2) auto 0; text-align: center; }
-
-.amenities-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: rgba(255,255,255,0.06);
-}
-.amenity-card {
-  background: var(--ink);
-  padding: var(--sp-5) var(--sp-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  transition: background var(--t-fast);
-  cursor: default;
-}
+.amenities-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(255,255,255,0.06); }
+.amenity-card { background: var(--ink); padding: var(--sp-5) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2);
+  transition: background var(--t-fast); cursor: default; }
 .amenity-card:hover { background: rgba(255,255,255,0.04); }
-.amenity-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--r-sm);
-  background: var(--gold-pale);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gold);
-  transition: background var(--t-fast);
-}
+.amenity-icon { width: 44px; height: 44px; border-radius: var(--r-sm); background: var(--gold-pale); display: flex; align-items: center;
+  justify-content: center; color: var(--gold); transition: background var(--t-fast); }
 .amenity-card:hover .amenity-icon { background: rgba(184,150,60,0.14); }
-.amenity-name {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: var(--white);
-}
-.amenity-desc {
-  font-size: 0.82rem;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.7;
-}
+.amenity-name { font-family: var(--font-display); font-size: 1.05rem; font-weight: 400; color: var(--white); }
+.amenity-desc { font-size: 0.82rem; color: rgba(255,255,255,0.45); line-height: 1.7; }
+@media (max-width: 800px) { .amenities-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .amenities-grid { grid-template-columns: 1fr; } }
 
-@media (max-width: 800px) {
-  .amenities-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 480px) {
-  .amenities-grid { grid-template-columns: 1fr; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   DINING SECTION
-═══════════════════════════════════════════════════════════════════════════ */
-.dining-section {
-  padding: var(--sp-9) 0;
-  background: var(--cream-2);
-}
-.dining-inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-7);
-  align-items: center;
-}
-.dining-image-stack {
-  position: relative;
-}
-.dining-main-img {
-  aspect-ratio: 3/4;
-  overflow: hidden;
-  border-radius: var(--r-md);
-  background: var(--cream);
-}
-.dining-main-img img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-.dining-accent-img {
-  position: absolute;
-  bottom: -var(--sp-4);
-  right: -var(--sp-4);
-  width: 55%;
-  aspect-ratio: 4/3;
-  border-radius: var(--r-md);
-  overflow: hidden;
-  background: var(--cream);
-  box-shadow: var(--sh-deep);
-  border: 4px solid var(--cream-2);
-}
-.dining-accent-img img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
+/* ── DINING ── */
+.dining-section { padding: var(--sp-9) 0; background: var(--cream-2); }
+.dining-inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-7); align-items: center; }
+.dining-image-stack { position: relative; }
+.dining-main-img { aspect-ratio: 3/4; overflow: hidden; border-radius: var(--r-md); background: var(--cream); }
+.dining-main-img img { width: 100%; height: 100%; object-fit: cover; }
+.dining-main-ph { aspect-ratio: 3/4; border-radius: var(--r-md); background: var(--cream); display: flex; align-items: center; justify-content: center; min-height: 400px; }
+.dining-accent-img { position: absolute; bottom: calc(-1 * var(--sp-4)); right: calc(-1 * var(--sp-4)); width: 55%; aspect-ratio: 4/3;
+  border-radius: var(--r-md); overflow: hidden; background: var(--cream); box-shadow: var(--sh-deep); border: 4px solid var(--cream-2); }
+.dining-accent-img img { width: 100%; height: 100%; object-fit: cover; }
 .dining-content { display: flex; flex-direction: column; gap: var(--sp-4); }
 .dining-content .section-body { max-width: 100%; }
-.dining-highlight {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-3);
-  margin-top: var(--sp-2);
-}
-.dining-item {
-  padding: var(--sp-3);
-  background: var(--white);
-  border-radius: var(--r-sm);
-  border-left: 3px solid var(--gold);
-}
-.dining-item-name {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--ink);
-  margin-bottom: 4px;
-}
-.dining-item-desc {
-  font-size: 0.78rem;
-  color: var(--ink-3);
-  line-height: 1.6;
-}
-
+.dining-highlight { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin-top: var(--sp-2); }
+.dining-item { padding: var(--sp-3); background: var(--white); border-radius: var(--r-sm); border-left: 3px solid var(--gold); }
+.dining-item-name { font-family: var(--font-display); font-size: 0.95rem; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+.dining-item-desc { font-size: 0.78rem; color: var(--ink-3); line-height: 1.6; }
 @media (max-width: 800px) {
   .dining-inner { grid-template-columns: 1fr; }
   .dining-image-stack { margin-bottom: var(--sp-4); }
@@ -897,850 +277,343 @@ svg { display: block; flex-shrink: 0; }
   .dining-highlight { grid-template-columns: 1fr; }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   EXPERIENCES / ACTIVITIES
-═══════════════════════════════════════════════════════════════════════════ */
-.experiences-section {
-  padding: var(--sp-9) 0;
-  background: var(--cream);
-}
+/* ── CONFERENCE / VENUES ── */
+.conference-section { padding: var(--sp-9) 0; background: var(--white); }
+.conference-header { text-align: center; margin-bottom: var(--sp-7); }
+.conference-header .section-body { margin: var(--sp-2) auto 0; text-align: center; }
+.venue-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
+.venue-card { display: flex; flex-direction: column; background: var(--cream); border-radius: var(--r-md); overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06); transition: transform var(--t-fast), box-shadow var(--t-fast); }
+.venue-card:hover { transform: translateY(-4px); box-shadow: var(--sh-mid); }
+.venue-photo { aspect-ratio: 16/10; overflow: hidden; background: var(--cream-2); position: relative; }
+.venue-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--ease); }
+.venue-card:hover .venue-photo img { transform: scale(1.05); }
+.venue-photo-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--ink-3); }
+.venue-cap { position: absolute; top: var(--sp-2); left: var(--sp-2); display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(15,15,13,0.78); color: #fff; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em;
+  padding: 5px 12px; border-radius: var(--r-pill); backdrop-filter: blur(4px); }
+.venue-cap svg { color: var(--gold-light); }
+.venue-body { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); flex: 1; }
+.venue-name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 500; color: var(--ink); }
+.venue-desc { font-size: 0.86rem; color: var(--ink-3); line-height: 1.7; }
+.venue-features { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.venue-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; color: var(--ink-2);
+  background: var(--white); border: 1px solid rgba(0,0,0,0.08); padding: 4px 10px; border-radius: var(--r-pill); }
+.venue-chip svg { color: var(--gold); }
+.venue-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-top: auto; padding-top: var(--sp-2); }
+.venue-price { display: flex; align-items: baseline; gap: 5px; }
+.venue-price-fig { font-family: var(--font-display); font-size: 1.4rem; color: var(--gold); }
+.venue-price-unit { font-size: 0.68rem; color: var(--ink-3); letter-spacing: 0.05em; text-transform: uppercase; }
+@media (max-width: 700px) { .venue-grid { grid-template-columns: 1fr; } }
+
+/* ── PACKAGES / DEALS ── */
+.packages-section { padding: var(--sp-9) 0; background: var(--cream); }
+.packages-header { text-align: center; margin-bottom: var(--sp-7); }
+.packages-header .section-body { margin: var(--sp-2) auto 0; text-align: center; }
+.packages-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+.package-card { position: relative; display: flex; flex-direction: column; gap: var(--sp-3); background: var(--white);
+  border: 1px solid rgba(0,0,0,0.07); border-radius: var(--r-md); padding: var(--sp-5) var(--sp-4); transition: box-shadow var(--t-fast), transform var(--t-fast); }
+.package-card:hover { box-shadow: var(--sh-mid); transform: translateY(-4px); }
+.package-card.featured { border-color: var(--gold); box-shadow: var(--sh-gold); }
+.package-tag { position: absolute; top: -10px; left: var(--sp-4); background: var(--gold); color: var(--white); font-size: 0.62rem;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 12px; border-radius: var(--r-pill); }
+.package-name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 500; color: var(--ink); }
+.package-price-row { display: flex; align-items: baseline; gap: 6px; }
+.package-price { font-family: var(--font-display); font-size: 2rem; color: var(--gold); }
+.package-unit { font-size: 0.72rem; color: var(--ink-3); letter-spacing: 0.05em; text-transform: uppercase; }
+.package-desc { font-size: 0.85rem; color: var(--ink-3); line-height: 1.7; }
+.package-includes { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.package-inc-item { display: flex; align-items: flex-start; gap: 9px; font-size: 0.83rem; color: var(--ink-2); }
+.package-inc-item svg { color: var(--gold); margin-top: 3px; flex-shrink: 0; }
+.package-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--gold); color: var(--white);
+  padding: 13px var(--sp-3); border-radius: var(--r-pill); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: background var(--t-fast); }
+.package-cta:hover { background: var(--gold-light); }
+@media (max-width: 900px) { .packages-grid { grid-template-columns: 1fr; max-width: 460px; margin: 0 auto; } }
+
+/* ── EXPERIENCES ── */
+.experiences-section { padding: var(--sp-9) 0; background: var(--cream); }
 .experiences-header { text-align: center; margin-bottom: var(--sp-7); }
 .experiences-header .section-body { margin: var(--sp-2) auto 0; text-align: center; }
-.experiences-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--sp-3);
-}
-.experience-card {
-  background: var(--white);
-  border-radius: var(--r-md);
-  overflow: hidden;
-  transition: transform var(--t-fast), box-shadow var(--t-fast);
-}
+.experiences-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-3); }
+.experience-card { background: var(--white); border-radius: var(--r-md); overflow: hidden; transition: transform var(--t-fast), box-shadow var(--t-fast); }
 .experience-card:hover { transform: translateY(-6px); box-shadow: var(--sh-mid); }
-.experience-card-img {
-  aspect-ratio: 3/4;
-  overflow: hidden;
-  background: var(--cream-2);
-}
-.experience-card-img img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  transition: transform 0.7s var(--ease);
-}
+.experience-card-img { aspect-ratio: 3/4; overflow: hidden; background: var(--cream-2); }
+.experience-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--ease); }
 .experience-card:hover .experience-card-img img { transform: scale(1.06); }
-.experience-card-body {
-  padding: var(--sp-3);
-}
-.experience-card-name {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--ink);
-  margin-bottom: 4px;
-}
-.experience-card-desc {
-  font-size: 0.78rem;
-  color: var(--ink-3);
-  line-height: 1.65;
-}
+.experience-card-body { padding: var(--sp-3); }
+.experience-card-name { font-family: var(--font-display); font-size: 1rem; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+.experience-card-desc { font-size: 0.78rem; color: var(--ink-3); line-height: 1.65; }
+@media (max-width: 900px) { .experiences-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .experiences-grid { grid-template-columns: 1fr; } }
 
-@media (max-width: 900px) {
-  .experiences-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 480px) {
-  .experiences-grid { grid-template-columns: 1fr; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   GALLERY MASONRY
-═══════════════════════════════════════════════════════════════════════════ */
-.gallery-section {
-  padding: var(--sp-9) 0;
-  background: var(--cream-2);
-}
+/* ── GALLERY ── */
+.gallery-section { padding: var(--sp-9) 0; background: var(--cream-2); }
 .gallery-header { text-align: center; margin-bottom: var(--sp-6); }
 .gallery-header .section-body { margin: var(--sp-2) auto 0; text-align: center; }
-.gallery-masonry {
-  columns: 3;
-  column-gap: 8px;
-}
-.gallery-item {
-  break-inside: avoid;
-  margin-bottom: 8px;
-  overflow: hidden;
-  border-radius: var(--r-xs);
-  cursor: zoom-in;
-}
-.gallery-item img {
-  width: 100%;
-  display: block;
-  transition: transform 0.7s var(--ease);
-}
+.gallery-masonry { columns: 3; column-gap: 8px; }
+.gallery-item { break-inside: avoid; margin-bottom: 8px; overflow: hidden; border-radius: var(--r-xs); cursor: zoom-in; }
+.gallery-item img { width: 100%; display: block; transition: transform 0.7s var(--ease); }
 .gallery-item:hover img { transform: scale(1.03); }
-
-@media (max-width: 640px) {
-  .gallery-masonry { columns: 2; }
-}
-@media (max-width: 400px) {
-  .gallery-masonry { columns: 1; }
-}
-
-/* Lightbox */
-.lightbox {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  background: rgba(0,0,0,0.95);
-  align-items: center;
-  justify-content: center;
-}
+@media (max-width: 640px) { .gallery-masonry { columns: 2; } }
+@media (max-width: 400px) { .gallery-masonry { columns: 1; } }
+.lightbox { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; }
 .lightbox.open { display: flex; }
-.lightbox img {
-  max-width: 90vw;
-  max-height: 90vh;
-  object-fit: contain;
-  border-radius: var(--r-sm);
-  box-shadow: var(--sh-deep);
-}
-.lightbox-close {
-  position: absolute;
-  top: var(--sp-3);
-  right: var(--sp-3);
-  color: rgba(255,255,255,0.6);
-  font-size: 2rem;
-  cursor: pointer;
-  transition: color var(--t-fast);
-  line-height: 1;
-}
+.lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: var(--r-sm); box-shadow: var(--sh-deep); }
+.lightbox-close { position: absolute; top: var(--sp-3); right: var(--sp-3); color: rgba(255,255,255,0.6); font-size: 2rem; cursor: pointer; transition: color var(--t-fast); line-height: 1; }
 .lightbox-close:hover { color: var(--white); }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   REVIEWS / TESTIMONIALS
-═══════════════════════════════════════════════════════════════════════════ */
-.reviews-section {
-  padding: var(--sp-9) 0;
-  background: var(--white);
-}
+/* ── REVIEWS ── */
+.reviews-section { padding: var(--sp-9) 0; background: var(--white); }
 .reviews-header { margin-bottom: var(--sp-7); }
-.reviews-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-3);
-}
-.review-card {
-  padding: var(--sp-5) var(--sp-4);
-  border: 1px solid rgba(0,0,0,0.07);
-  border-radius: var(--r-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  transition: box-shadow var(--t-fast), transform var(--t-fast);
-}
+.reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+.review-card { padding: var(--sp-5) var(--sp-4); border: 1px solid rgba(0,0,0,0.07); border-radius: var(--r-md); display: flex;
+  flex-direction: column; gap: var(--sp-3); transition: box-shadow var(--t-fast), transform var(--t-fast); }
 .review-card:hover { box-shadow: var(--sh-mid); transform: translateY(-4px); }
 .review-quote-icon { color: var(--gold); }
-.review-stars {
-  display: flex;
-  gap: 3px;
-  color: var(--gold);
-}
-.review-text {
-  font-size: 0.9rem;
-  line-height: 1.8;
-  color: var(--ink-2);
-  flex: 1;
-  font-style: italic;
-}
-.review-author {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding-top: var(--sp-3);
-  border-top: 1px solid rgba(0,0,0,0.06);
-}
-.review-avatar {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: var(--cream-2);
-}
+.review-stars { display: flex; gap: 3px; color: var(--gold); }
+.review-text { font-size: 0.9rem; line-height: 1.8; color: var(--ink-2); flex: 1; font-style: italic; }
+.review-author { display: flex; align-items: center; gap: var(--sp-2); padding-top: var(--sp-3); border-top: 1px solid rgba(0,0,0,0.06); }
+.review-avatar { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--cream-2); }
 .review-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.review-avatar-init {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: var(--gold-pale);
-  border: 1px solid rgba(184,150,60,0.2);
-  color: var(--gold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-.review-name {
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--ink);
-}
-.review-role {
-  font-size: 0.73rem;
-  color: var(--ink-3);
-  margin-top: 2px;
-}
+.review-avatar-init { width: 42px; height: 42px; border-radius: 50%; background: var(--gold-pale); border: 1px solid rgba(184,150,60,0.2);
+  color: var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.1rem; font-weight: 500; }
+.review-name { font-weight: 600; font-size: 0.85rem; color: var(--ink); }
+.review-role { font-size: 0.73rem; color: var(--ink-3); margin-top: 2px; }
+@media (max-width: 800px) { .reviews-grid { grid-template-columns: 1fr; } }
+@media (min-width: 540px) and (max-width: 800px) { .reviews-grid { grid-template-columns: repeat(2, 1fr); } }
 
-@media (max-width: 800px) {
-  .reviews-grid { grid-template-columns: 1fr; }
-}
-@media (min-width: 540px) and (max-width: 800px) {
-  .reviews-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   LOCATION MAP
-═══════════════════════════════════════════════════════════════════════════ */
-.location-section {
-  padding: var(--sp-9) 0;
-  background: var(--cream);
-}
-.location-inner {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: var(--sp-6);
-  align-items: start;
-}
+/* ── LOCATION ── */
+.location-section { padding: var(--sp-9) 0; background: var(--cream); }
+.location-inner { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--sp-6); align-items: start; }
 .location-info { display: flex; flex-direction: column; gap: var(--sp-4); }
 .location-info .section-body { max-width: 100%; }
-.location-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-.location-detail {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 0.9rem;
-  color: var(--ink-2);
-}
+.location-details { display: flex; flex-direction: column; gap: var(--sp-2); }
+.location-detail { display: flex; align-items: flex-start; gap: 12px; font-size: 0.9rem; color: var(--ink-2); }
 .location-detail svg { color: var(--gold); margin-top: 2px; flex-shrink: 0; }
-.location-map {
-  border-radius: var(--r-md);
-  overflow: hidden;
-  aspect-ratio: 4/3;
-  background: var(--cream-2);
-  box-shadow: var(--sh-mid);
-}
+.location-map { border-radius: var(--r-md); overflow: hidden; aspect-ratio: 4/3; background: var(--cream-2); box-shadow: var(--sh-mid); }
 .location-map iframe { width: 100%; height: 100%; border: none; display: block; }
-.location-map-ph {
-  width: 100%; height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-3);
-  font-size: 0.9rem;
-}
+.location-map-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--ink-3); font-size: 0.9rem; }
+@media (max-width: 800px) { .location-inner { grid-template-columns: 1fr; } }
 
-@media (max-width: 800px) {
-  .location-inner { grid-template-columns: 1fr; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   BOOKING CTA — full-bleed luxury call to action
-═══════════════════════════════════════════════════════════════════════════ */
-.booking-cta {
-  position: relative;
-  padding: var(--sp-9) 0;
-  overflow: hidden;
-  background-color: #0f0f0d;
-}
-.booking-cta-bg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  opacity: 0.35;
-}
-.booking-cta-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(10,9,8,0.75) 0%, rgba(10,9,8,0.55) 100%);
-}
-.booking-cta-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  color: var(--white);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-4);
-}
+/* ── BOOKING CTA ── */
+.booking-cta { position: relative; padding: var(--sp-9) 0; overflow: hidden; background-color: #0f0f0d; }
+.booking-cta-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.35; }
+.booking-cta-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(10,9,8,0.75) 0%, rgba(10,9,8,0.55) 100%); }
+.booking-cta-content { position: relative; z-index: 2; text-align: center; color: var(--white); display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); }
 .booking-cta-content .label-eyebrow { color: var(--gold-light); }
-.booking-cta-headline {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  font-weight: 400;
-  line-height: 1.15;
-  color: var(--white);
-  max-width: 620px;
-}
-.booking-cta-body {
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.55);
-  line-height: 1.7;
-  max-width: 440px;
-}
-.booking-cta-note {
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  margin-top: var(--sp-1);
-}
+.booking-cta-headline { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 400; line-height: 1.15; color: var(--white); max-width: 620px; }
+.booking-cta-body { font-size: 0.95rem; color: rgba(255,255,255,0.55); line-height: 1.7; max-width: 440px; }
+.booking-cta-note { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-top: var(--sp-1); }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   STICKY BOOKING WIDGET
-═══════════════════════════════════════════════════════════════════════════ */
-.sticky-widget {
-  position: fixed;
-  bottom: var(--sp-3);
-  left: 50%;
-  transform: translateX(-50%) translateY(120px);
-  z-index: 800;
-  background: rgba(15,15,13,0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--r-pill);
-  padding: 10px 10px 10px var(--sp-3);
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  box-shadow: var(--sh-deep);
-  transition: transform 0.5s var(--ease-out);
-  white-space: nowrap;
-}
+/* ── STICKY WIDGET ── */
+.sticky-widget { position: fixed; bottom: var(--sp-3); left: 50%; transform: translateX(-50%) translateY(120px); z-index: 800;
+  background: rgba(15,15,13,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-pill); padding: 10px 10px 10px var(--sp-3); display: flex; align-items: center; gap: var(--sp-2);
+  box-shadow: var(--sh-deep); transition: transform 0.5s var(--ease-out); white-space: nowrap; }
 .sticky-widget.visible { transform: translateX(-50%) translateY(0); }
-.sticky-widget-label {
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.55);
-  letter-spacing: 0.04em;
-}
-.sticky-widget-name {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: var(--white);
-}
-.sticky-widget-divider {
-  width: 1px;
-  height: 28px;
-  background: rgba(255,255,255,0.12);
-}
-.sticky-widget-btn {
-  background: var(--gold);
-  color: var(--white);
-  padding: 10px 22px;
-  border-radius: var(--r-pill);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition: background var(--t-fast);
-}
+.sticky-widget-label { font-size: 0.75rem; color: rgba(255,255,255,0.55); letter-spacing: 0.04em; }
+.sticky-widget-name { font-family: var(--font-display); font-size: 0.95rem; font-weight: 400; color: var(--white); }
+.sticky-widget-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.12); }
+.sticky-widget-btn { background: var(--gold); color: var(--white); padding: 10px 22px; border-radius: var(--r-pill); font-size: 0.75rem;
+  font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; transition: background var(--t-fast); }
 .sticky-widget-btn:hover { background: var(--gold-light); }
+@media (max-width: 640px) { .sticky-widget { bottom: var(--sp-2); padding: 8px 8px 8px var(--sp-2); gap: var(--sp-1); }
+  .sticky-widget-label { display: none; } .sticky-widget-divider { display: none; } }
 
-@media (max-width: 640px) {
-  .sticky-widget { bottom: var(--sp-2); padding: 8px 8px 8px var(--sp-2); gap: var(--sp-1); }
-  .sticky-widget-label { display: none; }
-  .sticky-widget-divider { display: none; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   FOOTER
-═══════════════════════════════════════════════════════════════════════════ */
-.footer {
-  background: var(--ink);
-  color: rgba(255,255,255,0.45);
-  padding: var(--sp-8) 0 var(--sp-4);
-}
-.footer-inner {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: var(--sp-5);
-  padding-bottom: var(--sp-6);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-}
-.footer-brand-name {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: var(--white);
-  margin-bottom: var(--sp-2);
-}
-.footer-brand-tagline {
-  font-size: 0.82rem;
-  line-height: 1.7;
-  color: rgba(255,255,255,0.4);
-  max-width: 240px;
-  margin-bottom: var(--sp-4);
-}
-.footer-social {
-  display: flex;
-  gap: var(--sp-2);
-}
-.footer-social a {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,0.4);
-  transition: border-color var(--t-fast), color var(--t-fast);
-}
+/* ── FOOTER ── */
+.footer { background: var(--ink); color: rgba(255,255,255,0.45); padding: var(--sp-8) 0 var(--sp-4); }
+.footer-inner { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: var(--sp-5); padding-bottom: var(--sp-6); border-bottom: 1px solid rgba(255,255,255,0.07); }
+.footer-brand-name { font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; color: var(--white); margin-bottom: var(--sp-2); }
+.footer-brand-tagline { font-size: 0.82rem; line-height: 1.7; color: rgba(255,255,255,0.4); max-width: 240px; margin-bottom: var(--sp-4); }
+.footer-social { display: flex; gap: var(--sp-2); }
+.footer-social a { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center;
+  justify-content: center; color: rgba(255,255,255,0.4); transition: border-color var(--t-fast), color var(--t-fast); }
 .footer-social a:hover { border-color: var(--gold); color: var(--gold); }
-.footer-col-title {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  margin-bottom: var(--sp-3);
-}
+.footer-col-title { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: var(--sp-3); }
 .footer-links-list { display: flex; flex-direction: column; gap: 10px; }
-.footer-links-list a {
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.5);
-  transition: color var(--t-fast);
-}
+.footer-links-list a { font-size: 0.85rem; color: rgba(255,255,255,0.5); transition: color var(--t-fast); }
 .footer-links-list a:hover { color: var(--white); }
-.footer-contact-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 0.82rem;
-  color: rgba(255,255,255,0.5);
-  margin-bottom: 10px;
-}
+.footer-contact-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
 .footer-contact-item svg { color: var(--gold); margin-top: 2px; flex-shrink: 0; }
-.footer-bottom {
-  padding-top: var(--sp-4);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.25);
-}
+.footer-bottom { padding-top: var(--sp-4); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-2);
+  font-size: 0.75rem; color: rgba(255,255,255,0.25); }
 .footer-bottom a { color: rgba(255,255,255,0.35); transition: color var(--t-fast); }
 .footer-bottom a:hover { color: var(--gold); }
+@media (max-width: 800px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; } }
 
-@media (max-width: 800px) {
-  .footer-inner { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 480px) {
-  .footer-inner { grid-template-columns: 1fr; }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   WHATSAPP FAB
-═══════════════════════════════════════════════════════════════════════════ */
-.wa-fab {
-  position: fixed;
-  bottom: var(--sp-4);
-  right: var(--sp-4);
-  z-index: 700;
-  width: 54px; height: 54px;
-  border-radius: 50%;
-  background: #25D366;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgba(37,211,102,0.4);
-  transition: transform var(--t-fast), box-shadow var(--t-fast);
-}
+/* ── WHATSAPP FAB ── */
+.wa-fab { position: fixed; bottom: var(--sp-4); right: var(--sp-4); z-index: 700; width: 54px; height: 54px; border-radius: 50%;
+  background: #25D366; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+  transition: transform var(--t-fast), box-shadow var(--t-fast); }
 .wa-fab:hover { transform: scale(1.07); box-shadow: 0 8px 30px rgba(37,211,102,0.55); }
 .wa-fab svg { color: #fff; }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   SECTION DIVIDER
-═══════════════════════════════════════════════════════════════════════════ */
-.section-divider {
-  height: 1px;
-  background: rgba(0,0,0,0.06);
-}
-
-/* ── Hours ── */
+/* ── HOURS ── */
 .hours-section { padding: var(--sp-9) 0; background: var(--white); }
 .hours-grid { max-width: 520px; }
-.hours-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-}
+.hours-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
 .hours-row:last-child { border-bottom: none; }
 .hours-row.today .hours-day { color: var(--gold); font-weight: 600; }
 .hours-day { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--ink-2); }
-.today-pill {
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  background: var(--gold);
-  color: var(--white);
-  padding: 3px 10px;
-  border-radius: var(--r-pill);
-}
+.today-pill { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold); color: var(--white); padding: 3px 10px; border-radius: var(--r-pill); }
 .hours-time { font-size: 0.85rem; color: var(--ink-3); }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════
-     GLASS NAVIGATION
-══════════════════════════════════════════════════════ -->
+<!-- NAVIGATION -->
 <nav class="nav" id="nav">
   <div class="container nav-inner">
     <div class="nav-logo">
-      {{#if logo_url}}
-        <img src="{{logo_url}}" alt="{{business_name}}">
-      {{else}}
-        <span class="nav-logo-text">{{business_name}}</span>
-      {{/if}}
+      {{#if has_logo}}<img src="{{logo_url}}" alt="{{business_name}}">{{else}}<span class="nav-logo-text">{{business_name}}</span>{{/if}}
     </div>
     <div class="nav-links">
-      {{#if has_rooms}}<a href="#rooms">Suites</a>{{/if}}
-      {{#if has_about}}<a href="#about">Our Story</a>{{/if}}
-      {{#if has_amenities}}<a href="#amenities">Amenities</a>{{/if}}
-      {{#if has_dining}}<a href="#dining">Dining</a>{{/if}}
-      {{#if has_gallery}}<a href="#gallery">Gallery</a>{{/if}}
-      {{#if has_testimonials}}<a href="#reviews">Reviews</a>{{/if}}
-      <a href="#contact">Contact</a>
-      <a href="{{whatsapp_wa_link}}" class="nav-reserve" target="_blank" rel="noopener">Reserve</a>
+      {{#if has_rooms}}<a href="#rooms">{{nav_rooms_label}}</a>{{/if}}
+      {{#if has_about}}<a href="#about">{{nav_about_label}}</a>{{/if}}
+      {{#if has_amenities}}<a href="#amenities">{{nav_amenities_label}}</a>{{/if}}
+      {{#if has_conference}}<a href="#conference">{{nav_conference_label}}</a>{{/if}}
+      {{#if has_packages}}<a href="#packages">{{nav_packages_label}}</a>{{/if}}
+      {{#if has_dining}}<a href="#dining">{{nav_dining_label}}</a>{{/if}}
+      {{#if has_gallery}}<a href="#gallery">{{nav_gallery_label}}</a>{{/if}}
+      {{#if has_testimonials}}<a href="#reviews">{{nav_reviews_label}}</a>{{/if}}
+      <a href="#contact">{{nav_contact_label}}</a>
+      <a href="{{whatsapp_wa_link}}" class="nav-reserve" target="_blank" rel="noopener">{{nav_cta_label}}</a>
     </div>
-    <div class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
-      <span></span><span></span><span></span>
-    </div>
+    <div class="nav-hamburger" id="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></div>
   </div>
 </nav>
 
-<!-- Mobile Drawer -->
+<!-- MOBILE DRAWER -->
 <div class="mobile-drawer" id="mobile-drawer">
   <div class="mobile-drawer-overlay" id="drawer-overlay"></div>
   <div class="mobile-drawer-panel">
-    <span class="mobile-drawer-close" id="drawer-close">✕</span>
-    {{#if has_rooms}}<a href="#rooms" class="drawer-link">Suites</a>{{/if}}
-    {{#if has_about}}<a href="#about" class="drawer-link">Our Story</a>{{/if}}
-    {{#if has_amenities}}<a href="#amenities" class="drawer-link">Amenities</a>{{/if}}
-    {{#if has_dining}}<a href="#dining" class="drawer-link">Dining</a>{{/if}}
-    {{#if has_gallery}}<a href="#gallery" class="drawer-link">Gallery</a>{{/if}}
-    {{#if has_testimonials}}<a href="#reviews" class="drawer-link">Reviews</a>{{/if}}
-    <a href="#contact" class="drawer-link">Contact</a>
-    <a href="{{whatsapp_wa_link}}" class="mobile-reserve-btn" target="_blank" rel="noopener">Reserve a Stay</a>
+    <span class="mobile-drawer-close" id="drawer-close">&#10005;</span>
+    {{#if has_rooms}}<a href="#rooms" class="drawer-link">{{nav_rooms_label}}</a>{{/if}}
+    {{#if has_about}}<a href="#about" class="drawer-link">{{nav_about_label}}</a>{{/if}}
+    {{#if has_amenities}}<a href="#amenities" class="drawer-link">{{nav_amenities_label}}</a>{{/if}}
+    {{#if has_conference}}<a href="#conference" class="drawer-link">{{nav_conference_label}}</a>{{/if}}
+    {{#if has_packages}}<a href="#packages" class="drawer-link">{{nav_packages_label}}</a>{{/if}}
+    {{#if has_dining}}<a href="#dining" class="drawer-link">{{nav_dining_label}}</a>{{/if}}
+    {{#if has_gallery}}<a href="#gallery" class="drawer-link">{{nav_gallery_label}}</a>{{/if}}
+    {{#if has_testimonials}}<a href="#reviews" class="drawer-link">{{nav_reviews_label}}</a>{{/if}}
+    <a href="#contact" class="drawer-link">{{nav_contact_label}}</a>
+    <a href="{{whatsapp_wa_link}}" class="mobile-reserve-btn" target="_blank" rel="noopener">{{nav_cta_label}}</a>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     CINEMATIC HERO
-══════════════════════════════════════════════════════ -->
+<!-- HERO -->
 <section class="hero" id="hero">
   <div class="hero-bg" style="background-image: url('{{hero_image_url}}');"></div>
   <div class="hero-overlay"></div>
   <div class="container hero-content">
-    <div class="hero-location">
-      <!-- Lucide: MapPin -->
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-      {{address}}
-    </div>
+    {{hero_location_html}}
     <h1 class="hero-headline">{{hi_hero_headline}}</h1>
     <p class="hero-sub">{{hi_hero_subtext}}</p>
     <div class="hero-actions">
       <a href="{{whatsapp_wa_link}}" class="btn-reserve" target="_blank" rel="noopener">
-        Reserve Your Stay
-        <!-- Lucide: ArrowRight -->
+        {{hero_cta_label}}
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
-      {{#if has_rooms}}
-      <a href="#rooms" class="btn-ghost">
-        Explore Suites
-        <!-- Lucide: ChevronDown -->
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-      </a>
-      {{/if}}
+      {{#if has_rooms}}<a href="#rooms" class="btn-ghost">{{hero_secondary_label}}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></a>{{/if}}
     </div>
   </div>
   <div class="hero-scroll">
-    <!-- Lucide: Mouse -->
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="7"/><path d="M12 6v4"/></svg>
-    Scroll
+    {{scroll_label}}
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════════════
-     ABOUT / EXPERIENCE INTRO
-══════════════════════════════════════════════════════ -->
+<!-- ABOUT -->
 {{#if has_about}}
 <section class="experience-intro" id="about">
   <div class="experience-split">
-    <div class="experience-image reveal">
-      {{#if hero_image_url}}
-        <img src="{{hero_image_url}}" alt="{{business_name}}" loading="lazy">
-      {{/if}}
-    </div>
+    <div class="experience-image reveal">{{about_image_html}}</div>
     <div class="experience-text reveal reveal-delay-2">
-      <span class="label-eyebrow">Our Story</span>
-      <h2 class="section-headline">Welcome to<br>{{business_name}}</h2>
-      <p class="section-body">{{about}}</p>
-      {{#if has_stats}}
-      <div class="stat-row">
-        {{#each stats}}
-        <div class="stat-item">
-          <span class="stat-number">{{this.value}}{{this.suffix}}</span>
-          <span class="stat-label">{{this.label}}</span>
-        </div>
-        {{/each}}
-      </div>
-      {{/if}}
+      <span class="label-eyebrow">{{about_eyebrow}}</span>
+      <h2 class="section-headline">{{about_heading}}</h2>
+      <p class="section-body">{{about_text}}</p>
+      {{about_stats_html}}
     </div>
   </div>
 </section>
 {{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     FEATURED SUITE (first room, editorial full-bleed)
-══════════════════════════════════════════════════════ -->
+<!-- FEATURED SUITE -->
 {{#if has_rooms}}
-{{#with rooms.[0]}}
-<section class="featured-suite" id="rooms">
-  <div class="suite-editorial">
-    <div class="suite-photo">
-      {{#if photo}}
-        <img src="{{photo}}" alt="{{name}}" loading="lazy">
-      {{else}}
-        <div class="suite-photo-ph">
-          <!-- Lucide: BedDouble -->
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 10v4"/><path d="M2 18h20"/></svg>
-        </div>
-      {{/if}}
-    </div>
-    <div class="suite-info">
-      <span class="label-eyebrow">Signature Suite</span>
-      <h2 class="suite-name">{{name}}</h2>
-      {{#if description}}<p class="suite-desc">{{description}}</p>{{/if}}
-      <div class="suite-details">
-        {{#if amenities}}
-        {{#each amenities}}
-        <div class="suite-detail-row">
-          <!-- Lucide: Check -->
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-          {{this}}
-        </div>
-        {{/each}}
-        {{/if}}
-      </div>
-      <div>
-        <div class="suite-price-row">
-          <span class="suite-price">{{price}}</span>
-          <span class="suite-price-unit">/ night</span>
-        </div>
-        <span class="suite-status {{status}}">
-          {{#if_eq status "available"}}Available{{/if_eq}}
-          {{#if_eq status "limited"}}Limited Availability{{/if_eq}}
-          {{#if_eq status "booked"}}Fully Reserved{{/if_eq}}
-          {{#unless status}}Available{{/unless}}
-        </span>
-      </div>
-      {{#if_eq status "booked"}}
-        <span class="btn-reserve-dark booked-state">Currently Unavailable</span>
-      {{else}}
-        <a href="{{../whatsapp_wa_link}}" class="btn-reserve-dark" target="_blank" rel="noopener">
-          Reserve This Suite
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-      {{/if_eq}}
-    </div>
-  </div>
-</section>
-{{/with}}
+<section class="featured-suite" id="rooms">{{rooms_featured_html}}</section>
+{{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     ROOM COLLECTION (remaining rooms, alternating rows)
-══════════════════════════════════════════════════════ -->
+<!-- ROOM COLLECTION -->
 {{#if has_multiple_rooms}}
 <section class="rooms-collection">
   <div class="container">
     <div class="rooms-collection-header reveal">
-      <span class="label-eyebrow">Accommodation</span>
-      <h2 class="section-headline">All Suites &amp; Rooms</h2>
+      <span class="label-eyebrow">{{rooms_eyebrow}}</span>
+      <h2 class="section-headline">{{rooms_heading}}</h2>
     </div>
   </div>
-  {{#each rooms}}
-  {{#unless @first}}
-  <div class="room-row {{#if (is_even @index)}}{{else}}row-reverse{{/if}} reveal">
-    <div class="room-row-photo">
-      {{#if photo}}
-        <img src="{{photo}}" alt="{{name}}" loading="lazy">
-      {{else}}
-        <div class="room-row-photo-ph">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 10v4"/><path d="M2 18h20"/></svg>
-        </div>
-      {{/if}}
-      <span class="room-row-status {{status}}">
-        {{#if_eq status "available"}}Available{{/if_eq}}
-        {{#if_eq status "limited"}}Limited{{/if_eq}}
-        {{#if_eq status "booked"}}Booked{{/if_eq}}
-        {{#unless status}}Available{{/unless}}
-      </span>
-    </div>
-    <div class="room-row-info">
-      <span class="label-eyebrow">{{tag}}</span>
-      <h3 class="room-row-name">{{name}}</h3>
-      {{#if description}}<p class="room-row-desc">{{description}}</p>{{/if}}
-      {{#if amenities}}
-      <div class="room-row-features">
-        {{#each amenities}}
-        <div class="room-feature-item">
-          <!-- Lucide: CircleDot -->
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-          {{this}}
-        </div>
-        {{/each}}
-      </div>
-      {{/if}}
-      <div class="room-row-price">
-        <span class="room-price-fig">{{price}}</span>
-        <span class="room-price-unit">/ night</span>
-      </div>
-      {{#if_eq status "booked"}}
-        <span class="btn-reserve-outline disabled">Currently Unavailable</span>
-      {{else}}
-        <a href="{{../whatsapp_wa_link}}" class="btn-reserve-outline" target="_blank" rel="noopener">
-          Reserve Stay
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-      {{/if_eq}}
-    </div>
-  </div>
-  {{/unless}}
-  {{/each}}
+  {{rooms_collection_html}}
 </section>
 {{/if}}
-{{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     AMENITIES
-══════════════════════════════════════════════════════ -->
+<!-- AMENITIES -->
 {{#if has_amenities}}
 <section class="amenities-section" id="amenities">
   <div class="container">
     <div class="amenities-header reveal">
-      <span class="label-eyebrow">The Property</span>
-      <h2 class="section-headline">Everything You Need</h2>
-      <p class="section-body">A curated collection of amenities designed to elevate every moment of your stay.</p>
+      <span class="label-eyebrow">{{amenities_eyebrow}}</span>
+      <h2 class="section-headline">{{amenities_heading}}</h2>
+      {{amenities_sub_html}}
     </div>
-    <div class="amenities-grid">
-      {{#each amenities}}
-      <div class="amenity-card reveal reveal-delay-{{@index}}">
-        <div class="amenity-icon">
-          {{{icon_svg}}}
-        </div>
-        <div class="amenity-name">{{name}}</div>
-        <div class="amenity-desc">{{description}}</div>
-      </div>
-      {{/each}}
-
-      <!-- Fallback static amenities if no dynamic amenities block -->
-      {{#unless amenities}}
-      <div class="amenity-card reveal">
-        <div class="amenity-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-        </div>
-        <div class="amenity-name">High-Speed WiFi</div>
-        <div class="amenity-desc">Complimentary throughout the property and all rooms.</div>
-      </div>
-      <div class="amenity-card reveal reveal-delay-1">
-        <div class="amenity-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19V6.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V19"/><path d="M9 5V3"/><path d="M21 19V9.5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1V19"/><path d="M15 8V6"/><path d="M3 19h18"/></svg>
-        </div>
-        <div class="amenity-name">Restaurant &amp; Bar</div>
-        <div class="amenity-desc">Locally sourced cuisine served from morning through evening.</div>
-      </div>
-      <div class="amenity-card reveal reveal-delay-2">
-        <div class="amenity-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2h10z"/><path d="M3 20h18"/><path d="M12 8v4"/><path d="M10 10h4"/></svg>
-        </div>
-        <div class="amenity-name">Swimming Pool</div>
-        <div class="amenity-desc">A tranquil retreat overlooking the surrounding landscape.</div>
-      </div>
-      <div class="amenity-card reveal reveal-delay-3">
-        <div class="amenity-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        </div>
-        <div class="amenity-name">Secure Parking</div>
-        <div class="amenity-desc">Monitored on-site parking for all guests, at no charge.</div>
-      </div>
-      <div class="amenity-card reveal reveal-delay-4">
-        <div class="amenity-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-        </div>
-        <div class="amenity-name">Daily Breakfast</div>
-        <div class="amenity-desc">A full breakfast served fresh each morning, included in your stay.</div>
-      </div>
-      <div class="amenity-card reveal reveal-delay-5">
-        <div class="amenity-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div class="amenity-name">24-Hour Security</div>
-        <div class="amenity-desc">Professional security ensuring your safety around the clock.</div>
-      </div>
-      {{/unless}}
-    </div>
+    <div class="amenities-grid">{{amenities_cards_html}}</div>
   </div>
 </section>
 {{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     DINING
-══════════════════════════════════════════════════════ -->
+<!-- CONFERENCE / VENUES -->
+{{#if has_conference}}
+<section class="conference-section" id="conference">
+  <div class="container">
+    <div class="conference-header reveal">
+      <span class="label-eyebrow">{{conference_eyebrow}}</span>
+      <h2 class="section-headline">{{conference_heading}}</h2>
+      {{conference_sub_html}}
+    </div>
+    <div class="venue-grid">{{conference_cards_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- PACKAGES / DEALS -->
+{{#if has_packages}}
+<section class="packages-section" id="packages">
+  <div class="container">
+    <div class="packages-header reveal">
+      <span class="label-eyebrow">{{packages_eyebrow}}</span>
+      <h2 class="section-headline">{{packages_heading}}</h2>
+      {{packages_sub_html}}
+    </div>
+    <div class="packages-grid">{{packages_cards_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- DINING -->
 {{#if has_dining}}
 <section class="dining-section" id="dining">
   <div class="container">
     <div class="dining-inner">
-      <div class="dining-image-stack reveal">
-        {{#if dining_image}}
-          <div class="dining-main-img"><img src="{{dining_image}}" alt="Dining" loading="lazy"></div>
-        {{else}}
-          <div class="dining-main-img" style="background:var(--cream-2);display:flex;align-items:center;justify-content:center;min-height:400px;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-          </div>
-        {{/if}}
-        {{#if dining_image_2}}
-          <div class="dining-accent-img"><img src="{{dining_image_2}}" alt="Dining detail" loading="lazy"></div>
-        {{/if}}
-      </div>
+      <div class="dining-image-stack reveal">{{dining_images_html}}</div>
       <div class="dining-content reveal reveal-delay-2">
-        <span class="label-eyebrow">Cuisine</span>
+        <span class="label-eyebrow">{{dining_eyebrow}}</span>
         <h2 class="section-headline">{{dining_name}}</h2>
         <p class="section-body">{{dining_description}}</p>
-        {{#if dining_highlights}}
-        <div class="dining-highlight">
-          {{#each dining_highlights}}
-          <div class="dining-item">
-            <div class="dining-item-name">{{name}}</div>
-            <div class="dining-item-desc">{{description}}</div>
-          </div>
-          {{/each}}
-        </div>
-        {{/if}}
+        {{dining_highlights_html}}
         <a href="{{whatsapp_wa_link}}" class="btn-reserve-outline" target="_blank" rel="noopener" style="margin-top:8px;">
-          Enquire About Dining
+          {{dining_cta_label}}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
       </div>
@@ -1749,260 +622,125 @@ svg { display: block; flex-shrink: 0; }
 </section>
 {{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     EXPERIENCES
-══════════════════════════════════════════════════════ -->
+<!-- EXPERIENCES -->
 {{#if has_experiences}}
 <section class="experiences-section" id="experiences">
   <div class="container">
     <div class="experiences-header reveal">
-      <span class="label-eyebrow">Activities</span>
-      <h2 class="section-headline">Beyond the Room</h2>
-      <p class="section-body">Curated experiences that connect you with the destination.</p>
+      <span class="label-eyebrow">{{experiences_eyebrow}}</span>
+      <h2 class="section-headline">{{experiences_heading}}</h2>
+      {{experiences_sub_html}}
     </div>
-    <div class="experiences-grid">
-      {{#each experiences}}
-      <div class="experience-card reveal reveal-delay-{{@index}}">
-        <div class="experience-card-img">
-          {{#if image}}
-            <img src="{{image}}" alt="{{name}}" loading="lazy">
-          {{/if}}
-        </div>
-        <div class="experience-card-body">
-          <div class="experience-card-name">{{name}}</div>
-          <div class="experience-card-desc">{{description}}</div>
-        </div>
-      </div>
-      {{/each}}
-    </div>
+    <div class="experiences-grid">{{experiences_cards_html}}</div>
   </div>
 </section>
 {{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     GALLERY MASONRY
-══════════════════════════════════════════════════════ -->
+<!-- GALLERY -->
 {{#if has_gallery}}
 <section class="gallery-section" id="gallery">
   <div class="container">
     <div class="gallery-header reveal">
-      <span class="label-eyebrow">The Property</span>
-      <h2 class="section-headline">A Visual Journey</h2>
-      <p class="section-body">Every corner of {{business_name}} is designed to delight.</p>
+      <span class="label-eyebrow">{{gallery_eyebrow}}</span>
+      <h2 class="section-headline">{{gallery_heading}}</h2>
+      {{gallery_sub_html}}
     </div>
-    <div class="gallery-masonry" id="gallery-grid">
-      {{#each gallery}}
-      <div class="gallery-item" data-src="{{this}}">
-        <img src="{{this}}" alt="Gallery" loading="lazy">
-      </div>
-      {{/each}}
-    </div>
+    <div class="gallery-masonry" id="gallery-grid">{{gallery_items_html}}</div>
   </div>
 </section>
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox">
-  <span class="lightbox-close" id="lightbox-close">✕</span>
-  <img src="" alt="" id="lightbox-img">
-</div>
+<div class="lightbox" id="lightbox"><span class="lightbox-close" id="lightbox-close">&#10005;</span><img src="" alt="" id="lightbox-img"></div>
 {{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     GUEST REVIEWS
-══════════════════════════════════════════════════════ -->
+<!-- REVIEWS -->
 {{#if has_testimonials}}
 <section class="reviews-section" id="reviews">
   <div class="container">
     <div class="reviews-header reveal">
-      <span class="label-eyebrow">Guest Voices</span>
-      <h2 class="section-headline">What Our Guests Say</h2>
+      <span class="label-eyebrow">{{reviews_eyebrow}}</span>
+      <h2 class="section-headline">{{reviews_heading}}</h2>
     </div>
-    <div class="reviews-grid">
-      {{#each testimonials}}
-      <div class="review-card reveal reveal-delay-{{@index}}">
-        <!-- Lucide: Quote -->
-        <svg class="review-quote-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
-        <div class="review-stars">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        </div>
-        <p class="review-text">"{{text}}"</p>
-        <div class="review-author">
-          {{#if photo}}
-            <div class="review-avatar"><img src="{{photo}}" alt="{{name}}" loading="lazy"></div>
-          {{else}}
-            <div class="review-avatar-init">{{name_char}}</div>
-          {{/if}}
-          <div>
-            <div class="review-name">{{name}}</div>
-            {{#if role}}<div class="review-role">{{role}}</div>{{/if}}
-          </div>
-        </div>
-      </div>
-      {{/each}}
-    </div>
+    <div class="reviews-grid">{{testimonials_cards_html}}</div>
   </div>
 </section>
 {{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     RECEPTION HOURS
-══════════════════════════════════════════════════════ -->
-{{#if hours}}
+<!-- HOURS -->
+{{#if has_hours}}
 <section class="hours-section" id="hours">
   <div class="container">
     <div class="reveal" style="margin-bottom:var(--sp-6);">
-      <span class="label-eyebrow">Hours</span>
-      <h2 class="section-headline">Reception &amp; Check-In</h2>
+      <span class="label-eyebrow">{{hours_eyebrow}}</span>
+      <h2 class="section-headline">{{hours_heading}}</h2>
     </div>
-    <div class="hours-grid">
-      {{#each hours}}
-      <div class="hours-row {{#if this.is_today}}today{{/if}}">
-        <span class="hours-day">
-          {{this.day}}
-          {{#if this.is_today}}<span class="today-pill">Today</span>{{/if}}
-        </span>
-        <span class="hours-time">{{this.hours}}</span>
-      </div>
-      {{/each}}
-    </div>
+    <div class="hours-grid">{{hours_rows_html}}</div>
   </div>
 </section>
 {{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     LOCATION
-══════════════════════════════════════════════════════ -->
+<!-- LOCATION -->
 <section class="location-section" id="contact">
   <div class="container">
     <div class="location-inner">
       <div class="location-info reveal">
-        <span class="label-eyebrow">Find Us</span>
-        <h2 class="section-headline">Getting Here</h2>
-        <p class="section-body">We're always here to assist with directions, airport transfers, or any arrangements before your arrival.</p>
-        <div class="location-details">
-          {{#if address}}
-          <div class="location-detail">
-            <!-- Lucide: MapPin -->
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span>{{address}}</span>
-          </div>
-          {{/if}}
-          {{#if phone}}
-          <div class="location-detail">
-            <!-- Lucide: Phone -->
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.09-1.09a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.73 16l.2.92z"/></svg>
-            <a href="tel:{{phone}}">{{phone}}</a>
-          </div>
-          {{/if}}
-          {{#if email}}
-          <div class="location-detail">
-            <!-- Lucide: Mail -->
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-            <a href="mailto:{{email}}">{{email}}</a>
-          </div>
-          {{/if}}
-        </div>
+        <span class="label-eyebrow">{{location_eyebrow}}</span>
+        <h2 class="section-headline">{{location_heading}}</h2>
+        {{location_body_html}}
+        <div class="location-details">{{location_details_html}}</div>
         <a href="{{whatsapp_wa_link}}" class="btn-reserve" target="_blank" rel="noopener" style="margin-top:var(--sp-4);align-self:flex-start;">
-          Message Us
+          {{location_cta_label}}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
       </div>
-      <div class="location-map reveal reveal-delay-2">
-        {{#if map_embed_url}}
-          <iframe src="{{map_embed_url}}" allowfullscreen loading="lazy" title="Location Map"></iframe>
-        {{else}}
-          <div class="location-map-ph">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-          </div>
-        {{/if}}
-      </div>
+      <div class="location-map reveal reveal-delay-2">{{location_map_html}}</div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════════════
-     LUXURY BOOKING CTA
-══════════════════════════════════════════════════════ -->
+<!-- BOOKING CTA -->
 <section class="booking-cta">
-  {{#if hero_image_url}}
-  <div class="booking-cta-bg" style="background-image: url('{{hero_image_url}}');"></div>
-  {{/if}}
+  {{cta_bg_html}}
   <div class="booking-cta-overlay"></div>
   <div class="container booking-cta-content">
-    <span class="label-eyebrow">Reserve Your Stay</span>
-    <h2 class="booking-cta-headline">Ready for an Unforgettable Escape?</h2>
-    <p class="booking-cta-body">Availability changes daily. Secure your preferred dates directly with our team for a personalised experience.</p>
+    <span class="label-eyebrow">{{cta_eyebrow}}</span>
+    <h2 class="booking-cta-headline">{{cta_heading}}</h2>
+    {{cta_body_html}}
     <a href="{{whatsapp_wa_link}}" class="btn-reserve" target="_blank" rel="noopener">
-      Reserve via WhatsApp
+      {{cta_button_label}}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
-    <p class="booking-cta-note">Instant confirmation · No booking fees · Direct with the property</p>
+    {{cta_note_html}}
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════════════
-     FOOTER
-══════════════════════════════════════════════════════ -->
+<!-- FOOTER -->
 <footer class="footer">
   <div class="container">
     <div class="footer-inner">
       <div>
         <div class="footer-brand-name">{{business_name}}</div>
         <p class="footer-brand-tagline">{{tagline}}</p>
-        <div class="footer-social">
-          {{#if facebook_url}}
-          <a href="{{facebook_url}}" target="_blank" rel="noopener" aria-label="Facebook">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-          </a>
-          {{/if}}
-          {{#if instagram_url}}
-          <a href="{{instagram_url}}" target="_blank" rel="noopener" aria-label="Instagram">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-          </a>
-          {{/if}}
-          {{#if whatsapp_wa_link}}
-          <a href="{{whatsapp_wa_link}}" target="_blank" rel="noopener" aria-label="WhatsApp">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-          </a>
-          {{/if}}
-        </div>
+        <div class="footer-social">{{footer_social_html}}</div>
       </div>
       <div>
-        <div class="footer-col-title">Navigate</div>
+        <div class="footer-col-title">{{footer_nav_title}}</div>
         <div class="footer-links-list">
-          {{#if has_rooms}}<a href="#rooms">Suites &amp; Rooms</a>{{/if}}
-          {{#if has_about}}<a href="#about">Our Story</a>{{/if}}
-          {{#if has_amenities}}<a href="#amenities">Amenities</a>{{/if}}
-          {{#if has_dining}}<a href="#dining">Dining</a>{{/if}}
-          {{#if has_gallery}}<a href="#gallery">Gallery</a>{{/if}}
-          {{#if has_testimonials}}<a href="#reviews">Reviews</a>{{/if}}
+          {{#if has_rooms}}<a href="#rooms">{{nav_rooms_label}}</a>{{/if}}
+          {{#if has_about}}<a href="#about">{{nav_about_label}}</a>{{/if}}
+          {{#if has_amenities}}<a href="#amenities">{{nav_amenities_label}}</a>{{/if}}
+          {{#if has_conference}}<a href="#conference">{{nav_conference_label}}</a>{{/if}}
+          {{#if has_packages}}<a href="#packages">{{nav_packages_label}}</a>{{/if}}
+          {{#if has_dining}}<a href="#dining">{{nav_dining_label}}</a>{{/if}}
+          {{#if has_gallery}}<a href="#gallery">{{nav_gallery_label}}</a>{{/if}}
+          {{#if has_testimonials}}<a href="#reviews">{{nav_reviews_label}}</a>{{/if}}
         </div>
       </div>
       <div>
-        <div class="footer-col-title">Contact</div>
-        {{#if phone}}<div class="footer-contact-item">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.09-1.09a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.73 16l.2.92z"/></svg>
-          <a href="tel:{{phone}}">{{phone}}</a>
-        </div>{{/if}}
-        {{#if email}}<div class="footer-contact-item">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-          <a href="mailto:{{email}}">{{email}}</a>
-        </div>{{/if}}
-        {{#if address}}<div class="footer-contact-item">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-          <span>{{address}}</span>
-        </div>{{/if}}
+        <div class="footer-col-title">{{footer_contact_title}}</div>
+        {{footer_contact_html}}
       </div>
       <div>
-        <div class="footer-col-title">Reserve</div>
-        <div class="footer-links-list">
-          <a href="{{whatsapp_wa_link}}" target="_blank" rel="noopener">Book via WhatsApp</a>
-          <a href="tel:{{phone}}">Call to Reserve</a>
-          {{#if email}}<a href="mailto:{{email}}">Email Enquiry</a>{{/if}}
-        </div>
+        <div class="footer-col-title">{{footer_reserve_title}}</div>
+        <div class="footer-links-list">{{footer_reserve_html}}</div>
       </div>
     </div>
     <div class="footer-bottom">
@@ -2012,73 +750,48 @@ svg { display: block; flex-shrink: 0; }
   </div>
 </footer>
 
-<!-- ══════════════════════════════════════════════════════
-     STICKY BOOKING WIDGET
-══════════════════════════════════════════════════════ -->
+<!-- STICKY WIDGET -->
 <div class="sticky-widget" id="sticky-widget">
   <div>
-    <div class="sticky-widget-label">Now Booking</div>
+    <div class="sticky-widget-label">{{sticky_label}}</div>
     <div class="sticky-widget-name">{{business_name}}</div>
   </div>
   <div class="sticky-widget-divider"></div>
-  <a href="{{whatsapp_wa_link}}" class="sticky-widget-btn" target="_blank" rel="noopener">Reserve Stay</a>
+  <a href="{{whatsapp_wa_link}}" class="sticky-widget-btn" target="_blank" rel="noopener">{{nav_cta_label}}</a>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     WHATSAPP FAB
-══════════════════════════════════════════════════════ -->
-{{#if whatsapp_clean}}
+<!-- WHATSAPP FAB -->
+{{#if has_whatsapp}}
 <a class="wa-fab" href="{{whatsapp_wa_link}}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
   <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
 </a>
 {{/if}}
 
-<!-- ══════════════════════════════════════════════════════
-     WCZ PLATFORM INJECTION POINTS
-══════════════════════════════════════════════════════ -->
-{{#if wcz_commerce_css}}{{{wcz_commerce_css}}}{{/if}}
-{{#if wcz_qv_drawer_html}}{{{wcz_qv_drawer_html}}}{{/if}}
-{{#if wcz_lb_html}}{{{wcz_lb_html}}}{{/if}}
-{{#if wcz_products_script}}{{{wcz_products_script}}}{{/if}}
-
-<!-- ══════════════════════════════════════════════════════
-     VANILLA JS — No frameworks
-══════════════════════════════════════════════════════ -->
+<!-- VANILLA JS -->
 <script>
 (function () {
   'use strict';
-
-  /* ── NAVIGATION SCROLL STATE ── */
-  const nav = document.getElementById('nav');
-  function onScroll() {
-    nav.classList.toggle('scrolled', window.scrollY > 80);
-  }
+  var nav = document.getElementById('nav');
+  function onScroll() { if (nav) nav.classList.toggle('scrolled', window.scrollY > 80); }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  /* ── MOBILE DRAWER ── */
-  const hamburger  = document.getElementById('nav-hamburger');
-  const drawer     = document.getElementById('mobile-drawer');
-  const overlay    = document.getElementById('drawer-overlay');
-  const closeBtn   = document.getElementById('drawer-close');
-
-  function openDrawer()  { drawer.classList.add('open'); hamburger.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function closeDrawer() { drawer.classList.remove('open'); hamburger.classList.remove('open'); document.body.style.overflow = ''; }
-
+  var hamburger = document.getElementById('nav-hamburger');
+  var drawer    = document.getElementById('mobile-drawer');
+  var overlay   = document.getElementById('drawer-overlay');
+  var closeBtn  = document.getElementById('drawer-close');
+  function openDrawer()  { if (drawer) drawer.classList.add('open'); if (hamburger) hamburger.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeDrawer() { if (drawer) drawer.classList.remove('open'); if (hamburger) hamburger.classList.remove('open'); document.body.style.overflow = ''; }
   if (hamburger) hamburger.addEventListener('click', openDrawer);
   if (overlay)   overlay.addEventListener('click', closeDrawer);
   if (closeBtn)  closeBtn.addEventListener('click', closeDrawer);
-  document.querySelectorAll('.drawer-link, .mobile-reserve-btn').forEach(function(a) {
-    a.addEventListener('click', closeDrawer);
-  });
+  document.querySelectorAll('.drawer-link, .mobile-reserve-btn').forEach(function(a) { a.addEventListener('click', closeDrawer); });
 
-  /* ── SCROLL REVEAL ── */
   var revealEls = Array.from(document.querySelectorAll('.reveal'));
   function checkReveal() {
     var vh = window.innerHeight;
     revealEls = revealEls.filter(function(el) {
-      var top = el.getBoundingClientRect().top;
-      if (top < vh - 60) { el.classList.add('visible'); return false; }
+      if (el.getBoundingClientRect().top < vh - 60) { el.classList.add('visible'); return false; }
       return true;
     });
   }
@@ -2086,60 +799,35 @@ svg { display: block; flex-shrink: 0; }
   window.addEventListener('resize', checkReveal, { passive: true });
   setTimeout(checkReveal, 100);
 
-  /* ── STICKY BOOKING WIDGET ── */
   var stickyWidget = document.getElementById('sticky-widget');
   var heroSection  = document.getElementById('hero');
   function checkSticky() {
     if (!stickyWidget || !heroSection) return;
-    var heroBottom = heroSection.getBoundingClientRect().bottom;
-    stickyWidget.classList.toggle('visible', heroBottom < 0);
+    stickyWidget.classList.toggle('visible', heroSection.getBoundingClientRect().bottom < 0);
   }
   window.addEventListener('scroll', checkSticky, { passive: true });
   checkSticky();
 
-  /* ── GALLERY LIGHTBOX ── */
-  var lightbox     = document.getElementById('lightbox');
-  var lightboxImg  = document.getElementById('lightbox-img');
+  var lightbox      = document.getElementById('lightbox');
+  var lightboxImg   = document.getElementById('lightbox-img');
   var lightboxClose = document.getElementById('lightbox-close');
-
   document.querySelectorAll('.gallery-item').forEach(function(item) {
     item.addEventListener('click', function() {
-      var src = item.getAttribute('data-src') || item.querySelector('img').src;
-      if (lightbox && lightboxImg) {
-        lightboxImg.src = src;
-        lightbox.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
+      var src = item.getAttribute('data-src') || (item.querySelector('img') && item.querySelector('img').src);
+      if (lightbox && lightboxImg && src) { lightboxImg.src = src; lightbox.classList.add('open'); document.body.style.overflow = 'hidden'; }
     });
   });
-
-  function closeLightbox() {
-    if (lightbox) {
-      lightbox.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-  }
-
+  function closeLightbox() { if (lightbox) { lightbox.classList.remove('open'); document.body.style.overflow = ''; } }
   if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
-  if (lightbox) lightbox.addEventListener('click', function(e) {
-    if (e.target === lightbox) closeLightbox();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeLightbox();
-  });
+  if (lightbox) lightbox.addEventListener('click', function(e) { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
 
-  /* ── SMOOTH SCROLL FOR ANCHOR LINKS ── */
   document.querySelectorAll('a[href^="#"]').forEach(function(a) {
     a.addEventListener('click', function(e) {
       var target = document.querySelector(a.getAttribute('href'));
-      if (target) {
-        e.preventDefault();
-        var offset = nav ? nav.offsetHeight + 16 : 80;
-        window.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' });
-      }
+      if (target) { e.preventDefault(); var offset = nav ? nav.offsetHeight + 16 : 80; window.scrollTo({ top: target.offsetTop - offset, behavior: 'smooth' }); }
     });
   });
-
 })();
 </script>
 
