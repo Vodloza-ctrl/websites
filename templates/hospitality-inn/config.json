@@ -1,7 +1,7 @@
 {
   "templateId": "hospitality-inn",
   "name": "Hospitality Inn",
-  "description": "For lodges, B&Bs, and hotels — WhatsApp booking-first, with room categories, amenities, conferencing venues, packages, and availability display.",
+  "description": "For lodges, B&Bs, and hotels — WhatsApp booking-first, with room categories, amenities, conferencing venues, packages, availability display, and optional cinematic video section.",
   "defaultPalette": "navy-gold",
   "defaultPrimaryColor": "#1a1a2e",
   "defaultTypeLabel": "Lodge",
@@ -17,7 +17,19 @@
   },
   "extraTokens": {
     "hi_hero_headline": "Your Private Retreat",
-    "hi_hero_subtext": "A calm, comfortable stay — book directly with us on WhatsApp."
+    "hi_hero_subtext": "A calm, comfortable stay — book directly with us on WhatsApp.",
+
+    "_video_comment": "All video fields are optional. Remove the 'video' object entirely (or omit 'url') to hide the section.",
+    "video": {
+      "url":       "",
+      "thumbnail": "",
+      "title":     "",
+      "subtitle":  "",
+      "label":     "Our Story",
+      "heading":   "Experience the Property",
+      "body":      "",
+      "runtime":   ""
+    }
   },
   "navLinks": [
     "#rooms:Rooms",
@@ -26,6 +38,7 @@
     "#conference:Conferencing",
     "#packages:Packages",
     "#dining:Dining",
+    "#video:Film",
     "#gallery:Gallery",
     "#reviews:Reviews",
     "#contact:Contact"
@@ -49,6 +62,7 @@
     { "flag": "has_packages",       "type": "computed", "token": "has_packages" },
     { "flag": "has_dining",         "type": "computed", "token": "has_dining" },
     { "flag": "has_experiences",    "type": "computed", "token": "has_experiences" },
+    { "flag": "has_video",          "type": "computed", "token": "has_video" },
     { "flag": "has_gallery",        "type": "computed", "token": "has_gallery" },
     { "flag": "has_testimonials",   "type": "computed", "token": "has_testimonials" },
     { "flag": "has_hours",          "type": "computed", "token": "has_hours" }
