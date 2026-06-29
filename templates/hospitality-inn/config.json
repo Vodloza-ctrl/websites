@@ -1,7 +1,7 @@
 {
   "templateId": "hospitality-inn",
   "name": "Hospitality Inn",
-  "description": "For lodges, B&Bs, and hotels — featuring a WhatsApp booking-first experience with room categories, amenities, and availability display.",
+  "description": "For lodges, B&Bs, and hotels — WhatsApp booking-first, with room categories, amenities, conferencing venues, packages, and availability display.",
   "defaultPalette": "navy-gold",
   "defaultPrimaryColor": "#1a1a2e",
   "defaultTypeLabel": "Lodge",
@@ -17,109 +17,40 @@
   },
   "extraTokens": {
     "hi_hero_headline": "Your Private Retreat",
-    "hi_hero_subtext": "Unwind in timeless elegance, where every detail is crafted for your comfort and peace."
+    "hi_hero_subtext": "A calm, comfortable stay — book directly with us on WhatsApp."
   },
   "navLinks": [
-    "#rooms:Suites",
-    "#about:Our Story",
+    "#rooms:Rooms",
+    "#about:About",
     "#amenities:Amenities",
+    "#conference:Conferencing",
+    "#packages:Packages",
     "#dining:Dining",
     "#gallery:Gallery",
     "#reviews:Reviews",
     "#contact:Contact"
   ],
-  "lists": [
-    {
-      "key": "rooms",
-      "itemTemplate": "",
-      "emptyHtml": ""
-    },
-    {
-      "key": "gallery",
-      "itemTemplate": "",
-      "emptyHtml": ""
-    },
-    {
-      "key": "testimonials",
-      "itemTemplate": "",
-      "emptyHtml": ""
-    },
-    {
-      "key": "hours",
-      "itemTemplate": "",
-      "emptyHtml": ""
-    },
-    {
-      "key": "stats",
-      "itemTemplate": "",
-      "emptyHtml": ""
-    },
-    {
-      "key": "amenities",
-      "itemTemplate": "",
-      "emptyHtml": ""
-    },
-    {
-      "key": "experiences",
-      "itemTemplate": "",
-      "emptyHtml": ""
-    },
-    {
-      "key": "dining_highlights",
-      "itemTemplate": "",
-      "emptyHtml": ""
-    }
-  ],
+  "lists": [],
   "conditionals": [
-    {
-      "flag": "has_rooms",
-      "type": "computed",
-      "token": "has_rooms"
-    },
-    {
-      "flag": "has_multiple_rooms",
-      "type": "computed",
-      "token": "has_multiple_rooms"
-    },
-    {
-      "flag": "has_about",
-      "type": "computed",
-      "token": "has_about"
-    },
-    {
-      "flag": "has_gallery",
-      "type": "computed",
-      "token": "has_gallery"
-    },
-    {
-      "flag": "has_testimonials",
-      "type": "computed",
-      "token": "has_testimonials"
-    },
-    {
-      "flag": "has_stats",
-      "type": "computed",
-      "token": "has_stats"
-    },
-    {
-      "flag": "has_featured_room",
-      "type": "computed",
-      "token": "has_featured_room"
-    },
-    {
-      "flag": "has_amenities",
-      "type": "computed",
-      "token": "has_amenities"
-    },
-    {
-      "flag": "has_dining",
-      "type": "computed",
-      "token": "has_dining"
-    },
-    {
-      "flag": "has_experiences",
-      "type": "computed",
-      "token": "has_experiences"
-    }
+    { "flag": "has_logo",           "type": "computed", "token": "has_logo" },
+    { "flag": "has_hero",           "type": "computed", "token": "has_hero" },
+    { "flag": "has_whatsapp",       "type": "computed", "token": "has_whatsapp" },
+    { "flag": "has_address",        "type": "computed", "token": "has_address" },
+    { "flag": "has_phone",          "type": "computed", "token": "has_phone" },
+    { "flag": "has_email",          "type": "computed", "token": "has_email" },
+    { "flag": "has_map",            "type": "computed", "token": "has_map" },
+    { "flag": "has_facebook",       "type": "computed", "token": "has_facebook" },
+    { "flag": "has_instagram",      "type": "computed", "token": "has_instagram" },
+    { "flag": "has_about",          "type": "computed", "token": "has_about" },
+    { "flag": "has_rooms",          "type": "computed", "token": "has_rooms" },
+    { "flag": "has_multiple_rooms", "type": "computed", "token": "has_multiple_rooms" },
+    { "flag": "has_amenities",      "type": "computed", "token": "has_amenities" },
+    { "flag": "has_conference",     "type": "computed", "token": "has_conference" },
+    { "flag": "has_packages",       "type": "computed", "token": "has_packages" },
+    { "flag": "has_dining",         "type": "computed", "token": "has_dining" },
+    { "flag": "has_experiences",    "type": "computed", "token": "has_experiences" },
+    { "flag": "has_gallery",        "type": "computed", "token": "has_gallery" },
+    { "flag": "has_testimonials",   "type": "computed", "token": "has_testimonials" },
+    { "flag": "has_hours",          "type": "computed", "token": "has_hours" }
   ]
 }
