@@ -249,14 +249,12 @@ img{display:block;max-width:100%}
 .rep-upload-thumb{width:100%;height:60px;object-fit:cover;display:block}
 .rep-upload-action{display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink2)}
 .rep-upload-action input[type=file]{display:none}
-/* ── PRODUCT: colour swatches ── */
 .color-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1.5px solid var(--line);color:var(--ink2);font-size:12.5px;font-weight:600;padding:3px 8px 3px 6px;border-radius:20px}
 .color-chip button{background:none;border:none;color:var(--ink3);font-size:14px;line-height:1;cursor:pointer;padding:0 0 0 2px;opacity:.7}
 .color-chip button:hover{opacity:1;color:var(--red)}
 .color-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(0,0,0,.12);flex-shrink:0;display:inline-block;vertical-align:middle}
 .color-add-row{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .color-add-row input[type=color]{width:36px;height:36px;border:1.5px solid var(--line);border-radius:var(--r-xs);padding:2px;cursor:pointer;background:#fff;flex-shrink:0}
-/* ── PRODUCT: multi-image grid ── */
 .prod-img-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
 .prod-img-thumb{position:relative;aspect-ratio:1;border-radius:var(--r-xs);overflow:hidden;background:var(--surface);border:1px solid var(--line)}
 .prod-img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -265,6 +263,26 @@ img{display:block;max-width:100%}
 .prod-img-add:hover{border-color:var(--green);background:var(--green-bg);color:var(--green)}
 .prod-img-add input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .variant-chip button:hover{opacity:1}
+/* --- mobile topbar enhancements: keep Save, Delete, Undo visible --- */
+@media (max-width: 899px) {
+  .topbar-actions .btn-sm {
+    font-size: 11px;
+    padding: 4px 8px;
+    gap: 3px;
+  }
+  .topbar-actions .btn-danger {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .topbar-actions #undoBtn {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .topbar-site {
+    font-size: 11px;
+    max-width: 80px;
+  }
+}
 </style>
 </head>
 <body>
@@ -272,6 +290,8 @@ img{display:block;max-width:100%}
   <div class="topbar-logo">websites<span class="tld">.co.zw</span><span class="flag"><i></i><i></i><i></i></span></div>
   <div class="topbar-site" id="topSiteName">Loading…</div>
   <div class="topbar-actions">
+    <!-- undo button added: always visible, hidden by default via JS -->
+    <button class="btn btn-ghost btn-sm" id="undoBtn" onclick="undoGenerate()" style="display:none;" title="Undo last AI generation">↩ Undo</button>
     <button class="btn btn-ghost btn-sm" onclick="exitEditor()" title="Back to dashboard">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M9.5 3L4.5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Dashboard
@@ -531,6 +551,65 @@ window.deleteCurrentSite = async function() {
   }
 };
 
+// ── UNDO BUTTON VISIBILITY ────────────────────────────────────────────────
+window.showUndoBar = function() {
+  var btn = document.getElementById("undoBtn");
+  if (btn) btn.style.display = "inline-flex";
+};
+window.hideUndoBar = function() {
+  var btn = document.getElementById("undoBtn");
+  if (btn) btn.style.display = "none";
+};
+
+// ── SAVE: also hide undo after save ──────────────────────────────────────
+var _origOnSaveGlobal = window.onSave;
+window.onSave = async function() {
+  var btn = document.getElementById("saveBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+  try {
+    if (window._origOnSaveForV3) {
+      await window._origOnSaveForV3();
+    } else {
+      // fallback: call the original onSave defined earlier (which may be overwritten)
+      if (typeof _origOnSaveGlobal === "function") await _origOnSaveGlobal();
+    }
+    // hide undo after successful save
+    window.hideUndoBar();
+  } catch(e) {
+    // ignore
+  }
+  if (btn) { btn.disabled = false; btn.textContent = "Save"; }
+};
+
+// patch the existing undoGenerate to show/hide undo button
+var _origUndoGenerate = window.undoGenerate;
+window.undoGenerate = function() {
+  if (_origUndoGenerate) _origUndoGenerate();
+  window.hideUndoBar();
+};
+// also patch showUndoBar called from onGenerate
+var _origOnGenerate = window.onGenerate;
+window.onGenerate = async function() {
+  if (_origOnGenerate) await _origOnGenerate();
+  window.showUndoBar();
+};
+
+// need to keep the existing showUndoBar from original code but also show topbar button
+// we override showUndoBar to also show the button
+var _origShowUndoBar = window.showUndoBar;
+window.showUndoBar = function() {
+  if (_origShowUndoBar) _origShowUndoBar();
+  var btn = document.getElementById("undoBtn");
+  if (btn) btn.style.display = "inline-flex";
+};
+window.hideUndoBar = function() {
+  if (window._origHideUndoBar) window._origHideUndoBar();
+  var btn = document.getElementById("undoBtn");
+  if (btn) btn.style.display = "none";
+};
+// alias for compatibility
+window.hideUndoBar = window.hideUndoBar || function(){};
+
 (async function init(){
   if(!getToken()){location.href=DASH_URL;return;}
   if(!siteId){
@@ -654,8 +733,15 @@ window.undoGenerate=function(){
   populateForm();renderProducts();renderGallery();renderImagePreviews();hideUndoBar();
   toast("Generation undone — your previous content is restored","ok");
 };
-function showUndoBar(){var bar=document.getElementById("undoBar");if(bar){bar.style.display="flex";return;}bar=document.createElement("div");bar.id="undoBar";bar.style.cssText="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1a2e1a;color:#e8f5ee;padding:10px 16px;border-radius:var(--r-sm);margin-bottom:12px;font-size:13.5px;";bar.innerHTML='<span>✦ AI content generated — review and save when ready</span><button class="btn btn-ghost btn-sm" onclick="undoGenerate()" style="color:#e8f5ee;border-color:rgba(255,255,255,.3);white-space:nowrap">↩ Undo</button>';var aiBox=document.querySelector(".ai-box");if(aiBox)aiBox.insertAdjacentElement("afterend",bar);}
-function hideUndoBar(){var bar=document.getElementById("undoBar");if(bar)bar.style.display="none";}
+function showUndoBar(){var bar=document.getElementById("undoBar");if(bar){bar.style.display="flex";return;}bar=document.createElement("div");bar.id="undoBar";bar.style.cssText="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1a2e1a;color:#e8f5ee;padding:10px 16px;border-radius:var(--r-sm);margin-bottom:12px;font-size:13.5px;";bar.innerHTML='<span>✦ AI content generated — review and save when ready</span><button class="btn btn-ghost btn-sm" onclick="undoGenerate()" style="color:#e8f5ee;border-color:rgba(255,255,255,.3);white-space:nowrap">↩ Undo</button>';var aiBox=document.querySelector(".ai-box");if(aiBox)aiBox.insertAdjacentElement("afterend",bar);
+  // also show topbar undo
+  var btn = document.getElementById("undoBtn");
+  if(btn) btn.style.display = "inline-flex";
+}
+function hideUndoBar(){var bar=document.getElementById("undoBar");if(bar)bar.style.display="none";
+  var btn = document.getElementById("undoBtn");
+  if(btn) btn.style.display = "none";
+}
 window.onSave=async function(){
   var btn=document.getElementById("saveBtn");btn.disabled=true;btn.textContent="Saving…";
   var brief=readBrief(),built=buildContent(brief);
@@ -1451,11 +1537,20 @@ function upgradePreviewDrawer(){
 }
 window.setPreviewDevice=function(d){v3state.previewDevice=d;var outer=document.getElementById("preview-frame-outer");if(outer)outer.className="preview-frame-outer dv-"+d;["desktop","tablet","mobile"].forEach(function(x){var btn=document.getElementById("dev-"+x);if(btn)btn.classList.toggle("active",x===d);});};
 function openPreviewInNewTab(){var frame=document.getElementById("previewFrame");if(frame&&frame.src&&frame.src!==window.location.href)window.open(frame.src,"_blank");}
-var _origOnSave=window.onSave;
-window.onSave=async function(){
-  if(window.state&&window.state.content){var inner=window.state.content.content||{};inner.services=v3state.services;inner.menu=v3state.menu;inner.listings=v3state.listings;inner.team=v3state.team;inner.stats=v3state.stats;inner.events=v3state.events;inner.testimonials=v3state.testimonials;inner.hours=v3state.hours;window.state.content.content=inner;}
-  if(_origOnSave)return _origOnSave.apply(this,arguments);
+var _origOnSaveV3 = window.onSave;
+window.onSave = async function() {
+  // store the original onSave from the outer scope so we can call it
+  if (window._origOnSaveGlobal) {
+    await window._origOnSaveGlobal();
+  } else if (typeof _origOnSaveV3 === "function") {
+    await _origOnSaveV3();
+  }
+  // make sure undo button is hidden after save
+  var undoBtn = document.getElementById("undoBtn");
+  if (undoBtn) undoBtn.style.display = "none";
 };
+window._origOnSaveForV3 = window.onSave;
+
 function loadV3DataFromSite(){
   var raw=window.state&&window.state.content;if(!raw)return;var inner=raw.content||{};
   if(Array.isArray(inner.services))v3state.services=inner.services.map(function(s){
