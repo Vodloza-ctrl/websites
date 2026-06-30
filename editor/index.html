@@ -617,38 +617,62 @@ window.hideUndoBar = function() {
   if (btn) btn.style.display = "none";
 };
 
-// ── SAVE ──
+// ── SAVE ── FIXED PRODUCTION VERSION
 window.onSave = async function() {
   var btn = document.getElementById("saveBtn");
   if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
   try {
-    if (typeof window.__mergeV3IntoState === "function") window.__mergeV3IntoState();
+    // Merge V3 content (services, menu, listings, team, hours, etc.)
+    if (typeof window.__mergeV3IntoState === "function") {
+      window.__mergeV3IntoState();
+    }
+    
     var brief = readBrief();
     var built = buildContent(brief);
+    
+    // Build the payload
+    var payload = {
+      site_name: brief.business_name || (state.site && state.site.site_name),
+      template_id: g("f_template") || "bold-retail",
+      content: built
+    };
+    
     var r = await api("/api/sites/" + encodeURIComponent(siteId), {
       method: "PUT",
-      body: JSON.stringify({
-        site_name: brief.business_name || (state.site && state.site.site_name),
-        template_id: g("f_template"),
-        content: built
-      })
+      body: JSON.stringify(payload)
     });
-    if (!r.ok) { toast("Couldn't save — try again", "err"); return; }
+    
+    if (!r.ok) {
+      var errMsg = r.data?.error || r.data?.message || "Couldn't save — try again";
+      toast(errMsg, "err");
+      return;
+    }
+    
     state.dirty = false;
     if (r.data.site) state.site = r.data.site;
+    
+    // Update UI
     var savedSlug = state.site && state.site.draft_subdomain;
     document.getElementById("topSiteName").textContent = (state.site && state.site.site_name) || brief.business_name || "Your site";
     if (savedSlug) document.getElementById("pubUrl").textContent = savedSlug + ".websites.co.zw";
-    var badge = document.getElementById("statusBadge"), st = state.site ? state.site.status : "draft";
+    
+    var badge = document.getElementById("statusBadge");
+    var st = state.site ? state.site.status : "draft";
     badge.textContent = st === "published" ? "Published" : st === "pending_payment" ? "Payment pending" : "Draft";
     badge.className = "status-badge " + (st === "published" ? "status-published" : st === "pending_payment" ? "status-pending" : "status-draft");
+    
     window.hideUndoBar();
     toast("Saved ✓", "ok");
     refreshPreview();
+    
   } catch(e) {
-    toast("Network error", "err");
+    console.error("Save error:", e);
+    toast("Network error — check console", "err");
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Save"; }
+    if (btn) { 
+      btn.disabled = false; 
+      btn.textContent = "Save"; 
+    }
   }
 };
 
