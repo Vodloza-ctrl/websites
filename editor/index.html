@@ -290,7 +290,6 @@ img{display:block;max-width:100%}
   <div class="topbar-logo">websites<span class="tld">.co.zw</span><span class="flag"><i></i><i></i><i></i></span></div>
   <div class="topbar-site" id="topSiteName">Loading…</div>
   <div class="topbar-actions">
-    <!-- undo button added: always visible, hidden by default via JS -->
     <button class="btn btn-ghost btn-sm" id="undoBtn" onclick="undoGenerate()" style="display:none;" title="Undo last AI generation">↩ Undo</button>
     <button class="btn btn-ghost btn-sm" onclick="exitEditor()" title="Back to dashboard">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M9.5 3L4.5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -301,9 +300,7 @@ img{display:block;max-width:100%}
       Preview
     </button>
     <button class="btn btn-green btn-sm" id="saveBtn" onclick="onSave()">Save</button>
-    <button class="btn btn-danger btn-sm" onclick="deleteCurrentSite()" title="Delete this site">
-      🗑️ Delete
-    </button>
+    <button class="btn btn-danger btn-sm" onclick="deleteCurrentSite()" title="Delete this site">🗑️ Delete</button>
   </div>
 </header>
 <div class="layout">
@@ -409,12 +406,78 @@ img{display:block;max-width:100%}
         <div class="panel-head"><h2>Gallery photos</h2><span class="fld-hint" style="font-size:12px">Up to 8 photos</span></div>
         <div class="panel-body"><div class="img-grid" id="galleryGrid"></div></div>
       </div>
+      
+      <!-- VIDEO SECTION - Full implementation -->
+      <div class="panel" style="margin-top:16px">
+        <div class="panel-head"><h2>🎬 Video section</h2><span class="tag" id="videoStatus">Not added</span></div>
+        <div class="panel-body">
+          <div class="fld-group">
+            <label class="fld-label" for="f_video">Video URL <span class="fld-hint">— YouTube, Vimeo, or direct MP4/WebM</span></label>
+            <input class="fld-input" id="f_video" placeholder="https://www.youtube.com/embed/… or https://youtu.be/…" oninput="markDirty();updateVideoPreview()">
+            <div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Supports YouTube, Vimeo, and direct video files (MP4, WebM, OGG).</div>
+          </div>
+          
+          <div class="two">
+            <div class="fld-group">
+              <label class="fld-label">Video thumbnail <span class="fld-hint">— shown before play</span></label>
+              <div class="upload-zone" id="videoThumbZone" onclick="triggerUpload('videoThumb')">
+                <input type="file" id="videoThumbFile" accept="image/*" onchange="handleVideoThumbUpload(this)">
+                <span class="uz-icon">🖼️</span>
+                <div class="uz-label">Tap to upload a thumbnail</div>
+                <div class="uz-sub">Optional — if not set, hero image will be used</div>
+              </div>
+              <div id="videoThumbPreview" style="display:none" class="upload-preview">
+                <img id="videoThumbImg" src="" alt="Video thumbnail" style="max-height:120px">
+                <button class="upload-remove" onclick="removeVideoThumb()">x</button>
+              </div>
+            </div>
+            <div class="fld-group">
+              <label class="fld-label">Video runtime <span class="fld-hint">optional</span></label>
+              <input class="fld-input" id="f_video_runtime" placeholder="e.g. 2:30" oninput="markDirty()">
+            </div>
+          </div>
+          
+          <div class="fld-group">
+            <label class="fld-label">Video title <span class="fld-hint">optional — shown over the thumbnail</span></label>
+            <input class="fld-input" id="f_video_title" placeholder="Experience the difference" oninput="markDirty()">
+          </div>
+          
+          <div class="fld-group">
+            <label class="fld-label">Video subtitle <span class="fld-hint">optional — small text below title</span></label>
+            <input class="fld-input" id="f_video_subtitle" placeholder="A glimpse into our world" oninput="markDirty()">
+          </div>
+          
+          <div class="two">
+            <div class="fld-group">
+              <label class="fld-label">Section eyebrow <span class="fld-hint">optional — small label above heading</span></label>
+              <input class="fld-input" id="f_video_eyebrow" placeholder="e.g. Our Story" oninput="markDirty()">
+            </div>
+            <div class="fld-group">
+              <label class="fld-label">Section heading <span class="fld-hint">optional — main heading for video section</span></label>
+              <input class="fld-input" id="f_video_heading" placeholder="e.g. Experience the difference" oninput="markDirty()">
+            </div>
+          </div>
+          
+          <div class="fld-group">
+            <label class="fld-label">Video description <span class="fld-hint">optional — shown next to the video</span></label>
+            <textarea class="fld-textarea" id="f_video_body" rows="2" placeholder="A short description that appears alongside the video…" oninput="markDirty()"></textarea>
+          </div>
+          
+          <div class="fld-group" id="videoPreviewContainer" style="display:none">
+            <label class="fld-label">Video preview</label>
+            <div id="videoPreview" style="background:var(--ink);border-radius:var(--r-sm);padding:20px;text-align:center;color:rgba(255,255,255,0.5);min-height:80px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
+              <div style="font-size:28px">▶️</div>
+              <div style="font-size:13px" id="videoPreviewLabel">Video will appear here</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div class="upsell">
         <div class="upsell-ico">🎬</div>
         <div class="upsell-body">
-          <strong>Add a video to your site</strong>
-          <p>Embed a YouTube or TikTok video, or host your own with Pro.</p>
-          <div style="margin-top:10px"><div class="fld-group"><label class="fld-label" for="f_video">YouTube / TikTok embed URL <span class="fld-hint">optional</span></label><input class="fld-input" id="f_video" placeholder="https://www.youtube.com/embed/…" oninput="markDirty()"></div></div>
+          <strong>Video best practices</strong>
+          <p>For best results, use a 16:9 aspect ratio video. YouTube and Vimeo embeds work great. For direct uploads, use MP4 with H.264 encoding.</p>
         </div>
       </div>
     </div>
@@ -507,6 +570,10 @@ var state={site:null,content:null,dirty:false,products:[],images:{},gallery:[],p
 window.state=state;
 var STARTER_PRODUCT_LIMIT=6;
 var STARTER_IMAGE_LIMIT=10;
+
+// ── VIDEO DATA STORE ──
+window.videoData = {};
+
 function getToken(){return localStorage.getItem("wcz_token")||"";}
 async function api(path,opts){
   var token=getToken();
@@ -525,7 +592,6 @@ window.deleteCurrentSite = async function() {
     return;
   }
   var siteName = state.site ? state.site.site_name : "this site";
-  
   var confirmed = confirm(
     "🗑️ Delete \"" + siteName + "\" permanently?\n\n" +
     "This will remove your entire site, including:\n" +
@@ -535,7 +601,6 @@ window.deleteCurrentSite = async function() {
     "• This action CANNOT be undone!"
   );
   if (!confirmed) return;
-
   try {
     var r = await api("/api/sites/" + encodeURIComponent(siteId), { method: "DELETE" });
     if (!r.ok) {
@@ -543,15 +608,13 @@ window.deleteCurrentSite = async function() {
       return;
     }
     toast("Site deleted. Redirecting to dashboard...", "ok");
-    setTimeout(function() {
-      location.href = DASH_URL;
-    }, 1500);
+    setTimeout(function() { location.href = DASH_URL; }, 1500);
   } catch(e) {
     toast("Network error. Try again.", "err");
   }
 };
 
-// ── UNDO BUTTON VISIBILITY ────────────────────────────────────────────────
+// ── UNDO BUTTON ──
 window.showUndoBar = function() {
   var btn = document.getElementById("undoBtn");
   if (btn) btn.style.display = "inline-flex";
@@ -561,55 +624,98 @@ window.hideUndoBar = function() {
   if (btn) btn.style.display = "none";
 };
 
-// ── SAVE: also hide undo after save ──────────────────────────────────────
-var _origOnSaveGlobal = window.onSave;
+// ── SAVE ──
 window.onSave = async function() {
   var btn = document.getElementById("saveBtn");
   if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
   try {
     if (window._origOnSaveForV3) {
       await window._origOnSaveForV3();
-    } else {
-      // fallback: call the original onSave defined earlier (which may be overwritten)
-      if (typeof _origOnSaveGlobal === "function") await _origOnSaveGlobal();
     }
-    // hide undo after successful save
     window.hideUndoBar();
-  } catch(e) {
-    // ignore
-  }
+  } catch(e) { /* ignore */ }
   if (btn) { btn.disabled = false; btn.textContent = "Save"; }
 };
+window._origOnSaveForV3 = window.onSave;
 
-// patch the existing undoGenerate to show/hide undo button
-var _origUndoGenerate = window.undoGenerate;
+// ── UNDO GENERATE ──
+var _preGenerateSnapshot = null;
 window.undoGenerate = function() {
-  if (_origUndoGenerate) _origUndoGenerate();
+  if (!_preGenerateSnapshot) return;
+  state.content = _preGenerateSnapshot.content;
+  state.products = _preGenerateSnapshot.products;
+  state.images = _preGenerateSnapshot.images;
+  state.gallery = _preGenerateSnapshot.gallery;
+  _preGenerateSnapshot = null;
+  state.dirty = true;
+  populateForm();
+  renderProducts();
+  renderGallery();
+  renderImagePreviews();
   window.hideUndoBar();
-};
-// also patch showUndoBar called from onGenerate
-var _origOnGenerate = window.onGenerate;
-window.onGenerate = async function() {
-  if (_origOnGenerate) await _origOnGenerate();
-  window.showUndoBar();
+  toast("Generation undone ✓", "ok");
 };
 
-// need to keep the existing showUndoBar from original code but also show topbar button
-// we override showUndoBar to also show the button
-var _origShowUndoBar = window.showUndoBar;
-window.showUndoBar = function() {
-  if (_origShowUndoBar) _origShowUndoBar();
-  var btn = document.getElementById("undoBtn");
-  if (btn) btn.style.display = "inline-flex";
+// ── VIDEO THUMBNAIL FUNCTIONS ──
+window.handleVideoThumbUpload = async function(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var url = await window.uploadToR2(file, "video-thumbnail");
+  if (!url) { toast("Upload failed — try again", "err"); return; }
+  window.videoData.thumbnail = url;
+  var preview = document.getElementById("videoThumbPreview");
+  var img = document.getElementById("videoThumbImg");
+  var zone = document.getElementById("videoThumbZone");
+  if (img) img.src = url;
+  if (preview) preview.style.display = "block";
+  if (zone) zone.style.display = "none";
+  document.getElementById("videoStatus").textContent = "Has thumbnail";
+  window.markDirty();
+  updateVideoPreview();
 };
-window.hideUndoBar = function() {
-  if (window._origHideUndoBar) window._origHideUndoBar();
-  var btn = document.getElementById("undoBtn");
-  if (btn) btn.style.display = "none";
-};
-// alias for compatibility
-window.hideUndoBar = window.hideUndoBar || function(){};
 
+window.removeVideoThumb = function() {
+  delete window.videoData.thumbnail;
+  document.getElementById("videoThumbPreview").style.display = "none";
+  document.getElementById("videoThumbZone").style.display = "block";
+  document.getElementById("videoStatus").textContent = "No thumbnail";
+  window.markDirty();
+  updateVideoPreview();
+};
+
+window.updateVideoPreview = function() {
+  var url = document.getElementById("f_video").value.trim();
+  var container = document.getElementById("videoPreviewContainer");
+  var preview = document.getElementById("videoPreview");
+  var label = document.getElementById("videoPreviewLabel");
+  if (!container || !preview) return;
+  
+  if (url) {
+    container.style.display = "block";
+    var isYoutube = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    var isVimeo = url.match(/vimeo\.com\/(\d+)/);
+    var embedUrl = url;
+    if (isYoutube) {
+      embedUrl = "https://www.youtube.com/embed/" + isYoutube[1];
+      preview.innerHTML = '<iframe src="' + embedUrl + '" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px" allowfullscreen></iframe>';
+    } else if (isVimeo) {
+      embedUrl = "https://player.vimeo.com/video/" + isVimeo[1];
+      preview.innerHTML = '<iframe src="' + embedUrl + '" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px" allowfullscreen></iframe>';
+    } else if (url.match(/\.(mp4|webm|ogg|mov)/i)) {
+      var thumb = window.videoData.thumbnail || '';
+      preview.innerHTML = '<video style="width:100%;aspect-ratio:16/9;border-radius:8px;background:#000" controls preload="metadata" poster="' + thumb + '"><source src="' + url + '"></video>';
+    } else {
+      preview.innerHTML = '<div style="font-size:28px">▶️</div><div style="font-size:13px;color:rgba(255,255,255,0.5)">' + url + '</div>';
+    }
+    if (label) label.textContent = "Video preview";
+    document.getElementById("videoStatus").textContent = "Video added";
+  } else {
+    container.style.display = "none";
+    document.getElementById("videoStatus").textContent = "Not added";
+  }
+};
+
+// ── INIT ──
 (async function init(){
   if(!getToken()){location.href=DASH_URL;return;}
   if(!siteId){
@@ -639,7 +745,6 @@ window.hideUndoBar = window.hideUndoBar || function(){};
   if(window.innerWidth>=900){state.previewOpen=true;var pd=document.getElementById("previewDrawer");if(pd)pd.classList.add("open");loadPreview();startPreviewAutoRefresh();}
 })();
 
-
 function populateForm(){
   var c=(state.content&&state.content.content)||{};
   var b=c._brief||state.content._brief||null;
@@ -663,7 +768,30 @@ function populateForm(){
   set("s_whatsapp",s.whatsapp||"");set("s_facebook",s.facebook||"");
   set("s_instagram",s.instagram||"");set("s_tiktok",s.tiktok||"");
   set("s_twitter",s.twitter||"");set("s_linkedin",s.linkedin||"");
-  set("f_video",(c.video&&c.video.embedUrl)||"");
+  
+  // ── Load video data ──
+  var video = (c.video && typeof c.video === 'object') ? c.video : null;
+  if (video) {
+    set("f_video", video.url || video.src || '');
+    set("f_video_title", video.title || '');
+    set("f_video_subtitle", video.subtitle || video.caption || '');
+    set("f_video_body", video.body || video.description || '');
+    set("f_video_runtime", video.runtime || video.duration || '');
+    set("f_video_eyebrow", video.label || video.eyebrow || '');
+    set("f_video_heading", video.heading || video.heading_text || '');
+    if (video.thumbnail || video.poster || video.image) {
+      window.videoData.thumbnail = video.thumbnail || video.poster || video.image;
+      var preview = document.getElementById("videoThumbPreview");
+      var img = document.getElementById("videoThumbImg");
+      var zone = document.getElementById("videoThumbZone");
+      if (img) img.src = window.videoData.thumbnail;
+      if (preview) preview.style.display = "block";
+      if (zone) zone.style.display = "none";
+      document.getElementById("videoStatus").textContent = "Has thumbnail";
+    }
+    updateVideoPreview();
+  }
+  
   document.getElementById("imgCount").textContent=countImages()+" / "+STARTER_IMAGE_LIMIT+" uploaded";
   var nameFromForm=g("f_name");
   if(nameFromForm)document.getElementById("topSiteName").textContent=nameFromForm;
@@ -680,6 +808,7 @@ window.switchTab=function(tab,el){
   window.scrollTo({top:0,behavior:"smooth"});
 };
 window.markDirty=function(){state.dirty=true;};
+
 function readBrief(){
   return{
     business_name:g("f_name"),industry:g("f_industry"),city:g("f_city"),description:g("f_desc"),
@@ -691,15 +820,57 @@ function readBrief(){
     socials:{whatsapp:g("s_whatsapp"),facebook:g("s_facebook"),instagram:g("s_instagram"),tiktok:g("s_tiktok"),twitter:g("s_twitter"),linkedin:g("s_linkedin")},
   };
 }
+
 function buildContent(brief){
   var existing=(state.content&&state.content.content)||{};
   var existingTheme=(state.content&&state.content.theme)||{};
   var theme=Object.assign({palette:paletteFor(g("f_template")),font_pair:fontFor(g("f_template")),sections:["hero","about","services","products","gallery","contact"]},existingTheme);
   var resolvedColors=resolvePaletteColors(theme.palette,theme.custom_accent);
   theme.accent=resolvedColors.accent;theme.bg=resolvedColors.bg;theme.dark=resolvedColors.dark;theme.gold=resolvedColors.gold;
-  return{theme:theme,content:Object.assign({},existing,{business_name:brief.business_name,tagline:g("f_tagline"),location:g("f_location")||brief.city,contact:brief.contact,map_embed_url:g("f_map_embed_url")||null,socials:brief.social,products:state.products,images:Object.assign({},state.images,{gallery:state.gallery}),video:g("f_video")?{embedUrl:g("f_video")}:(existing.video||null)})};
+  
+  // ── Build video object ──
+  var videoUrl = g("f_video");
+  var videoObj = null;
+  if (videoUrl) {
+    videoObj = {
+      url: videoUrl,
+      thumbnail: window.videoData.thumbnail || null,
+      title: g("f_video_title") || null,
+      subtitle: g("f_video_subtitle") || null,
+      body: g("f_video_body") || null,
+      runtime: g("f_video_runtime") || null,
+      label: g("f_video_eyebrow") || null,
+      heading: g("f_video_heading") || null,
+    };
+    Object.keys(videoObj).forEach(function(k) { if (videoObj[k] === null || videoObj[k] === '') delete videoObj[k]; });
+    if (Object.keys(videoObj).length === 0) videoObj = null;
+  }
+  
+  // Ensure video section is in theme.sections if video exists
+  if (videoObj && theme.sections && theme.sections.indexOf('video') === -1) {
+    var insertIndex = Math.min(theme.sections.indexOf('about') + 1, theme.sections.length);
+    if (insertIndex < 0 || insertIndex > theme.sections.length) insertIndex = 2;
+    theme.sections.splice(insertIndex, 0, 'video');
+  }
+  
+  return{
+    theme:theme,
+    content:Object.assign({},existing,{
+      business_name:brief.business_name,
+      tagline:g("f_tagline"),
+      location:g("f_location")||brief.city,
+      contact:brief.contact,
+      map_embed_url:g("f_map_embed_url")||null,
+      socials:brief.social,
+      products:state.products,
+      images:Object.assign({},state.images,{gallery:state.gallery}),
+      video:videoObj,
+      video_eyebrow:g("f_video_eyebrow")||null,
+      video_heading:g("f_video_heading")||null,
+    })
+  };
 }
-var _preGenerateSnapshot=null;
+
 window.onGenerate=async function(){
   var brief=readBrief();
   if(!brief.business_name){toast("Add your business name first");return;}
@@ -720,430 +891,69 @@ window.onGenerate=async function(){
     state.content.content._brief=brief;
     state.dirty=true;
     updateBudget({used:r.data.gen_count,limit:r.data.cap,remaining:r.data.cap-r.data.gen_count});
-    populateForm();renderProducts();renderGallery();renderImagePreviews();showUndoBar();
+    populateForm();renderProducts();renderGallery();renderImagePreviews();window.showUndoBar();
     toast("Generated! Review below, then Save ✓","ok");refreshPreview();
   }catch(e){toast("Network error — try again","err");_preGenerateSnapshot=null;}
   finally{btn.classList.remove("loading");btn.disabled=false;}
 };
-window.undoGenerate=function(){
-  if(!_preGenerateSnapshot)return;
-  state.content=_preGenerateSnapshot.content;state.products=_preGenerateSnapshot.products;
-  state.images=_preGenerateSnapshot.images;state.gallery=_preGenerateSnapshot.gallery;
-  _preGenerateSnapshot=null;state.dirty=true;
-  populateForm();renderProducts();renderGallery();renderImagePreviews();hideUndoBar();
-  toast("Generation undone — your previous content is restored","ok");
-};
-function showUndoBar(){var bar=document.getElementById("undoBar");if(bar){bar.style.display="flex";return;}bar=document.createElement("div");bar.id="undoBar";bar.style.cssText="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1a2e1a;color:#e8f5ee;padding:10px 16px;border-radius:var(--r-sm);margin-bottom:12px;font-size:13.5px;";bar.innerHTML='<span>✦ AI content generated — review and save when ready</span><button class="btn btn-ghost btn-sm" onclick="undoGenerate()" style="color:#e8f5ee;border-color:rgba(255,255,255,.3);white-space:nowrap">↩ Undo</button>';var aiBox=document.querySelector(".ai-box");if(aiBox)aiBox.insertAdjacentElement("afterend",bar);
-  // also show topbar undo
-  var btn = document.getElementById("undoBtn");
-  if(btn) btn.style.display = "inline-flex";
-}
-function hideUndoBar(){var bar=document.getElementById("undoBar");if(bar)bar.style.display="none";
-  var btn = document.getElementById("undoBtn");
-  if(btn) btn.style.display = "none";
-}
-window.onSave=async function(){
-  var btn=document.getElementById("saveBtn");btn.disabled=true;btn.textContent="Saving…";
-  var brief=readBrief(),built=buildContent(brief);
-  try{
-    var r=await api("/api/sites/"+encodeURIComponent(siteId),{method:"PUT",body:JSON.stringify({site_name:brief.business_name||state.site.site_name,template_id:g("f_template"),content:built})});
-    if(!r.ok){toast("Couldn't save — try again","err");return;}
-    state.dirty=false;if(r.data.site)state.site=r.data.site;
-    var savedName=(state.site&&state.site.site_name)||brief.business_name||"Your site";
-    var savedSlug=state.site&&state.site.draft_subdomain;
-    document.getElementById("topSiteName").textContent=savedName;
-    if(savedSlug)document.getElementById("pubUrl").textContent=savedSlug+".websites.co.zw";
-    var badge=document.getElementById("statusBadge");var st=state.site?state.site.status:"draft";
-    badge.textContent=st==="published"?"Published":st==="pending_payment"?"Payment pending":"Draft";
-    badge.className="status-badge "+(st==="published"?"status-published":st==="pending_payment"?"status-pending":"status-draft");
-    hideUndoBar();toast("Saved ✓","ok");refreshPreview();
-  }catch(e){toast("Network error","err");}
-  finally{btn.disabled=false;btn.textContent="Save";}
-};
-window.onPublish=function(){toast("Payment coming soon — save your site and we'll notify you when payments are live","ok");};
-window.onPublishPro=function(){toast("Pro plan coming soon — save your site and we'll notify you when payments are live","ok");};
-window.exitEditor=function(){if(state.dirty&&!confirm("You have unsaved changes. Leave without saving?"))return;location.href=DASH_URL;};
-window.togglePreview=function(){var d=document.getElementById("previewDrawer");state.previewOpen=!state.previewOpen;d.classList.toggle("open",state.previewOpen);if(state.previewOpen)loadPreview();};
-window.refreshPreview=function(){if(state.previewOpen||window.innerWidth>=900)loadPreview();};
-var _previewTokenTimer=null;
-function startPreviewAutoRefresh(){if(_previewTokenTimer)clearInterval(_previewTokenTimer);_previewTokenTimer=setInterval(function(){if(state.previewOpen)loadPreview();},4*60*1000);}
-async function loadPreview(){
-  var slug=state.site&&state.site.draft_subdomain;
-  var loading=document.getElementById("previewLoading");var frame=document.getElementById("previewFrame");var loadingP=loading?loading.querySelector("p"):null;
-  if(!siteId||!slug){if(loadingP)loadingP.textContent="Save your site first to preview it";if(loading)loading.style.display="flex";if(frame)frame.style.display="none";return;}
-  if(loading)loading.style.display="flex";if(frame)frame.style.display="none";if(loadingP)loadingP.textContent="Loading preview…";
-  var r=await api("/api/sites/"+encodeURIComponent(siteId)+"/preview-token");
-  if(!r.ok||!r.data||!r.data.preview_url){var msg=(r.data&&r.data.error==="no_subdomain")?"Save your site first to preview it":"Couldn't load preview — tap Refresh to try again";if(loadingP)loadingP.textContent=msg;return;}
-  var urlLabel=document.getElementById("previewUrlLabel");if(urlLabel)urlLabel.textContent=slug+".websites.co.zw";
-  if(frame){frame.onload=function(){if(loading)loading.style.display="none";frame.style.display="block";};frame.src=r.data.preview_url;}
-}
-/* ─────────────────────────────────────────────────────────────────────────────
-   PRODUCT FUNCTIONS — PATCHED with multi-image + colors
-   ───────────────────────────────────────────────────────────────────────────── */
-function productImagesHtml(id, images) {
-  var imgs = Array.isArray(images) ? images : [];
-  var thumbs = imgs.map(function(url, pi) {
-    return '<div class="prod-img-thumb">'
-      + '<img src="' + esc(url) + '" loading="lazy">'
-      + '<button class="prod-img-thumb-remove" onclick="removeProductImage(\'' + id + '\',' + pi + ')" aria-label="Remove">×</button>'
+
+// ── PRODUCT FUNCTIONS ── (simplified version)
+function renderProducts() {
+  var list = document.getElementById("productList");
+  var empty = document.getElementById("productEmpty");
+  var limitMsg = document.getElementById("productLimitMsg");
+  empty.style.display = state.products.length === 0 ? '' : 'none';
+  limitMsg.style.display = state.products.length >= STARTER_PRODUCT_LIMIT ? 'block' : 'none';
+  list.querySelectorAll('.product-card').forEach(function(c) { c.remove(); });
+  state.products.forEach(function(p) {
+    if (!Array.isArray(p.images)) p.images = p.image ? [p.image] : [];
+    if (!Array.isArray(p.colors)) p.colors = [];
+    if (!Array.isArray(p.variants)) p.variants = [];
+    var card = document.createElement("div");
+    card.className = "product-card";
+    card.dataset.pid = p.id;
+    var thumbHtml = p.image
+      ? '<img class="product-thumb" src="' + esc(p.image) + '" alt="">'
+      : '<div class="product-thumb-placeholder">📦</div>';
+    card.innerHTML = 
+      '<div class="product-card-head" onclick="this.parentElement.classList.toggle(\'open\')" style="cursor:pointer">'
+      + thumbHtml
+      + '<div class="product-name">' + (p.name || '<em style="color:var(--ink3)">Tap to edit</em>') + '</div>'
+      + '<div class="product-price">' + (p.price || '') + '</div>'
+      + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:.4"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      + '</div>'
+      + '<div class="product-card-body">'
+      + '<div class="two">'
+      + '<div class="fld-group"><label class="fld-label">Item name</label><input class="fld-input" placeholder="e.g. Home Jersey" value="' + esc(p.name || '') + '" oninput="updateProduct(\'' + p.id + '\',\'name\',this.value)"></div>'
+      + '<div class="fld-group"><label class="fld-label">Price</label><input class="fld-input" placeholder="$20" value="' + esc(p.price || '') + '" oninput="updateProduct(\'' + p.id + '\',\'price\',this.value)"></div>'
+      + '</div>'
+      + '<div class="fld-group"><label class="fld-label">Description</label><textarea class="fld-textarea" rows="2" placeholder="Brief description…" oninput="updateProduct(\'' + p.id + '\',\'description\',this.value)">' + esc(p.description || '') + '</textarea></div>'
+      + '<div style="margin-top:12px"><button type="button" class="product-del" onclick="removeProduct(\'' + p.id + '\')">Remove item</button></div>'
       + '</div>';
-  }).join('');
-  var addZone = imgs.length < 5
-    ? '<label class="prod-img-add" title="Add photo">'
-      + '<input type="file" accept="image/*" onchange="handleProductImageUpload(\'' + id + '\',this)">'
-      + '+</label>'
-    : '';
-  return thumbs + addZone;
+    list.insertBefore(card, empty);
+  });
 }
-
-function productColorChipsHtml(id, colors) {
-  if (!Array.isArray(colors)) return '';
-  return colors.map(function(col, ci) {
-    var hex = col.hex || '#888888';
-    var name = col.name || hex;
-    return '<span class="color-chip">'
-      + '<span class="color-dot" style="background:' + esc(hex) + '"></span>'
-      + esc(name)
-      + '<button type="button" onclick="removeProductColor(\'' + id + '\',' + ci + ')" aria-label="Remove">×</button>'
-      + '</span>';
-  }).join('');
-}
-
 window.addProduct = function() {
   if (state.products.length >= STARTER_PRODUCT_LIMIT) {
     document.getElementById('productLimitMsg').style.display = 'block';
     toast('6 product limit on Starter. Upgrade to Pro for unlimited.', 'err');
     return;
   }
-  state.products.push({
-    id: 'p_' + Date.now(),
-    name: '', description: '', price: '', price_was: '',
-    image: '', images: [],
-    category: '',
-    variants: [], colors: [],
-    stock: 'in'
-  });
+  state.products.push({id:'p_'+Date.now(), name:'', description:'', price:'', image:'', images:[], variants:[], colors:[] });
   renderProducts();
   markDirty();
 };
-
 window.removeProduct = function(id) {
   state.products = state.products.filter(function(p) { return p.id !== id; });
   renderProducts();
   markDirty();
 };
-
-window.toggleProduct = function(id) {
-  var c = document.querySelector('[data-pid="' + id + '"]');
-  if (c) c.classList.toggle('open');
-};
-
 window.updateProduct = function(id, key, val) {
   var p = state.products.find(function(p) { return p.id === id; });
   if (p) { p[key] = val; markDirty(); }
-  var card = document.querySelector('[data-pid="' + id + '"]');
-  if (card) {
-    var nm = card.querySelector('.product-name'), pr = card.querySelector('.product-price');
-    if (nm && key === 'name') nm.textContent = val || 'New item';
-    if (pr && key === 'price') pr.textContent = val;
-  }
 };
 
-window.onTuneProduct = async function(id) {
-  var ta = document.getElementById('pdesc_' + id);
-  var btn = document.getElementById('ptune_' + id);
-  if (!ta) return;
-  var original = ta.value;
-  if (btn) { btn.disabled = true; btn.textContent = 'Tuning…'; }
-  var improved = await tuneText('product_description', original);
-  if (btn) { btn.disabled = false; btn.textContent = '✦ Tune with AI'; }
-  if (!improved) return;
-  ta.value = improved;
-  updateProduct(id, 'description', improved);
-  toast('Description tuned ✓ — edit further or save', 'ok');
-};
-
-window.setStock = function(id, stock, btn) {
-  updateProduct(id, 'stock', stock);
-  var row = btn.closest('.stock-row');
-  if (row) row.querySelectorAll('.stock-opt').forEach(function(b) { b.className = 'stock-opt'; });
-  btn.className = 'stock-opt active-' + stock;
-};
-
-// Sizes (variants)
-window.togglePreset = function(id, val) {
-  var p = state.products.find(function(p) { return p.id === id; });
-  if (!p) return;
-  if (!Array.isArray(p.variants)) p.variants = [];
-  var idx = p.variants.indexOf(val);
-  if (idx > -1) { p.variants.splice(idx, 1); }
-  else { p.variants.push(val); }
-  markDirty();
-  var card = document.querySelector('[data-pid="' + id + '"]');
-  if (!card) return;
-  renderVariantChips(card, id, p.variants);
-  card.querySelectorAll('.vpreset').forEach(function(btn) {
-    var v = btn.getAttribute('title');
-    btn.className = 'vpreset' + (p.variants.indexOf(v) > -1 ? ' vpreset-on' : '');
-  });
-};
-
-window.addVariant = function(id, val) {
-  if (!val || !val.trim()) return;
-  var p = state.products.find(function(p) { return p.id === id; });
-  if (!p) return;
-  if (!Array.isArray(p.variants)) p.variants = [];
-  if (p.variants.indexOf(val.trim()) > -1) return;
-  p.variants.push(val.trim());
-  markDirty();
-  var card = document.querySelector('[data-pid="' + id + '"]');
-  if (card) renderVariantChips(card, id, p.variants);
-};
-
-window.removeVariant = function(id, idx) {
-  var p = state.products.find(function(p) { return p.id === id; });
-  if (p && Array.isArray(p.variants)) {
-    p.variants.splice(idx, 1);
-    markDirty();
-    var card = document.querySelector('[data-pid="' + id + '"]');
-    if (card) renderVariantChips(card, id, p.variants);
-  }
-};
-
-window.addCustomVariant = function(id, inputId) {
-  var el = document.getElementById(inputId);
-  if (!el) return;
-  var val = el.value.trim();
-  if (!val) return;
-  val.split(',').forEach(function(v) { window.addVariant(id, v.trim()); });
-  el.value = '';
-};
-
-function renderVariantChips(card, id, variants) {
-  var wrap = card.querySelector('.variant-chips-wrap');
-  if (!wrap) return;
-  wrap.innerHTML = variants.map(function(v, i) {
-    return '<span class="variant-chip">' + esc(v)
-      + '<button type="button" onclick="removeVariant(\'' + id + '\',' + i + ')" aria-label="Remove">×</button>'
-      + '</span>';
-  }).join('');
-}
-
-// Colours
-window.addProductColor = function(id) {
-  var nameEl = document.getElementById('cname_' + id);
-  var hexEl  = document.getElementById('chex_' + id);
-  if (!nameEl || !hexEl) return;
-  var name = nameEl.value.trim();
-  var hex  = hexEl.value || '#000000';
-  if (!name) { toast('Enter a colour name', 'err'); nameEl.focus(); return; }
-  var p = state.products.find(function(p) { return p.id === id; });
-  if (!p) return;
-  if (!Array.isArray(p.colors)) p.colors = [];
-  p.colors.push({ name: name, hex: hex });
-  markDirty();
-  nameEl.value = '';
-  hexEl.value = '#000000';
-  var card = document.querySelector('[data-pid="' + id + '"]');
-  if (card) renderColorChipsInCard(card, id, p.colors);
-};
-
-window.removeProductColor = function(id, idx) {
-  var p = state.products.find(function(p) { return p.id === id; });
-  if (!p || !Array.isArray(p.colors)) return;
-  p.colors.splice(idx, 1);
-  markDirty();
-  var card = document.querySelector('[data-pid="' + id + '"]');
-  if (card) renderColorChipsInCard(card, id, p.colors);
-};
-
-function renderColorChipsInCard(card, id, colors) {
-  var wrap = card.querySelector('.color-chips-wrap');
-  if (!wrap) return;
-  wrap.innerHTML = productColorChipsHtml(id, colors);
-}
-
-// Multi-image
-window.handleProductImageUpload = async function(id, input) {
-  var file = input.files[0]; if (!file) return;
-  var p = state.products.find(function(p) { return p.id === id; });
-  if (!p) return;
-  if (!Array.isArray(p.images)) p.images = [];
-  if (p.images.length >= 5) { toast('Maximum 5 images per product', 'err'); return; }
-  // show spinner in grid
-  var grid = document.getElementById('pimggrid_' + id);
-  if (grid) {
-    var sp = document.createElement('div');
-    sp.id = 'pimgsp_' + id;
-    sp.className = 'prod-img-thumb';
-    sp.style.cssText = 'display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3)';
-    sp.textContent = 'Uploading…';
-    grid.insertBefore(sp, grid.querySelector('.prod-img-add') || null);
-  }
-  var url = await uploadToR2(file, 'products');
-  var spEl = document.getElementById('pimgsp_' + id); if (spEl) spEl.remove();
-  if (!url) { toast('Upload failed — try again', 'err'); return; }
-  p.images.push(url);
-  if (!p.image) p.image = url; // first image = primary
-  markDirty();
-  // update thumb in card head
-  var card = document.querySelector('[data-pid="' + id + '"]');
-  if (card) {
-    var th = card.querySelector('.product-thumb-placeholder');
-    if (th) th.outerHTML = '<img class="product-thumb" src="' + esc(url) + '" alt="">';
-    var headThumb = card.querySelector('.product-thumb');
-    if (headThumb) headThumb.src = url;
-    // re-render image grid
-    var gr = document.getElementById('pimggrid_' + id);
-    if (gr) gr.innerHTML = productImagesHtml(id, p.images);
-  }
-  toast('Photo added ✓', 'ok');
-};
-
-window.removeProductImage = function(id, idx) {
-  var p = state.products.find(function(p) { return p.id === id; });
-  if (!p || !Array.isArray(p.images)) return;
-  p.images.splice(idx, 1);
-  p.image = p.images[0] || '';
-  markDirty();
-  var card = document.querySelector('[data-pid="' + id + '"]');
-  if (card) {
-    var gr = document.getElementById('pimggrid_' + id);
-    if (gr) gr.innerHTML = productImagesHtml(id, p.images);
-    var headThumb = card.querySelector('.product-thumb');
-    if (headThumb) { if (p.image) { headThumb.src = p.image; } else { headThumb.outerHTML = '<div class="product-thumb-placeholder">📦</div>'; } }
-  }
-};
-
-// Main render
-function renderProducts() {
-  var list  = document.getElementById('productList');
-  var empty = document.getElementById('productEmpty');
-  var limitMsg = document.getElementById('productLimitMsg');
-  empty.style.display = state.products.length === 0 ? '' : 'none';
-  limitMsg.style.display = state.products.length >= STARTER_PRODUCT_LIMIT ? 'block' : 'none';
-  list.querySelectorAll('.product-card').forEach(function(c) { c.remove(); });
-
-  var SIZE_PRESETS = ['XS','S','M','L','XL','XXL','One size'];
-
-  state.products.forEach(function(p) {
-    // normalise
-    if (!Array.isArray(p.images)) p.images = p.image ? [p.image] : [];
-    if (!Array.isArray(p.colors)) p.colors = [];
-    if (!Array.isArray(p.variants)) p.variants = [];
-
-    var card = document.createElement('div');
-    card.className = 'product-card';
-    card.dataset.pid = p.id;
-
-    var thumbHtml = p.image
-      ? '<img class="product-thumb" src="' + esc(p.image) + '" alt="">'
-      : '<div class="product-thumb-placeholder">📦</div>';
-
-    var varChips = p.variants.map(function(v, i) {
-      return '<span class="variant-chip">' + esc(v)
-        + '<button type="button" onclick="removeVariant(\'' + p.id + '\',' + i + ')" aria-label="Remove">×</button>'
-        + '</span>';
-    }).join('');
-
-    var sizeChips = SIZE_PRESETS.map(function(s) {
-      var active = p.variants.indexOf(s) > -1;
-      return '<button type="button" class="vpreset' + (active ? ' vpreset-on' : '') + '"'
-        + ' onclick="togglePreset(\'' + p.id + '\',\'' + s + '\')" title="' + s + '">' + s + '</button>';
-    }).join('');
-
-    var colorChips = productColorChipsHtml(p.id, p.colors);
-    var imgGrid    = productImagesHtml(p.id, p.images);
-    var stock      = p.stock || 'in';
-
-    card.innerHTML =
-      // ── CARD HEAD ──────────────────────────────────────────────────────────
-      '<div class="product-card-head" onclick="toggleProduct(\'' + p.id + '\')" style="cursor:pointer">'
-      + thumbHtml
-      + '<div class="product-name">' + (p.name || '<em style="color:var(--ink3)">Tap to edit</em>') + '</div>'
-      + '<div class="product-price">' + (p.price || '') + '</div>'
-      + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:.4"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-      + '</div>'
-
-      // ── CARD BODY ──────────────────────────────────────────────────────────
-      + '<div class="product-card-body">'
-
-      // Name + Category
-      + '<div class="two">'
-      + '<div class="fld-group"><label class="fld-label">Item name</label>'
-      + '<input class="fld-input" placeholder="e.g. Home Jersey" value="' + esc(p.name || '') + '"'
-      + ' oninput="updateProduct(\'' + p.id + '\',\'name\',this.value)"></div>'
-      + '<div class="fld-group"><label class="fld-label">Category <span class="fld-hint">optional</span></label>'
-      + '<input class="fld-input" placeholder="e.g. Jerseys" value="' + esc(p.category || '') + '"'
-      + ' oninput="updateProduct(\'' + p.id + '\',\'category\',this.value)"></div>'
-      + '</div>'
-
-      // Price + Compare price
-      + '<div class="two">'
-      + '<div class="fld-group"><label class="fld-label">Price</label>'
-      + '<input class="fld-input" placeholder="$20" value="' + esc(p.price || '') + '"'
-      + ' oninput="updateProduct(\'' + p.id + '\',\'price\',this.value)"></div>'
-      + '<div class="fld-group"><label class="fld-label">Compare price <span class="fld-hint">shows strikethrough</span></label>'
-      + '<input class="fld-input" placeholder="$25 (was price)" value="' + esc(p.price_was || '') + '"'
-      + ' oninput="updateProduct(\'' + p.id + '\',\'price_was\',this.value)"></div>'
-      + '</div>'
-
-      // Description
-      + '<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'
-      + '<textarea class="fld-textarea" id="pdesc_' + p.id + '" style="min-height:52px"'
-      + ' placeholder="Brief description…"'
-      + ' oninput="updateProduct(\'' + p.id + '\',\'description\',this.value)">' + esc(p.description || '') + '</textarea>'
-      + '<button type="button" onclick="onTuneProduct(\'' + p.id + '\')" id="ptune_' + p.id + '"'
-      + ' style="margin-top:6px;font-size:12px;font-weight:600;color:var(--green-dk);background:var(--green-bg);border:none;border-radius:6px;padding:5px 10px;display:inline-flex;align-items:center;gap:5px">✦ Tune with AI</button>'
-      + '</div>'
-
-      // Product images
-      + '<div class="fld-group"><label class="fld-label">Product photos <span class="fld-hint">— up to 5, first is the main photo</span></label>'
-      + '<div class="prod-img-grid" id="pimggrid_' + p.id + '">' + imgGrid + '</div>'
-      + '</div>'
-
-      // Sizes (variants)
-      + '<div class="fld-group"><label class="fld-label">Sizes <span class="fld-hint">— tap to add, tap again to remove</span></label>'
-      + '<div class="variant-chips-wrap" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:4px">' + varChips + '</div>'
-      + '<div class="vpreset-section"><div class="vpreset-label">Quick add</div>'
-      + '<div class="vpreset-row">' + sizeChips + '</div></div>'
-      + '<div style="display:flex;gap:6px;margin-top:8px">'
-      + '<input class="fld-input" id="vcustom_' + p.id + '" placeholder="Custom size or option, e.g. 500ml" style="font-size:13px;padding:8px 10px"'
-      + ' onkeydown="if(event.key===\'Enter\'){addCustomVariant(\'' + p.id + '\',\'vcustom_' + p.id + '\');event.preventDefault();}">'
-      + '<button type="button" class="btn btn-ghost btn-sm" onclick="addCustomVariant(\'' + p.id + '\',\'vcustom_' + p.id + '\')" style="white-space:nowrap;flex-shrink:0">+ Add</button>'
-      + '</div>'
-      + '</div>'
-
-      // Colours
-      + '<div class="fld-group"><label class="fld-label">Colours <span class="fld-hint">— name + hex, shown as swatches in the product drawer</span></label>'
-      + '<div class="color-chips-wrap" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:4px">' + colorChips + '</div>'
-      + '<div class="color-add-row">'
-      + '<input class="fld-input" id="cname_' + p.id + '" placeholder="Colour name e.g. Midnight Black" style="font-size:13px;padding:8px 10px;flex:1;min-width:120px"'
-      + ' onkeydown="if(event.key===\'Enter\'){addProductColor(\'' + p.id + '\');event.preventDefault();}">'
-      + '<input type="color" id="chex_' + p.id + '" value="#000000" title="Pick colour">'
-      + '<button type="button" class="btn btn-ghost btn-sm" onclick="addProductColor(\'' + p.id + '\')" style="white-space:nowrap;flex-shrink:0">+ Add colour</button>'
-      + '</div>'
-      + '<div style="font-size:11.5px;color:var(--ink3);margin-top:5px">Customers can select a colour in the product drawer. Each colour can also be linked to a specific product photo (coming soon).</div>'
-      + '</div>'
-
-      // Stock
-      + '<div class="fld-group"><label class="fld-label">Stock status</label>'
-      + '<div class="stock-row">'
-      + '<button type="button" class="stock-opt ' + (stock === 'in' ? 'active-in' : '') + '" onclick="setStock(\'' + p.id + '\',\'in\',this)">✓ In stock</button>'
-      + '<button type="button" class="stock-opt ' + (stock === 'low' ? 'active-low' : '') + '" onclick="setStock(\'' + p.id + '\',\'low\',this)">⚠ Low stock</button>'
-      + '<button type="button" class="stock-opt ' + (stock === 'out' ? 'active-out' : '') + '" onclick="setStock(\'' + p.id + '\',\'out\',this)">✗ Out of stock</button>'
-      + '</div></div>'
-
-      // Remove button
-      + '<div style="margin-top:12px"><button type="button" class="product-del" onclick="removeProduct(\'' + p.id + '\')">Remove item</button></div>'
-      + '</div>'; // end card-body
-
-    list.insertBefore(card, empty);
-  });
-}
-/* ─────────────────────────────────────────────────────────────────────────────
-   END PRODUCT FUNCTIONS
-   ───────────────────────────────────────────────────────────────────────────── */
+// ── IMAGE FUNCTIONS ──
 window.triggerUpload=function(type){var el=document.getElementById(type+"File");if(el)el.click();};
 window.handleUpload=async function(type,input){var file=input.files[0];if(!file)return;if(countImages()>=STARTER_IMAGE_LIMIT){toast("10 image limit on Starter.","err");return;}showProgress(type,true);var url=await uploadToR2(file,type);showProgress(type,false);if(!url){toast("Upload failed — try again","err");return;}state.images[type]=url;renderImagePreviews();updateImgCount();markDirty();toast("Uploaded ✓","ok");};
 function showProgress(type,show){var p=document.getElementById(type+"Progress");if(p)p.style.display=show?"block":"none";}
@@ -1153,7 +963,8 @@ function updateImgCount(){document.getElementById("imgCount").textContent=countI
 function renderGallery(){var grid=document.getElementById("galleryGrid");grid.innerHTML="";state.gallery.forEach(function(url,i){var wrap=document.createElement("div");wrap.className="img-thumb-wrap";wrap.innerHTML='<img src="'+esc(url)+'" loading="lazy"><button class="img-thumb-remove" onclick="removeGalleryImg('+i+')">×</button>';grid.appendChild(wrap);});if(state.gallery.length<8){var add=document.createElement("div");add.className="img-thumb-add";add.innerHTML='<input type="file" accept="image/*" onchange="handleGalleryUpload(this)"><span>+</span>';grid.appendChild(add);}}
 window.handleGalleryUpload=async function(input){var file=input.files[0];if(!file)return;if(countImages()>=STARTER_IMAGE_LIMIT){toast("10 image limit on Starter.","err");return;}var url=await uploadToR2(file,"gallery");if(!url){toast("Upload failed","err");return;}state.gallery.push(url);renderGallery();updateImgCount();markDirty();toast("Photo added ✓","ok");};
 window.removeGalleryImg=function(i){state.gallery.splice(i,1);renderGallery();updateImgCount();markDirty();};
-async function tuneText(fieldType,currentText,opts){opts=opts||{};if(!currentText||!currentText.trim()){toast("Add some text first","err");return null;}try{var r=await api("/api/ai/tune",{method:"POST",body:JSON.stringify({field_type:fieldType,current_text:currentText,business_name:(state.content&&state.content.content&&state.content.content.business_name)||"",industry:(document.getElementById("f_industry")||{}).value||"",site_id:siteId,})});if(!r.ok||!r.data.text){toast(r.data&&r.data.error==="tune_limit_reached"?"AI tune-up limit reached for this site":"Couldn't improve that text — try again","err");return null;}return r.data.text;}catch(e){toast("Network error — try again","err");return null;}}
+
+// ── UPLOAD HELPER ──
 async function uploadToR2(file,type){
   var allowed=["image/jpeg","image/png","image/webp","image/gif","image/svg+xml"];
   if(allowed.indexOf(file.type)<0){toast("Only JPG, PNG, WebP or SVG allowed","err");return null;}
@@ -1163,11 +974,16 @@ async function uploadToR2(file,type){
   try{var resp=await fetch(r.data.upload_url,{method:"PUT",body:file,headers:{"Content-Type":file.type}});if(!resp.ok)return null;return r.data.public_url;}catch(e){return null;}
 }
 window.uploadToR2=uploadToR2;
-function updateBudget(b){var el=document.getElementById("aiBudget");if(!b){var used=Number((state.site&&state.site.ai_generations_used)||0);el.innerHTML="Generations used: <b>"+used+" / 10</b> on this site.";if(used>=10){document.getElementById("generateBtn").disabled=true;}return;}var limit=b.limit||10;el.innerHTML="Generations: <b>"+b.used+" / "+limit+"</b>. "+Math.max(0,limit-b.used)+" remaining.";if(b.remaining===0||b.used>=limit){document.getElementById("generateBtn").disabled=true;document.getElementById("generateBtn").querySelector(".ai-ico").textContent="✦ No generations left";}}
+
+// ── TOAST ──
+function toast(msg,type){var wrap=document.getElementById("toastWrap"),t=document.createElement("div");t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);requestAnimationFrame(function(){t.classList.add("show");});setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);}
+
+// ── DESIGN TAB ──
 function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","grocery-fmcg":"market-fresh","grocery":"market-fresh","retail-hardware":"utility-slate","hardware":"utility-slate","hospitality-inn":"navy-gold"};return m[t]||"clean-white";}
 function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","retail-hardware":"display-mono","hospitality-inn":"playfair-jakarta"};return m[t]||"grotesk-serif";}
 var PALETTES_UI=[{key:"black-white-gold",name:"Dark Gold",bg:"#0c0c0c",surface:"#161616",accent:"#c8a24a",dark:"#0c0c0c"},{key:"midnight-purple",name:"Midnight Purple",bg:"#0d0a14",surface:"#17121f",accent:"#a855f7",dark:"#0d0a14"},{key:"deep-teal",name:"Deep Teal",bg:"#061a1a",surface:"#0d2828",accent:"#14b8a6",dark:"#061a1a"},{key:"sky-blue",name:"Sky Blue",bg:"#0f1b2d",surface:"#16263d",accent:"#3da5e0",dark:"#0f1b2d"},{key:"elite-sports",name:"Sports Green",bg:"#0a0a0a",surface:"#151515",accent:"#16a34a",dark:"#0a0a0a"},{key:"rose-noir",name:"Rose Noir",bg:"#0e0b0d",surface:"#1a1318",accent:"#e8a0b0",dark:"#0e0b0d"},{key:"clean-white",name:"Clean White",bg:"#ffffff",surface:"#f6f6f4",accent:"#1a1a1a",dark:"#141414"},{key:"warm-terracotta",name:"Terracotta",bg:"#fdf6f0",surface:"#fff",accent:"#c0440e",dark:"#3a1606"},{key:"ember-cream",name:"Ember Cream",bg:"#FBF4E9",surface:"#fff",accent:"#D2541F",dark:"#3a1708"},{key:"blush-plum",name:"Blush Plum",bg:"#ffffff",surface:"#F7ECEC",accent:"#B08D57",dark:"#2d1620"},{key:"soft-pink",name:"Soft Pink",bg:"#fff9fb",surface:"#fdeef3",accent:"#e91e8c",dark:"#3a0f24"},{key:"navy-gold",name:"Navy Gold",bg:"#ffffff",surface:"#EAF1F9",accent:"#C99A2E",dark:"#0a2540"},{key:"slate-gold",name:"Slate Gold",bg:"#ffffff",surface:"#F4F6FA",accent:"#C08A2D",dark:"#20262f"},{key:"medical-teal",name:"Medical Teal",bg:"#f4fbfb",surface:"#e8f6f6",accent:"#0891b2",dark:"#063a3f"},{key:"forest-cream",name:"Forest Cream",bg:"#F6F1E7",surface:"#fff",accent:"#B0852F",dark:"#1f3320"},{key:"market-fresh",name:"Market Fresh",bg:"#ffffff",surface:"#f4faf5",accent:"#1e8c3a",dark:"#0f3d1a"},{key:"bright-orange",name:"Bright Orange",bg:"#ffffff",surface:"#fff8f3",accent:"#ea580c",dark:"#2b1400"},{key:"utility-slate",name:"Utility Slate",bg:"#f7f8fa",surface:"#ffffff",accent:"#1a56db",dark:"#0f1729"}];
 var FONTS_UI=[{key:"clean-sans",name:"Clean Sans",preview:"Modern & Clear",style:"font-family:'Space Grotesk',sans-serif"},{key:"grotesk-serif",name:"Grotesk Serif",preview:"Editorial Mix",style:"font-family:'Fraunces',serif"},{key:"playfair-jakarta",name:"Playfair",preview:"Classic & Elegant",style:"font-family:'Playfair Display',serif"},{key:"garamond-jost",name:"Garamond Jost",preview:"Refined & Light",style:"font-family:'Cormorant Garamond',serif"},{key:"sports-sans",name:"Sports Sans",preview:"Bold & Condensed",style:"font-family:'Barlow Condensed',sans-serif;font-weight:700"},{key:"display-mono",name:"Display Mono",preview:"Technical & Clean",style:"font-family:'DM Mono',monospace"}];
+
 function resolvePaletteColors(paletteKey,customAccent){var p=PALETTES_UI.find(function(x){return x.key===paletteKey;})||PALETTES_UI.find(function(x){return x.key==="clean-white";})||PALETTES_UI[0];return{accent:customAccent||p.accent,bg:p.bg,dark:p.dark||p.bg,gold:customAccent||p.accent};}
 function buildPaletteGrid(){var grid=document.getElementById("paletteGrid");if(!grid)return;var current=(state.content&&state.content.theme&&state.content.theme.palette)||"";grid.innerHTML=PALETTES_UI.map(function(p){var active=p.key===current?" active":"";var isDark=luminanceFromHex(p.bg)<0.18;var dotBorder=isDark?"rgba(255,255,255,.15)":"rgba(0,0,0,.08)";return'<div class="palette-swatch'+active+'" onclick="selectPalette(\''+p.key+'\')" style="background:'+p.bg+'"><div class="sw-dots"><div class="sw-dot" style="background:'+p.bg+';border-color:'+dotBorder+'"></div><div class="sw-dot" style="background:'+p.surface+';border-color:'+dotBorder+'"></div><div class="sw-dot" style="background:'+p.accent+';border-color:'+dotBorder+'"></div></div><div class="sw-name" style="color:'+(isDark?"rgba(255,255,255,.85)":"var(--ink2)")+'">'+p.name+'</div><span class="sw-check">✓</span></div>';}).join("");}
 function buildFontGrid(){var grid=document.getElementById("fontGrid");if(!grid)return;var current=(state.content&&state.content.theme&&state.content.theme.font_pair)||"";grid.innerHTML=FONTS_UI.map(function(f){var active=f.key===current?" active":"";return'<div class="font-opt'+active+'" onclick="selectFont(\''+f.key+'\')"><div><div class="fo-name">'+f.name+'</div></div><div class="fo-preview" style="'+f.style+'">'+f.preview+'</div><span class="fo-check">✓</span></div>';}).join("");}
@@ -1182,11 +998,53 @@ function currentPaletteAccent(){var palette=(state.content&&state.content.theme&
 function roundRect(ctx2,x,y,w,h,r){ctx2.beginPath();ctx2.moveTo(x+r,y);ctx2.lineTo(x+w-r,y);ctx2.quadraticCurveTo(x+w,y,x+w,y+r);ctx2.lineTo(x+w,y+h-r);ctx2.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx2.lineTo(x+r,y+h);ctx2.quadraticCurveTo(x,y+h,x,y+h-r);ctx2.lineTo(x,y+r);ctx2.quadraticCurveTo(x,y,x+r,y);ctx2.closePath();}
 function luminanceFromHex(hex){if(!hex||hex.length<7)return 0;var r=parseInt(hex.slice(1,3),16)/255,gv=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;var toL=function(c){return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);};return 0.2126*toL(r)+0.7152*toL(gv)+0.0722*toL(b);}
 function initDesignTab(){var savedAccent=(state.content&&state.content.theme&&state.content.theme.custom_accent)||"";if(savedAccent){document.getElementById("f_custom_accent").value=savedAccent;document.getElementById("f_custom_accent_picker").value=savedAccent;document.getElementById("clearAccentBtn").style.display="";}buildSectionsList();buildPaletteGrid();buildFontGrid();updateFaviconPreview();}
-function toast(msg,type){var wrap=document.getElementById("toastWrap"),t=document.createElement("div");t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);requestAnimationFrame(function(){t.classList.add("show");});setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);}
 window.changeTemplate=function(){if(state.dirty){if(!confirm("Save your current changes first?\n\nClick OK to save now, then you can choose a new template.")){return;}onSave().then(function(){location.href="https://app.websites.co.zw/new/?switch=1&from="+encodeURIComponent(siteId);});return;}location.href="https://app.websites.co.zw/new/?switch=1&from="+encodeURIComponent(siteId);};
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
-})();
+
+// ── PREVIEW ──
+window.togglePreview=function(){var d=document.getElementById("previewDrawer");state.previewOpen=!state.previewOpen;d.classList.toggle("open",state.previewOpen);if(state.previewOpen)loadPreview();};
+window.refreshPreview=function(){if(state.previewOpen||window.innerWidth>=900)loadPreview();};
+var _previewTokenTimer=null;
+function startPreviewAutoRefresh(){if(_previewTokenTimer)clearInterval(_previewTokenTimer);_previewTokenTimer=setInterval(function(){if(state.previewOpen)loadPreview();},4*60*1000);}
+async function loadPreview(){
+  var slug=state.site&&state.site.draft_subdomain;
+  var loading=document.getElementById("previewLoading");var frame=document.getElementById("previewFrame");var loadingP=loading?loading.querySelector("p"):null;
+  if(!siteId||!slug){if(loadingP)loadingP.textContent="Save your site first to preview it";if(loading)loading.style.display="flex";if(frame)frame.style.display="none";return;}
+  if(loading)loading.style.display="flex";if(frame)frame.style.display="none";if(loadingP)loadingP.textContent="Loading preview…";
+  var r=await api("/api/sites/"+encodeURIComponent(siteId)+"/preview-token");
+  if(!r.ok||!r.data||!r.data.preview_url){var msg=(r.data&&r.data.error==="no_subdomain")?"Save your site first to preview it":"Couldn't load preview — tap Refresh to try again";if(loadingP)loadingP.textContent=msg;return;}
+  var urlLabel=document.getElementById("previewUrlLabel");if(urlLabel)urlLabel.textContent=slug+".websites.co.zw";
+  if(frame){frame.onload=function(){if(loading)loading.style.display="none";frame.style.display="block";};frame.src=r.data.preview_url;}
+}
+window.exitEditor=function(){if(state.dirty&&!confirm("You have unsaved changes. Leave without saving?"))return;location.href=DASH_URL;};
+window.onPublish=function(){toast("Payment coming soon — save your site and we'll notify you when payments are live","ok");};
+window.onPublishPro=function(){toast("Pro plan coming soon — save your site and we'll notify you when payments are live","ok");};
+
+// ── SECTION MANAGEMENT ──
+var ALL_SECS_V3 = {
+  "bold-retail": [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"video",label:"Video"},{key:"team",label:"Team"},{key:"testimonials",label:"Reviews"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
+  "grill-house": [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
+  "beauty-salon": [{key:"hero",label:"Hero banner"},{key:"services",label:"Services & prices"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
+  "school-institution": [{key:"hero",label:"Hero banner"},{key:"stats",label:"Key stats"},{key:"about",label:"About us"},{key:"services",label:"Programmes"},{key:"team",label:"Leadership"},{key:"events",label:"Term dates"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"shop",label:"Shop"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
+  "advisory-firm": [{key:"hero",label:"Hero banner"},{key:"services",label:"Practice areas"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"stats",label:"Credentials"},{key:"team",label:"The team"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
+  "property-estate": [{key:"hero",label:"Listings / Hero"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"team",label:"Our agents"},{key:"testimonials",label:"Reviews"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
+  "boutique-fashion": [{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
+  "grocery-fmcg": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
+  "retail-hardware": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products / Catalogue"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
+  "hospitality-inn": [{key:"hero",label:"Hero banner"},{key:"rooms",label:"Rooms"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}]
+};
+var REQUIRED_V3=["hero","contact"];
+
+window.buildSectionsList=function(){var list=document.getElementById("sectionsList");if(!list)return;var tpl=g("f_template")||"bold-retail";var allSecs=ALL_SECS_V3[tpl]||ALL_SECS_V3["bold-retail"];var raw=window.state&&window.state.content;var activeSecs=(raw&&raw.theme&&Array.isArray(raw.theme.sections))?raw.theme.sections:allSecs.map(function(s){return s.key;});var activeKeys=activeSecs.filter(function(k){return allSecs.some(function(s){return s.key===k;});});var inactiveKeys=allSecs.map(function(s){return s.key;}).filter(function(k){return activeKeys.indexOf(k)<0;});var ordered=activeKeys.concat(inactiveKeys);list.innerHTML=ordered.map(function(key,idx){var sec=allSecs.find(function(s){return s.key===key;});if(!sec)return"";var isActive=activeKeys.indexOf(key)>-1;var isReq=REQUIRED_V3.indexOf(key)>-1;return'<div class="sec-row'+(isActive?" active":"")+'"><label class="sec-toggle"><input type="checkbox"'+(isActive?" checked":"")+(isReq?" disabled":"")+' onchange="toggleSectionV3(\''+key+'\',this.checked)"><span class="sec-slider"></span></label><span class="sec-label">'+sec.label+'</span><div class="sec-arrows"><button class="sec-arr" onclick="moveSectionV3(\''+key+'\',-1)" '+(idx===0?"disabled":"")+'>↑</button><button class="sec-arr" onclick="moveSectionV3(\''+key+'\',1)" '+(idx===ordered.length-1?"disabled":"")+'>↓</button></div></div>';}).join("");};
+window.toggleSectionV3=function(key,on){var raw=window.state&&window.state.content;if(!raw)return;if(!raw.theme)raw.theme={};var tpl=g("f_template")||"bold-retail";if(!Array.isArray(raw.theme.sections))raw.theme.sections=ALL_SECS_V3[tpl].map(function(s){return s.key;});var secs=raw.theme.sections;if(on){if(secs.indexOf(key)<0)secs.push(key);}else{raw.theme.sections=secs.filter(function(k){return k!==key;});}window.markDirty();buildSectionsList();};
+window.moveSectionV3=function(key,dir){var raw=window.state&&window.state.content;if(!raw||!raw.theme||!Array.isArray(raw.theme.sections))return;var secs=raw.theme.sections,idx=secs.indexOf(key);if(idx<0)return;var ni=idx+dir;if(ni<0||ni>=secs.length)return;var tmp=secs[idx];secs[idx]=secs[ni];secs[ni]=tmp;window.markDirty();buildSectionsList();};
+
+function updateBudget(b){var el=document.getElementById("aiBudget");if(!b){var used=Number((state.site&&state.site.ai_generations_used)||0);el.innerHTML="Generations used: <b>"+used+" / 10</b> on this site.";if(used>=10){document.getElementById("generateBtn").disabled=true;}return;}var limit=b.limit||10;el.innerHTML="Generations: <b>"+b.used+" / "+limit+"</b>. "+Math.max(0,limit-b.used)+" remaining.";if(b.remaining===0||b.used>=limit){document.getElementById("generateBtn").disabled=true;document.getElementById("generateBtn").querySelector(".ai-ico").textContent="✦ No generations left";}}
+
+// ── KEYBOARD SHORTCUTS ──
 document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="s"){e.preventDefault();if(window.onSave)onSave();}});
+
+})();
 </script>
 <script>
 (function(){
@@ -1256,274 +1114,90 @@ function taV3(label,cls,val,ph,oninput,rows){return'<div class="fld-group"><labe
 function row2V3(a,b){return'<div class="two">'+a+b+'</div>';}
 function repUploadZoneHtml(zoneId,existingUrl,handlerCall){
   if(existingUrl){
-    return'<div class="rep-upload-zone" id="'+zoneId+'">'
-      +'<img class="rep-upload-thumb" src="'+escV3(existingUrl)+'" alt="photo">'
-      +'<label class="rep-upload-action">📷 Change'
-      +'<input type="file" accept="image/*" onchange="'+handlerCall+'">'
-      +'</label></div>';
+    return'<div class="rep-upload-zone" id="'+zoneId+'"><img class="rep-upload-thumb" src="'+escV3(existingUrl)+'" alt="photo"><label class="rep-upload-action">📷 Change<input type="file" accept="image/*" onchange="'+handlerCall+'"></label></div>';
   }
-  return'<div class="rep-upload-zone" id="'+zoneId+'">'
-    +'<label class="rep-upload-action">📷 Upload photo'
-    +'<input type="file" accept="image/*" onchange="'+handlerCall+'">'
-    +'</label></div>';
+  return'<div class="rep-upload-zone" id="'+zoneId+'"><label class="rep-upload-action">📷 Upload photo<input type="file" accept="image/*" onchange="'+handlerCall+'"></label></div>';
 }
-function tuneBtn(btnId,onclickCall){
-  return'<button type="button" id="'+btnId+'" onclick="'+onclickCall+'"'
-    +' style="margin-top:5px;font-size:11.5px;font-weight:600;color:var(--green-dk);'
-    +'background:var(--green-bg);border:none;border-radius:6px;padding:4px 9px;'
-    +'display:inline-flex;align-items:center;gap:4px;cursor:pointer;">✦ Tune</button>';
-}
+function tuneBtn(btnId,onclickCall){return'<button type="button" id="'+btnId+'" onclick="'+onclickCall+'" style="margin-top:5px;font-size:11.5px;font-weight:600;color:var(--green-dk);background:var(--green-bg);border:none;border-radius:6px;padding:4px 9px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">✦ Tune</button>';}
+
 function renderServiceItemV3(s,idx){
   var zoneId='svc-photo-zone-'+idx;
-  var photoFld='<div class="fld-group"><label class="fld-label">Photo <span class="fld-hint">optional — looks great without one too</span></label>'
-    +repUploadZoneHtml(zoneId,s.photo||'','handleServicePhotoUpload('+idx+',this)')
-    +'</div>';
-  var body=row2V3(
-      fldV3("Service name","",s.name||s.title,"e.g. Gel manicure","updateServiceV3("+idx+",'name',this.value)"),
-      fldV3("Category <span class='fld-hint'>optional — creates tabs</span>","",s.category||"","e.g. Hair, Nails, Skin","updateServiceV3("+idx+",'category',this.value)")
-    )
-    +row2V3(
-      fldV3("Price","",s.price,"e.g. $20","updateServiceV3("+idx+",'price',this.value)"),
-      fldV3("Description <span class='fld-hint'>optional</span>","",s.description||s.body,"e.g. Shape, gel & art","updateServiceV3("+idx+",'description',this.value)")
-    )
-    +photoFld;
+  var photoFld='<div class="fld-group"><label class="fld-label">Photo <span class="fld-hint">optional</span></label>'+repUploadZoneHtml(zoneId,s.photo||'','handleServicePhotoUpload('+idx+',this)')+'</div>';
+  var body=row2V3(fldV3("Service name","",s.name||s.title,"e.g. Gel manicure","updateServiceV3("+idx+",'name',this.value)"),fldV3("Category <span class='fld-hint'>optional</span>","",s.category||"","e.g. Hair, Nails, Skin","updateServiceV3("+idx+",'category',this.value)"))+row2V3(fldV3("Price","",s.price,"e.g. $20","updateServiceV3("+idx+",'price',this.value)"),fldV3("Description","",s.description||s.body,"e.g. Shape, gel & art","updateServiceV3("+idx+",'description',this.value)"))+photoFld;
   return makeRepItemV3(s.name||s.title||"Service",body,"removeServiceV3("+idx+")");
 }
-window.addService=function(){
-  v3state.services.push({name:"",category:"",price:"",description:"",body:"",photo:""});
-  renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty");
-  window.markDirty();
-};
+window.addService=function(){v3state.services.push({name:"",category:"",price:"",description:"",body:"",photo:""});renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty");window.markDirty();};
 window.removeServiceV3=function(idx){v3state.services.splice(idx,1);renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty");window.markDirty();};
-window.updateServiceV3=function(idx,key,val){
-  if(v3state.services[idx]){
-    v3state.services[idx][key]=val;
-    if(key==="description")v3state.services[idx].body=val;
-    if(key==="body")v3state.services[idx].description=val;
-    window.markDirty();
-  }
-  if(key==="name"){var items=document.querySelectorAll("#services-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Service";}}
-};
-window.handleServicePhotoUpload=async function(idx,input){
-  var file=input.files[0];if(!file)return;
-  var zoneId="svc-photo-zone-"+idx;
-  var zone=document.getElementById(zoneId);
-  if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';
-  var url=await window.uploadToR2(file,"services");
-  if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleServicePhotoUpload("+idx+",this)");return;}
-  v3state.services[idx].photo=url;window.markDirty();
-  var freshZone=document.getElementById(zoneId);
-  if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleServicePhotoUpload("+idx+",this)");
-  toast("Photo uploaded ✓","ok");
-};
+window.updateServiceV3=function(idx,key,val){if(v3state.services[idx]){v3state.services[idx][key]=val;if(key==="description")v3state.services[idx].body=val;if(key==="body")v3state.services[idx].description=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#services-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Service";}}};
+window.handleServicePhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var zoneId="svc-photo-zone-"+idx;var zone=document.getElementById(zoneId);if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';var url=await window.uploadToR2(file,"services");if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleServicePhotoUpload("+idx+",this)");return;}v3state.services[idx].photo=url;window.markDirty();var freshZone=document.getElementById(zoneId);if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleServicePhotoUpload("+idx+",this)");toast("Photo uploaded ✓","ok");};
+
 function renderMenuRowV3(m,idx){
-  var zoneId="menu-photo-zone-"+idx;
-  var descTaId="menu-desc-"+idx;
-  var descBtnId="menu-desc-tune-"+idx;
-  var photoFld='<div class="fld-group"><label class="fld-label">Photo</label>'
-    +repUploadZoneHtml(zoneId,m.photo,"handleMenuPhotoUpload("+idx+",this)")
-    +'</div>';
-  var body=row2V3(fldV3("Item Name","",m.name,"e.g. Grilled Chicken","updateMenuV3("+idx+",'name',this.value)"),fldV3("Category","",m.category,"e.g. Grills","updateMenuV3("+idx+",'category',this.value)"))
-    +row2V3(fldV3("Price","",m.price,"$8","updateMenuV3("+idx+",'price',this.value)"),photoFld)
-    +'<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'
-    +'<textarea class="fld-textarea" id="'+descTaId+'" rows="2" placeholder="A short, appetising description…" '
-    +'oninput="updateMenuV3('+idx+',\'description\',this.value)">'+escV3(m.description||m.body||'')+'</textarea>'
-    +tuneBtn(descBtnId,"onTuneMenuDesc("+idx+")")
-    +'</div>'
-    +'<div class="fld-group"><label class="fld-label">Feature / highlight <span class="fld-hint">— one item only, shown prominently above the menu</span></label>'
-    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-    +'<span style="font-size:13px;color:var(--ink2)">★</span>'
-    +'<input class="fld-input" value="'+escV3(m.tag||m.badge||'')+'" placeholder="e.g. TODAY\'S SPECIAL, NEW, CHEF\'S PICK" '
-    +'oninput="setMenuFeature('+idx+',this.value)" style="font-size:13px;flex:1;text-transform:uppercase;letter-spacing:.04em">'
-    +(m.tag||m.badge?'<button type="button" onclick="setMenuFeature('+idx+',\'\');this.previousElementSibling.value=\'\'" style="font-size:11px;color:var(--red);font-weight:600;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:#fff">Clear</button>':'')
-    +'</div>'
-    +'<div style="font-size:11.5px;color:var(--ink3)">This item appears as a large featured card above the menu. Only one item can be featured at a time — setting this clears any other featured item.</div>'
-    +'</div>';
+  var zoneId="menu-photo-zone-"+idx;var descTaId="menu-desc-"+idx;var descBtnId="menu-desc-tune-"+idx;
+  var photoFld='<div class="fld-group"><label class="fld-label">Photo</label>'+repUploadZoneHtml(zoneId,m.photo,"handleMenuPhotoUpload("+idx+",this)")+'</div>';
+  var body=row2V3(fldV3("Item Name","",m.name,"e.g. Grilled Chicken","updateMenuV3("+idx+",'name',this.value)"),fldV3("Category","",m.category,"e.g. Grills","updateMenuV3("+idx+",'category',this.value)"))+row2V3(fldV3("Price","",m.price,"$8","updateMenuV3("+idx+",'price',this.value)"),photoFld)+'<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label><textarea class="fld-textarea" id="'+descTaId+'" rows="2" placeholder="A short, appetising description…" oninput="updateMenuV3('+idx+',\'description\',this.value)">'+escV3(m.description||m.body||'')+'</textarea>'+tuneBtn(descBtnId,"onTuneMenuDesc("+idx+")")+'</div>';
   return makeRepItemV3(m.name||"Menu Item",body,"removeMenuV3("+idx+")");
 }
-window.setMenuFeature=function(idx,val){
-  v3state.menu.forEach(function(m,i){ m.tag=i===idx?val:''; m.badge=i===idx?val:''; });
-  window.markDirty();
-  renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");
-  var items=document.querySelectorAll("#menu-rep-list .rep-item");
-  if(items[idx])items[idx].classList.add("open");
-};
 window.addMenuItem=function(){v3state.menu.push({name:"",category:"",price:"",photo:"",description:"",tag:""});renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");window.markDirty();};
 window.removeMenuV3=function(idx){v3state.menu.splice(idx,1);renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");window.markDirty();};
 window.updateMenuV3=function(idx,key,val){if(v3state.menu[idx]){v3state.menu[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#menu-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Menu Item";}}};
-window.handleMenuPhotoUpload=async function(idx,input){
-  var file=input.files[0];if(!file)return;
-  var zoneId="menu-photo-zone-"+idx;
-  var zone=document.getElementById(zoneId);
-  if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';
-  var url=await window.uploadToR2(file,"menu");
-  if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleMenuPhotoUpload("+idx+",this)");return;}
-  v3state.menu[idx].photo=url;window.markDirty();
-  var freshZone=document.getElementById(zoneId);
-  if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleMenuPhotoUpload("+idx+",this)");
-  toast("Photo uploaded ✓","ok");
-};
+window.handleMenuPhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var zoneId="menu-photo-zone-"+idx;var zone=document.getElementById(zoneId);if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';var url=await window.uploadToR2(file,"menu");if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleMenuPhotoUpload("+idx+",this)");return;}v3state.menu[idx].photo=url;window.markDirty();var freshZone=document.getElementById(zoneId);if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleMenuPhotoUpload("+idx+",this)");toast("Photo uploaded ✓","ok");};
+window.onTuneMenuDesc=async function(idx){var taId='menu-desc-'+idx;var btnId='menu-desc-tune-'+idx;var ta=document.getElementById(taId);var btn=document.getElementById(btnId);if(!ta||!ta.value.trim()){toast("Add a description first","err");return;}if(btn){btn.disabled=true;btn.textContent="Tuning…";}var improved=await tuneText("menu_item_description",ta.value);if(btn){btn.disabled=false;btn.textContent="✦ Tune";}if(!improved)return;ta.value=improved;updateMenuV3(idx,"description",improved);toast("Description tuned ✓","ok");};
+
 function renderTeamRowV3(p,idx){
-  var zoneId="team-photo-zone-"+idx;
-  var bioTaId="team-bio-"+idx;
-  var bioBtnId="team-bio-tune-"+idx;
-  var photoFld='<div class="fld-group"><label class="fld-label">Photo</label>'
-    +repUploadZoneHtml(zoneId,p.photo,"handleTeamPhotoUpload("+idx+",this)")
-    +'</div>';
-  var body=row2V3(fldV3("Full Name","",p.name,"e.g. Tendai Moyo","updateTeamV3("+idx+",'name',this.value)"),fldV3("Role","",p.role||p.title,"e.g. Property Agent","updateTeamV3("+idx+",'role',this.value)"))
-    +'<div class="fld-group"><label class="fld-label">Bio <span class="fld-hint">shown on the site</span></label>'
-    +'<textarea class="fld-textarea" id="'+bioTaId+'" rows="2" placeholder="Short professional bio…" '
-    +'oninput="updateTeamV3('+idx+',\'bio\',this.value)">'+escV3(p.bio||'')+'</textarea>'
-    +tuneBtn(bioBtnId,"onTuneTeamBio("+idx+")")
-    +'</div>'
-    +photoFld;
+  var zoneId="team-photo-zone-"+idx;var bioTaId="team-bio-"+idx;var bioBtnId="team-bio-tune-"+idx;
+  var photoFld='<div class="fld-group"><label class="fld-label">Photo</label>'+repUploadZoneHtml(zoneId,p.photo,"handleTeamPhotoUpload("+idx+",this)")+'</div>';
+  var body=row2V3(fldV3("Full Name","",p.name,"e.g. Tendai Moyo","updateTeamV3("+idx+",'name',this.value)"),fldV3("Role","",p.role||p.title,"e.g. Property Agent","updateTeamV3("+idx+",'role',this.value)"))+'<div class="fld-group"><label class="fld-label">Bio <span class="fld-hint">shown on the site</span></label><textarea class="fld-textarea" id="'+bioTaId+'" rows="2" placeholder="Short professional bio…" oninput="updateTeamV3('+idx+',\'bio\',this.value)">'+escV3(p.bio||'')+'</textarea>'+tuneBtn(bioBtnId,"onTuneTeamBio("+idx+")")+'</div>'+photoFld;
   return makeRepItemV3(p.name||"Person",body,"removeTeamV3("+idx+")");
 }
 window.addTeamMember=function(){v3state.team.push({name:"",role:"",bio:"",photo:""});renderRepListV3("team-rep-list",v3state.team,renderTeamRowV3,"team-rep-empty");window.markDirty();};
 window.removeTeamV3=function(idx){v3state.team.splice(idx,1);renderRepListV3("team-rep-list",v3state.team,renderTeamRowV3,"team-rep-empty");window.markDirty();};
 window.updateTeamV3=function(idx,key,val){if(v3state.team[idx]){v3state.team[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#team-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Person";}}};
-window.handleTeamPhotoUpload=async function(idx,input){
-  var file=input.files[0];if(!file)return;
-  var zoneId="team-photo-zone-"+idx;
-  var zone=document.getElementById(zoneId);
-  if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';
-  var url=await window.uploadToR2(file,"team");
-  if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleTeamPhotoUpload("+idx+",this)");return;}
-  v3state.team[idx].photo=url;window.markDirty();
-  var freshZone=document.getElementById(zoneId);
-  if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleTeamPhotoUpload("+idx+",this)");
-  toast("Photo uploaded ✓","ok");
-};
+window.handleTeamPhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var zoneId="team-photo-zone-"+idx;var zone=document.getElementById(zoneId);if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';var url=await window.uploadToR2(file,"team");if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleTeamPhotoUpload("+idx+",this)");return;}v3state.team[idx].photo=url;window.markDirty();var freshZone=document.getElementById(zoneId);if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleTeamPhotoUpload("+idx+",this)");toast("Photo uploaded ✓","ok");};
+window.onTuneTeamBio=async function(idx){var taId='team-bio-'+idx;var btnId='team-bio-tune-'+idx;var ta=document.getElementById(taId);var btn=document.getElementById(btnId);if(!ta||!ta.value.trim()){toast("Add a bio first","err");return;}if(btn){btn.disabled=true;btn.textContent="Tuning…";}var improved=await tuneText("person_bio",ta.value);if(btn){btn.disabled=false;btn.textContent="✦ Tune";}if(!improved)return;ta.value=improved;updateTeamV3(idx,"bio",improved);toast("Bio tuned ✓","ok");};
+
 function listingPhotosHtml(photos,idx,isPro){
-  var html='<div class="fld-group"><label class="fld-label">Photos '
-    +(isPro?'<span class="fld-hint">— up to 5, Pro plan</span>':'<span class="fld-hint">— 1 photo on Starter</span>')
-    +'</label><div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">';
+  var html='<div class="fld-group"><label class="fld-label">Photos '+(isPro?'<span class="fld-hint">— up to 5, Pro plan</span>':'<span class="fld-hint">— 1 photo on Starter</span>')+'</label><div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">';
   (photos||[]).forEach(function(url,pi){html+=listingPhotoThumb(url,idx,pi);});
   var count=(photos||[]).length;
   if(count===0){html+=listingPhotoAddZone(idx);}
-  else if(count<5){
-    if(isPro){html+=listingPhotoAddZone(idx);}
-    else if(count<1){html+=listingPhotoAddZone(idx);}
-    else{html+='<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add up to 5 photos per listing — upgrade to Pro</div>';}
-  }
+  else if(count<5){if(isPro){html+=listingPhotoAddZone(idx);}else if(count<1){html+=listingPhotoAddZone(idx);}else{html+='<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add up to 5 photos per listing — upgrade to Pro</div>';}}
   html+='</div></div>';
   return html;
 }
-function listingPhotoThumb(url,idx,pi){
-  return'<div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex-shrink:0">'
-    +'<img src="'+escV3(url)+'" style="width:100%;height:100%;object-fit:cover">'
-    +'<button type="button" onclick="removeListingPhoto('+idx+','+pi+')" '
-    +'style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;'
-    +'background:rgba(13,15,20,.7);color:#fff;border:none;font-size:11px;'
-    +'display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</button>'
-    +'</div>';
-}
-function listingPhotoAddZone(idx){
-  return'<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);'
-    +'display:flex;align-items:center;justify-content:center;cursor:pointer;'
-    +'font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden;'
-    +'transition:border-color .15s,background .15s" '
-    +'onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" '
-    +'onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'">'
-    +'📷<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" '
-    +'onchange="handleListingPhotoUpload('+idx+',this)">'
-    +'</label>';
-}
+function listingPhotoThumb(url,idx,pi){return'<div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex-shrink:0"><img src="'+escV3(url)+'" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="removeListingPhoto('+idx+','+pi+')" style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(13,15,20,.7);color:#fff;border:none;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</button></div>';}
+function listingPhotoAddZone(idx){return'<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden;transition:border-color .15s,background .15s" onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'">📷<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleListingPhotoUpload('+idx+',this)"></label>';}
 function renderListingRowV3(l,idx){
   var isPro=(window.state&&window.state.site&&window.state.site.plan==='pro');
   var photos=Array.isArray(l.photos)?l.photos:(l.photo?[l.photo]:[]);
-  var typeOpts='<option value="For Sale"'+(l.type==="For Sale"?" selected":"")+'>For Sale</option>'
-    +'<option value="To Rent"'+(l.type==="To Rent"?" selected":"")+'>To Rent</option>'
-    +'<option value="Land"'+(l.type==="Land"?" selected":"")+'>Land</option>';
-  var statusOpts='<option value="available"'+((!l.status||l.status==="available")?" selected":"")+'>Available</option>'
-    +'<option value="sold"'+(l.status==="sold"?" selected":"")+'>Sold</option>'
-    +'<option value="let"'+(l.status==="let"?" selected":"")+'>Let</option>';
-  var descTaId='ldesc-'+idx;
-  var descBtnId='ldesc-tune-'+idx;
-  var body=row2V3(
-    fldV3("Address / Title","",l.name||l.title||l.address,"e.g. 3-bed in Suburbs","updateListingV3("+idx+",'name',this.value)"),
-    '<div class="fld-group"><label class="fld-label">Type</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'type\',this.value)">'+typeOpts+'</select></div>'
-  )
-  +row2V3(
-    fldV3("Price","",l.price,"USD 85,000","updateListingV3("+idx+",'price',this.value)"),
-    '<div class="fld-group"><label class="fld-label">Status</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'status\',this.value)">'+statusOpts+'</select></div>'
-  )
-  +'<div class="two"><div class="two">'
-  +fldV3("Beds","",l.beds,"3","updateListingV3("+idx+",'beds',this.value)",' type="number" style="width:72px"')
-  +fldV3("Baths","",l.bathrooms,"2","updateListingV3("+idx+",'bathrooms',this.value)",' type="number" style="width:72px"')
-  +'</div>'
-  +fldV3("Size","",l.size,"450m²","updateListingV3("+idx+",'size',this.value)")
-  +'</div>'
-  +'<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label>'
-  +'<textarea class="fld-textarea" id="'+descTaId+'" rows="2" placeholder="2-3 sentence property description…" '
-  +'oninput="updateListingV3('+idx+',\'description\',this.value)">'+escV3(l.description||l.body||'')+'</textarea>'
-  +tuneBtn(descBtnId,"onTuneListing("+idx+",'description')")
-  +'</div>'
-  +fldV3("Agent WhatsApp <span class='fld-hint'>optional — uses site phone if blank</span>","",l.agent_phone||"","0772 000 000","updateListingV3("+idx+",'agent_phone',this.value)")
-  +listingPhotosHtml(photos,idx,isPro);
+  var typeOpts='<option value="For Sale"'+(l.type==="For Sale"?" selected":"")+'>For Sale</option><option value="To Rent"'+(l.type==="To Rent"?" selected":"")+'>To Rent</option><option value="Land"'+(l.type==="Land"?" selected":"")+'>Land</option>';
+  var statusOpts='<option value="available"'+((!l.status||l.status==="available")?" selected":"")+'>Available</option><option value="sold"'+(l.status==="sold"?" selected":"")+'>Sold</option><option value="let"'+(l.status==="let"?" selected":"")+'>Let</option>';
+  var descTaId='ldesc-'+idx;var descBtnId='ldesc-tune-'+idx;
+  var body=row2V3(fldV3("Address / Title","",l.name||l.title||l.address,"e.g. 3-bed in Suburbs","updateListingV3("+idx+",'name',this.value)"),'<div class="fld-group"><label class="fld-label">Type</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'type\',this.value)">'+typeOpts+'</select></div>')+row2V3(fldV3("Price","",l.price,"USD 85,000","updateListingV3("+idx+",'price',this.value)"),'<div class="fld-group"><label class="fld-label">Status</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'status\',this.value)">'+statusOpts+'</select></div>')+'<div class="two"><div class="two">'+fldV3("Beds","",l.beds,"3","updateListingV3("+idx+",'beds',this.value)",' type="number" style="width:72px"')+fldV3("Baths","",l.bathrooms,"2","updateListingV3("+idx+",'bathrooms',this.value)",' type="number" style="width:72px"')+'</div>'+fldV3("Size","",l.size,"450m²","updateListingV3("+idx+",'size',this.value)")+'</div>'+'<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label><textarea class="fld-textarea" id="'+descTaId+'" rows="2" placeholder="2-3 sentence property description…" oninput="updateListingV3('+idx+',\'description\',this.value)">'+escV3(l.description||l.body||'')+'</textarea>'+tuneBtn(descBtnId,"onTuneListing("+idx+",'description')")+'</div>'+fldV3("Agent WhatsApp <span class='fld-hint'>optional</span>","",l.agent_phone||"","0772 000 000","updateListingV3("+idx+",'agent_phone',this.value)")+listingPhotosHtml(photos,idx,isPro);
   return makeRepItemV3(l.name||l.address||"Listing",body,"removeListingV3("+idx+")");
 }
 window.addListing=function(){v3state.listings.push({name:"",type:"For Sale",price:"",status:"available",beds:"",bathrooms:"",size:"",description:"",agent_phone:"",photo:"",photos:[]});renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");window.markDirty();};
 window.removeListingV3=function(idx){v3state.listings.splice(idx,1);renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");window.markDirty();};
 window.updateListingV3=function(idx,key,val){if(v3state.listings[idx]){v3state.listings[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#listings-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Listing";}}};
-window.handleListingPhotoUpload=async function(idx,input){
-  var file=input.files[0];if(!file)return;
-  var isPro=(window.state&&window.state.site&&window.state.site.plan==='pro');
-  var listing=v3state.listings[idx];if(!listing)return;
-  if(!Array.isArray(listing.photos))listing.photos=listing.photo?[listing.photo]:[];
-  if(!isPro&&listing.photos.length>=1){toast("1 photo per listing on Starter — upgrade to Pro for up to 5","err");switchTab('publish',null);return;}
-  if(isPro&&listing.photos.length>=5){toast("Maximum 5 photos per listing","err");return;}
-  var container=document.getElementById("listing-photos-"+idx);
-  if(container){var spinner=document.createElement("div");spinner.id="listing-uploading-"+idx;spinner.style.cssText="width:72px;height:72px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3);flex-shrink:0";spinner.textContent="Uploading…";container.insertBefore(spinner,container.lastChild);}
-  var url=await window.uploadToR2(file,"listings");
-  var sp=document.getElementById("listing-uploading-"+idx);if(sp)sp.remove();
-  if(!url){toast("Upload failed — try again","err");return;}
-  listing.photos.push(url);listing.photo=listing.photos[0];window.markDirty();
-  var photosDiv=document.getElementById("listing-photos-"+idx);
-  if(photosDiv){photosDiv.outerHTML='<div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">'+listing.photos.map(function(u,pi){return listingPhotoThumb(u,idx,pi);}).join('')+(listing.photos.length<(isPro?5:1)?listingPhotoAddZone(idx):(!isPro&&listing.photos.length>=1?'<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add up to 5 photos per listing — upgrade to Pro</div>':''))+'</div>';}
-  toast("Photo uploaded ✓","ok");
-};
+window.handleListingPhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var isPro=(window.state&&window.state.site&&window.state.site.plan==='pro');var listing=v3state.listings[idx];if(!listing)return;if(!Array.isArray(listing.photos))listing.photos=listing.photo?[listing.photo]:[];if(!isPro&&listing.photos.length>=1){toast("1 photo per listing on Starter — upgrade to Pro for up to 5","err");switchTab('publish',null);return;}if(isPro&&listing.photos.length>=5){toast("Maximum 5 photos per listing","err");return;}var container=document.getElementById("listing-photos-"+idx);if(container){var spinner=document.createElement("div");spinner.id="listing-uploading-"+idx;spinner.style.cssText="width:72px;height:72px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3);flex-shrink:0";spinner.textContent="Uploading…";container.insertBefore(spinner,container.lastChild);}var url=await window.uploadToR2(file,"listings");var sp=document.getElementById("listing-uploading-"+idx);if(sp)sp.remove();if(!url){toast("Upload failed — try again","err");return;}listing.photos.push(url);listing.photo=listing.photos[0];window.markDirty();var photosDiv=document.getElementById("listing-photos-"+idx);if(photosDiv){photosDiv.outerHTML='<div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">'+listing.photos.map(function(u,pi){return listingPhotoThumb(u,idx,pi);}).join('')+(listing.photos.length<(isPro?5:1)?listingPhotoAddZone(idx):(!isPro&&listing.photos.length>=1?'<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add up to 5 photos per listing — upgrade to Pro</div>':''))+'</div>';}toast("Photo uploaded ✓","ok");};
 window.removeListingPhoto=function(idx,pi){var listing=v3state.listings[idx];if(!listing)return;if(!Array.isArray(listing.photos))listing.photos=[];listing.photos.splice(pi,1);listing.photo=listing.photos[0]||"";window.markDirty();renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");};
-window.onTuneListing=async function(idx,field){
-  var taId='ldesc-'+idx;var btnId='ldesc-tune-'+idx;
-  var ta=document.getElementById(taId);var btn=document.getElementById(btnId);
-  if(!ta||!ta.value.trim()){toast("Add a description first","err");return;}
-  if(btn){btn.disabled=true;btn.textContent="Tuning…";}
-  var improved=await tuneText("listing_description",ta.value);
-  if(btn){btn.disabled=false;btn.textContent="✦ Tune";}
-  if(!improved)return;ta.value=improved;updateListingV3(idx,field,improved);toast("Description tuned ✓","ok");
-};
-window.onTuneMenuDesc=async function(idx){
-  var taId='menu-desc-'+idx;var btnId='menu-desc-tune-'+idx;
-  var ta=document.getElementById(taId);var btn=document.getElementById(btnId);
-  if(!ta||!ta.value.trim()){toast("Add a description first","err");return;}
-  if(btn){btn.disabled=true;btn.textContent="Tuning…";}
-  var improved=await tuneText("menu_item_description",ta.value);
-  if(btn){btn.disabled=false;btn.textContent="✦ Tune";}
-  if(!improved)return;ta.value=improved;updateMenuV3(idx,"description",improved);toast("Description tuned ✓","ok");
-};
-window.onTuneTeamBio=async function(idx){
-  var taId='team-bio-'+idx;var btnId='team-bio-tune-'+idx;
-  var ta=document.getElementById(taId);var btn=document.getElementById(btnId);
-  if(!ta||!ta.value.trim()){toast("Add a bio first","err");return;}
-  if(btn){btn.disabled=true;btn.textContent="Tuning…";}
-  var improved=await tuneText("person_bio",ta.value);
-  if(btn){btn.disabled=false;btn.textContent="✦ Tune";}
-  if(!improved)return;ta.value=improved;updateTeamV3(idx,"bio",improved);toast("Bio tuned ✓","ok");
-};
+window.onTuneListing=async function(idx,field){var taId='ldesc-'+idx;var btnId='ldesc-tune-'+idx;var ta=document.getElementById(taId);var btn=document.getElementById(btnId);if(!ta||!ta.value.trim()){toast("Add a description first","err");return;}if(btn){btn.disabled=true;btn.textContent="Tuning…";}var improved=await tuneText("listing_description",ta.value);if(btn){btn.disabled=false;btn.textContent="✦ Tune";}if(!improved)return;ta.value=improved;updateListingV3(idx,field,improved);toast("Description tuned ✓","ok");};
+
 function renderStatRowV3(s,idx){var body='<div style="display:grid;grid-template-columns:80px 55px 1fr;gap:8px"><div class="fld-group"><label class="fld-label">Number</label><input class="fld-input" type="number" value="'+escV3(String(s.value||s.number||0))+'" oninput="updateStatV3('+idx+',\'value\',parseInt(this.value)||0)"></div><div class="fld-group"><label class="fld-label">Suffix</label><input class="fld-input" value="'+escV3(s.suffix||'')+'" placeholder="+" maxlength="5" oninput="updateStatV3('+idx+',\'suffix\',this.value)"></div><div class="fld-group"><label class="fld-label">Label</label><input class="fld-input" value="'+escV3(s.label||'')+'" placeholder="Years experience" oninput="updateStatLabelV3('+idx+',this)"></div></div>';return makeRepItemV3(s.label||(s.value+"+")||"Stat",body,"removeStatV3("+idx+")");}
 window.addStat=function(){v3state.stats.push({value:0,suffix:"",label:""});renderRepListV3("stats-rep-list",v3state.stats,renderStatRowV3,"stats-rep-empty");window.markDirty();};
 window.removeStatV3=function(idx){v3state.stats.splice(idx,1);renderRepListV3("stats-rep-list",v3state.stats,renderStatRowV3,"stats-rep-empty");window.markDirty();};
 window.updateStatV3=function(idx,key,val){if(v3state.stats[idx]){v3state.stats[idx][key]=val;window.markDirty();}};
 window.updateStatLabelV3=function(idx,input){if(v3state.stats[idx]){v3state.stats[idx].label=input.value;window.markDirty();}var items=document.querySelectorAll("#stats-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=input.value||"Stat";}};
+
 function renderEventRowV3(e,idx){var body=row2V3(fldV3("Title","",e.title||e.name,"e.g. Term 3 Starts","updateEventV3("+idx+",'title',this.value)"),'<div class="fld-group"><label class="fld-label">Date</label><input class="fld-input" type="date" value="'+escV3(e.date||'')+'" oninput="updateEventV3('+idx+',\'date\',this.value)"></div>')+fldV3("Details","",e.description||e.details,"Brief details","updateEventV3("+idx+",'description',this.value)");return makeRepItemV3(e.title||e.name||"Event",body,"removeEventV3("+idx+")");}
 window.addEvent=function(){v3state.events.push({title:"",date:"",description:""});renderRepListV3("events-rep-list",v3state.events,renderEventRowV3,"events-rep-empty");window.markDirty();};
 window.removeEventV3=function(idx){v3state.events.splice(idx,1);renderRepListV3("events-rep-list",v3state.events,renderEventRowV3,"events-rep-empty");window.markDirty();};
 window.updateEventV3=function(idx,key,val){if(v3state.events[idx]){v3state.events[idx][key]=val;window.markDirty();}if(key==="title"){var items=document.querySelectorAll("#events-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Event";}}};
+
 function renderTestiRowV3(t,idx){var body=taV3("What they said","",t.text||t.quote,"Their service was outstanding…","updateTestiV3("+idx+",'text',this.value)",3)+row2V3(fldV3("Name","",t.name,"e.g. Amai Ncube","updateTestiV3("+idx+",'name',this.value)"),fldV3("Role / Company","",t.role||t.title,"e.g. Parent","updateTestiV3("+idx+",'role',this.value)"));return makeRepItemV3(t.name||"Review",body,"removeTestiV3("+idx+")");}
 window.addTestimonial=function(){v3state.testimonials.push({text:"",name:"",role:""});renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty");window.markDirty();};
 window.removeTestiV3=function(idx){v3state.testimonials.splice(idx,1);renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty");window.markDirty();};
 window.updateTestiV3=function(idx,key,val){if(v3state.testimonials[idx]){v3state.testimonials[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#testimonials-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Review";}}};
+
 function upgradePreviewDrawer(){
   var bar=document.querySelector(".preview-bar");if(!bar||document.getElementById("preview-dev-btns"))return;
   var devBtns=document.createElement("div");devBtns.className="preview-device-btns";devBtns.id="preview-dev-btns";
@@ -1537,32 +1211,10 @@ function upgradePreviewDrawer(){
 }
 window.setPreviewDevice=function(d){v3state.previewDevice=d;var outer=document.getElementById("preview-frame-outer");if(outer)outer.className="preview-frame-outer dv-"+d;["desktop","tablet","mobile"].forEach(function(x){var btn=document.getElementById("dev-"+x);if(btn)btn.classList.toggle("active",x===d);});};
 function openPreviewInNewTab(){var frame=document.getElementById("previewFrame");if(frame&&frame.src&&frame.src!==window.location.href)window.open(frame.src,"_blank");}
-var _origOnSaveV3 = window.onSave;
-window.onSave = async function() {
-  // store the original onSave from the outer scope so we can call it
-  if (window._origOnSaveGlobal) {
-    await window._origOnSaveGlobal();
-  } else if (typeof _origOnSaveV3 === "function") {
-    await _origOnSaveV3();
-  }
-  // make sure undo button is hidden after save
-  var undoBtn = document.getElementById("undoBtn");
-  if (undoBtn) undoBtn.style.display = "none";
-};
-window._origOnSaveForV3 = window.onSave;
 
 function loadV3DataFromSite(){
   var raw=window.state&&window.state.content;if(!raw)return;var inner=raw.content||{};
-  if(Array.isArray(inner.services))v3state.services=inner.services.map(function(s){
-    return Object.assign({photo:"",category:"",description:"",body:""},s);
-  });
-  // Normalise product images/colors on load
-  if(Array.isArray(window.state.products))window.state.products=window.state.products.map(function(p){
-    if(!Array.isArray(p.images))p.images=p.image?[p.image]:[];
-    if(!Array.isArray(p.colors))p.colors=[];
-    if(!p.price_was)p.price_was="";
-    return p;
-  });
+  if(Array.isArray(inner.services))v3state.services=inner.services.map(function(s){return Object.assign({photo:"",category:"",description:"",body:""},s);});
   if(Array.isArray(inner.menu))v3state.menu=inner.menu;
   if(Array.isArray(inner.listings))v3state.listings=inner.listings.map(function(l){if(!Array.isArray(l.photos))l.photos=l.photo?[l.photo]:[];return l;});
   if(Array.isArray(inner.team))v3state.team=inner.team;
@@ -1579,32 +1231,21 @@ function loadV3DataFromSite(){
   renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty");
   renderHoursGrid();
 }
-var ALL_SECS_V3={
-  "bold-retail":[{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"team",label:"Team"},{key:"testimonials",label:"Reviews"},{key:"gallery",label:"Gallery"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
-  "grill-house":[{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
-  "beauty-salon":[{key:"hero",label:"Hero banner"},{key:"services",label:"Services & prices"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
-  "school-institution":[{key:"hero",label:"Hero banner"},{key:"stats",label:"Key stats"},{key:"about",label:"About us"},{key:"services",label:"Programmes"},{key:"team",label:"Leadership"},{key:"events",label:"Term dates"},{key:"gallery",label:"Gallery"},{key:"shop",label:"Shop"},{key:"testimonials",label:"Reviews"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
-  "advisory-firm":[{key:"hero",label:"Hero banner"},{key:"services",label:"Practice areas"},{key:"about",label:"About us"},{key:"stats",label:"Credentials"},{key:"team",label:"The team"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
-  "property-estate":[{key:"hero",label:"Listings / Hero"},{key:"about",label:"About us"},{key:"team",label:"Our agents"},{key:"testimonials",label:"Reviews"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
-  "boutique-fashion":[{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
-  "grocery-fmcg":[{key:"hero",label:"Hero banner"},{key:"products",label:"Products"},{key:"about",label:"About us"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
-  "retail-hardware":[{key:"hero",label:"Hero banner"},{key:"products",label:"Products / Catalogue"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"contact",label:"Contact"}],
-  "hospitality-inn":[{key:"hero",label:"Hero banner"},{key:"rooms",label:"Rooms"},{key:"about",label:"About us"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}]
-};
-var REQUIRED_V3=["hero","contact"];
-window.buildSectionsList=function(){var list=document.getElementById("sectionsList");if(!list)return;var tpl=g("f_template")||"bold-retail";var allSecs=ALL_SECS_V3[tpl]||ALL_SECS_V3["bold-retail"];var raw=window.state&&window.state.content;var activeSecs=(raw&&raw.theme&&Array.isArray(raw.theme.sections))?raw.theme.sections:allSecs.map(function(s){return s.key;});var activeKeys=activeSecs.filter(function(k){return allSecs.some(function(s){return s.key===k;});});var inactiveKeys=allSecs.map(function(s){return s.key;}).filter(function(k){return activeKeys.indexOf(k)<0;});var ordered=activeKeys.concat(inactiveKeys);list.innerHTML=ordered.map(function(key,idx){var sec=allSecs.find(function(s){return s.key===key;});if(!sec)return"";var isActive=activeKeys.indexOf(key)>-1;var isReq=REQUIRED_V3.indexOf(key)>-1;return'<div class="sec-row'+(isActive?" active":"")+'"><label class="sec-toggle"><input type="checkbox"'+(isActive?" checked":"")+(isReq?" disabled":"")+' onchange="toggleSectionV3(\''+key+'\',this.checked)"><span class="sec-slider"></span></label><span class="sec-label">'+sec.label+'</span><div class="sec-arrows"><button class="sec-arr" onclick="moveSectionV3(\''+key+'\',-1)" '+(idx===0?"disabled":"")+'>↑</button><button class="sec-arr" onclick="moveSectionV3(\''+key+'\',1)" '+(idx===ordered.length-1?"disabled":"")+'>↓</button></div></div>';}).join("");};
-window.toggleSectionV3=function(key,on){var raw=window.state&&window.state.content;if(!raw)return;if(!raw.theme)raw.theme={};var tpl=g("f_template")||"bold-retail";if(!Array.isArray(raw.theme.sections))raw.theme.sections=ALL_SECS_V3[tpl].map(function(s){return s.key;});var secs=raw.theme.sections;if(on){if(secs.indexOf(key)<0)secs.push(key);}else{raw.theme.sections=secs.filter(function(k){return k!==key;});}window.markDirty();buildSectionsList();};
-window.moveSectionV3=function(key,dir){var raw=window.state&&window.state.content;if(!raw||!raw.theme||!Array.isArray(raw.theme.sections))return;var secs=raw.theme.sections,idx=secs.indexOf(key);if(idx<0)return;var ni=idx+dir;if(ni<0||ni>=secs.length)return;var tmp=secs[idx];secs[idx]=secs[ni];secs[ni]=tmp;window.markDirty();buildSectionsList();};
-function g(id){var e=document.getElementById(id);return e?e.value.trim():"";}
-function set(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}
-function escV3(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
-function toast(msg,type){var wrap=document.getElementById("toastWrap");if(!wrap)return;var t=document.createElement("div");t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);requestAnimationFrame(function(){t.classList.add("show");});setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);}
+
 function bootV3(){
   injectV3Nav();upgradePreviewDrawer();
   var attempts=0;
   var poll=setInterval(function(){attempts++;if(window.state&&window.state.site){clearInterval(poll);var tpl=(window.state.site&&window.state.site.template_id)||g("f_template")||"bold-retail";applyTemplateConfigV3(tpl);loadV3DataFromSite();var sel=document.getElementById("f_template");if(sel){sel.addEventListener("change",function(){applyTemplateConfigV3(this.value);});}}if(attempts>50)clearInterval(poll);},100);
 }
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",bootV3);}else{bootV3();}
+
+// ── TUNE TEXT ──
+async function tuneText(fieldType,currentText,opts){opts=opts||{};if(!currentText||!currentText.trim()){toast("Add some text first","err");return null;}try{var r=await api("/api/ai/tune",{method:"POST",body:JSON.stringify({field_type:fieldType,current_text:currentText,business_name:(state.content&&state.content.content&&state.content.content.business_name)||"",industry:(document.getElementById("f_industry")||{}).value||"",site_id:siteId,})});if(!r.ok||!r.data.text){toast(r.data&&r.data.error==="tune_limit_reached"?"AI tune-up limit reached for this site":"Couldn't improve that text — try again","err");return null;}return r.data.text;}catch(e){toast("Network error — try again","err");return null;}}
+
+function escV3(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function g(id){var e=document.getElementById(id);return e?e.value.trim():"";}
+function set(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}
+function toast(msg,type){var wrap=document.getElementById("toastWrap");if(!wrap)return;var t=document.createElement("div");t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);requestAnimationFrame(function(){t.classList.add("show");});setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);}
 })();
 </script>
 <style>
