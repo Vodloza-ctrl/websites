@@ -550,6 +550,7 @@ img{display:block;max-width:100%}
       </div>
     </div></div></div>
     <div class="tab-section" id="tab-experiences"><div class="panel"><div class="panel-head"><div><h2>Experiences &amp; Activities</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Safaris, game drives, tours — anything guests can book or join</div></div><button class="btn btn-green btn-sm" onclick="addExperience()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="experiences-rep-list"><div class="empty-state" id="experiences-rep-empty"><span class="es-icon">🌍</span><p>No experiences yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-packages"><div class="panel"><div class="panel-head"><div><h2>Packages &amp; Deals</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Bundled offers — e.g. honeymoon package, weekend getaway, all-inclusive stay</div></div><button class="btn btn-green btn-sm" onclick="addPackage()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="packages-rep-list"><div class="empty-state" id="packages-rep-empty"><span class="es-icon">🎁</span><p>No packages yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-team"><div class="panel"><div class="panel-head"><div><h2 id="team-tab-title">Team</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="team-tab-sub">Hover cards flip to show bio on desktop</div></div><button class="btn btn-green btn-sm" onclick="addTeamMember()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="team-rep-list"><div class="empty-state" id="team-rep-empty"><span class="es-icon">👤</span><p>No team members yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-hours"><div class="panel"><div class="panel-head"><h2>Opening Hours</h2></div><div class="panel-body"><p style="font-size:12.5px;color:var(--ink3);margin-bottom:12px">A live Open/Closed badge shows on your site based on these times.</p><div class="hours-grid-wrap" id="hours-grid-wrap"><div class="hours-hdr">Day</div><div class="hours-hdr">Opens</div><div class="hours-hdr">Closes</div><div class="hours-hdr">Closed?</div></div></div></div></div>
     <div class="tab-section" id="tab-stats"><div class="panel"><div class="panel-head"><div><h2>Stats / Numbers</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Numbers animate (count up) when visitors scroll to them</div></div><button class="btn btn-green btn-sm" onclick="addStat()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="stats-rep-list"><div class="empty-state" id="stats-rep-empty"><span class="es-icon">📊</span><p>Add key numbers — e.g. 500+ students, 15 years, 98% pass rate</p></div></div></div></div></div>
@@ -1037,7 +1038,7 @@ var ALL_SECS_V3 = {
   "boutique-fashion": [{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
   "grocery-fmcg": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
   "retail-hardware": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products / Catalogue"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
-  "hospitality-inn": [{key:"hero",label:"Hero banner"},{key:"rooms",label:"Rooms"},{key:"about",label:"About us"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"dining",label:"Dining"},{key:"experiences",label:"Experiences"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}]
+  "hospitality-inn": [{key:"hero",label:"Hero banner"},{key:"rooms",label:"Rooms"},{key:"about",label:"About us"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"packages",label:"Packages"},{key:"dining",label:"Dining"},{key:"experiences",label:"Experiences"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}]
 };
 var REQUIRED_V3=["hero","contact"];
 
@@ -1076,9 +1077,9 @@ var TPL_CFG={
   "boutique-fashion":{services:0,menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
   "grocery-fmcg":{services:0,menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
   "retail-hardware":{services:"Our Services",menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Our Services"},
-  "hospitality-inn":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"}
+  "hospitality-inn":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,packages:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"}
 };
-var v3state={services:[],menu:[],listings:[],team:[],stats:[],events:[],testimonials:[],hours:{},rooms:[],amenities:[],conference:[],experiences:[],dining:{},previewDevice:"desktop"};
+var v3state={services:[],menu:[],listings:[],team:[],stats:[],events:[],testimonials:[],hours:{},rooms:[],amenities:[],conference:[],experiences:[],packages:[],dining:{},previewDevice:"desktop"};
 
 window.__mergeV3IntoState = function() {
   if (window.state && window.state.content) {
@@ -1095,6 +1096,7 @@ window.__mergeV3IntoState = function() {
     inner.amenities = v3state.amenities;
     inner.conference = v3state.conference;
     inner.experiences = v3state.experiences;
+    inner.packages = v3state.packages;
     var dn = v3state.dining || {};
     var hasDining = !!(dn.name || dn.description || (Array.isArray(dn.highlights) && dn.highlights.length) || dn.image);
     inner.dining = hasDining ? dn : null;
@@ -1117,6 +1119,7 @@ function injectV3Nav(){
     {id:"nav-v3-conference",tab:"conference",label:"Conferencing",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><circle cx="6" cy="6" r="2.2" stroke="currentColor" stroke-width="1.3"/><circle cx="13" cy="7" r="1.8" stroke="currentColor" stroke-width="1.3"/><path d="M2 15v-1a4 4 0 014-4h.5a4 4 0 014 3.6" stroke="currentColor" stroke-width="1.3"/><path d="M11.5 15v-.8a3.4 3.4 0 013.4-3" stroke="currentColor" stroke-width="1.3"/></svg>'},
     {id:"nav-v3-dining",tab:"dining",label:"Dining",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M4 1.5v6.5c0 1 .8 1.8 1.8 1.8V16.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4 1.5v3.7M6.5 1.5v3.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M14 1.5s-2.2 1-2.2 4 .7 3.3.7 3.3v7.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
     {id:"nav-v3-experiences",tab:"experiences",label:"Experiences",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M11.5 6.5 9.8 9.8 6.5 11.5l1.7-3.3 3.3-1.7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>'},
+    {id:"nav-v3-packages",tab:"packages",label:"Packages",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M2.5 6.5h13v8a1 1 0 01-1 1h-11a1 1 0 01-1-1v-8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 4.5h14v2H2v-2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 4.5v11M9 4.5C9 4.5 6.8 1.5 5 2.2 3.5 2.8 4 4.5 5 4.5H9zM9 4.5c0 0 2.2-3 4-2.3 1.5.6 1 2.3 0 2.3H9z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>'},
     {id:"nav-v3-menu",tab:"menu",label:"Menu Items",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M3 5h12M3 9h12M3 13h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'},
     {id:"nav-v3-listings",tab:"listings",label:"Listings",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M2 8l7-5 7 5v8a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="currentColor" stroke-width="1.4"/></svg>'},
     {id:"nav-v3-team",tab:"team",label:"Team",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M2 16v-1a4 4 0 014-4h6a4 4 0 014 4v1" stroke="currentColor" stroke-width="1.4"/></svg>'},
@@ -1130,14 +1133,14 @@ function injectV3Nav(){
   extraNavs.forEach(function(n){var div=document.createElement("div");div.className="nav-item";div.id=n.id;div.dataset.tab=n.tab;div.style.display="none";div.innerHTML=n.icon+" <span>"+n.label+"</span>";div.onclick=function(){switchTabV3(n.tab,div);};sidebar.insertBefore(div,insertBefore);});
 }
 function switchTabV3(tab,clickEl){document.querySelectorAll(".tab-section").forEach(function(s){s.classList.remove("active");});var t=document.getElementById("tab-"+tab);if(t)t.classList.add("active");document.querySelectorAll(".nav-item,.dock-item").forEach(function(i){i.classList.remove("active");});if(clickEl)clickEl.classList.add("active");document.querySelectorAll("[data-tab='"+tab+"']").forEach(function(i){i.classList.add("active");});window.scrollTo({top:0,behavior:"smooth"});}
-window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","amenities","conference","dining","experiences"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
+window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","amenities","conference","dining","experiences","packages"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
 function applyTemplateConfigV3(tpl){
   var cfg=TPL_CFG[tpl]||TPL_CFG["bold-retail"];var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};
   var iconEl=document.getElementById("v3-tpl-icon");var nameEl=document.getElementById("v3-tpl-name");
   if(iconEl)iconEl.textContent=tmeta.icon||"🏢";if(nameEl)nameEl.textContent=tmeta.name||tpl;
   var ctLabel=document.getElementById("currentTemplateLabel");if(ctLabel)ctLabel.textContent=tmeta.name||tpl;
   showNavItem("nav-v3-services",!!cfg.services);showNavItem("nav-v3-menu",!!cfg.menu);showNavItem("nav-v3-listings",!!cfg.listings);showNavItem("nav-v3-team",!!cfg.team);showNavItem("nav-v3-hours",!!cfg.hours);showNavItem("nav-v3-stats",!!cfg.stats);showNavItem("nav-v3-events",!!cfg.events);showNavItem("nav-v3-testis",true);
-  showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);
+  showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);showNavItem("nav-v3-packages",!!cfg.packages);
   if(cfg.services){var st=document.getElementById("services-tab-title");var nl=document.getElementById("nav-v3-services");if(st)st.textContent=cfg.servicesLbl||"Services";if(nl){var sp=nl.querySelector("span");if(sp)sp.textContent=cfg.servicesLbl||"Services";}}
   if(cfg.team){var tt=document.getElementById("team-tab-title");var nl2=document.getElementById("nav-v3-team");if(tt)tt.textContent=cfg.teamLbl||"Team";if(nl2){var sp2=nl2.querySelector("span");if(sp2)sp2.textContent=cfg.teamLbl||"Team";}}
 }
@@ -1287,6 +1290,26 @@ window.removeExperienceV3=function(idx){v3state.experiences.splice(idx,1);render
 window.updateExperienceV3=function(idx,key,val){if(v3state.experiences[idx]){v3state.experiences[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#experiences-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Experience";}}};
 window.handleExperiencePhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var zoneId="exp-photo-zone-"+idx;var zone=document.getElementById(zoneId);if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';var url=await window.uploadToR2(file,"experiences");if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleExperiencePhotoUpload("+idx+",this)");return;}v3state.experiences[idx].image=url;window.markDirty();var freshZone=document.getElementById(zoneId);if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleExperiencePhotoUpload("+idx+",this)");toast("Photo uploaded ✓","ok");};
 
+// ── PACKAGES / DEALS ── (writes to v3state.packages → content.packages; matches
+// the worker's existing packages_cards_html renderer — name/price/price_unit/
+// description/includes[]/featured, no photo field, so no upload zone here)
+function packageIncludesText(p){return Array.isArray(p.includes)?p.includes.join("\n"):(p.includes||"");}
+function renderPackageRowV3(p,idx){
+  var featuredRow='<div class="fld-group"><label class="fld-label" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" '+(p.featured?"checked":"")+' onchange="updatePackageV3('+idx+',\'featured\',this.checked)" style="accent-color:var(--green)"> Feature this package <span class="fld-hint">— highlighted with a gold border and badge</span></label></div>';
+  var body=
+    row2V3(fldV3("Package name","",p.name,"e.g. Honeymoon Package","updatePackageV3("+idx+",'name',this.value)"),fldV3("Badge text <span class='fld-hint'>optional</span>","",p.tag,"e.g. Most Popular","updatePackageV3("+idx+",'tag',this.value)"))
+    +row2V3(fldV3("Price","",p.price,"$450","updatePackageV3("+idx+",'price',this.value)"),fldV3("Price unit <span class='fld-hint'>optional</span>","",p.price_unit,"/ couple / 2 nights","updatePackageV3("+idx+",'price_unit',this.value)"))
+    +taV3("Description","",p.description||p.body,"What's the occasion or vibe…","updatePackageV3("+idx+",'description',this.value)",2)
+    +taV3("What's included <span class='fld-hint'>one per line</span>","",packageIncludesText(p),"2 nights accommodation\nChampagne on arrival\nCouples spa treatment\nBreakfast included","updatePackageIncludesV3("+idx+",this.value)",4)
+    +featuredRow;
+  return makeRepItemV3(p.name||"Package",body,"removePackageV3("+idx+")");
+}
+window.addPackage=function(){v3state.packages.push({name:"",tag:"",price:"",price_unit:"",description:"",includes:[],featured:false});renderRepListV3("packages-rep-list",v3state.packages,renderPackageRowV3,"packages-rep-empty");window.markDirty();};
+window.removePackageV3=function(idx){v3state.packages.splice(idx,1);renderRepListV3("packages-rep-list",v3state.packages,renderPackageRowV3,"packages-rep-empty");window.markDirty();};
+window.updatePackageV3=function(idx,key,val){if(v3state.packages[idx]){v3state.packages[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#packages-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Package";}}};
+window.updatePackageIncludesV3=function(idx,val){if(v3state.packages[idx]){v3state.packages[idx].includes=val.split("\n").map(function(s){return s.trim();}).filter(Boolean);window.markDirty();}};
+
+
 window.updateDiningField=function(key,val){if(!v3state.dining)v3state.dining={};v3state.dining[key]=val;window.markDirty();};
 window.handleDiningImageUpload=async function(which,input){var file=input.files[0];if(!file)return;var zoneId="dining-"+which+"-zone-inner";var zone=document.getElementById(zoneId);if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';var url=await window.uploadToR2(file,"dining");if(!url){toast("Upload failed — try again","err");renderDiningPanel();return;}if(!v3state.dining)v3state.dining={};v3state.dining[which]=url;window.markDirty();renderDiningPanel();toast("Photo uploaded ✓","ok");};
 window.removeDiningImage=function(which){if(v3state.dining)delete v3state.dining[which];window.markDirty();renderDiningPanel();};
@@ -1406,6 +1429,7 @@ function loadV3DataFromSite(){
   if(Array.isArray(inner.amenities))v3state.amenities=inner.amenities;
   if(Array.isArray(inner.conference))v3state.conference=inner.conference.map(function(v){if(!Array.isArray(v.photos))v.photos=v.photo?[v.photo]:[];return v;});
   if(Array.isArray(inner.experiences))v3state.experiences=inner.experiences;
+  if(Array.isArray(inner.packages))v3state.packages=inner.packages;
   if(inner.dining&&typeof inner.dining==="object")v3state.dining=inner.dining;
 
   renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty");
@@ -1418,6 +1442,7 @@ function loadV3DataFromSite(){
   renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty");
   renderRepListV3("conference-rep-list",v3state.conference,renderVenueRowV3,"conference-rep-empty");
   renderRepListV3("experiences-rep-list",v3state.experiences,renderExperienceRowV3,"experiences-rep-empty");
+  renderRepListV3("packages-rep-list",v3state.packages,renderPackageRowV3,"packages-rep-empty");
   renderRepListV3("amenities-rep-list",v3state.amenities,renderAmenityRowV3,"amenities-rep-empty");
   renderAmenityPresetChips();
   renderDiningPanel();
