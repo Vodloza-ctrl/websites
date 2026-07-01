@@ -79,6 +79,30 @@
   .products-filter-bar .fr-cat{font-family:"Inter";font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:8px 16px;border:1.5px solid var(--line);border-radius:30px;color:var(--muted);cursor:pointer;transition:.2s;background:var(--paper)}
   .products-filter-bar .fr-cat:hover{border-color:var(--green);color:var(--green)}
   .products-filter-bar .fr-cat.active{border-color:var(--green);background:var(--green);color:#fff}
+  /* ── Product card polish ──
+     Same class names as the Commerce SDK's default card styling, placed
+     later in source order so these win on equal specificity. The --ink2/
+     --gold bridge tokens already fix the color collision, but a grocery
+     shopper needs to scan prices fast — these rules make that explicit and
+     robust rather than depending on inherited text color, and match the
+     rounded-pill / bold-price language already used elsewhere on this page
+     (category pills, specials board) instead of boutique-fashion's sharp
+     corners and thin mono type. */
+  .wcz-prod-card{border-radius:16px;border:1px solid var(--line);box-shadow:0 1px 3px rgba(20,60,30,.06)}
+  .wcz-prod-name{color:var(--ink);font-family:"Inter",sans-serif;font-weight:600}
+  .wcz-prod-price,.wcz-prod-price-prominent{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.15rem}
+  .wcz-prod-price-old{color:var(--muted)}
+  .wcz-prod-stock-out,.wcz-prod-stock-in{font-family:"Inter",sans-serif}
+  .wcz-add-btn{border-radius:30px;background:var(--green);color:#fff;font-family:"Inter",sans-serif;font-weight:700}
+  .wcz-add-btn:hover{background:var(--green2)}
+  #wcz-qv-drawer{background:var(--paper)}
+  .wcz-qv-name{color:var(--ink);font-family:"Baloo 2",sans-serif}
+  .wcz-qv-price{font-family:"Baloo 2",sans-serif;font-weight:800}
+  .wcz-qv-btn-cart{background:var(--green);border-radius:30px;font-family:"Inter",sans-serif}
+  .wcz-qv-btn-cart:hover{background:var(--green2);color:#fff}
+  .wcz-order-fab{background:var(--green);font-family:"Inter",sans-serif}
+  .wcz-order-hdr{background:var(--green)}
+  .wcz-order-send{font-family:"Inter",sans-serif}
   /* hours + delivery */
   .info-band{background:var(--green);color:#fff;border-radius:20px;margin:0 26px 60px;padding:46px 40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:30px;text-align:center}
   .info-band .ico{font-size:1.8rem;margin-bottom:10px}
