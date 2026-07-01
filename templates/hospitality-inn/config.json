@@ -29,7 +29,12 @@
       "heading":   "Experience the Property",
       "body":      "",
       "runtime":   ""
-    }
+    },
+
+    "_menu_comment": "Menu section — shows a full priced menu if content.menu has items.",
+    "menu_eyebrow": "Menu",
+    "menu_heading": "Our Menu",
+    "menu_sub": "Seasonal dishes, local ingredients, crafted with care."
   },
   "navLinks": [
     "#rooms:Rooms",
@@ -38,6 +43,7 @@
     "#conference:Conferencing",
     "#packages:Packages",
     "#dining:Dining",
+    "#menu:Menu",
     "#video:Film",
     "#gallery:Gallery",
     "#reviews:Reviews",
@@ -61,6 +67,7 @@
     { "flag": "has_conference",     "type": "computed", "token": "has_conference" },
     { "flag": "has_packages",       "type": "computed", "token": "has_packages" },
     { "flag": "has_dining",         "type": "computed", "token": "has_dining" },
+    { "flag": "has_menu",           "type": "computed", "token": "has_menu" },
     { "flag": "has_experiences",    "type": "computed", "token": "has_experiences" },
     { "flag": "has_video",          "type": "computed", "token": "has_video" },
     { "flag": "has_gallery",        "type": "computed", "token": "has_gallery" },
