@@ -10,13 +10,13 @@
   "showHoursGrid": true,
   "navLinks": ["#specials:Specials", "#products:Shop", "#visit:Visit"],
   "navCtaLabel": "Order on WhatsApp",
+  "selfContainedNav": true,
   "conditionals": [
     { "flag": "has_hero",       "type": "field_present", "field": "hero_image_url" },
     { "flag": "has_logo",       "type": "field_present", "field": "logo_url" },
     { "flag": "has_address",    "type": "field_present", "field": "address" },
     { "flag": "has_categories", "type": "computed",      "token": "has_categories" },
     { "flag": "has_specials",   "type": "computed",      "token": "has_specials" },
-    { "flag": "has_delivery",   "type": "computed",      "token": "has_delivery" },
-    { "flag": "delivery_areas", "type": "field_present", "field": "delivery_areas" }
+    { "flag": "has_delivery",   "type": "computed",      "token": "has_delivery" }
   ]
 }
