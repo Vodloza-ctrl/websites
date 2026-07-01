@@ -263,7 +263,7 @@ img{display:block;max-width:100%}
 .prod-img-add:hover{border-color:var(--green);background:var(--green-bg);color:var(--green)}
 .prod-img-add input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .variant-chip button:hover{opacity:1}
-/* --- mobile topbar: icon-only ghost/delete, keep Save + Undo readable --- */
+/* --- mobile topbar: icon-only ghost/delete labels, keep Save + Undo readable --- */
 @media (max-width: 899px) {
   .topbar { padding: 0 8px; gap: 6px; }
   .topbar-logo { font-size: 14px; }
@@ -399,7 +399,7 @@ img{display:block;max-width:100%}
         <div class="panel-head"><h2>Gallery photos</h2><span class="fld-hint" style="font-size:12px">Up to 8 photos</span></div>
         <div class="panel-body"><div class="img-grid" id="galleryGrid"></div></div>
       </div>
-      
+
       <!-- VIDEO SECTION - Full implementation -->
       <div class="panel" style="margin-top:16px">
         <div class="panel-head"><h2>🎬 Video section</h2><span class="tag" id="videoStatus">Not added</span></div>
@@ -409,7 +409,7 @@ img{display:block;max-width:100%}
             <input class="fld-input" id="f_video" placeholder="https://www.youtube.com/embed/… or https://youtu.be/…" oninput="markDirty();updateVideoPreview()">
             <div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Supports YouTube, Vimeo, and direct video files (MP4, WebM, OGG).</div>
           </div>
-          
+
           <div class="two">
             <div class="fld-group">
               <label class="fld-label">Video thumbnail <span class="fld-hint">— shown before play</span></label>
@@ -429,17 +429,17 @@ img{display:block;max-width:100%}
               <input class="fld-input" id="f_video_runtime" placeholder="e.g. 2:30" oninput="markDirty()">
             </div>
           </div>
-          
+
           <div class="fld-group">
             <label class="fld-label">Video title <span class="fld-hint">optional — shown over the thumbnail</span></label>
             <input class="fld-input" id="f_video_title" placeholder="Experience the difference" oninput="markDirty()">
           </div>
-          
+
           <div class="fld-group">
             <label class="fld-label">Video subtitle <span class="fld-hint">optional — small text below title</span></label>
             <input class="fld-input" id="f_video_subtitle" placeholder="A glimpse into our world" oninput="markDirty()">
           </div>
-          
+
           <div class="two">
             <div class="fld-group">
               <label class="fld-label">Section eyebrow <span class="fld-hint">optional — small label above heading</span></label>
@@ -450,12 +450,12 @@ img{display:block;max-width:100%}
               <input class="fld-input" id="f_video_heading" placeholder="e.g. Experience the difference" oninput="markDirty()">
             </div>
           </div>
-          
+
           <div class="fld-group">
             <label class="fld-label">Video description <span class="fld-hint">optional — shown next to the video</span></label>
             <textarea class="fld-textarea" id="f_video_body" rows="2" placeholder="A short description that appears alongside the video…" oninput="markDirty()"></textarea>
           </div>
-          
+
           <div class="fld-group" id="videoPreviewContainer" style="display:none">
             <label class="fld-label">Video preview</label>
             <div id="videoPreview" style="background:var(--ink);border-radius:var(--r-sm);padding:20px;text-align:center;color:rgba(255,255,255,0.5);min-height:80px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
@@ -465,7 +465,7 @@ img{display:block;max-width:100%}
           </div>
         </div>
       </div>
-      
+
       <div class="upsell">
         <div class="upsell-ico">🎬</div>
         <div class="upsell-body">
@@ -577,13 +577,11 @@ async function api(path,opts){
   if(r.status===401){location.href=DASH_URL;return{ok:false,status:401,data:{}};}
   return{ok:r.ok,status:r.status,data:data};
 }
+window.__api = api; // exposed so the v3 script (tuneText) can reuse the authed fetch
 
 // ── DELETE SITE ──────────────────────────────────────────────────────────────
 window.deleteCurrentSite = async function() {
-  if (!siteId) {
-    toast("No site to delete.", "err");
-    return;
-  }
+  if (!siteId) { toast("No site to delete.", "err"); return; }
   var siteName = state.site ? state.site.site_name : "this site";
   var confirmed = confirm(
     "🗑️ Delete \"" + siteName + "\" permanently?\n\n" +
@@ -596,83 +594,48 @@ window.deleteCurrentSite = async function() {
   if (!confirmed) return;
   try {
     var r = await api("/api/sites/" + encodeURIComponent(siteId), { method: "DELETE" });
-    if (!r.ok) {
-      toast(r.data.error || r.data.message || "Couldn't delete site.", "err");
-      return;
-    }
+    if (!r.ok) { toast(r.data.error || r.data.message || "Couldn't delete site.", "err"); return; }
     toast("Site deleted. Redirecting to dashboard...", "ok");
     setTimeout(function() { location.href = DASH_URL; }, 1500);
-  } catch(e) {
-    toast("Network error. Try again.", "err");
-  }
+  } catch(e) { toast("Network error. Try again.", "err"); }
 };
 
-// ── UNDO BUTTON ──
-window.showUndoBar = function() {
-  var btn = document.getElementById("undoBtn");
-  if (btn) btn.style.display = "inline-flex";
-};
-window.hideUndoBar = function() {
-  var btn = document.getElementById("undoBtn");
-  if (btn) btn.style.display = "none";
-};
+// ── UNDO BUTTON (topbar) ──
+window.showUndoBar = function() { var btn = document.getElementById("undoBtn"); if (btn) btn.style.display = "inline-flex"; };
+window.hideUndoBar = function() { var btn = document.getElementById("undoBtn"); if (btn) btn.style.display = "none"; };
 
-// ── SAVE ── FIXED PRODUCTION VERSION
+// ── SAVE ── (PATCHED: real PUT restored; merges v3 content; no self-recursion)
 window.onSave = async function() {
   var btn = document.getElementById("saveBtn");
   if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
   try {
-    // Merge V3 content (services, menu, listings, team, hours, etc.)
-    if (typeof window.__mergeV3IntoState === "function") {
-      window.__mergeV3IntoState();
-    }
-    
+    if (typeof window.__mergeV3IntoState === "function") window.__mergeV3IntoState();
     var brief = readBrief();
     var built = buildContent(brief);
-    
-    // Build the payload
-    var payload = {
-      site_name: brief.business_name || (state.site && state.site.site_name),
-      template_id: g("f_template") || "bold-retail",
-      content: built
-    };
-    
     var r = await api("/api/sites/" + encodeURIComponent(siteId), {
       method: "PUT",
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        site_name: brief.business_name || (state.site && state.site.site_name),
+        template_id: g("f_template"),
+        content: built
+      })
     });
-    
-    if (!r.ok) {
-      var errMsg = r.data?.error || r.data?.message || "Couldn't save — try again";
-      toast(errMsg, "err");
-      return;
-    }
-    
+    if (!r.ok) { toast("Couldn't save — try again", "err"); return; }
     state.dirty = false;
     if (r.data.site) state.site = r.data.site;
-    
-    // Update UI
     var savedSlug = state.site && state.site.draft_subdomain;
     document.getElementById("topSiteName").textContent = (state.site && state.site.site_name) || brief.business_name || "Your site";
     if (savedSlug) document.getElementById("pubUrl").textContent = savedSlug + ".websites.co.zw";
-    
-    var badge = document.getElementById("statusBadge");
-    var st = state.site ? state.site.status : "draft";
+    var badge = document.getElementById("statusBadge"), st = state.site ? state.site.status : "draft";
     badge.textContent = st === "published" ? "Published" : st === "pending_payment" ? "Payment pending" : "Draft";
     badge.className = "status-badge " + (st === "published" ? "status-published" : st === "pending_payment" ? "status-pending" : "status-draft");
-    
     window.hideUndoBar();
     toast("Saved ✓", "ok");
     refreshPreview();
-    
   } catch(e) {
-    console.error("Save error:", e);
-    toast("Network error — check console", "err");
+    toast("Network error", "err");
   } finally {
-    if (btn) { 
-      btn.disabled = false; 
-      btn.textContent = "Save"; 
-    }
+    if (btn) { btn.disabled = false; btn.textContent = "Save"; }
   }
 };
 
@@ -686,15 +649,12 @@ window.undoGenerate = function() {
   state.gallery = _preGenerateSnapshot.gallery;
   _preGenerateSnapshot = null;
   state.dirty = true;
-  populateForm();
-  renderProducts();
-  renderGallery();
-  renderImagePreviews();
+  populateForm(); renderProducts(); renderGallery(); renderImagePreviews();
   window.hideUndoBar();
   toast("Generation undone ✓", "ok");
 };
 
-// ── VIDEO EMBED NORMALIZER ──
+// ── VIDEO EMBED NORMALISER ── (PATCHED: iframe-ready URLs for the public site)
 function videoEmbedInfo(url){
   url=String(url||"").trim();
   if(!url) return {type:"",embedUrl:""};
@@ -710,8 +670,7 @@ function videoEmbedInfo(url){
 
 // ── VIDEO THUMBNAIL FUNCTIONS ──
 window.handleVideoThumbUpload = async function(input) {
-  var file = input.files[0];
-  if (!file) return;
+  var file = input.files[0]; if (!file) return;
   var url = await window.uploadToR2(file, "video-thumbnail");
   if (!url) { toast("Upload failed — try again", "err"); return; }
   window.videoData.thumbnail = url;
@@ -722,8 +681,7 @@ window.handleVideoThumbUpload = async function(input) {
   if (preview) preview.style.display = "block";
   if (zone) zone.style.display = "none";
   document.getElementById("videoStatus").textContent = "Has thumbnail";
-  window.markDirty();
-  updateVideoPreview();
+  window.markDirty(); updateVideoPreview();
 };
 
 window.removeVideoThumb = function() {
@@ -731,8 +689,7 @@ window.removeVideoThumb = function() {
   document.getElementById("videoThumbPreview").style.display = "none";
   document.getElementById("videoThumbZone").style.display = "block";
   document.getElementById("videoStatus").textContent = "No thumbnail";
-  window.markDirty();
-  updateVideoPreview();
+  window.markDirty(); updateVideoPreview();
 };
 
 window.updateVideoPreview = function() {
@@ -741,21 +698,16 @@ window.updateVideoPreview = function() {
   var preview = document.getElementById("videoPreview");
   var label = document.getElementById("videoPreviewLabel");
   if (!container || !preview) return;
-  
   if (url) {
     container.style.display = "block";
     var info = videoEmbedInfo(url);
-    var embedUrl = info.embedUrl;
-    var isYoutube = info.type === "youtube";
-    var isVimeo = info.type === "vimeo";
-    var isFile = info.type === "file";
-    if (isYoutube || isVimeo) {
-      preview.innerHTML = '<iframe src="' + embedUrl + '" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px" allowfullscreen></iframe>';
-    } else if (isFile) {
+    if (info.type === "youtube" || info.type === "vimeo") {
+      preview.innerHTML = '<iframe src="' + info.embedUrl + '" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px" allowfullscreen></iframe>';
+    } else if (info.type === "file") {
       var thumb = window.videoData.thumbnail || '';
-      preview.innerHTML = '<video style="width:100%;aspect-ratio:16/9;border-radius:8px;background:#000" controls preload="metadata" poster="' + thumb + '"><source src="' + embedUrl + '"></video>';
+      preview.innerHTML = '<video style="width:100%;aspect-ratio:16/9;border-radius:8px;background:#000" controls preload="metadata" poster="' + thumb + '"><source src="' + info.embedUrl + '"></video>';
     } else {
-      preview.innerHTML = '<div style="font-size:28px">▶️</div><div style="font-size:13px;color:rgba(255,255,255,0.5)">' + embedUrl + '</div>';
+      preview.innerHTML = '<div style="font-size:28px">▶️</div><div style="font-size:13px;color:rgba(255,255,255,0.5)">' + esc(url) + '</div>';
     }
     if (label) label.textContent = "Video preview";
     document.getElementById("videoStatus").textContent = "Video added";
@@ -818,11 +770,11 @@ function populateForm(){
   set("s_whatsapp",s.whatsapp||"");set("s_facebook",s.facebook||"");
   set("s_instagram",s.instagram||"");set("s_tiktok",s.tiktok||"");
   set("s_twitter",s.twitter||"");set("s_linkedin",s.linkedin||"");
-  
+
   // ── Load video data ──
   var video = (c.video && typeof c.video === 'object') ? c.video : null;
   if (video) {
-    set("f_video", video.url || video.src || video.embedUrl || '');
+    set("f_video", video.url || video.src || '');
     set("f_video_title", video.title || '');
     set("f_video_subtitle", video.subtitle || video.caption || '');
     set("f_video_body", video.body || video.description || '');
@@ -841,7 +793,7 @@ function populateForm(){
     }
     updateVideoPreview();
   }
-  
+
   document.getElementById("imgCount").textContent=countImages()+" / "+STARTER_IMAGE_LIMIT+" uploaded";
   var nameFromForm=g("f_name");
   if(nameFromForm)document.getElementById("topSiteName").textContent=nameFromForm;
@@ -877,16 +829,16 @@ function buildContent(brief){
   var theme=Object.assign({palette:paletteFor(g("f_template")),font_pair:fontFor(g("f_template")),sections:["hero","about","services","products","gallery","contact"]},existingTheme);
   var resolvedColors=resolvePaletteColors(theme.palette,theme.custom_accent);
   theme.accent=resolvedColors.accent;theme.bg=resolvedColors.bg;theme.dark=resolvedColors.dark;theme.gold=resolvedColors.gold;
-  
-  // ── Build video object ──
+
+  // ── Build video object ── (PATCHED: stores embedUrl + embedType for the render worker)
   var videoUrl = g("f_video");
   var videoObj = null;
   if (videoUrl) {
-    var vidInfo = videoEmbedInfo(videoUrl);
+    var vinfo = videoEmbedInfo(videoUrl);
     videoObj = {
       url: videoUrl,
-      embedUrl: vidInfo.embedUrl,
-      embedType: vidInfo.type,
+      embedUrl: vinfo.embedUrl,
+      embedType: vinfo.type,
       thumbnail: window.videoData.thumbnail || null,
       title: g("f_video_title") || null,
       subtitle: g("f_video_subtitle") || null,
@@ -896,16 +848,17 @@ function buildContent(brief){
       heading: g("f_video_heading") || null,
     };
     Object.keys(videoObj).forEach(function(k) { if (videoObj[k] === null || videoObj[k] === '') delete videoObj[k]; });
-    if (Object.keys(videoObj).length === 0) videoObj = null;
+    if (!videoObj.url) videoObj = null;
   }
-  
-  // Ensure video section is in theme.sections if video exists
+
+  // Ensure 'video' is in theme.sections when a video exists (so the render worker shows it)
   if (videoObj && theme.sections && theme.sections.indexOf('video') === -1) {
-    var insertIndex = Math.min(theme.sections.indexOf('about') + 1, theme.sections.length);
-    if (insertIndex < 0 || insertIndex > theme.sections.length) insertIndex = 2;
+    var insertIndex = theme.sections.indexOf('about');
+    insertIndex = (insertIndex === -1) ? 2 : insertIndex + 1;
+    if (insertIndex < 0 || insertIndex > theme.sections.length) insertIndex = theme.sections.length;
     theme.sections.splice(insertIndex, 0, 'video');
   }
-  
+
   return{
     theme:theme,
     content:Object.assign({},existing,{
@@ -950,7 +903,7 @@ window.onGenerate=async function(){
   finally{btn.classList.remove("loading");btn.disabled=false;}
 };
 
-// ── PRODUCT FUNCTIONS ── (simplified version)
+// ── PRODUCT FUNCTIONS ──
 function renderProducts() {
   var list = document.getElementById("productList");
   var empty = document.getElementById("productEmpty");
@@ -968,7 +921,7 @@ function renderProducts() {
     var thumbHtml = p.image
       ? '<img class="product-thumb" src="' + esc(p.image) + '" alt="">'
       : '<div class="product-thumb-placeholder">📦</div>';
-    card.innerHTML = 
+    card.innerHTML =
       '<div class="product-card-head" onclick="this.parentElement.classList.toggle(\'open\')" style="cursor:pointer">'
       + thumbHtml
       + '<div class="product-name">' + (p.name || '<em style="color:var(--ink3)">Tap to edit</em>') + '</div>'
@@ -993,13 +946,11 @@ window.addProduct = function() {
     return;
   }
   state.products.push({id:'p_'+Date.now(), name:'', description:'', price:'', image:'', images:[], variants:[], colors:[] });
-  renderProducts();
-  markDirty();
+  renderProducts(); markDirty();
 };
 window.removeProduct = function(id) {
   state.products = state.products.filter(function(p) { return p.id !== id; });
-  renderProducts();
-  markDirty();
+  renderProducts(); markDirty();
 };
 window.updateProduct = function(id, key, val) {
   var p = state.products.find(function(p) { return p.id === id; });
@@ -1127,9 +1078,8 @@ var TPL_CFG={
   "hospitality-inn":{services:"Rooms",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"}
 };
 var v3state={services:[],menu:[],listings:[],team:[],stats:[],events:[],testimonials:[],hours:{},previewDevice:"desktop"};
-var _origSwitchTab=window.switchTab;
 
-// ── V3 CONTENT MERGE (called by Save) ──
+// ── MERGE V3 CONTENT INTO STATE BEFORE SAVE ── (PATCHED: replaces the removed save hook)
 window.__mergeV3IntoState = function() {
   if (window.state && window.state.content) {
     var inner = window.state.content.content || {};
@@ -1145,6 +1095,7 @@ window.__mergeV3IntoState = function() {
   }
 };
 
+var _origSwitchTab=window.switchTab;
 function injectV3Nav(){
   var sidebar=document.querySelector(".sidebar");if(!sidebar||document.getElementById("v3-nav-injected"))return;
   var publishItem=sidebar.querySelector('[data-tab="publish"]');var insertBefore=publishItem||null;
@@ -1310,7 +1261,7 @@ function bootV3(){
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",bootV3);}else{bootV3();}
 
 // ── TUNE TEXT ──
-async function tuneText(fieldType,currentText,opts){opts=opts||{};if(!currentText||!currentText.trim()){toast("Add some text first","err");return null;}try{var r=await api("/api/ai/tune",{method:"POST",body:JSON.stringify({field_type:fieldType,current_text:currentText,business_name:(state.content&&state.content.content&&state.content.content.business_name)||"",industry:(document.getElementById("f_industry")||{}).value||"",site_id:siteId,})});if(!r.ok||!r.data.text){toast(r.data&&r.data.error==="tune_limit_reached"?"AI tune-up limit reached for this site":"Couldn't improve that text — try again","err");return null;}return r.data.text;}catch(e){toast("Network error — try again","err");return null;}}
+async function tuneText(fieldType,currentText,opts){opts=opts||{};if(!currentText||!currentText.trim()){toast("Add some text first","err");return null;}try{var r=await window.__api("/api/ai/tune",{method:"POST",body:JSON.stringify({field_type:fieldType,current_text:currentText,business_name:(window.state&&window.state.content&&window.state.content.content&&window.state.content.content.business_name)||"",industry:(document.getElementById("f_industry")||{}).value||"",site_id:new URLSearchParams(location.search).get("site"),})});if(!r.ok||!r.data.text){toast(r.data&&r.data.error==="tune_limit_reached"?"AI tune-up limit reached for this site":"Couldn't improve that text — try again","err");return null;}return r.data.text;}catch(e){toast("Network error — try again","err");return null;}}
 
 function escV3(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function g(id){var e=document.getElementById(id);return e?e.value.trim():"";}
