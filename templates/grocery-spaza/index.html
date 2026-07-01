@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{seo_title}}</title>
+<meta name="description" content="{{seo_description}}">
+<meta property="og:title" content="{{business_name}}">
+<meta property="og:description" content="{{seo_description}}">
+<meta property="og:image" content="{{hero_image_url}}">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Commerce SDK CSS -->
+{{wcz_commerce_css}}
+<style>
+  :root{--green:#1E7A3D;--green2:#26934A;--leaf:#E8F5E9;--sun:#F2A93B;--ink:#1B2419;--ink2:#5C6B58;--paper:#fff;--cream:#FBF8F0;--line:rgba(30,122,61,.14)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Inter",sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Baloo 2",sans-serif;font-weight:700;line-height:1.1}
+  a{color:inherit;text-decoration:none}.wrap{max-width:1140px;margin:0 auto;padding:0 26px}
+  img{display:block;max-width:100%}
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:3px solid var(--green)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:16px}
+  .logo{display:flex;align-items:center;gap:10px;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.3rem;color:var(--green);flex-shrink:0}
+  .logo .leaf{width:36px;height:36px;border-radius:10px;background:var(--green);display:grid;place-items:center;flex:none;font-size:1.1rem}
+  .logo img.logo-img{height:36px;width:36px;object-fit:contain;border-radius:10px;flex:none}
+  .nav nav{display:flex;gap:24px}.nav nav a{font-size:.92rem;font-weight:600;color:var(--ink2)}.nav nav a:hover{color:var(--green)}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:#fff;font-weight:700;font-size:.9rem;padding:11px 20px;border-radius:30px;transition:.2s}
+  .btn:hover{background:var(--green2)}
+  .btn.sun{background:var(--sun);color:#3A2400}.btn.sun:hover{background:#E29A2A}
+  /* hero */
+  .hero{position:relative;min-height:64vh;display:flex;align-items:center;color:#fff;overflow:hidden}
+  .hero img.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero-bg-ph{position:absolute;inset:0;background:linear-gradient(135deg,var(--green),#0f3d1a)}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(20,60,30,.92) 0%,rgba(20,60,30,.45) 65%,rgba(20,60,30,.15) 100%)}
+  .hero .wrap{position:relative;z-index:2;padding:50px 26px}
+  .eyebrow{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sun);font-weight:700}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.6rem);margin:12px 0 14px;max-width:18ch}
+  .hero p{font-size:1.08rem;max-width:42ch;color:rgba(255,255,255,.92)}
+  .hero-actions{display:flex;gap:14px;margin-top:24px;flex-wrap:wrap}
+  /* category strip */
+  .cats{background:var(--green);padding:14px 0}
+  .cats .wrap{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
+  .cats .wrap::-webkit-scrollbar{display:none}
+  .cat-pill{flex:none;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);color:#fff;font-size:.86rem;font-weight:600;padding:9px 18px;border-radius:30px;white-space:nowrap;cursor:pointer;border:none;font-family:inherit}
+  .cat-pill.on{background:#fff;color:var(--green)}
+  /* signature: chalkboard-style specials price board */
+  .board-section{padding:64px 0}
+  .sec-head{text-align:center;max-width:600px;margin:0 auto 40px}
+  .sec-head .eyebrow{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--green)}
+  .sec-head h2{font-size:clamp(1.9rem,3.6vw,2.6rem);margin-top:8px}.sec-head p{color:var(--ink2);margin-top:10px}
+  .board{background:#163420;border-radius:18px;padding:36px 30px;position:relative;overflow:hidden}
+  .board::before{content:"TODAY'S SPECIALS";position:absolute;top:-8px;right:24px;background:var(--sun);color:#3A2400;font-family:"Baloo 2";font-weight:800;font-size:.78rem;letter-spacing:.06em;padding:6px 16px;border-radius:0 0 8px 8px;transform:rotate(2deg)}
+  .board-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:24px}
+  .board-item{text-align:center;color:#EFF7EC}
+  .board-item .name{font-family:"Baloo 2";font-size:1.05rem;font-weight:700}
+  .board-item .was{font-size:.82rem;color:rgba(239,247,236,.5);text-decoration:line-through}
+  .board-item .now{font-family:"Baloo 2";font-size:1.7rem;font-weight:800;color:var(--sun)}
+  .board-item .unit{font-size:.78rem;color:rgba(239,247,236,.65)}
+  .board-foot{text-align:center;margin-top:26px;color:rgba(239,247,236,.7);font-size:.86rem}
+  @media(max-width:860px){.board-grid{grid-template-columns:repeat(2,1fr)}}
+  /* products (Commerce SDK mount points) */
+  .products{padding:0 0 64px}
+  .products-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+  .products-filter-bar .fr-cat{font-family:"Inter";font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:8px 16px;border:1.5px solid var(--line);border-radius:30px;color:var(--ink2);cursor:pointer;transition:.2s;background:var(--paper)}
+  .products-filter-bar .fr-cat:hover{border-color:var(--green);color:var(--green)}
+  .products-filter-bar .fr-cat.active{border-color:var(--green);background:var(--green);color:#fff}
+  /* hours + delivery */
+  .info-band{background:var(--green);color:#fff;border-radius:20px;margin:0 26px 60px;padding:46px 40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:30px;text-align:center}
+  .info-band .ico{font-size:1.8rem;margin-bottom:10px}
+  .info-band h3{font-family:"Inter";font-size:1rem;font-weight:700}
+  .info-band p{font-size:.86rem;color:rgba(255,255,255,.78);margin-top:4px}
+  .wa{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;font-weight:700;padding:13px 24px;border-radius:30px;margin-top:10px}
+  .hours-box{margin-top:6px;text-align:left;font-size:.84rem;color:rgba(255,255,255,.85)}
+  .hours-box .hours-row{display:flex;justify-content:space-between;padding:3px 0}
+  .hours-box .today .day{font-weight:700;color:var(--sun)}
+  footer{background:#10271A;color:rgba(255,255,255,.6);padding:36px 0;font-size:.88rem}
+  .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  @media(max-width:860px){.info-band{grid-template-columns:1fr}.nav nav{display:none}}
+</style></head>
+<body>
+<header><div class="wrap nav">
+  <div class="logo">
+    {{#if has_logo}}<img class="logo-img" src="{{logo_url}}" alt="{{business_name}}">{{else}}<span class="leaf">🥬</span>{{/if}}
+    {{business_name}}
+  </div>
+  <nav>
+    {{#if has_specials}}<a href="#specials">Specials</a>{{/if}}
+    <a href="#products">Shop</a>
+    <a href="#visit">Visit</a>
+  </nav>
+  <a href="{{wa_href_order}}" class="btn" target="_blank" rel="noopener">Order on WhatsApp</a>
+</div></header>
+
+<section class="hero">
+  {{#if has_hero}}<img class="hero-bg" src="{{hero_image_url}}" alt="{{business_name}}">{{else}}<div class="hero-bg-ph"></div>{{/if}}
+  <div class="wrap">
+    <span class="eyebrow">{{hero_eyebrow}}</span>
+    <h1>{{hero_headline}}</h1>
+    <p>{{hero_subtext}}</p>
+    <div class="hero-actions">
+      <a href="{{wa_href_order}}" class="btn" target="_blank" rel="noopener">💬 Order for Pickup</a>
+      {{#if has_specials}}<a href="#specials" class="btn sun">See Today's Specials</a>{{/if}}
+    </div>
+  </div>
+</section>
+
+{{#if has_categories}}
+<div class="cats"><div class="wrap">
+  {{category_pills_html}}
+</div></div>
+{{/if}}
+
+{{#if has_specials}}
+<section class="board-section" id="specials">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Limited Stock</span><h2>Today's specials</h2></div>
+    <div class="board">
+      <div class="board-grid">
+        {{grocery_specials_html}}
+      </div>
+      <p class="board-foot">{{specials_note}}</p>
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<section class="products" id="products">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Shop</span><h2>Shop the essentials</h2></div>
+    <div class="products-filter-bar" id="shopFilters">
+      {{gs_category_filters_html}}
+    </div>
+    <div id="wcz-products">
+      {{gs_products_html}}
+    </div>
+  </div>
+</section>
+
+<section id="visit">
+  <div class="wrap">
+    <div class="info-band">
+      <div>
+        <div class="ico">🕖</div><h3>Opening Hours</h3>
+        {{open_badge_html}}
+        <div class="hours-box">{{hours_grid_html}}</div>
+      </div>
+      {{#if has_delivery}}
+      <div><div class="ico">🛵</div><h3>Delivery</h3><p>{{delivery_note}}</p>{{#if delivery_areas}}<p>{{delivery_areas}}</p>{{/if}}</div>
+      {{/if}}
+      <div>
+        <div class="ico">📲</div><h3>Order Ahead</h3><p>Send your list, we pack &amp; confirm the total</p>
+        <a href="{{wa_href_order}}" class="wa" target="_blank" rel="noopener">💬 WhatsApp Your Order</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap foot">
+  <div><span class="logo" style="color:#fff;font-size:1.1rem">{{#if has_logo}}<img class="logo-img" src="{{logo_url}}" alt="{{business_name}}">{{else}}<span class="leaf">🥬</span>{{/if}}{{business_name}}</span>{{#if has_address}}<p style="margin-top:8px">📍 {{address}}</p>{{/if}}</div>
+  <div>© {{current_year}} {{business_name}} · Built with websites.co.zw</div>
+</div></footer>
+
+<!-- SDK OVERLAYS: drawer + lightbox -->
+<div id="wcz-qv-overlay"></div>
+<div id="wcz-qv-drawer">
+  {{wcz_qv_drawer_html}}
+</div>
+{{wcz_lb_html}}
+
+<!-- PRODUCT SCRIPT -->
+{{wcz_products_script}}
+
+<script>
+(function(){
+  var filterBar = document.getElementById('shopFilters');
+  if (filterBar) {
+    filterBar.querySelectorAll('.fr-cat').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        filterBar.querySelectorAll('.fr-cat').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        var cat = btn.dataset.cat || '';
+        document.querySelectorAll('#wcz-products .wcz-prod-card').forEach(function(card){
+          card.style.display = (!cat || card.dataset.cat === cat) ? '' : 'none';
+        });
+      });
+    });
+  }
+  var catStrip = document.querySelector('.cats .wrap');
+  if (catStrip) {
+    catStrip.querySelectorAll('.cat-pill').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        catStrip.querySelectorAll('.cat-pill').forEach(function(b){ b.classList.remove('on'); });
+        btn.classList.add('on');
+        var cat = btn.dataset.cat || '';
+        var fBtn = filterBar && filterBar.querySelector('.fr-cat[data-cat="' + cat + '"]');
+        if (fBtn) fBtn.click();
+      });
+    });
+  }
+})();
+</script>
+</body></html>
