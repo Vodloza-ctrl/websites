@@ -21,6 +21,19 @@
   --ink:#231820;
   --line:rgba(45,27,36,.1);
   --radius:3px;
+
+  /* ── Commerce SDK bridge tokens ──
+     websites-commerce-sdk-worker's CSS reads --ink2/--ink3/--gold/--gold2/--mono.
+     Without these, the shop grid/drawer/cart fall back to boutique-fashion's
+     dark (#1a1a1a) defaults. These map the SDK onto this template's own
+     blush-plum-rose palette so the shop doesn't look like a different site. */
+  --ink2:#FDF6F3;              /* product card / drawer bg — blush-white, not dark */
+  --ink3:#F6E9E4;              /* photo placeholder bg — soft blush */
+  --gold2:#A84E61;             /* darker rose for hover states */
+  --mono:"DM Sans",sans-serif; /* chrome font for badges/buttons/spec labels —
+                                   kept as DM Sans (already loaded above) rather
+                                   than a serif, so tight UI elements like
+                                   .wcz-qv-size pills stay legible at small sizes */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
