@@ -537,7 +537,8 @@ svg { display: block; flex-shrink: 0; }
 <nav class="nav" id="nav">
   <div class="container nav-inner">
     <div class="nav-logo">
-      {{#if has_logo}}<img src="{{logo_url}}" alt="{{business_name}}">{{else}}<span class="nav-logo-text">{{business_name}}</span>{{/if}}
+      {{#if has_logo}}<img src="{{logo_url}}" alt="{{business_name}}">{{/if}}
+      <span class="nav-logo-text">{{business_name}}</span>
     </div>
     <div class="nav-links">
       {{#if has_rooms}}<a href="#rooms">{{nav_rooms_label}}</a>{{/if}}
