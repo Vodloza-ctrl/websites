@@ -5,23 +5,25 @@
   "typeLabels": {
     "hardware-store": "Hardware & Industrial Supply"
   },
-  "googleFonts": "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap",
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap",
   "showOpenBadge": true,
   "showHoursGrid": true,
-  "navLinks": ["#products:Shop", "#specials:Specials", "#about:About", "#contact:Contact"],
-  "navCtaLabel": "Order Now",
   "selfContainedNav": true,
   "bodyClass": "hardware-template",
+  "navLinks": ["#products:Shop", "#specials:Specials", "#about:About", "#contact:Contact"],
+  "navCtaLabel": "Order Now",
+  "navTextColor": "#ffffff",
   "conditionals": [
-    { "flag": "has_hero",       "type": "field_present", "field": "hero_image_url" },
-    { "flag": "has_logo",       "type": "field_present", "field": "logo_url" },
-    { "flag": "has_address",    "type": "field_present", "field": "address" },
-    { "flag": "has_phone",      "type": "field_present", "field": "phone" },
-    { "flag": "has_email",      "type": "field_present", "field": "email" },
-    { "flag": "has_specials",   "type": "computed",      "token": "has_specials" },
-    { "flag": "has_facebook",   "type": "field_present", "field": "facebook_url" },
-    { "flag": "has_instagram",  "type": "field_present", "field": "instagram_url" },
-    { "flag": "has_twitter",    "type": "field_present", "field": "twitter_url" },
-    { "flag": "about_image",    "type": "field_present", "field": "about_image" }
+    { "flag": "has_hero", "type": "field_present", "field": "hero_image_url" },
+    { "flag": "has_logo", "type": "field_present", "field": "logo_url" },
+    { "flag": "has_address", "type": "field_present", "field": "address" },
+    { "flag": "has_phone", "type": "field_present", "field": "phone" },
+    { "flag": "has_email", "type": "field_present", "field": "email" },
+    { "flag": "has_whatsapp", "type": "field_present", "field": "whatsapp" },
+    { "flag": "has_specials", "type": "computed", "token": "has_specials" },
+    { "flag": "has_facebook", "type": "field_present", "field": "facebook_url" },
+    { "flag": "has_instagram", "type": "field_present", "field": "instagram_url" },
+    { "flag": "has_twitter", "type": "field_present", "field": "twitter_url" },
+    { "flag": "about_image", "type": "field_present", "field": "about_image" }
   ]
 }
