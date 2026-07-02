@@ -1,549 +1,242 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>websites.co.zw — Edit your site</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maranatha Community Church — Hope. Family. Faith. Chitungwiza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#f6f4f0;--surface:#fff;--border:#e4e0da;--text:#1a1410;--text2:#5a4f45;--accent:#b8860b;--accent2:#8b6914;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--radius:12px;--radius-sm:8px}
-body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
-.app{display:flex;min-height:100vh}
-.sidebar{width:280px;background:var(--surface);border-right:1px solid var(--border);padding:24px 16px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh;overflow-y:auto}
-.sidebar .logo{font-weight:700;font-size:1.1rem;padding:0 8px 16px;border-bottom:1px solid var(--border);margin-bottom:8px;display:flex;align-items:center;gap:8px}
-.sidebar .logo img{height:28px}
-.sidebar a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);color:var(--text2);font-weight:500;font-size:.88rem;transition:all .15s;text-decoration:none}
-.sidebar a:hover{background:#f0ede8;color:var(--text)}
-.sidebar a.active{background:#f0ede8;color:var(--text);font-weight:600}
-.sidebar .badge{background:var(--accent);color:#fff;font-size:.65rem;padding:1px 8px;border-radius:20px;margin-left:auto}
-.main{flex:1;padding:32px 40px 80px;max-width:900px}
-.page{display:none;animation:fade .2s ease}
-.page.active{display:block}
-@keyframes fade{from{opacity:.4}to{opacity:1}}
-h1{font-size:1.6rem;font-weight:700;margin-bottom:4px}
-.sub{color:var(--text2);margin-bottom:24px;font-size:.95rem}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
-.card h3{font-size:1rem;font-weight:600;margin-bottom:16px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.field{margin-bottom:14px}
-.field label{display:block;font-weight:500;font-size:.85rem;margin-bottom:4px;color:var(--text2)}
-.field input,.field textarea,.field select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;background:#faf8f6;transition:.15s;font-family:inherit}
-.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);background:#fff}
-.field textarea{min-height:80px;resize:vertical}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--radius-sm);font-weight:600;font-size:.88rem;border:none;background:var(--accent);color:#fff;cursor:pointer;transition:.15s;text-decoration:none}
-.btn:hover{background:var(--accent2)}
-.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
-.btn-outline:hover{background:#f0ede8;border-color:#c0b8b0}
-.btn-sm{padding:6px 14px;font-size:.8rem}
-.btn-danger{background:#dc2626;color:#fff}
-.btn-danger:hover{background:#b91c1c}
-.btn-success{background:#16a34a;color:#fff}
-.btn-success:hover{background:#15803d}
-.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:600;background:#f0ede8;color:var(--text2)}
-.pill.active{background:#dcfce7;color:#166534}
-.tag-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.tag{background:#f0ede8;padding:4px 12px;border-radius:20px;font-size:.8rem;display:inline-flex;align-items:center;gap:6px}
-.tag .del{cursor:pointer;color:#999;font-weight:700}
-.tag .del:hover{color:#dc2626}
-.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:12px}
-.image-grid .thumb{aspect-ratio:1;border-radius:var(--radius-sm);object-fit:cover;background:#f0ede8;border:1px solid var(--border);width:100%;cursor:pointer}
-.image-grid .thumb-wrap{position:relative}
-.image-grid .thumb-wrap .remove{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:.7rem}
-.image-grid .thumb-wrap .remove:hover{background:#dc2626}
-.empty-state{color:var(--text2);font-size:.9rem;padding:24px 0;text-align:center}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap}
-.tabs button{background:none;border:none;padding:10px 16px;font-weight:500;font-size:.85rem;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:.15s;font-family:inherit}
-.tabs button:hover{color:var(--text)}
-.tabs button.active{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
-.tab-pane{display:none}
-.tab-pane.active{display:block}
-.repeater-item{background:#faf8f6;border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px}
-.repeater-item .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:500}
-.repeater-item .head .del-item{color:#999;cursor:pointer;font-size:.8rem}
-.repeater-item .head .del-item:hover{color:#dc2626}
-.template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:12px}
-.template-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;cursor:pointer;transition:.15s}
-.template-card:hover{border-color:var(--accent)}
-.template-card.selected{border-color:var(--accent);background:#fefcf7}
-.template-card .preview{font-size:2.4rem;margin-bottom:6px}
-.template-card .name{font-weight:500;font-size:.85rem}
-.template-card .desc{font-size:.75rem;color:var(--text2)}
-@media(max-width:768px){.sidebar{width:72px;padding:12px 8px}.sidebar a span,.sidebar .logo span{display:none}.sidebar .badge{display:none}.main{padding:16px}.row{grid-template-columns:1fr}}
+  :root{--warm:#2C1A0E;--amber:#C07A2B;--amber2:#E09A3B;--cream:#FAF5EE;--ink:#241A10;--ink2:#6A5A44;--paper:#fff;--line:rgba(44,26,14,.12)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Plus Jakarta Sans",sans-serif;color:var(--ink);background:var(--cream);line-height:1.65;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Fraunces",serif;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}.wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+  header{position:sticky;top:0;z-index:50;background:rgba(250,245,238,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-family:"Fraunces",serif;font-weight:700;font-size:1.25rem}
+  .cross{width:34px;height:34px;border-radius:8px;background:var(--warm);display:grid;place-items:center;flex:none}
+  .cross svg{width:16px;height:16px}
+  .nav nav{display:flex;gap:26px}.nav nav a{font-size:.9rem;font-weight:500;color:var(--ink2)}.nav nav a:hover{color:var(--warm)}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--warm);color:#fff;font-weight:600;font-size:.9rem;padding:11px 20px;border-radius:8px;transition:.2s}.btn:hover{background:var(--amber);color:#fff}
+  .btn.outline{background:transparent;border:1.5px solid var(--warm);color:var(--warm)}.btn.outline:hover{background:var(--warm);color:#fff}
+  /* hero */
+  .hero{position:relative;min-height:68vh;display:flex;align-items:center;color:#fff}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(44,26,14,.9),rgba(44,26,14,.35))}
+  .hero .wrap{position:relative;z-index:2;padding:60px 26px}
+  .eyebrow{font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber2);font-weight:700}
+  .hero h1{font-size:clamp(2.4rem,5.5vw,4.2rem);margin:14px 0 18px;max-width:18ch}
+  .hero p{font-size:1.12rem;max-width:44ch;color:rgba(255,255,255,.88)}
+  .hero-actions{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap}
+  .btn.ghost{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.5);color:#fff}
+  /* service times */
+  .times-bar{background:var(--warm);color:#fff}
+  .times-bar .wrap{display:flex;align-items:center;gap:40px;padding:14px 26px;flex-wrap:wrap}
+  .time-item .label{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--amber2);font-weight:700}
+  .time-item .val{font-weight:600;font-size:.96rem}
+  section{padding:64px 0}
+  .sec-head{text-align:center;max-width:600px;margin:0 auto 44px}
+  .sec-head h2{font-size:clamp(1.9rem,3.5vw,2.8rem);margin-top:10px}.sec-head p{color:var(--ink2);margin-top:10px}
+  /* values */
+  .values{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .vcard{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:28px 24px;text-align:center}
+  .vcard .icon{width:52px;height:52px;border-radius:12px;background:var(--cream);display:grid;place-items:center;font-size:1.5rem;margin:0 auto 16px}
+  .vcard h3{font-size:1.1rem;margin-bottom:8px}.vcard p{font-size:.9rem;color:var(--ink2)}
+  /* pastor */
+  .pastor{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center}
+  .pastor img{width:100%;border-radius:16px;aspect-ratio:4/4.5;object-fit:cover;box-shadow:0 40px 80px -40px rgba(44,26,14,.4)}
+  .pastor .kicker{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
+  .pastor h2{font-size:clamp(1.8rem,3vw,2.6rem);margin:12px 0 16px}
+  .pastor p{color:var(--ink2);font-size:1.05rem;line-height:1.7;margin-bottom:12px}
+  /* ministries */
+  .min-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .mcard{border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;gap:16px;align-items:flex-start;background:var(--paper)}
+  .mcard .ico{width:44px;height:44px;border-radius:10px;background:var(--cream);display:grid;place-items:center;font-size:1.2rem;flex:none}
+  .mcard h3{font-size:1rem;margin-bottom:6px}.mcard p{font-size:.88rem;color:var(--ink2)}
+  /* events */
+  .events{display:flex;flex-direction:column;gap:12px}
+  .event{display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px}
+  .event .date{text-align:center;background:var(--warm);border-radius:8px;padding:6px 0;color:#fff}
+  .event .date .day{font-family:"Fraunces",serif;font-size:1.4rem;font-weight:600;line-height:1}
+  .event .date .month{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em}
+  .event h3{font-size:.96rem;font-weight:600}.event p{font-size:.84rem;color:var(--ink2)}
+  .event .tag{font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:6px;background:var(--cream);color:var(--warm);white-space:nowrap}
+  /* giving */
+  .give-band{background:var(--warm);color:#fff;text-align:center;border-radius:16px;padding:54px 40px}
+  .give-band h2{font-size:clamp(2rem,3.5vw,2.8rem);margin:10px 0 14px}
+  .give-band p{color:rgba(255,255,255,.8);max-width:44ch;margin:0 auto 28px}
+  .give-band .btn{background:#fff;color:var(--warm)}.give-band .btn:hover{background:var(--amber2);color:#fff}
+  /* location */
+  .location{display:grid;grid-template-columns:1.3fr .7fr;gap:40px;align-items:center}
+  .map-mock{background:linear-gradient(135deg,#ddd 0%,#ccc 100%);border-radius:14px;aspect-ratio:16/10;overflow:hidden;position:relative;border:1px solid var(--line);display:grid;place-items:center;color:#888;font-size:1.4rem}
+  .address-box h3{font-size:1.4rem;margin-bottom:16px}
+  .addr-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+  .addr-row .ico{font-size:1.1rem;margin-top:2px}
+  .addr-row p{font-size:.92rem;color:var(--ink2);line-height:1.5}
+  footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
+  .foot-in{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .foot-in .logo{color:#fff}.foot-in p{font-size:.84rem}
+  .socials{display:flex;gap:10px}
+  .soc{width:34px;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:.85rem;color:#fff}
+  @media(max-width:900px){
+    .values{grid-template-columns:1fr 1fr}.pastor{grid-template-columns:1fr}.pastor img{aspect-ratio:16/9}
+    .min-grid{grid-template-columns:1fr}.location{grid-template-columns:1fr}
+    .nav nav,.nav .btn{display:none}
+  }
 </style>
 </head>
 <body>
-<div class="app">
-<aside class="sidebar">
-<div class="logo"><span>✧</span><span>websites.co.zw</span></div>
-<a href="#" class="active" data-page="basics"><span>📄 Basics</span></a>
-<a href="#" data-page="images"><span>🖼️ Images</span></a>
-<a href="#" data-page="products"><span>📦 Products</span><span class="badge">6</span></a>
-<a href="#" data-page="contact"><span>📞 Contact</span></a>
-<a href="#" data-page="social"><span>📱 Social</span></a>
-<a href="#" data-page="publish"><span>🚀 Publish</span></a>
-<a href="#" data-page="design"><span>🎨 Design</span></a>
-<a href="#" data-page="content"><span>📝 Content</span></a>
-</aside>
-<main class="main">
-
-<!-- BASICS -->
-<div class="page active" id="page-basics">
-<h1>Basics</h1>
-<p class="sub">Your business name, tagline, and what you do.</p>
-<div class="card"><h3>Business info</h3>
-<div class="field"><label>Business name</label><input id="bizName" value="Maranatha Community Church" placeholder="Your business name"/></div>
-<div class="field"><label>Tagline</label><input id="bizTagline" value="Hope. Family. Faith." placeholder="Short tagline"/></div>
-<div class="field"><label>Description</label><textarea id="bizDesc" rows="3">A community of faith growing together in love, serving Chitungwiza and beyond since 1989.</textarea></div>
-<div class="row"><div class="field"><label>Category</label><select id="bizCat"><option value="church">Church / Religious</option><option value="restaurant">Restaurant</option><option value="retail">Retail</option><option value="service">Service</option><option value="other">Other</option></select></div>
-<div class="field"><label>Phone</label><input id="bizPhone" value="+263 77 123 4567" placeholder="Phone"/></div></div>
-<div class="field"><label>Address</label><input id="bizAddress" value="Stand 4821, Unit M, Chitungwiza, Zimbabwe" placeholder="Address"/></div>
-<div class="field"><label>Email</label><input id="bizEmail" value="info@maranathachurch.co.zw" placeholder="Email"/></div>
-</div>
-<button class="btn" onclick="saveBasics()">Save Basics</button>
-</div>
-
-<!-- IMAGES -->
-<div class="page" id="page-images">
-<h1>Images</h1>
-<p class="sub">Logo, hero, and gallery.</p>
-<div class="card"><h3>Logo</h3>
-<input type="file" accept="image/*" id="logoInput" style="display:none"/>
-<button class="btn btn-outline" onclick="document.getElementById('logoInput').click()">Upload Logo</button>
-<div id="logoPreview" style="margin-top:12px"></div>
-</div>
-<div class="card"><h3>Hero image</h3>
-<input type="file" accept="image/*" id="heroInput" style="display:none"/>
-<button class="btn btn-outline" onclick="document.getElementById('heroInput').click()">Upload Hero</button>
-<div id="heroPreview" style="margin-top:12px"></div>
-</div>
-<div class="card"><h3>Gallery <span id="galleryCount" style="font-weight:400;color:var(--text2);font-size:.85rem">(0/10)</span></h3>
-<input type="file" accept="image/*" multiple id="galleryInput" style="display:none"/>
-<button class="btn btn-outline" onclick="document.getElementById('galleryInput').click()">Add Gallery Images</button>
-<div id="galleryPreview" class="image-grid"></div>
-</div>
-</div>
-
-<!-- PRODUCTS -->
-<div class="page" id="page-products">
-<h1>Products</h1>
-<p class="sub">What you offer — services, items, or packages.</p>
-<div id="productList"></div>
-<button class="btn" onclick="addProduct()">+ Add Product</button>
-</div>
-
-<!-- CONTACT -->
-<div class="page" id="page-contact">
-<h1>Contact</h1>
-<p class="sub">Contact details and location.</p>
-<div class="card"><div class="row">
-<div class="field"><label>Phone</label><input id="cPhone" value="+263 77 123 4567"/></div>
-<div class="field"><label>Email</label><input id="cEmail" value="info@maranathachurch.co.zw"/></div>
-</div>
-<div class="field"><label>Address</label><input id="cAddress" value="Stand 4821, Unit M, Chitungwiza, Zimbabwe"/></div>
-<div class="field"><label>Map embed (Google Maps iframe URL)</label><input id="cMap" placeholder="https://www.google.com/maps/embed?..."/></div>
-<button class="btn" onclick="saveContact()">Save Contact</button>
-</div>
-</div>
-
-<!-- SOCIAL -->
-<div class="page" id="page-social">
-<h1>Social</h1>
-<p class="sub">Link your social profiles.</p>
-<div class="card">
-<div class="field"><label>Facebook</label><input id="sFb" placeholder="https://facebook.com/yourpage"/></div>
-<div class="field"><label>Twitter/X</label><input id="sTw" placeholder="https://twitter.com/yourhandle"/></div>
-<div class="field"><label>Instagram</label><input id="sIg" placeholder="https://instagram.com/yourhandle"/></div>
-<div class="field"><label>YouTube</label><input id="sYt" placeholder="https://youtube.com/@yourchannel"/></div>
-<div class="field"><label>LinkedIn</label><input id="sLi" placeholder="https://linkedin.com/company/yourpage"/></div>
-<button class="btn" onclick="saveSocial()">Save Social</button>
-</div>
-</div>
-
-<!-- PUBLISH -->
-<div class="page" id="page-publish">
-<h1>Publish</h1>
-<p class="sub">Your site is live at <strong id="liveUrl">maranatha.websites.co.zw</strong></p>
-<div class="card" style="background:#f0f7f0;border-color:#86b886">
-<p style="color:#1a5a1a;font-weight:500;">✅ Site is published and visible to the world.</p>
-</div>
-<div class="card"><h3>Plan</h3>
-<p><strong>Starter</strong> — 1 website, 6 products, 10 images, .co.zw domain.</p>
-<p style="margin-top:8px;font-size:.85rem;color:var(--text2)">Upgrade to Pro for unlimited products, custom .com domain, and premium templates.</p>
-<button class="btn" style="background:#1a5a1a" onclick="upgradePlan()">Upgrade to Pro</button>
-</div>
-<div class="card"><h3>Domain</h3>
-<p>Current: <strong>maranatha.websites.co.zw</strong></p>
-<p style="font-size:.85rem;color:var(--text2);margin-top:4px">Want a custom domain? Upgrade to Pro and connect your own .com or .co.zw.</p>
-</div>
-<div class="card"><h3>Theme</h3>
-<p>Current: <strong id="currentTheme">Faith</strong></p>
-<button class="btn btn-outline" onclick="document.getElementById('themeModal').style.display='block'">Change Theme</button>
-</div>
-<button class="btn btn-success" onclick="publishSite()">Publish Now</button>
-</div>
-
-<!-- DESIGN -->
-<div class="page" id="page-design">
-<h1>Design</h1>
-<p class="sub">Colors, fonts, and style.</p>
-<div class="card">
-<div class="row">
-<div class="field"><label>Primary color</label><input type="color" id="dPrimary" value="#b8860b"/></div>
-<div class="field"><label>Secondary color</label><input type="color" id="dSecondary" value="#1a1410"/></div>
-</div>
-<div class="field"><label>Font</label><select id="dFont"><option value="Inter">Inter</option><option value="Georgia">Georgia</option><option value="System">System</option></select></div>
-<button class="btn" onclick="saveDesign()">Save Design</button>
-</div>
-</div>
-
-<!-- CONTENT (repeater tabs) -->
-<div class="page" id="page-content">
-<h1>Content</h1>
-<p class="sub">Manage sections like amenities, experiences, packages, dining, menu, team, listings, stats, events, and testimonials.</p>
-
-<div class="tabs" id="contentTabs">
-<button class="active" data-tab="amenities">Amenities</button>
-<button data-tab="experiences">Experiences</button>
-<button data-tab="packages">Packages</button>
-<button data-tab="dining">Dining</button>
-<button data-tab="menu">Menu</button>
-<button data-tab="team">Team</button>
-<button data-tab="listings">Listings</button>
-<button data-tab="stats">Stats</button>
-<button data-tab="events">Events</button>
-<button data-tab="testimonials">Testimonials</button>
-</div>
-
-<div id="contentPanes">
-<div class="tab-pane active" id="pane-amenities"><div id="amenitiesList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('amenities')">+ Add Amenity</button></div>
-<div class="tab-pane" id="pane-experiences"><div id="experiencesList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('experiences')">+ Add Experience</button></div>
-<div class="tab-pane" id="pane-packages"><div id="packagesList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('packages')">+ Add Package</button></div>
-<div class="tab-pane" id="pane-dining"><div id="diningList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('dining')">+ Add Dining</button></div>
-<div class="tab-pane" id="pane-menu"><div id="menuList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('menu')">+ Add Menu Item</button></div>
-<div class="tab-pane" id="pane-team"><div id="teamList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('team')">+ Add Team Member</button></div>
-<div class="tab-pane" id="pane-listings"><div id="listingsList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('listings')">+ Add Listing</button></div>
-<div class="tab-pane" id="pane-stats"><div id="statsList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('stats')">+ Add Stat</button></div>
-<div class="tab-pane" id="pane-events"><div id="eventsList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('events')">+ Add Event</button></div>
-<div class="tab-pane" id="pane-testimonials"><div id="testimonialsList"></div><button class="btn btn-outline btn-sm" onclick="addContentItem('testimonials')">+ Add Testimonial</button></div>
-</div>
-</div>
-</main>
-</div>
-
-<!-- THEME MODAL -->
-<div id="themeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;padding:20px">
-<div style="background:#fff;border-radius:var(--radius);max-width:560px;width:100%;padding:32px;max-height:90vh;overflow-y:auto">
-<h2 style="margin-bottom:16px">Choose a Theme</h2>
-<div class="template-grid" id="themeGrid">
-<div class="template-card selected" data-theme="Faith"><div class="preview">⛪</div><div class="name">Faith</div><div class="desc">Warm, traditional church style</div></div>
-<div class="template-card" data-theme="Modern"><div class="preview">✨</div><div class="name">Modern</div><div class="desc">Clean, minimal, contemporary</div></div>
-<div class="template-card" data-theme="Vintage"><div class="preview">📜</div><div class="name">Vintage</div><div class="desc">Classic, warm, nostalgic</div></div>
-<div class="template-card" data-theme="Bold"><div class="preview">🔥</div><div class="name">Bold</div><div class="desc">High contrast, energetic</div></div>
-</div>
-<div style="display:flex;gap:12px;margin-top:20px;justify-content:flex-end">
-<button class="btn btn-outline" onclick="document.getElementById('themeModal').style.display='none'">Cancel</button>
-<button class="btn" onclick="applyTheme()">Apply Theme</button>
-</div>
-</div>
-</div>
-
-<script>
-// =========================
-// STATE
-// =========================
-let siteData = {
-  name: 'Maranatha Community Church',
-  tagline: 'Hope. Family. Faith.',
-  desc: 'A community of faith growing together in love, serving Chitungwiza and beyond since 1989.',
-  phone: '+263 77 123 4567',
-  email: 'info@maranathachurch.co.zw',
-  address: 'Stand 4821, Unit M, Chitungwiza, Zimbabwe',
-  logo: null,
-  hero: null,
-  gallery: [],
-  products: [],
-  social: { fb: '', tw: '', ig: '', yt: '', li: '' },
-  design: { primary: '#b8860b', secondary: '#1a1410', font: 'Inter' },
-  content: {
-    amenities: [],
-    experiences: [],
-    packages: [],
-    dining: [],
-    menu: [],
-    team: [],
-    listings: [],
-    stats: [],
-    events: [],
-    testimonials: []
-  },
-  theme: 'Faith',
-  plan: 'starter' // 'starter' | 'pro'
-};
-
-function isProPlan() {
-  return siteData.plan === 'pro';
-}
-
-// =========================
-// NAVIGATION
-// =========================
-document.querySelectorAll('.sidebar a[data-page]').forEach(a => {
-  a.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelectorAll('.sidebar a').forEach(x => x.classList.remove('active'));
-    a.classList.add('active');
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + a.dataset.page).classList.add('active');
-  });
-});
-
-// =========================
-// BASICS
-// =========================
-function saveBasics() {
-  siteData.name = document.getElementById('bizName').value;
-  siteData.tagline = document.getElementById('bizTagline').value;
-  siteData.desc = document.getElementById('bizDesc').value;
-  siteData.phone = document.getElementById('bizPhone').value;
-  siteData.address = document.getElementById('bizAddress').value;
-  siteData.email = document.getElementById('bizEmail').value;
-  alert('Basics saved!');
-}
-
-// =========================
-// IMAGES (with plan limits)
-// =========================
-document.getElementById('logoInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    siteData.logo = ev.target.result;
-    document.getElementById('logoPreview').innerHTML = `<img src="${ev.target.result}" style="max-height:80px;border-radius:8px;border:1px solid var(--border)"/>`;
-  };
-  reader.readAsDataURL(file);
-});
-
-document.getElementById('heroInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    siteData.hero = ev.target.result;
-    document.getElementById('heroPreview').innerHTML = `<img src="${ev.target.result}" style="max-height:120px;border-radius:8px;border:1px solid var(--border)"/>`;
-  };
-  reader.readAsDataURL(file);
-});
-
-document.getElementById('galleryInput').addEventListener('change', function(e) {
-  const files = Array.from(e.target.files);
-  const max = isProPlan() ? Infinity : 10;
-  if (siteData.gallery.length + files.length > max) {
-    alert(isProPlan() ? 'Unlimited gallery images allowed on Pro.' : 'Starter plan limited to 10 gallery images. Upgrade to Pro for unlimited.');
-    return;
-  }
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      siteData.gallery.push(ev.target.result);
-      renderGallery();
-    };
-    reader.readAsDataURL(file);
-  });
-  e.target.value = '';
-});
-
-function renderGallery() {
-  const container = document.getElementById('galleryPreview');
-  const max = isProPlan() ? Infinity : 10;
-  document.getElementById('galleryCount').textContent = `(${siteData.gallery.length}/${isProPlan() ? '∞' : '10'})`;
-  if (siteData.gallery.length === 0) {
-    container.innerHTML = '<div class="empty-state">No gallery images yet.</div>';
-    return;
-  }
-  container.innerHTML = siteData.gallery.map((img, i) => `
-    <div class="thumb-wrap">
-      <img src="${img}" class="thumb"/>
-      <button class="remove" onclick="removeGallery(${i})">×</button>
+<header>
+  <div class="wrap">
+    <div class="nav">
+      <div class="logo">
+        <div class="cross">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6.5" y="1" width="3" height="14" rx="1.2" fill="#C07A2B"/>
+            <rect x="1" y="5.5" width="14" height="3" rx="1.2" fill="#C07A2B"/>
+          </svg>
+        </div>
+        Maranatha Community Church
+      </div>
+      <nav>
+        <a href="#">About</a><a href="#">Sermons</a><a href="#">Ministries</a><a href="#">Events</a><a href="#">Give</a>
+      </nav>
+      <a href="#visit" class="btn">Plan Your Visit</a>
     </div>
-  `).join('');
-}
+  </div>
+</header>
 
-function removeGallery(idx) {
-  siteData.gallery.splice(idx, 1);
-  renderGallery();
-}
-
-// =========================
-// PRODUCTS (with plan limits)
-// =========================
-function renderProducts() {
-  const container = document.getElementById('productList');
-  if (siteData.products.length === 0) {
-    container.innerHTML = '<div class="empty-state">No products added yet.</div>';
-    return;
-  }
-  container.innerHTML = siteData.products.map((p, i) => `
-    <div class="repeater-item">
-      <div class="head"><span>${p.name || 'Untitled'}</span><span class="del-item" onclick="removeProduct(${i})">✕</span></div>
-      <div style="font-size:.85rem;color:var(--text2)">${p.price || ''} ${p.desc || ''}</div>
+<section class="hero">
+  <img src="https://images.unsplash.com/photo-1438232992991-995b671e4668?w=1400&q=80" alt="Church gathering">
+  <div class="wrap">
+    <p class="eyebrow">Chitungwiza · Est. 1989</p>
+    <h1>You are welcome here. All of you.</h1>
+    <p>A community of faith growing together in love, serving Chitungwiza and beyond since 1989.</p>
+    <div class="hero-actions">
+      <a href="#visit" class="btn">Plan Your Visit →</a>
+      <a href="#sermons" class="btn ghost">Watch Online</a>
     </div>
-  `).join('');
-}
+  </div>
+</section>
 
-function addProduct() {
-  const max = isProPlan() ? Infinity : 6;
-  if (siteData.products.length >= max) {
-    alert(isProPlan() ? 'Unlimited products on Pro.' : 'Starter plan limited to 6 products. Upgrade to Pro for unlimited.');
-    return;
-  }
-  const name = prompt('Product name:');
-  if (!name) return;
-  const price = prompt('Price (e.g. $10 or Free):');
-  const desc = prompt('Short description:');
-  siteData.products.push({ name, price: price || '', desc: desc || '' });
-  renderProducts();
-}
+<div class="times-bar">
+  <div class="wrap">
+    <div class="time-item"><p class="label">Sunday Service</p><p class="val">7:00 AM &amp; 10:00 AM</p></div>
+    <div class="time-item"><p class="label">Wednesday Prayer</p><p class="val">6:30 PM</p></div>
+    <div class="time-item"><p class="label">Friday Youth</p><p class="val">5:00 PM</p></div>
+    <div class="time-item"><p class="label">WhatsApp Updates</p><p class="val">+263 77 123 4567</p></div>
+  </div>
+</div>
 
-function removeProduct(idx) {
-  siteData.products.splice(idx, 1);
-  renderProducts();
-}
-
-// =========================
-// CONTACT
-// =========================
-function saveContact() {
-  siteData.phone = document.getElementById('cPhone').value;
-  siteData.email = document.getElementById('cEmail').value;
-  siteData.address = document.getElementById('cAddress').value;
-  siteData.mapEmbed = document.getElementById('cMap').value;
-  alert('Contact saved!');
-}
-
-// =========================
-// SOCIAL
-// =========================
-function saveSocial() {
-  siteData.social.fb = document.getElementById('sFb').value;
-  siteData.social.tw = document.getElementById('sTw').value;
-  siteData.social.ig = document.getElementById('sIg').value;
-  siteData.social.yt = document.getElementById('sYt').value;
-  siteData.social.li = document.getElementById('sLi').value;
-  alert('Social links saved!');
-}
-
-// =========================
-// DESIGN
-// =========================
-function saveDesign() {
-  siteData.design.primary = document.getElementById('dPrimary').value;
-  siteData.design.secondary = document.getElementById('dSecondary').value;
-  siteData.design.font = document.getElementById('dFont').value;
-  alert('Design saved!');
-}
-
-// =========================
-// PUBLISH
-// =========================
-function publishSite() {
-  alert('✅ Site published! View at ' + document.getElementById('liveUrl').textContent);
-}
-
-function upgradePlan() {
-  if (confirm('Upgrade to Pro for $12/mo? Unlimited products, custom domain, and more.')) {
-    siteData.plan = 'pro';
-    alert('Upgraded to Pro!');
-    document.querySelector('#page-publish .card p strong').textContent = 'Pro';
-  }
-}
-
-// =========================
-// THEME
-// =========================
-let selectedTheme = 'Faith';
-document.querySelectorAll('#themeGrid .template-card').forEach(card => {
-  card.addEventListener('click', function() {
-    document.querySelectorAll('#themeGrid .template-card').forEach(c => c.classList.remove('selected'));
-    this.classList.add('selected');
-    selectedTheme = this.dataset.theme;
-  });
-});
-
-function applyTheme() {
-  siteData.theme = selectedTheme;
-  document.getElementById('currentTheme').textContent = selectedTheme;
-  document.getElementById('themeModal').style.display = 'none';
-  alert('Theme applied: ' + selectedTheme);
-}
-
-// =========================
-// CONTENT REPEATER (amenities, experiences, packages, dining, menu, team, listings, stats, events, testimonials)
-// =========================
-const contentTypes = ['amenities','experiences','packages','dining','menu','team','listings','stats','events','testimonials'];
-
-function renderContent(type) {
-  const container = document.getElementById(type + 'List');
-  const items = siteData.content[type] || [];
-  if (items.length === 0) {
-    container.innerHTML = '<div class="empty-state">No items yet.</div>';
-    return;
-  }
-  container.innerHTML = items.map((item, i) => `
-    <div class="repeater-item">
-      <div class="head"><span>${item.name || item.title || 'Item'}</span><span class="del-item" onclick="removeContentItem('${type}',${i})">✕</span></div>
-      <div style="font-size:.85rem;color:var(--text2)">${item.desc || item.price || item.role || ''}</div>
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Who We Are</p>
+      <h2>A church that cares</h2>
+      <p>We believe every person has purpose, every family deserves support, and every community can thrive. These three values shape everything we do.</p>
     </div>
-  `).join('');
-}
+    <div class="values">
+      <div class="vcard"><div class="icon">🙏</div><h3>Authentic Faith</h3><p>Deep, honest, Spirit-led worship every week — no performance, just presence.</p></div>
+      <div class="vcard"><div class="icon">❤️</div><h3>Genuine Community</h3><p>Small groups, pastoral care, and a culture where nobody walks alone.</p></div>
+      <div class="vcard"><div class="icon">🌍</div><h3>Local Impact</h3><p>Feeding programmes, school support, and community development right here in Chitungwiza.</p></div>
+    </div>
+  </div>
+</section>
 
-function addContentItem(type) {
-  const name = prompt('Name:');
-  if (!name) return;
-  const extra = prompt('Extra (description, price, role, etc.):') || '';
-  siteData.content[type].push({ name, desc: extra });
-  renderContent(type);
-}
+<section style="background:var(--paper);padding:80px 0">
+  <div class="wrap">
+    <div class="pastor">
+      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=700&q=80" alt="Lead Pastor">
+      <div>
+        <p class="kicker">Lead Pastor</p>
+        <h2>A message from Pastor David Nhari</h2>
+        <p>We started Maranatha with eleven people in a living room. Today we are over two thousand strong — but the heart has never changed. Every Sunday we gather as family, and every week we push outwards into the community we love.</p>
+        <p>I believe the local church is the hope of Zimbabwe. Come and be part of something bigger than yourself.</p>
+        <a href="#visit" class="btn" style="margin-top:20px">Join Us This Sunday →</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-function removeContentItem(type, idx) {
-  siteData.content[type].splice(idx, 1);
-  renderContent(type);
-}
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Ministries</p>
+      <h2>There is a place for you</h2>
+    </div>
+    <div class="min-grid">
+      <div class="mcard"><div class="ico">👦</div><div><h3>Children's Church</h3><p>Ages 3–12. Fun, Bible-based teaching while parents worship. Fully supervised.</p></div></div>
+      <div class="mcard"><div class="ico">🎸</div><div><h3>Youth (Zvakanaka)</h3><p>Secondary and tertiary students. Friday evenings, live music, real talk.</p></div></div>
+      <div class="mcard"><div class="ico">👩</div><div><h3>Women's Fellowship</h3><p>Monthly gatherings, mentorship, and a WhatsApp community for daily encouragement.</p></div></div>
+      <div class="mcard"><div class="ico">🤲</div><div><h3>Community Feeding</h3><p>Every Saturday we serve hot meals at Unit K. Volunteers always welcome.</p></div></div>
+    </div>
+  </div>
+</section>
 
-// Content tabs
-document.querySelectorAll('#contentTabs button').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('#contentTabs button').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    document.querySelectorAll('#contentPanes .tab-pane').forEach(p => p.classList.remove('active'));
-    document.getElementById('pane-' + this.dataset.tab).classList.add('active');
-  });
-});
+<section style="background:var(--paper)">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Coming Up</p>
+      <h2>Events</h2>
+    </div>
+    <div class="events">
+      <div class="event">
+        <div class="date"><p class="day">22</p><p class="month">Jun</p></div>
+        <div><h3>Men's Breakfast &amp; Prayer Walk</h3><p>6:00 AM · Church grounds</p></div>
+        <span class="tag">Men</span>
+      </div>
+      <div class="event">
+        <div class="date"><p class="day">29</p><p class="month">Jun</p></div>
+        <div><h3>Family Fun Day — Celebrating 35 years</h3><p>2:00 PM · Chiremba Grounds</p></div>
+        <span class="tag">All Ages</span>
+      </div>
+      <div class="event">
+        <div class="date"><p class="day">6</p><p class="month">Jul</p></div>
+        <div><h3>Baptism Sunday</h3><p>10:00 AM Service · Register by 30 June</p></div>
+        <span class="tag">Worship</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-// =========================
-// INIT
-// =========================
-function init() {
-  renderProducts();
-  renderGallery();
-  contentTypes.forEach(t => renderContent(t));
-}
-init();
+<section>
+  <div class="wrap">
+    <div class="give-band">
+      <p class="eyebrow" style="color:var(--amber2)">Partner With Us</p>
+      <h2>Your giving changes lives in Chitungwiza</h2>
+      <p>Every dollar sown supports our feeding programme, school bursaries, and community outreach. Give once or set up a monthly partnership.</p>
+      <a href="#give" class="btn">Give Online →</a>
+    </div>
+  </div>
+</section>
 
-// =========================
-// NAVIGATION BADGE UPDATE
-// =========================
-function updateProductBadge() {
-  const badge = document.querySelector('.sidebar a[data-page="products"] .badge');
-  if (badge) {
-    badge.textContent = siteData.products.length;
-    badge.style.display = siteData.products.length > 0 ? 'inline' : 'none';
-  }
-}
-updateProductBadge();
-</script>
+<section id="visit">
+  <div class="wrap">
+    <div class="sec-head"><p class="eyebrow">Find Us</p><h2>Visit this Sunday</h2></div>
+    <div class="location">
+      <div class="map-mock">📍</div>
+      <div class="address-box">
+        <h3>Plan your visit</h3>
+        <div class="addr-row"><span class="ico">📍</span><p>Stand 4821, Unit M<br>Chitungwiza, Zimbabwe</p></div>
+        <div class="addr-row"><span class="ico">🕖</span><p>Sunday: 7:00 AM &amp; 10:00 AM<br>Wednesday: 6:30 PM<br>Friday Youth: 5:00 PM</p></div>
+        <div class="addr-row"><span class="ico">📞</span><p>+263 77 123 4567</p></div>
+        <div class="addr-row"><span class="ico">✉️</span><p>info@maranathachurch.co.zw</p></div>
+        <a href="https://wa.me/263771234567" class="btn" style="margin-top:16px;background:#25D366">💬 WhatsApp Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <div class="logo" style="color:#fff">Maranatha Community Church</div>
+      <p>© 2026 Maranatha Community Church · Chitungwiza</p>
+      <div class="socials">
+        <a class="soc" href="#">f</a><a class="soc" href="#">▶</a><a class="soc" href="#">✉</a>
+      </div>
+    </div>
+  </div>
+</footer>
 </body>
 </html>
