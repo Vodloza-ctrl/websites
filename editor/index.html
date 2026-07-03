@@ -1332,6 +1332,13 @@ window.__syncRoomsToBookingsWorker = async function(siteId) {
   }
   v3state._deletedRoomResourceIds = [];
 
+  // Tracks whether any room got a NEW resource_id this run. Newly-assigned
+  // IDs only exist in this tab's memory until we write them back to the
+  // site — without that write-back, a page reload loses the ID and the
+  // next save re-POSTs the room as a brand-new resource (this was the
+  // actual bug: duplicate rows in D1 with the same room name).
+  var assignedNewIds = false;
+
   for (var i = 0; i < v3state.rooms.length; i++) {
     var room = v3state.rooms[i];
     if (!room.name) continue; // skip empty/unnamed rooms — nothing meaningful to sync yet
@@ -1348,12 +1355,37 @@ window.__syncRoomsToBookingsWorker = async function(siteId) {
       });
       if (r.ok && r.data && r.data.resource && r.data.resource.id) {
         room.resource_id = r.data.resource.id;
+        assignedNewIds = true;
       }
       // If this failed (e.g. auth not live yet), room.resource_id stays
       // unset and the next save will just retry the POST — no data lost.
     }
   }
+
+  // Write newly-assigned resource_ids back to the site's own content so
+  // they survive a page reload. v3state.rooms IS window.state.content.content.rooms
+  // (same array, same objects — __mergeV3IntoState assigns by reference),
+  // so the resource_id values above are already reflected there in memory;
+  // this just gets that updated content onto the server. Silent — no toast,
+  // no dirty-flag changes — the user already saw "Saved ✓" for their actual edit.
+  if (assignedNewIds) {
+    await persistRoomResourceIds(siteId);
+  }
 };
+
+async function persistRoomResourceIds(siteId) {
+  if (!window.state || !window.state.content) return;
+  try {
+    await window.__api("/api/sites/" + encodeURIComponent(siteId), {
+      method: "PUT",
+      body: JSON.stringify({ content: window.state.content })
+    });
+  } catch (e) {
+    // Best-effort. If this fails, the in-memory resource_id still works for
+    // the rest of THIS session (PUT not POST on next sync) — it only risks
+    // a duplicate again if the page is reloaded before a save succeeds here.
+  }
+}
 // ── END BOOKINGS WORKER SYNC ──────────────────────────────────────────────
 
 var _origSwitchTab=window.switchTab;
