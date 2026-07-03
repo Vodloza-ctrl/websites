@@ -658,12 +658,6 @@ function injectThemeIntoPreview() {
     var fontPair = theme.font_pair || "grotesk-serif";
     var fonts = fontPairMap[fontPair] || fontPairMap["clean-sans"];
 
-    // Selectors are broadened + !important because templates commonly style
-    // typography via classes (.hero-title etc.), which beat plain tag
-    // selectors like h1{...} on specificity -- that's why changing the font
-    // pair previously never visibly changed headings. The heading rule is
-    // declared after the body rule so, at tied specificity, it wins for
-    // headings and any inline elements nested inside them.
     var css = `
       :root {
         --accent: ${resolved.accent};
@@ -683,7 +677,6 @@ function injectThemeIntoPreview() {
     var doc = frame.contentDocument || frame.contentWindow.document;
     if (!doc) return;
     
-    // Remove existing theme style if present
     var existing = doc.getElementById("theme-injection");
     if (existing) existing.remove();
     
@@ -692,7 +685,6 @@ function injectThemeIntoPreview() {
     style.textContent = css;
     doc.head.appendChild(style);
     
-    // Also update favicon if stored
     var faviconData = window._storedFavicon || getFaviconData();
     if (faviconData) {
       var existingFavicon = doc.querySelector('link[rel="icon"]');
@@ -719,7 +711,6 @@ window.onSave = async function() {
     var brief = readBrief();
     var built = buildContent(brief);
     
-    // Store favicon data
     var faviconData = getFaviconData();
     if (faviconData) {
       window._storedFavicon = faviconData;
@@ -744,6 +735,15 @@ window.onSave = async function() {
     badge.textContent = st === "published" ? "Published" : st === "pending_payment" ? "Payment pending" : "Draft";
     badge.className = "status-badge " + (st === "published" ? "status-published" : st === "pending_payment" ? "status-pending" : "status-draft");
     window.hideUndoBar();
+
+    // Sync rooms → bookings worker resources. Runs AFTER the site content
+    // save has already succeeded, and never blocks or fails the save itself —
+    // a resources-sync problem shouldn't stop the owner from saving their site.
+    if (typeof window.__syncRoomsToBookingsWorker === "function") {
+      try { await window.__syncRoomsToBookingsWorker(siteId); }
+      catch (e) { /* non-fatal — booking sync errors are swallowed here */ }
+    }
+
     toast("Saved ✓", "ok");
     refreshPreview();
   } catch(e) {
@@ -848,7 +848,6 @@ window.updateVideoPreview = function() {
   state.images=(inner.images&&typeof inner.images==="object")?inner.images:{};
   state.gallery=Array.isArray(inner.images&&inner.images.gallery)?inner.images.gallery:[];
   
-  // Restore favicon if stored
   if (raw.favicon) {
     window._storedFavicon = raw.favicon;
   }
@@ -972,7 +971,6 @@ function buildContent(brief){
     theme.sections.splice(insertIndex, 0, 'video');
   }
 
-  // Get favicon data
   var faviconData = window._storedFavicon || getFaviconData();
 
   return{
@@ -1039,7 +1037,6 @@ function renderProducts() {
       ? '<img class="product-thumb" src="' + esc(p.image) + '" alt="">'
       : '<div class="product-thumb-placeholder">📦</div>';
     
-    // Build image upload HTML
     var uploadHtml = '';
     var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
     var maxImages = isPro ? 5 : 1;
@@ -1083,7 +1080,6 @@ function renderProducts() {
   });
 }
 
-// Product image upload handlers
 window.handleProductImageUpload = async function(productId, input) {
   var file = input.files[0];
   if (!file) return;
@@ -1102,7 +1098,6 @@ window.handleProductImageUpload = async function(productId, input) {
     return;
   }
   
-  // Show uploading indicator
   var container = document.getElementById('prod-images-' + productId);
   if (container) {
     var spinner = document.createElement('div');
@@ -1138,8 +1133,6 @@ window.removeProductImage = function(productId, index) {
   window.markDirty();
   renderProducts();
 };
-
-// ===================== END PRODUCT IMAGE UPLOADS =====================
 
 window.addProduct = function() {
   if (state.products.length >= STARTER_PRODUCT_LIMIT) {
@@ -1196,7 +1189,6 @@ window.onAccentInput=function(val){if(/^#[0-9a-fA-F]{6}$/.test(val)){document.ge
 window.clearAccent=function(){document.getElementById("f_custom_accent").value="";document.getElementById("f_custom_accent_picker").value="#15924B";document.getElementById("clearAccentBtn").style.display="none";if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};delete state.content.theme.custom_accent;markDirty();updateFaviconPreview();};
 function applyAccent(val){if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};state.content.theme.custom_accent=val;document.getElementById("clearAccentBtn").style.display="";markDirty();updateFaviconPreview();}
 function updateFaviconPreview(){var canvas=document.getElementById("faviconCanvas");if(!canvas)return;var ctx2=canvas.getContext("2d");var name=g("f_name")||(state.site&&state.site.site_name)||"W";var accent=(state.content&&state.content.theme&&state.content.theme.custom_accent)||currentPaletteAccent()||"#15924B";var initials=name.trim().split(/\s+/).map(function(w){return w[0]||"";}).join("").toUpperCase().slice(0,2)||"W";var lum=luminanceFromHex(accent);var fg=lum>0.35?"#0d0f14":"#ffffff";ctx2.clearRect(0,0,64,64);ctx2.fillStyle=accent;roundRect(ctx2,0,0,64,64,14);ctx2.fill();ctx2.fillStyle=fg;ctx2.font="700 "+(initials.length>1?"22":"28")+"px system-ui,sans-serif";ctx2.textAlign="center";ctx2.textBaseline="middle";ctx2.fillText(initials,32,33);
-// Store favicon data
 window._storedFavicon = canvas.toDataURL("image/png");}
 function currentPaletteAccent(){var palette=(state.content&&state.content.theme&&state.content.theme.palette)||"";var found=PALETTES_UI.find(function(p){return p.key===palette;});return found?found.accent:"#15924B";}
 function roundRect(ctx2,x,y,w,h,r){ctx2.beginPath();ctx2.moveTo(x+r,y);ctx2.lineTo(x+w-r,y);ctx2.quadraticCurveTo(x+w,y,x+w,y+r);ctx2.lineTo(x+w,y+h-r);ctx2.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx2.lineTo(x+r,y+h);ctx2.quadraticCurveTo(x,y+h,x,y+h-r);ctx2.lineTo(x,y+r);ctx2.quadraticCurveTo(x,y,x+r,y);ctx2.closePath();}
@@ -1218,7 +1210,6 @@ async function loadPreview(){
   if(!r.ok||!r.data||!r.data.preview_url){var msg=(r.data&&r.data.error==="no_subdomain")?"Save your site first to preview it":"Couldn't load preview — tap Refresh to try again";if(loadingP)loadingP.textContent=msg;return;}
   var urlLabel=document.getElementById("previewUrlLabel");if(urlLabel)urlLabel.textContent=slug+".websites.co.zw";
   if(frame){frame.onload=function(){if(loading)loading.style.display="none";frame.style.display="block";
-    // Inject theme after frame loads
     setTimeout(function(){ injectThemeIntoPreview(); }, 500);
   };frame.src=r.data.preview_url;}
 }
@@ -1301,6 +1292,69 @@ window.__mergeV3IntoState = function() {
     window.state.content.content = inner;
   }
 };
+
+// ── BOOKINGS WORKER SYNC ──────────────────────────────────────────────────
+// Rooms live in content.rooms JSON (state) AND need a mirrored `resources`
+// row in the bookings worker's D1 so the (future) customer-facing calendar
+// can check real availability. This section owns that sync, called from
+// onSave() after the main site save succeeds.
+//
+// TODO: confirm BOOKINGS_API_BASE against the real deployed custom domain
+// for websites-bookings-worker.js before this goes live — placeholder below
+// follows the api.websites.co.zw / app.websites.co.zw naming convention
+// used by the payments and auth workers.
+var BOOKINGS_API_BASE = "https://bookings.websites.co.zw";
+
+async function bookingsApi(path, opts) {
+  var token = (typeof getToken === "function") ? getToken() : (localStorage.getItem("wcz_token") || "");
+  var headers = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = "Bearer " + token;
+  try {
+    var r = await fetch(BOOKINGS_API_BASE + path, Object.assign({ headers: headers }, opts || {}));
+    var data = {}; try { data = await r.json(); } catch (e) {}
+    return { ok: r.ok, status: r.status, data: data };
+  } catch (e) {
+    return { ok: false, status: 0, data: {} };
+  }
+}
+
+// Only hospitality-inn has rooms today. Guarding on template avoids firing
+// bookings-worker calls for every save on every other template.
+window.__syncRoomsToBookingsWorker = async function(siteId) {
+  var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
+  if (tpl !== "hospitality-inn") return;
+  if (!Array.isArray(v3state.rooms)) return;
+
+  // Deletions first — rooms removed locally since the last successful sync.
+  var deleted = v3state._deletedRoomResourceIds || [];
+  for (var d = 0; d < deleted.length; d++) {
+    await bookingsApi("/resources/" + encodeURIComponent(deleted[d]), { method: "DELETE" });
+  }
+  v3state._deletedRoomResourceIds = [];
+
+  for (var i = 0; i < v3state.rooms.length; i++) {
+    var room = v3state.rooms[i];
+    if (!room.name) continue; // skip empty/unnamed rooms — nothing meaningful to sync yet
+
+    if (room.resource_id) {
+      await bookingsApi("/resources/" + encodeURIComponent(room.resource_id), {
+        method: "PUT",
+        body: JSON.stringify({ name: room.name, active: 1 })
+      });
+    } else {
+      var r = await bookingsApi("/resources", {
+        method: "POST",
+        body: JSON.stringify({ site_id: siteId, name: room.name })
+      });
+      if (r.ok && r.data && r.data.resource && r.data.resource.id) {
+        room.resource_id = r.data.resource.id;
+      }
+      // If this failed (e.g. auth not live yet), room.resource_id stays
+      // unset and the next save will just retry the POST — no data lost.
+    }
+  }
+};
+// ── END BOOKINGS WORKER SYNC ──────────────────────────────────────────────
 
 var _origSwitchTab=window.switchTab;
 function injectV3Nav(){
@@ -1440,8 +1494,15 @@ function renderRoomRowV3(r,idx){
     +repPhotosHtml("rooms",idx,r);
   return makeRepItemV3(r.name||"Room",body,"removeRoomV3("+idx+")");
 }
-window.addRoom=function(){v3state.rooms.push({name:"",tag:"",price:"",status:"available",capacity:"",description:"",features:[],photo:"",photos:[]});renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty");window.markDirty();};
-window.removeRoomV3=function(idx){v3state.rooms.splice(idx,1);renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty");window.markDirty();};
+window.addRoom=function(){v3state.rooms.push({id:'rm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),resource_id:null,name:"",tag:"",price:"",status:"available",capacity:"",description:"",features:[],photo:"",photos:[]});renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty");window.markDirty();};
+window.removeRoomV3=function(idx){
+  var room = v3state.rooms[idx];
+  if (room && room.resource_id) {
+    if (!Array.isArray(v3state._deletedRoomResourceIds)) v3state._deletedRoomResourceIds = [];
+    v3state._deletedRoomResourceIds.push(room.resource_id);
+  }
+  v3state.rooms.splice(idx,1);renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty");window.markDirty();
+};
 window.updateRoomV3=function(idx,key,val){if(v3state.rooms[idx]){v3state.rooms[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#rooms-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Room";}}};
 window.updateRoomFeaturesV3=function(idx,val){if(v3state.rooms[idx]){v3state.rooms[idx].features=val.split("\n").map(function(s){return s.trim();}).filter(Boolean);window.markDirty();}};
 
@@ -1488,9 +1549,6 @@ window.removeExperienceV3=function(idx){v3state.experiences.splice(idx,1);render
 window.updateExperienceV3=function(idx,key,val){if(v3state.experiences[idx]){v3state.experiences[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#experiences-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Experience";}}};
 window.handleExperiencePhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var zoneId="exp-photo-zone-"+idx;var zone=document.getElementById(zoneId);if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';var url=await window.uploadToR2(file,"experiences");if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleExperiencePhotoUpload("+idx+",this)");return;}v3state.experiences[idx].image=url;window.markDirty();var freshZone=document.getElementById(zoneId);if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleExperiencePhotoUpload("+idx+",this)");toast("Photo uploaded ✓","ok");};
 
-// ── PACKAGES / DEALS ── (writes to v3state.packages → content.packages; matches
-// the worker's existing packages_cards_html renderer — name/price/price_unit/
-// description/includes[]/featured, no photo field, so no upload zone here)
 function packageIncludesText(p){return Array.isArray(p.includes)?p.includes.join("\n"):(p.includes||"");}
 function renderPackageRowV3(p,idx){
   var featuredRow='<div class="fld-group"><label class="fld-label" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" '+(p.featured?"checked":"")+' onchange="updatePackageV3('+idx+',\'featured\',this.checked)" style="accent-color:var(--green)"> Feature this package <span class="fld-hint">— highlighted with a gold border and badge</span></label></div>';
@@ -1619,10 +1677,23 @@ function loadV3DataFromSite(){
   if(Array.isArray(inner.testimonials))v3state.testimonials=inner.testimonials;
   if(inner.hours&&typeof inner.hours==="object")v3state.hours=inner.hours;
 
+  // Rooms need a stable local id ('id') for list-item tracking, and separately
+  // a 'resource_id' once synced to the bookings worker's D1 (see the BOOKINGS
+  // WORKER SYNC block above). Legacy rooms saved before this existed won't
+  // have either — backfill 'id' here so nothing after this point has to
+  // special-case its absence. 'resource_id' is intentionally left absent for
+  // legacy rooms; the first save after this change will POST them as new
+  // resources, which is correct since no matching D1 row exists yet.
+  function ensureRoomId(r) {
+    if (!r.id) r.id = 'rm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    if (!Array.isArray(r.photos)) r.photos = r.photo ? [r.photo] : [];
+    return r;
+  }
+
   if(Array.isArray(inner.rooms)&&inner.rooms.length){
-    v3state.rooms=inner.rooms.map(function(r){if(!Array.isArray(r.photos))r.photos=r.photo?[r.photo]:[];return r;});
+    v3state.rooms=inner.rooms.map(ensureRoomId);
   }else if(tplId==="hospitality-inn"&&Array.isArray(inner.services)&&inner.services.length){
-    v3state.rooms=inner.services.map(function(s){var r=Object.assign({},s);if(!Array.isArray(r.photos))r.photos=r.photo?[r.photo]:[];return r;});
+    v3state.rooms=inner.services.map(function(s){return ensureRoomId(Object.assign({},s));});
   }
   if(Array.isArray(inner.amenities))v3state.amenities=inner.amenities;
   if(Array.isArray(inner.conference))v3state.conference=inner.conference.map(function(v){if(!Array.isArray(v.photos))v.photos=v.photo?[v.photo]:[];return v;});
