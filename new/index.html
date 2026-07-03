@@ -549,11 +549,11 @@ window.onCreateSite=async function(){
     });
     var cd={};try{cd=await cr.json();}catch(e){}
     if(cr.status===401){location.replace(DASH);return;}
-    if(cr.status===403&&cd.error==="one_site_limit"){
-      showSuccess(cd.site_name||st.name);
-      setTimeout(function(){location.href=EDIT+"?site="+encodeURIComponent(cd.site_id||"");},1500);
-      return;
-    }
+    // NOTE (v2): the auth Worker no longer enforces a one-site-per-account
+    // limit (removed in auth-worker.js v5.4), so the old 403 "one_site_limit"
+    // recovery branch that silently redirected into an existing site has
+    // been removed. A failed create now just falls through to the normal
+    // "something went wrong" path below.
     if(!cr.ok||!cd.site){location.replace(DASH);return;}
     siteId=cd.site.id;
   }catch(e){location.replace(DASH);return;}
