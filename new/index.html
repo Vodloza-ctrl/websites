@@ -256,6 +256,19 @@ a{color:inherit;text-decoration:none}
     <input class="fld-input" id="f-city" type="text" placeholder="Other city or town"
       style="font-size:14px" oninput="onCityInput()">
   </div>
+  <div class="brief-card" id="extrasCard">
+    <label class="fld-label" style="margin-bottom:2px">Tell the AI a bit more <span style="text-transform:none;font-weight:500;color:var(--ink3)">&mdash; optional, but makes your first draft much better</span></label>
+    <div style="font-size:12.5px;color:var(--ink3);margin-bottom:14px">Skip any of these and the AI will fill in something generic instead.</div>
+    <label class="fld-label" for="f-services" style="margin-top:0">What do you offer? <span style="text-transform:none;font-weight:500;color:var(--ink3)">&mdash; one per line</span></label>
+    <textarea class="fld-input" id="f-services" rows="3" style="font-size:14px;resize:vertical;font-weight:500"
+      placeholder="e.g. Haircuts&#10;Braiding&#10;Facials" oninput="onBriefChange()"></textarea>
+    <label class="fld-label" for="f-usp" style="margin-top:14px">What makes you different?</label>
+    <input class="fld-input" id="f-usp" type="text" style="font-size:14px;font-weight:500"
+      placeholder="e.g. 15 years in business" oninput="onBriefChange()">
+    <label class="fld-label" for="f-customers" style="margin-top:14px">Who are your customers?</label>
+    <input class="fld-input" id="f-customers" type="text" style="font-size:14px;font-weight:500"
+      placeholder="e.g. Families in Bulawayo" oninput="onBriefChange()">
+  </div>
   <div class="actions">
     <button class="btn btn-primary" id="btnCreate" disabled onclick="onCreateSite()"
       style="font-size:16px;padding:16px;gap:10px">
@@ -295,7 +308,7 @@ function tok(){return localStorage.getItem("wcz_token")||"";}
 if(!tok()){location.replace(DASH);}
 var p=new URLSearchParams(location.search);
 var isSwitching=p.get("switch")==="1",fromSiteId=p.get("from")||p.get("site")||"";
-var st={industry:null,template:null,name:"",phone:"",city:"Bulawayo",description:""};
+var st={industry:null,template:null,name:"",phone:"",city:"Bulawayo",description:"",services:"",usp:"",customers:""};
 var INDS=[
   {id:"food",ic:"&#127869;&#65039;",lb:"Food & Dining"},
   {id:"beauty",ic:"&#128133;",lb:"Beauty & Wellness"},
@@ -321,6 +334,20 @@ var TPLS=[
   {id:"hospitality-inn",ic:"&#127976;",nm:"Lodge / B&B / Hotel",ds:"Room cards, WhatsApp booking, availability badges",bg:"linear-gradient(160deg,#0a1f1a,#1a4a3a)",ct:"#c8a24a",inds:["hospitality"],rec:["hospitality"]},
 ];
 var CITIES=["Bulawayo","Harare","Gweru","Mutare","Masvingo","Kwekwe","Kadoma","Vic Falls"];
+// Per-industry example text, shown as placeholders on the optional "tell the
+// AI more" fields in step 3. Purely UI hinting — never sent to the server.
+var IND_HINTS={
+  food:{services:"Wood-fired pizza\nCatering for events\nKids' birthday parties",usp:"e.g. Only wood-fired oven in the area",customers:"e.g. Families, young professionals"},
+  beauty:{services:"Gel manicure\nBraiding\nFacials",usp:"e.g. Trained by international stylists",customers:"e.g. Working women aged 20-45"},
+  education:{services:"After-school coaching\nHoliday clinics\nTalent scouting",usp:"e.g. UEFA-licensed coaches",customers:"e.g. Parents of primary school children"},
+  professional:{services:"Tax returns\nCompany registration\nAudit & assurance",usp:"e.g. 15 years serving Bulawayo SMEs",customers:"e.g. Small business owners"},
+  property:{services:"Property sales\nRentals management\nValuations",usp:"e.g. Largest listings portfolio in the city",customers:"e.g. First-time buyers, landlords"},
+  fashion:{services:"Custom tailoring\nReady-to-wear\nAlterations",usp:"e.g. Locally sourced fabrics",customers:"e.g. Young professionals, brides-to-be"},
+  grocery:{services:"Fresh produce\nBulk grains\nHousehold essentials",usp:"e.g. Lowest prices in the suburb",customers:"e.g. Local households"},
+  hardware:{services:"Building materials\nPlumbing supplies\nTool hire",usp:"e.g. Same-day delivery",customers:"e.g. Contractors, homeowners"},
+  hospitality:{services:"Overnight stays\nConferencing\nWeddings",usp:"e.g. Only lodge with a view of the falls",customers:"e.g. Tourists, corporate travellers"},
+  general:{services:"Consultations\nOn-site visits\nRepairs",usp:"e.g. Same-day response",customers:"e.g. Local homeowners and businesses"}
+};
 var AI_STEPS=[
   {l:"Understanding your industry",s:"Reading your business type"},
   {l:"Writing your about section",s:"Crafting your story"},
@@ -468,6 +495,11 @@ window.goTo=function(id){
     var tpl=TPLS.find(function(t){return t.id===st.template;});
     document.getElementById("tplSelIcon").innerHTML=tpl?tpl.ic:"";
     document.getElementById("tplSelName").textContent=tpl?tpl.nm:"";
+    var hints=IND_HINTS[st.industry]||IND_HINTS.general;
+    var svcEl=document.getElementById("f-services"),uspEl=document.getElementById("f-usp"),custEl=document.getElementById("f-customers");
+    if(svcEl)svcEl.placeholder=hints.services;
+    if(uspEl)uspEl.placeholder=hints.usp;
+    if(custEl)custEl.placeholder=hints.customers;
     setTimeout(function(){document.getElementById("f-name").focus();},300);
   }
   var bb=document.getElementById("backBtn");
@@ -482,6 +514,10 @@ window.onBriefChange=function(){
   st.phone=document.getElementById("f-phone").value.trim();
   var ci=document.getElementById("f-city").value.trim();
   if(ci)st.city=ci;
+  var svcEl=document.getElementById("f-services"),uspEl=document.getElementById("f-usp"),custEl=document.getElementById("f-customers");
+  if(svcEl)st.services=svcEl.value;
+  if(uspEl)st.usp=uspEl.value.trim();
+  if(custEl)st.customers=custEl.value.trim();
   document.getElementById("slugPreview").innerHTML=st.name
     ?'Your site: <b>'+esc(slugify(st.name))+'.websites.co.zw</b>':"";
   document.getElementById("btnCreate").disabled=st.name.length<2;
@@ -561,8 +597,12 @@ window.onCreateSite=async function(){
   setAIStep(1);
   var indObj=INDS.find(function(i){return i.id===st.industry;})||{lb:""};
   var phone=normPhone(st.phone);
+  var servicesList=String(st.services||"").split("\n").map(function(s){return s.trim();}).filter(Boolean);
   var brief={business_name:st.name,industry:indObj.lb,city:st.city||"Bulawayo",
     description:st.description||undefined,
+    target_customers:st.customers||undefined,
+    unique_selling_point:st.usp||undefined,
+    services:servicesList.length?servicesList:undefined,
     phone:phone,contact:{phone:phone,whatsapp:phone},
     socials:{whatsapp:phone?"https://wa.me/"+phone:""}};
 
