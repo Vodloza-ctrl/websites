@@ -554,6 +554,15 @@
 
 <!-- ═══════════════════════════════════════════════════════════════════════
   PUBLISH / DOMAIN WISH / EMAIL ROUTING MODAL
+
+  CHANGE: the plan-pick and domain-wish steps (1 & 2) stay here — that's real
+  product logic (Starter vs Pro, ZISPA vs registrar) checkout.html doesn't
+  duplicate. Step 2's "Continue to payment" now saves the domain wish and
+  redirects to checkout.html instead of calling /publish inline — checkout.html
+  is the one place that talks to the auth Worker's publish/renew endpoints and
+  (critically) actually polls for confirmed payment instead of trusting the
+  return URL. This modal still owns the post-payment email-forwarding step,
+  which checkout.html hands back to via ?paid=1&site=<id>.
 ════════════════════════════════════════════════════════════════════════ -->
 <div id="pub-overlay" style="display:none;position:fixed;inset:0;background:rgba(13,15,20,.55);z-index:200;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18);max-height:92vh;display:flex;flex-direction:column">
@@ -568,7 +577,8 @@
 <script>
 (function(){
   "use strict";
-  var API = "https://app.websites.co.zw/api";
+  var API      = "https://app.websites.co.zw/api";
+  var CHECKOUT = "https://www.websites.co.zw/checkout/";
 
   var PLAN_PRICES = { starter: 30, pro: 60 };
 
@@ -584,7 +594,9 @@
     pubIsRenew  = (status === "grace" || status === "suspended");
     document.getElementById("pub-modal-title").textContent = pubIsRenew ? "Renew your site" : "Publish your site";
     document.getElementById("pub-overlay").style.display = "flex";
-    renderStep1_Plan();
+    // Renewals keep the site's existing plan — skip straight to a confirm step.
+    if (pubIsRenew) { pubPlan = null; renderRenewConfirm(); }
+    else renderStep1_Plan();
   };
 
   window.closePubModal = function() {
@@ -595,8 +607,15 @@
     if (e.target === this) closePubModal();
   });
 
+  function renderRenewConfirm() {
+    setBody(
+      '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 18px;line-height:1.6">Renew <strong>'+esc(pubSiteName)+'</strong> for another year at its current plan.</p>'+
+      '<button class="btn btn-gold" style="width:100%;justify-content:center" onclick="_goToCheckout()">Continue to payment →</button>'
+    );
+  }
+
   function renderStep1_Plan() {
-    var action = pubIsRenew ? "Renewing" : "Publishing";
+    var action = "Publishing";
     setBody(
       '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 18px;line-height:1.6">'+action+' <strong>'+esc(pubSiteName)+'</strong>. Choose your plan:</p>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
@@ -651,7 +670,7 @@
       '<p style="font-size:12px;color:#868a96;margin:8px 0 16px">Letters, numbers and hyphens only. We add <strong>'+tld+'</strong> for you.</p>'+
       '<div style="display:flex;gap:10px">'+
         '<button onclick="_backToPlan()" style="flex:1;padding:11px;border:1px solid #e3e5ea;border-radius:9px;background:#fff;font-size:14px;font-weight:600;color:#4a4d59;cursor:pointer;font-family:inherit">← Back</button>'+
-        '<button onclick="_submitDomainAndPay()" class="btn btn-gold" style="flex:2;justify-content:center">Continue to payment →</button>'+
+        '<button onclick="_saveDomainAndGoToCheckout()" class="btn btn-gold" style="flex:2;justify-content:center">Continue to payment →</button>'+
       '</div>'
     );
   }
@@ -670,70 +689,47 @@
 
   window._backToPlan = function() { renderStep1_Plan(); };
 
-  window._submitDomainAndPay = async function() {
+  // Save the domain wish (non-fatal if it fails), then hand off to checkout.html.
+  // checkout.html is what actually calls the auth Worker's /publish or /renew,
+  // sends the browser to Paynow, and polls for real confirmation on return.
+  window._saveDomainAndGoToCheckout = async function() {
     var c1 = (document.getElementById("dw_c1")||{}).value || "";
     var c2 = (document.getElementById("dw_c2")||{}).value || "";
     var c3 = (document.getElementById("dw_c3")||{}).value || "";
     c1 = c1.trim(); c2 = c2.trim(); c3 = c3.trim();
     if (!c1) { alert("Please enter at least one domain name preference."); return; }
 
-    renderStep_Loading("Saving your domain preferences and connecting to Paynow…");
+    setBody('<div style="text-align:center;padding:30px 20px"><div style="font-size:28px;margin-bottom:12px">⏳</div><p style="color:#4a4d59;font-size:14px">Saving your domain preferences…</p></div>');
 
     var token = localStorage.getItem("wcz_token");
     var headers = { "Content-Type": "application/json", "Authorization": "Bearer " + (token || "") };
 
-    // 1. Save domain wish (non-fatal if fails)
     try {
       await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/domain-wish", {
         method: "POST", headers: headers,
         body: JSON.stringify({ choice_1: c1, choice_2: c2 || null, choice_3: c3 || null })
       });
-    } catch(e) { /* non-fatal */ }
+    } catch(e) { /* non-fatal — checkout can still proceed */ }
 
-    // 2. Initiate payment — server derives amount from plan
-    try {
-      var r = await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/publish", {
-        method: "POST", headers: headers,
-        body: JSON.stringify({ plan: pubPlan, currency: "USD" })
-      });
-      var data = {}; try { data = await r.json(); } catch(e) {}
-
-      if (r.ok && data.payment_url) {
-        var tld = pubPlan === "pro" ? ".com" : ".co.zw";
-        setBody(
-          '<div style="text-align:center;padding:10px 0 16px">'+
-            '<div style="font-size:36px;margin-bottom:10px">✅</div>'+
-            '<p style="font-weight:600;margin:0 0 6px">Domain preference saved!</p>'+
-            '<p style="font-size:13px;color:#868a96;margin:0 0 16px">We noted <strong>'+esc(c1)+tld+'</strong>'+(c2 ? ' and '+esc(c2)+tld : '')+'. Redirecting to Paynow…</p>'+
-          '</div>'
-        );
-        setTimeout(function() { location.href = data.payment_url; }, 1000);
-      } else {
-        setBody(
-          '<div style="padding:16px;background:#fee2e2;border-radius:10px;color:#c0392b;font-size:14px;margin-bottom:12px">'+
-            '<strong>Payment couldn\'t be started</strong><br>'+(data.error || data.message || "Try again.")+
-          '</div>'+
-          '<button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="closePubModal()">Close</button>'
-        );
-      }
-    } catch(e) {
-      setBody(
-        '<div style="padding:16px;background:#fee2e2;border-radius:10px;color:#c0392b;font-size:14px;margin-bottom:12px">'+
-          '<strong>Network error</strong><br>Check your connection and try again.'+
-        '</div>'+
-        '<button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="closePubModal()">Close</button>'
-      );
-    }
+    _goToCheckout();
   };
 
-  function renderStep3_PostPayment(siteId) {
-    document.getElementById("pub-modal-title").textContent = "🎉 Site published!";
+  window._goToCheckout = function() {
+    var qs = "?site=" + encodeURIComponent(pubSiteId) +
+             "&purpose=" + (pubIsRenew ? "renewal" : "publish") +
+             (pubPlan ? "&plan=" + encodeURIComponent(pubPlan) : "");
+    location.href = CHECKOUT + qs;
+  };
+
+  function renderStep3_PostPayment(siteId, renewed) {
+    document.getElementById("pub-modal-title").textContent = renewed ? "🎉 Site renewed!" : "🎉 Site published!";
     setBody(
       '<div style="text-align:center;padding:4px 0 16px">'+
         '<div style="font-size:44px;margin-bottom:10px">🎉</div>'+
-        '<h2 style="font-family:Space Grotesk,sans-serif;font-size:19px;margin:0 0 6px;color:#1a1b22">Your site is live!</h2>'+
-        '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 20px">Payment confirmed. Your domain will be registered within 1–2 business days and you\'ll get a WhatsApp notification.</p>'+
+        '<h2 style="font-family:Space Grotesk,sans-serif;font-size:19px;margin:0 0 6px;color:#1a1b22">'+(renewed ? "Your site has been renewed!" : "Your site is live!")+'</h2>'+
+        '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 20px">'+(renewed ? "Payment confirmed. Your subscription has been extended by one year." : "Payment confirmed. Your domain will be registered within 1–2 business days and you\'ll get a WhatsApp notification.")+'</p>'+
       '</div>'+
+      (renewed ? '' :
       '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin-bottom:16px">'+
         '<div style="font-weight:700;font-size:14px;color:#15924B;margin-bottom:6px">📧 Set up professional email forwarding</div>'+
         '<p style="font-size:13px;color:#4a4d59;margin:0 0 12px">Get an address like <strong>info@yoursite.co.zw</strong> that forwards to your Gmail — free, included in your plan.</p>'+
@@ -749,7 +745,7 @@
           ' style="width:100%;border:1px solid #d1fae5;border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:10px">'+
         '<button onclick="_setupEmailRoute(\''+esc(siteId)+'\')" style="width:100%;background:#15924B;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Set up email forwarding</button>'+
         '<div id="er_msg" style="font-size:12px;margin-top:8px;min-height:16px"></div>'+
-      '</div>'+
+      '</div>')+
       '<button onclick="closePubModal()" class="btn btn-ghost" style="width:100%;justify-content:center">Done</button>'
     );
   }
@@ -782,25 +778,22 @@
     }
   };
 
-  function renderStep_Loading(msg) {
-    setBody('<div style="text-align:center;padding:30px 20px"><div style="font-size:28px;margin-bottom:12px">⏳</div><p style="color:#4a4d59;font-size:14px">'+esc(msg)+'</p></div>');
-  }
-
   function setBody(html) {
     document.getElementById("pub-body").innerHTML = html;
   }
 
-  // Handle return from Paynow (?paid=1&site=xxx)
+  // Handle return from checkout.html after a CONFIRMED payment (?paid=1&site=xxx[&renewed=1])
   (function checkReturn(){
     var p = new URLSearchParams(location.search);
     if (p.get("paid") === "1") {
       history.replaceState({}, "", location.pathname);
-      var siteId = p.get("site") || "";
+      var siteId  = p.get("site") || "";
+      var renewed = p.get("renewed") === "1";
       setTimeout(function() {
         if (siteId) {
-          document.getElementById("pub-modal-title").textContent = "Publish your site";
+          document.getElementById("pub-modal-title").textContent = renewed ? "Site renewed" : "Publish your site";
           document.getElementById("pub-overlay").style.display = "flex";
-          renderStep3_PostPayment(siteId);
+          renderStep3_PostPayment(siteId, renewed);
         }
         if (typeof doRefresh === "function") doRefresh();
       }, 400);
