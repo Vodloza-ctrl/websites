@@ -130,7 +130,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .seg {
   display: flex; border: 1px solid var(--line);
-  border-radius: var(--r-sm); overflow: hidden; margin-bottom: 18px;
+  border-radius: var(--r-sm); overflow: hidden; margin-bottom: 6px;
 }
 .seg button {
   flex: 1; border: none; background: var(--card);
@@ -143,6 +143,11 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--ink); color: #fff;
 }
 .seg button[aria-pressed="true"] small { color: rgba(255,255,255,.6); }
+.seg button:disabled {
+  background: #f5f5f7; color: var(--muted); cursor: not-allowed;
+}
+.seg button:disabled small { color: var(--muted); }
+.currency-note { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
 
 /* ── Pay button ── */
 .btn-pay {
@@ -212,41 +217,6 @@ button { font-family: inherit; cursor: pointer; }
 }
 .btn-ghost:hover { border-color: var(--ink2); color: var(--ink); }
 
-/* ── Success state ── */
-.success-card {
-  text-align: center;
-  padding: 44px 24px 36px;
-}
-.success-icon {
-  width: 60px; height: 60px; border-radius: 50%;
-  background: var(--live-bg);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 26px; margin: 0 auto 20px;
-}
-.success-card h2 {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 22px; font-weight: 700; letter-spacing: -.02em;
-  margin-bottom: 8px; color: var(--live);
-}
-.success-card p { font-size: 14px; color: var(--ink2); margin-bottom: 6px; }
-.url-box {
-  background: var(--live-bg);
-  border-radius: var(--r-sm);
-  padding: 12px 16px;
-  font-size: 14px; font-weight: 600; color: var(--live);
-  margin: 18px 0 24px;
-  word-break: break-all;
-}
-.btn-dash {
-  background: var(--ink); color: #fff;
-  border: none; border-radius: var(--r-sm);
-  padding: 13px 24px;
-  font-family: "Space Grotesk", sans-serif;
-  font-weight: 600; font-size: 15px;
-  transition: background .12s;
-}
-.btn-dash:hover { background: #2d2f3a; }
-
 /* ── Failed state ── */
 .failed-card {
   text-align: center;
@@ -298,13 +268,13 @@ button { font-family: inherit; cursor: pointer; }
 
 var APP        = "https://app.websites.co.zw";
 var DASH       = APP + "/dashboard/";
-var API_DASH   = APP + "/api";           // dashboard worker (sites)
-var API_PAY    = "https://api.websites.co.zw"; // payments worker
+var API_DASH   = APP + "/api";  // auth Worker — owns auth, ownership checks, and now delegates payments too
 
 var params  = new URLSearchParams(location.search);
 var siteId  = params.get("site") || "";
 var purpose = params.get("purpose") === "renewal" ? "renewal" : "publish";
 var ref     = params.get("ref") || "";   // set by Paynow on return
+var planParam = params.get("plan") === "pro" ? "pro" : "starter"; // passed by the dashboard's plan-picker step
 
 var token = localStorage.getItem("wcz_token");
 if (!token) {
@@ -312,6 +282,7 @@ if (!token) {
 }
 
 var USD_PRICE = { starter: 30, pro: 60 };
+// ZiG disabled until a live RBZ rate is wired in — USD only for now.
 var currency  = "USD";
 var site      = null;
 
@@ -332,7 +303,8 @@ var app = document.getElementById("app");
     return showError("Couldn't load your site. Check your connection and refresh.");
   }
   if (r.status === 401) { location.replace(DASH + "?next=" + encodeURIComponent(location.href)); return; }
-  if (!r.data.site)     return showError("Site not found. <a href='" + DASH + "'>Go to dashboard →</a>");
+  if (!r.data.site)
+    return showError("Site not found. <a href='" + DASH + "'>Go to dashboard →</a>");
 
   site = r.data.site;
 
@@ -350,7 +322,7 @@ var app = document.getElementById("app");
 
 // ── Render checkout form ──────────────────────────────────────────────────
 function renderCheckout() {
-  var plan       = site.plan === "pro" ? "pro" : "starter";
+  var plan       = planParam || (site.plan === "pro" ? "pro" : "starter");
   var planLabel  = plan === "pro" ? "Pro" : "Starter";
   var usdAmount  = USD_PRICE[plan];
   var siteUrl    = site.draft_subdomain
@@ -393,19 +365,20 @@ function renderCheckout() {
           inc("Mobile-optimised site") +
         '</div>' +
 
-        // Currency picker
+        // Currency picker — ZiG disabled until a live rate is wired
         '<div class="field-label">Pay with</div>' +
         '<div class="seg" role="group" id="currencyPicker">' +
           '<button type="button" data-cur="USD" aria-pressed="true">USD<small>US Dollars</small></button>' +
-          '<button type="button" data-cur="ZIG" aria-pressed="false">ZiG<small>Zimbabwe Gold</small></button>' +
+          '<button type="button" data-cur="ZIG" aria-pressed="false" disabled>ZiG<small>Coming soon</small></button>' +
         '</div>' +
+        '<div class="currency-note">ZiG payments are coming soon — paying in USD for now.</div>' +
 
         // Error box
         '<div class="msg" id="errMsg"></div>' +
 
         // Pay button
         '<button class="btn-pay" id="payBtn" onclick="startPayment()">' +
-          '<span class="pay-label" id="payLabel">Pay & publish →</span>' +
+          '<span class="pay-label" id="payLabel">Pay $' + usdAmount + ' & ' + (purpose === "renewal" ? "renew" : "publish") + ' →</span>' +
           '<div class="spinner"></div>' +
         '</button>' +
         '<div class="security-note">🔒 Secured by Paynow · Annual billing · Cancel anytime</div>' +
@@ -413,44 +386,16 @@ function renderCheckout() {
     '</div>'
   );
   app.appendChild(card);
-
-  // Currency toggle
-  document.querySelectorAll("#currencyPicker button").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      currency = btn.dataset.cur;
-      document.querySelectorAll("#currencyPicker button").forEach(function (b) {
-        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
-      });
-      updateAmountDisplay();
-    });
-  });
-
-  updateAmountDisplay();
 }
 
 function inc(text) {
   return '<div class="inc-row"><div class="inc-check">✓</div><span>' + esc(text) + '</span></div>';
 }
 
-function updateAmountDisplay() {
-  if (!site) return;
-  var plan      = site.plan === "pro" ? "pro" : "starter";
-  var usdAmount = USD_PRICE[plan];
-  var disp      = document.getElementById("amountDisplay");
-  var total     = document.getElementById("totalDisplay");
-  var label     = document.getElementById("payLabel");
-  if (currency === "ZIG") {
-    if (disp)  disp.textContent  = "ZiG (rate at checkout)";
-    if (total) total.textContent = "ZiG equivalent";
-    if (label) label.textContent = "Pay in ZiG & publish →";
-  } else {
-    if (disp)  disp.textContent  = "$" + usdAmount + " USD";
-    if (total) total.textContent = "$" + usdAmount;
-    if (label) label.textContent = "Pay $" + usdAmount + " & publish →";
-  }
-}
-
-// ── Initiate payment ───────────────────────────────────────────────────────
+// ── Initiate payment ─────────────────────────────────────────────────────
+// Goes through the auth Worker (Bearer-authed, ownership-checked), which
+// delegates the actual Paynow call to the payments Worker. We never talk to
+// api.websites.co.zw directly from the browser.
 window.startPayment = async function () {
   var btn = document.getElementById("payBtn");
   var err = document.getElementById("errMsg");
@@ -458,41 +403,39 @@ window.startPayment = async function () {
   btn.classList.add("loading");
   btn.disabled = true;
 
-  var plan      = site.plan === "pro" ? "pro" : "starter";
-  var usdAmount = USD_PRICE[plan];
-  var body      = { site_id: siteId, currency: currency, purpose: purpose };
-  if (currency === "ZIG") body.amount = Math.round(usdAmount * 3600); // approx ZiG rate — adjust or fetch live
+  var plan     = planParam || (site.plan === "pro" ? "pro" : "starter");
+  var endpoint = purpose === "renewal" ? "/renew" : "/publish";
+  var body     = { plan: plan, currency: "USD" }; // USD only until ZiG rate is live
 
   var r;
   try {
-    r = await apiFetch(API_PAY + "/pay", {
+    r = await apiFetch(API_DASH + "/sites/" + siteId + endpoint, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify(body),
-    }, /*useAuth=*/false); // payments worker doesn't require Bearer — it reads site from DB
+    });
   } catch (e) {
     showFormError("Network error. Check your connection and try again.");
     btn.classList.remove("loading"); btn.disabled = false;
     return;
   }
 
-  if (!r.data.redirect_url) {
-    var detail = r.data.detail || r.data.error || "Payment could not be initiated.";
+  if (!r.data.payment_url) {
+    var detail = (r.data.detail && r.data.detail.error) || r.data.error || "Payment could not be initiated.";
     showFormError(detail === "currency_unavailable"
-      ? "That currency isn't available yet. Please choose USD."
+      ? "USD payments aren't available right now. Please try again shortly."
       : "Couldn't start payment: " + detail + ". Try again.");
     btn.classList.remove("loading"); btn.disabled = false;
     return;
   }
 
-  // Store ref in sessionStorage so polling screen can pick it up on return
   sessionStorage.setItem("wcz_pay_ref", r.data.reference);
 
   // Go to Paynow — Paynow will redirect back to this page with ?ref=<reference>
-  location.href = r.data.redirect_url;
+  location.href = r.data.payment_url;
 };
 
-// ── Polling screen (returned from Paynow) ─────────────────────────────────
+// ── Polling screen (returned from Paynow) ──────────────────────────────────
 function startPolling(reference) {
   document.getElementById("barLabel").textContent = "Confirming payment…";
   app.innerHTML = "";
@@ -515,11 +458,11 @@ function startPolling(reference) {
     var result = await pollStatus(reference);
     if (result === "paid") {
       clearInterval(interval);
-      return showSuccess(reference);
+      return showSuccess();
     }
     if (result === "cancelled" || result === "failed") {
       clearInterval(interval);
-      return showFailed(reference);
+      return showFailed();
     }
     if (attempts >= maxAttempts) {
       clearInterval(interval);
@@ -537,54 +480,33 @@ window.pollNow = async function (reference) {
   var btn = document.getElementById("manualCheck");
   if (btn) { btn.disabled = true; btn.textContent = "Checking…"; }
   var result = await pollStatus(reference);
-  if (result === "paid")   return showSuccess(reference);
-  if (result === "cancelled" || result === "failed") return showFailed(reference);
+  if (result === "paid")   return showSuccess();
+  if (result === "cancelled" || result === "failed") return showFailed();
   if (btn) { btn.disabled = false; btn.textContent = "Check again"; }
 };
 
+// Polls through the auth Worker's thin proxy (/api/payments/:ref), which
+// itself calls the payments Worker's GET /pay/status. Bearer-authed.
 async function pollStatus(reference) {
   try {
-    var r = await apiFetch(API_PAY + "/pay/status?ref=" + encodeURIComponent(reference), {}, false);
-    return r.data.status || "pending";
+    var r = await apiFetch(API_DASH + "/payments/" + encodeURIComponent(reference));
+    return (r.data.payment && r.data.payment.status) || "pending";
   } catch (e) {
     return "pending";
   }
 }
 
-// ── Success screen ─────────────────────────────────────────────────────────
-async function showSuccess(reference) {
-  document.getElementById("barLabel").textContent = "Published!";
-
-  // Reload site to get updated subdomain
-  var siteUrl = "";
-  try {
-    var r = await apiFetch(API_DASH + "/sites/" + siteId);
-    if (r.data.site) {
-      var s = r.data.site;
-      siteUrl = s.custom_domain && s.custom_domain_status === "active"
-        ? "https://" + s.custom_domain
-        : "https://" + (s.draft_subdomain || s.id) + ".websites.co.zw";
-    }
-  } catch (e) {}
-
-  app.innerHTML = "";
-  var isRenewal = purpose === "renewal";
-  app.appendChild(make(
-    '<div class="card">' +
-      '<div class="success-card">' +
-        '<div class="success-icon">✓</div>' +
-        '<h2>' + (isRenewal ? "Renewed!" : "You\'re live!") + '</h2>' +
-        '<p>' + (isRenewal ? "Your site subscription has been renewed for another year." : "Your site is now published and live on the web.") + '</p>' +
-        (siteUrl ? '<div class="url-box"><a href="' + esc(siteUrl) + '" target="_blank" rel="noopener">' + esc(siteUrl) + '</a></div>' : '') +
-        '<p style="font-size:13px;color:var(--muted);margin-bottom:20px">Share this link with your customers.</p>' +
-        '<button class="btn-dash" onclick="location.href=\'' + DASH + '\'">Go to dashboard →</button>' +
-      '</div>' +
-    '</div>'
-  ));
+// ── Success — hand off to the dashboard's post-payment screen ──────────────
+// customer.html already has the email-forwarding setup step wired to
+// ?paid=1&site=<id> — reuse it instead of duplicating that UI here.
+function showSuccess() {
+  var qs = "?paid=1&site=" + encodeURIComponent(siteId);
+  if (purpose === "renewal") qs += "&renewed=1";
+  location.href = DASH + "customer.html" + qs;
 }
 
-// ── Failed screen ──────────────────────────────────────────────────────────
-function showFailed(reference) {
+// ── Failed screen ────────────────────────────────────────────────────────
+function showFailed() {
   document.getElementById("barLabel").textContent = "Payment failed";
   app.innerHTML = "";
   app.appendChild(make(
@@ -594,7 +516,7 @@ function showFailed(reference) {
         '<h2>Payment not completed</h2>' +
         '<p>Your payment was cancelled or failed. Your site has been saved as a draft — nothing was lost.</p>' +
         '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
-          '<button class="btn-pay" style="max-width:200px" onclick="location.href=location.pathname+\'?site=' + esc(siteId) + '&purpose=' + esc(purpose) + '\'">Try again</button>' +
+          '<button class="btn-pay" style="max-width:200px" onclick="location.href=location.pathname+\'?site=' + esc(siteId) + '&purpose=' + esc(purpose) + '&plan=' + esc(planParam) + '\'">Try again</button>' +
           '<button class="btn-ghost" onclick="location.href=\'' + DASH + '\'">Dashboard</button>' +
         '</div>' +
       '</div>' +
@@ -602,7 +524,7 @@ function showFailed(reference) {
   ));
 }
 
-// ── Generic error ─────────────────────────────────────────────────────────
+// ── Generic error ───────────────────────────────────────────────────────
 function showError(html) {
   app.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;padding:40px 24px">' +
     '<p style="color:var(--err);font-size:15px">' + html + '</p>' +
@@ -617,13 +539,11 @@ function showFormError(msg) {
   err.textContent = msg;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
-async function apiFetch(url, opts, useAuth) {
+// ── Helpers ─────────────────────────────────────────────────────────────
+async function apiFetch(url, opts) {
   var headers = Object.assign({ "Content-Type": "application/json" }, (opts && opts.headers) || {});
-  if (useAuth !== false) {
-    var t = localStorage.getItem("wcz_token");
-    if (t) headers["Authorization"] = "Bearer " + t;
-  }
+  var t = localStorage.getItem("wcz_token");
+  if (t) headers["Authorization"] = "Bearer " + t;
   var resp = await fetch(url, Object.assign({}, opts || {}, { headers: headers }));
   var data = {};
   try { data = await resp.json(); } catch (e) {}
