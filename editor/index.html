@@ -529,6 +529,10 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-menu"><div class="panel"><div class="panel-head"><div><h2>Menu Items</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Group by category — each becomes a tab on your site</div></div><button class="btn btn-green btn-sm" onclick="addMenuItem()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="menu-rep-list"><div class="empty-state" id="menu-rep-empty"><span class="es-icon">🍽️</span><p>No menu items yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-listings"><div class="panel"><div class="panel-head"><div><h2>Property Listings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each listing appears as a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addListing()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="listings-rep-list"><div class="empty-state" id="listings-rep-empty"><span class="es-icon">🏘️</span><p>No listings yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-rooms"><div class="panel"><div class="panel-head"><div><h2>Rooms &amp; Suites</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each room becomes its own card — the first room shown is featured on your site</div></div><button class="btn btn-green btn-sm" onclick="addRoom()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="rooms-rep-list"><div class="empty-state" id="rooms-rep-empty"><span class="es-icon">🛏️</span><p>No rooms yet. Add your first room type.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-bookings"><div class="panel"><div class="panel-head"><div><h2>Bookings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Guest requests from your room booking calendar</div></div><button class="btn btn-ghost btn-sm" onclick="loadBookings(true)">↻ Refresh</button></div><div class="panel-body">
+      <div class="booking-filters" id="booking-filters"></div>
+      <div class="booking-list" id="booking-list"><div class="empty-state" id="booking-empty"><span class="es-icon">📋</span><p>No bookings yet. Once a guest requests a room, it'll show up here.</p></div></div>
+    </div></div></div>
     <div class="tab-section" id="tab-amenities"><div class="panel"><div class="panel-head"><div><h2>Amenities</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Tap a common amenity to add it instantly, or add your own below</div></div></div><div class="panel-body">
       <div class="vpreset-section"><div class="vpreset-label">Quick add</div><div class="vpreset-row" id="amenity-preset-chips"></div></div>
       <div class="divider"></div>
@@ -1388,6 +1392,165 @@ async function persistRoomResourceIds(siteId) {
 }
 // ── END BOOKINGS WORKER SYNC ──────────────────────────────────────────────
 
+// ── OWNER BOOKINGS LIST (step 3) ────────────────────────────────────────────
+// Read-only-ish view of guest booking requests for this site's rooms, backed
+// directly by websites-bookings-worker.js's owner-authed GET /bookings and
+// PUT /bookings/:id/status routes (both confirmed live earlier in this
+// project). Reuses bookingsApi() above for auth (Bearer token — the
+// wcz_session cookie is scoped to app.websites.co.zw and won't cross to
+// bookings.websites.co.zw, so the Bearer header is what actually works here,
+// same as the resource sync already relies on).
+var bookingsState = { list: [], filter: "all", loaded: false };
+
+function bookingRoomName(resourceId) {
+  var r = (v3state.rooms || []).find(function(x) { return x.resource_id === resourceId; });
+  return (r && r.name) ? r.name : "Room";
+}
+
+function fmtBookingDate(s) {
+  if (!s) return "";
+  var p = s.split("-");
+  if (p.length !== 3) return s;
+  var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+}
+
+function nightsBetween(a, b) {
+  if (!a || !b) return 0;
+  var pa = a.split("-"), pb = b.split("-");
+  var da = new Date(parseInt(pa[0],10), parseInt(pa[1],10)-1, parseInt(pa[2],10));
+  var db = new Date(parseInt(pb[0],10), parseInt(pb[1],10)-1, parseInt(pb[2],10));
+  return Math.round((db - da) / 86400000);
+}
+
+window.loadBookings = async function(force) {
+  var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
+  if (tpl !== "hospitality-inn") return;
+  if (!siteId) return;
+  if (bookingsState.loaded && !force) { renderBookingsList(); return; }
+  var listEl = document.getElementById("booking-list");
+  if (listEl) listEl.innerHTML = '<div class="empty-state"><span class="es-icon">⏳</span><p>Loading bookings…</p></div>';
+  var r = await bookingsApi("/bookings?site_id=" + encodeURIComponent(siteId));
+  bookingsState.loaded = true;
+  if (!r.ok) {
+    bookingsState.list = [];
+    if (listEl) listEl.innerHTML = '<div class="empty-state"><span class="es-icon">⚠️</span><p>Couldn\'t load bookings — tap Refresh to try again.</p></div>';
+    return;
+  }
+  bookingsState.list = (r.data && r.data.bookings) || [];
+  renderBookingFilters();
+  renderBookingsList();
+};
+
+function renderBookingFilters() {
+  var wrap = document.getElementById("booking-filters");
+  if (!wrap) return;
+  var counts = { all: bookingsState.list.length, pending: 0, confirmed: 0, declined: 0 };
+  bookingsState.list.forEach(function(b) {
+    if (b.status === "pending") counts.pending++;
+    else if (b.status === "confirmed") counts.confirmed++;
+    else if (b.status === "declined" || b.status === "cancelled") counts.declined++;
+  });
+  var chips = [
+    { key: "all", label: "All (" + counts.all + ")" },
+    { key: "pending", label: "Pending (" + counts.pending + ")" },
+    { key: "confirmed", label: "Confirmed (" + counts.confirmed + ")" },
+    { key: "declined", label: "Declined (" + counts.declined + ")" }
+  ];
+  wrap.innerHTML = chips.map(function(c) {
+    return '<button type="button" class="booking-filter-chip' + (bookingsState.filter === c.key ? " on" : "") + '" onclick="setBookingFilter(\'' + c.key + '\')">' + c.label + "</button>";
+  }).join("");
+}
+
+window.setBookingFilter = function(key) {
+  bookingsState.filter = key;
+  renderBookingFilters();
+  renderBookingsList();
+};
+
+function renderBookingsList() {
+  var listEl = document.getElementById("booking-list");
+  if (!listEl) return;
+  var items = bookingsState.list.filter(function(b) {
+    if (bookingsState.filter === "all") return true;
+    if (bookingsState.filter === "declined") return b.status === "declined" || b.status === "cancelled";
+    return b.status === bookingsState.filter;
+  });
+  listEl.querySelectorAll(".booking-item").forEach(function(el) { el.remove(); });
+  var emptyEl = document.getElementById("booking-empty");
+  if (!items.length) {
+    if (!emptyEl) {
+      emptyEl = document.createElement("div");
+      emptyEl.className = "empty-state";
+      emptyEl.id = "booking-empty";
+      listEl.appendChild(emptyEl);
+    }
+    emptyEl.style.display = "";
+    emptyEl.innerHTML = '<span class="es-icon">📋</span><p>' + (bookingsState.list.length ? "No bookings match this filter." : "No bookings yet. Once a guest requests a room, it'll show up here.") + "</p>";
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = "none";
+  items.forEach(function(b) {
+    listEl.appendChild(renderBookingItem(b));
+  });
+}
+
+function renderBookingItem(b) {
+  var div = document.createElement("div");
+  div.className = "booking-item";
+  var nights = nightsBetween(b.start_date, b.end_date);
+  var statusLabels = { pending: "Pending", confirmed: "Confirmed", declined: "Declined", cancelled: "Cancelled" };
+  var statusLabel = statusLabels[b.status] || b.status;
+  var phoneDigits = String(b.customer_phone || "").replace(/\D/g, "");
+  var waLink = phoneDigits ? ("https://wa.me/" + (phoneDigits.indexOf("263") === 0 ? phoneDigits : "263" + phoneDigits.replace(/^0/, ""))) : "";
+  var actionsHtml = "";
+  if (b.status === "pending") {
+    actionsHtml = '<div class="booking-actions">'
+      + '<button type="button" class="booking-btn booking-btn-confirm" onclick="setBookingStatus(\'' + b.id + '\',\'confirmed\',this)">Confirm</button>'
+      + '<button type="button" class="booking-btn booking-btn-decline" onclick="setBookingStatus(\'' + b.id + '\',\'declined\',this)">Decline</button>'
+      + '</div>';
+  } else if (b.status === "confirmed") {
+    actionsHtml = '<div class="booking-actions">'
+      + '<button type="button" class="booking-btn booking-btn-cancel" onclick="setBookingStatus(\'' + b.id + '\',\'cancelled\',this)">Cancel booking</button>'
+      + '</div>';
+  }
+  div.innerHTML =
+    '<div class="booking-item-top">'
+      + '<div><div class="booking-room">' + escV3(bookingRoomName(b.resource_id)) + '</div><div class="booking-guest">' + escV3(b.customer_name || "Guest") + '</div></div>'
+      + '<span class="booking-status ' + escV3(b.status || "") + '">' + escV3(statusLabel) + '</span>'
+    + '</div>'
+    + '<div class="booking-dates"><b>' + fmtBookingDate(b.start_date) + '</b> &rarr; <b>' + fmtBookingDate(b.end_date) + '</b> &middot; ' + nights + ' night' + (nights === 1 ? '' : 's') + '</div>'
+    + '<div class="booking-meta">' + (b.customer_phone ? ('<span>' + escV3(b.customer_phone) + '</span>' + (waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener">Message on WhatsApp</a>' : '')) : '<span>No phone provided</span>') + '</div>'
+    + actionsHtml;
+  return div;
+}
+
+window.setBookingStatus = async function(bookingId, newStatus, btnEl) {
+  var card = btnEl ? btnEl.closest(".booking-item") : null;
+  var buttons = card ? card.querySelectorAll(".booking-btn") : [];
+  buttons.forEach(function(b) { b.disabled = true; });
+  var busyLabel = newStatus === "confirmed" ? "Confirming…" : (newStatus === "declined" ? "Declining…" : "Cancelling…");
+  if (btnEl) btnEl.textContent = busyLabel;
+  var r = await bookingsApi("/bookings/" + encodeURIComponent(bookingId) + "/status", {
+    method: "PUT",
+    body: JSON.stringify({ status: newStatus })
+  });
+  if (!r.ok) {
+    toast((r.data && r.data.error) || "Couldn't update booking — try again", "err");
+    buttons.forEach(function(b) { b.disabled = false; });
+    var idleLabel = newStatus === "confirmed" ? "Confirm" : (newStatus === "declined" ? "Decline" : "Cancel booking");
+    if (btnEl) btnEl.textContent = idleLabel;
+    return;
+  }
+  var item = bookingsState.list.find(function(b) { return b.id === bookingId; });
+  if (item) item.status = newStatus;
+  toast("Booking " + newStatus, "ok");
+  renderBookingFilters();
+  renderBookingsList();
+};
+// ── END OWNER BOOKINGS LIST ─────────────────────────────────────────────────
+
 var _origSwitchTab=window.switchTab;
 function injectV3Nav(){
   var sidebar=document.querySelector(".sidebar");if(!sidebar||document.getElementById("v3-nav-injected"))return;
@@ -1399,6 +1562,7 @@ function injectV3Nav(){
   var extraNavs=[
     {id:"nav-v3-services",tab:"services",label:"Services",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M4 6h10l-1.2 7H5.2L4 6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>'},
     {id:"nav-v3-rooms",tab:"rooms",label:"Rooms",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M1 15V9a1 1 0 011-1h14a1 1 0 011 1v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M2 10V6a1 1 0 011-1h10a1 1 0 011 1v4" stroke="currentColor" stroke-width="1.4"/><path d="M9 10v3M1 15h16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'},
+    {id:"nav-v3-bookings",tab:"bookings",label:"Bookings",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7h14M6 1.5v3M12 1.5v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M6.5 11l2 2 3-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
     {id:"nav-v3-amenities",tab:"amenities",label:"Amenities",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M9 2l1.8 4.6L15.5 8l-4.2 2.3L9 15l-2.3-4.7L2.5 8l4.7-1.4L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>'},
     {id:"nav-v3-conference",tab:"conference",label:"Conferencing",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><circle cx="6" cy="6" r="2.2" stroke="currentColor" stroke-width="1.3"/><circle cx="13" cy="7" r="1.8" stroke="currentColor" stroke-width="1.3"/><path d="M2 15v-1a4 4 0 014-4h.5a4 4 0 014 3.6" stroke="currentColor" stroke-width="1.3"/><path d="M11.5 15v-.8a3.4 3.4 0 013.4-3" stroke="currentColor" stroke-width="1.3"/></svg>'},
     {id:"nav-v3-dining",tab:"dining",label:"Dining",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M4 1.5v6.5c0 1 .8 1.8 1.8 1.8V16.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4 1.5v3.7M6.5 1.5v3.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M14 1.5s-2.2 1-2.2 4 .7 3.3.7 3.3v7.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
@@ -1417,14 +1581,14 @@ function injectV3Nav(){
   extraNavs.forEach(function(n){var div=document.createElement("div");div.className="nav-item";div.id=n.id;div.dataset.tab=n.tab;div.style.display="none";div.innerHTML=n.icon+" <span>"+n.label+"</span>";div.onclick=function(){switchTabV3(n.tab,div);};sidebar.insertBefore(div,insertBefore);});
 }
 function switchTabV3(tab,clickEl){document.querySelectorAll(".tab-section").forEach(function(s){s.classList.remove("active");});var t=document.getElementById("tab-"+tab);if(t)t.classList.add("active");document.querySelectorAll(".nav-item,.dock-item").forEach(function(i){i.classList.remove("active");});if(clickEl)clickEl.classList.add("active");document.querySelectorAll("[data-tab='"+tab+"']").forEach(function(i){i.classList.add("active");});window.scrollTo({top:0,behavior:"smooth"});}
-window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","amenities","conference","dining","experiences","packages"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
+window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","bookings","amenities","conference","dining","experiences","packages"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);if(tab==="bookings"&&typeof window.loadBookings==="function")window.loadBookings();return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
 function applyTemplateConfigV3(tpl){
   var cfg=TPL_CFG[tpl]||TPL_CFG["bold-retail"];var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};
   var iconEl=document.getElementById("v3-tpl-icon");var nameEl=document.getElementById("v3-tpl-name");
   if(iconEl)iconEl.textContent=tmeta.icon||"🏢";if(nameEl)nameEl.textContent=tmeta.name||tpl;
   var ctLabel=document.getElementById("currentTemplateLabel");if(ctLabel)ctLabel.textContent=tmeta.name||tpl;
   showNavItem("nav-v3-services",!!cfg.services);showNavItem("nav-v3-menu",!!cfg.menu);showNavItem("nav-v3-listings",!!cfg.listings);showNavItem("nav-v3-team",!!cfg.team);showNavItem("nav-v3-hours",!!cfg.hours);showNavItem("nav-v3-stats",!!cfg.stats);showNavItem("nav-v3-events",!!cfg.events);showNavItem("nav-v3-testis",true);
-  showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);showNavItem("nav-v3-packages",!!cfg.packages);
+  showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-bookings",!!cfg.rooms);showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);showNavItem("nav-v3-packages",!!cfg.packages);
   if(cfg.services){var st=document.getElementById("services-tab-title");var nl=document.getElementById("nav-v3-services");if(st)st.textContent=cfg.servicesLbl||"Services";if(nl){var sp=nl.querySelector("span");if(sp)sp.textContent=cfg.servicesLbl||"Services";}}
   if(cfg.team){var tt=document.getElementById("team-tab-title");var nl2=document.getElementById("nav-v3-team");if(tt)tt.textContent=cfg.teamLbl||"Team";if(nl2){var sp2=nl2.querySelector("span");if(sp2)sp2.textContent=cfg.teamLbl||"Team";}}
 }
@@ -1769,6 +1933,32 @@ function toast(msg,type){var wrap=document.getElementById("toastWrap");if(!wrap)
 .variant-chip{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);color:var(--green-dk);font-size:12.5px;font-weight:600;padding:3px 8px 3px 10px;border-radius:20px;border:1px solid rgba(21,146,75,.2)}
 .variant-chip button{background:none;border:none;color:var(--green-dk);font-size:14px;line-height:1;cursor:pointer;padding:0 0 0 2px;opacity:.7}
 .variant-chip button:hover{opacity:1}
+.booking-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.booking-filter-chip{border:1.5px solid var(--line2);border-radius:20px;padding:5px 12px;font-size:12.5px;font-weight:600;cursor:pointer;background:#fff;color:var(--ink2);transition:.12s}
+.booking-filter-chip:hover{border-color:var(--green);color:var(--green)}
+.booking-filter-chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.booking-list{display:flex;flex-direction:column;gap:8px}
+.booking-item{border:1.5px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;background:#fafbfc}
+.booking-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
+.booking-room{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.booking-guest{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:2px}
+.booking-status{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:.03em}
+.booking-status.pending{background:var(--gold-bg);color:var(--gold-dk)}
+.booking-status.confirmed{background:var(--green-bg);color:var(--green)}
+.booking-status.declined,.booking-status.cancelled{background:#f0f2f6;color:var(--ink3)}
+.booking-dates{font-size:13.5px;color:var(--ink2);font-weight:600;margin-bottom:4px}
+.booking-dates b{color:var(--ink)}
+.booking-meta{font-size:12.5px;color:var(--ink3);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.booking-meta a{color:var(--green);font-weight:600}
+.booking-actions{display:flex;gap:8px}
+.booking-btn{flex:1;padding:8px 10px;border-radius:var(--r-xs);font-size:12.5px;font-weight:700;text-align:center;border:1.5px solid transparent;cursor:pointer;transition:.12s}
+.booking-btn-confirm{background:var(--green);color:#fff}
+.booking-btn-confirm:hover{background:var(--green-dk)}
+.booking-btn-decline{background:transparent;color:var(--red);border-color:var(--line2)}
+.booking-btn-decline:hover{border-color:var(--red);background:#fdecea}
+.booking-btn-cancel{background:transparent;color:var(--ink3);border-color:var(--line2)}
+.booking-btn-cancel:hover{border-color:var(--ink3);color:var(--ink)}
+.booking-btn:disabled{opacity:.5;cursor:default}
 </style>
 </body>
 </html>
