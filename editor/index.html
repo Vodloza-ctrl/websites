@@ -643,28 +643,40 @@ function injectThemeIntoPreview() {
     var customAccent = theme.custom_accent || null;
     var resolved = resolvePaletteColors(paletteKey, customAccent);
     
-    // Font mapping
-    var fontMap = {
-      "clean-sans": "'Space Grotesk',sans-serif",
-      "grotesk-serif": "'Fraunces',serif",
-      "playfair-jakarta": "'Playfair Display',serif",
-      "garamond-jost": "'Cormorant Garamond',serif",
-      "sports-sans": "'Barlow Condensed',sans-serif",
-      "display-mono": "'DM Mono',monospace"
+    // Font mapping -- body/head PAIRS, matching FONT_MAP in the render worker.
+    // (Previously this only stored one font per key -- the heading font --
+    // and applied it to body text everywhere, so preview never matched what
+    // actually got published for any pair where body != heading font.)
+    var fontPairMap = {
+      "clean-sans":       { body: "'Space Grotesk',sans-serif",                 head: "'Space Grotesk',sans-serif" },
+      "grotesk-serif":    { body: "'Hanken Grotesk',sans-serif",                head: "'Fraunces',serif" },
+      "playfair-jakarta": { body: "'Plus Jakarta Sans',sans-serif",             head: "'Playfair Display',serif" },
+      "garamond-jost":    { body: "'Jost',sans-serif",                         head: "'Cormorant Garamond',serif" },
+      "sports-sans":      { body: "'Barlow',sans-serif",                       head: "'Barlow Condensed',sans-serif" },
+      "display-mono":     { body: "'DM Sans',sans-serif",                      head: "'DM Mono',monospace" }
     };
     var fontPair = theme.font_pair || "grotesk-serif";
-    var fontFamily = fontMap[fontPair] || "'Inter',sans-serif";
-    
+    var fonts = fontPairMap[fontPair] || fontPairMap["clean-sans"];
+
+    // Selectors are broadened + !important because templates commonly style
+    // typography via classes (.hero-title etc.), which beat plain tag
+    // selectors like h1{...} on specificity -- that's why changing the font
+    // pair previously never visibly changed headings. The heading rule is
+    // declared after the body rule so, at tied specificity, it wins for
+    // headings and any inline elements nested inside them.
     var css = `
       :root {
         --accent: ${resolved.accent};
         --bg: ${resolved.bg};
         --dark: ${resolved.dark};
         --gold: ${resolved.gold};
-        --font-family: ${fontFamily};
       }
-      body {
-        font-family: ${fontFamily};
+      body, body * {
+        font-family: ${fonts.body} !important;
+      }
+      h1, h2, h3, h4, h5, h6,
+      h1 *, h2 *, h3 *, h4 *, h5 *, h6 * {
+        font-family: ${fonts.head} !important;
       }
     `;
     
