@@ -1369,12 +1369,28 @@ window.__syncRoomsToBookingsWorker = async function(siteId) {
     var room = v3state.rooms[i];
     if (!room.name) continue; // skip empty/unnamed rooms — nothing meaningful to sync yet
 
+    var needsCreate = !room.resource_id;
+
     if (room.resource_id) {
-      await bookingsApi("/resources/" + encodeURIComponent(room.resource_id), {
+      // Self-healing PUT: if the resource this room THINKS it owns no
+      // longer exists (404) or the request otherwise fails, clear the
+      // stale pointer and fall through to POST below instead of silently
+      // leaving the room pointed at a dead ID forever. This was the
+      // actual root cause of "resource not found" 404s on the public
+      // calendar widget -- a failed PUT here previously left no trace at
+      // all, so a room could point at nothing indefinitely with zero
+      // error surfaced anywhere.
+      var putResult = await bookingsApi("/resources/" + encodeURIComponent(room.resource_id), {
         method: "PUT",
         body: JSON.stringify({ name: room.name, active: 1 })
       });
-    } else {
+      if (!putResult.ok) {
+        room.resource_id = null;
+        needsCreate = true;
+      }
+    }
+
+    if (needsCreate) {
       var r = await bookingsApi("/resources", {
         method: "POST",
         body: JSON.stringify({ site_id: siteId, name: room.name })
@@ -1383,8 +1399,8 @@ window.__syncRoomsToBookingsWorker = async function(siteId) {
         room.resource_id = r.data.resource.id;
         assignedNewIds = true;
       }
-      // If this failed (e.g. auth not live yet), room.resource_id stays
-      // unset and the next save will just retry the POST — no data lost.
+      // If this failed too (e.g. auth not live yet), room.resource_id
+      // stays unset and the next save will just retry — no data lost.
     }
   }
 
