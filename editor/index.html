@@ -35,7 +35,6 @@ img{display:block;max-width:100%}
 .btn-danger{background:transparent;color:var(--red);border-color:transparent}
 .btn-danger:hover{color:var(--red);background:#fde8e6;border-color:var(--red)}
 .btn-gold{background:var(--gold);color:#fff;border-color:var(--gold)}
-.btn-gold:hover{background:var(--gold-dk)}
 .btn-pro{background:var(--pro-bg);color:var(--pro);border-color:var(--pro-bg)}
 .btn-sm{padding:6px 12px;font-size:12.5px}
 .layout{display:flex;padding-top:var(--bar);height:100vh;overflow:hidden;}
@@ -529,7 +528,8 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-menu"><div class="panel"><div class="panel-head"><div><h2>Menu Items</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Group by category — each becomes a tab on your site</div></div><button class="btn btn-green btn-sm" onclick="addMenuItem()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="menu-rep-list"><div class="empty-state" id="menu-rep-empty"><span class="es-icon">🍽️</span><p>No menu items yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-listings"><div class="panel"><div class="panel-head"><div><h2>Property Listings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each listing appears as a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addListing()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="listings-rep-list"><div class="empty-state" id="listings-rep-empty"><span class="es-icon">🏘️</span><p>No listings yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-rooms"><div class="panel"><div class="panel-head"><div><h2>Rooms &amp; Suites</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each room becomes its own card — the first room shown is featured on your site</div></div><button class="btn btn-green btn-sm" onclick="addRoom()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="rooms-rep-list"><div class="empty-state" id="rooms-rep-empty"><span class="es-icon">🛏️</span><p>No rooms yet. Add your first room type.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-bookings"><div class="panel"><div class="panel-head"><div><h2>Bookings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Guest requests from your room booking calendar</div></div><button class="btn btn-ghost btn-sm" onclick="loadBookings(true)">↻ Refresh</button></div><div class="panel-body">
+    <div class="tab-section" id="tab-bookings"><div class="panel"><div class="panel-head"><div><h2>Bookings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Guest requests from your room booking calendar</div></div><div style="display:flex;gap:8px"><button class="btn btn-green btn-sm" id="addBookingBtn" style="display:none" onclick="openManualBookingModal()">+ Add booking</button><button class="btn btn-ghost btn-sm" onclick="loadBookings(true)">↻ Refresh</button></div></div><div class="panel-body">
+      <div id="bookingsProUpsell" style="display:none;margin-bottom:14px"><div class="upsell-pro upsell"><div class="upsell-ico">⭐</div><div class="upsell-body"><strong>Manual entry &amp; payment tracking — Pro only</strong><p>Log phone, walk-in, and email bookings directly, and track deposits and payments with one-tap "mark as paid". Available on Bookings <b>Pro</b> ($25/mo).</p></div></div></div>
       <div class="booking-filters" id="booking-filters"></div>
       <div class="booking-list" id="booking-list"><div class="empty-state" id="booking-empty"><span class="es-icon">📋</span><p>No bookings yet. Once a guest requests a room, it'll show up here.</p></div></div>
     </div></div></div>
@@ -577,6 +577,28 @@ img{display:block;max-width:100%}
 <div class="toast-wrap" id="toastWrap"></div>
 <div class="tpl-modal-overlay" id="tplModal" onclick="closeTplModalOutside(event)">
   <div class="tpl-modal-box"><div class="tpl-modal-head"><h2>Switch Template</h2><button class="btn btn-ghost btn-sm" onclick="closeTplModal()">✕ Close</button></div><div class="tpl-modal-body" id="tplModalBody"></div></div>
+</div>
+<div class="tpl-modal-overlay" id="manualBookingModal" onclick="closeManualBookingModalOutside(event)">
+  <div class="tpl-modal-box" style="max-width:460px">
+    <div class="tpl-modal-head"><h2>Add a booking</h2><button class="btn btn-ghost btn-sm" onclick="closeManualBookingModal()">✕ Close</button></div>
+    <div class="tpl-modal-body" style="display:block">
+      <div class="fld-group"><label class="fld-label">Room</label><select class="fld-select" id="mb_resource_id"></select></div>
+      <div class="two">
+        <div class="fld-group"><label class="fld-label">Check-in</label><input class="fld-input" type="date" id="mb_start_date"></div>
+        <div class="fld-group"><label class="fld-label">Check-out</label><input class="fld-input" type="date" id="mb_end_date"></div>
+      </div>
+      <div class="fld-group"><label class="fld-label">Guest name</label><input class="fld-input" id="mb_customer_name" placeholder="e.g. Tendai Moyo"></div>
+      <div class="two">
+        <div class="fld-group"><label class="fld-label">Phone <span class="fld-hint">optional</span></label><input class="fld-input" id="mb_customer_phone" placeholder="0772 000 000"></div>
+        <div class="fld-group"><label class="fld-label">Email <span class="fld-hint">optional</span></label><input class="fld-input" id="mb_customer_email" placeholder="guest@email.com"></div>
+      </div>
+      <div class="two">
+        <div class="fld-group"><label class="fld-label">Booked via</label><select class="fld-select" id="mb_channel"><option value="phone">Phone call</option><option value="walk_in">Walk-in</option><option value="email">Email</option><option value="other">Other</option></select></div>
+        <div class="fld-group"><label class="fld-label">Status</label><select class="fld-select" id="mb_status"><option value="confirmed">Confirmed</option><option value="pending">Pending (tentative hold)</option></select></div>
+      </div>
+      <button class="btn btn-green" style="width:100%;margin-top:6px" id="mbSubmitBtn" onclick="submitManualBooking()">Add booking</button>
+    </div>
+  </div>
 </div>
 <script>
 (function(){
@@ -1400,7 +1422,7 @@ async function persistRoomResourceIds(siteId) {
 // wcz_session cookie is scoped to app.websites.co.zw and won't cross to
 // bookings.websites.co.zw, so the Bearer header is what actually works here,
 // same as the resource sync already relies on).
-var bookingsState = { list: [], filter: "all", loaded: false };
+var bookingsState = { list: [], filter: "all", loaded: false, tier: null };
 
 function bookingRoomName(resourceId) {
   var r = (v3state.rooms || []).find(function(x) { return x.resource_id === resourceId; });
@@ -1424,6 +1446,24 @@ function nightsBetween(a, b) {
   return Math.round((db - da) / 86400000);
 }
 
+// ── BOOKINGS TIER (Pro gating for manual entry + payment tracking) ────────
+// Calls the bookings-worker's owner-authed GET /bookings/tier once per
+// Bookings-tab visit. Drives whether "+ Add booking", "Mark as paid", and
+// the payment ledger controls render at all -- the backend independently
+// enforces this on every write (see websites-bookings-worker.js v1.9/v1.10),
+// so a stale or spoofed client-side tier can never grant real access; this
+// is purely about not showing controls that would just 402 anyway.
+async function fetchBookingsTier() {
+  if (!siteId) { bookingsState.tier = null; return; }
+  var r = await bookingsApi("/bookings/tier?site_id=" + encodeURIComponent(siteId));
+  bookingsState.tier = (r.ok && r.data && r.data.tier) ? r.data.tier : null;
+  var isPro = bookingsState.tier === "pro";
+  var addBtn = document.getElementById("addBookingBtn");
+  var upsell = document.getElementById("bookingsProUpsell");
+  if (addBtn) addBtn.style.display = isPro ? "inline-flex" : "none";
+  if (upsell) upsell.style.display = isPro ? "none" : "block";
+}
+
 window.loadBookings = async function(force) {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
   if (tpl !== "hospitality-inn") return;
@@ -1439,6 +1479,7 @@ window.loadBookings = async function(force) {
     return;
   }
   bookingsState.list = (r.data && r.data.bookings) || [];
+  await fetchBookingsTier();
   renderBookingFilters();
   renderBookingsList();
 };
@@ -1504,6 +1545,8 @@ function renderBookingItem(b) {
   var statusLabel = statusLabels[b.status] || b.status;
   var phoneDigits = String(b.customer_phone || "").replace(/\D/g, "");
   var waLink = phoneDigits ? ("https://wa.me/" + (phoneDigits.indexOf("263") === 0 ? phoneDigits : "263" + phoneDigits.replace(/^0/, ""))) : "";
+  var sourceLabels = { web: "Website", whatsapp: "WhatsApp", phone: "Phone", walk_in: "Walk-in", email: "Email", other: "Other" };
+  var sourceLabel = sourceLabels[b.source] || b.source;
   var actionsHtml = "";
   if (b.status === "pending") {
     actionsHtml = '<div class="booking-actions">'
@@ -1515,14 +1558,31 @@ function renderBookingItem(b) {
       + '<button type="button" class="booking-btn booking-btn-cancel" onclick="setBookingStatus(\'' + b.id + '\',\'cancelled\',this)">Cancel booking</button>'
       + '</div>';
   }
+
+  // Pro-only: payment tracking. Only rendered when the site is actually on
+  // the Pro tier (server-enforced regardless -- this just avoids showing
+  // buttons that would 402). Shown for confirmed bookings, since marking a
+  // pending or declined request as paid doesn't make sense.
+  var paymentHtml = "";
+  if (bookingsState.tier === "pro" && b.status === "confirmed") {
+    var isPaid = b.payment_status === "paid";
+    paymentHtml = '<div class="booking-payment-row">'
+      + '<span class="booking-payment-badge ' + (isPaid ? "paid" : "unpaid") + '">' + (isPaid ? "Paid" + (b.amount ? " — " + esc(b.currency || "USD") + " " + esc(String(b.amount)) : "") : "Unpaid") + '</span>'
+      + (isPaid ? '' : '<button type="button" class="booking-btn booking-btn-markpaid" onclick="openMarkPaidPrompt(\'' + b.id + '\')">Mark as paid</button>')
+      + '<button type="button" class="booking-btn booking-btn-viewpay" onclick="toggleBookingPayments(\'' + b.id + '\',this)">Payment history</button>'
+      + '</div>'
+      + '<div class="booking-payment-history" id="booking-payhist-' + b.id + '" style="display:none"></div>';
+  }
+
   div.innerHTML =
     '<div class="booking-item-top">'
       + '<div><div class="booking-room">' + escV3(bookingRoomName(b.resource_id)) + '</div><div class="booking-guest">' + escV3(b.customer_name || "Guest") + '</div></div>'
       + '<span class="booking-status ' + escV3(b.status || "") + '">' + escV3(statusLabel) + '</span>'
     + '</div>'
-    + '<div class="booking-dates"><b>' + fmtBookingDate(b.start_date) + '</b> &rarr; <b>' + fmtBookingDate(b.end_date) + '</b> &middot; ' + nights + ' night' + (nights === 1 ? '' : 's') + '</div>'
+    + '<div class="booking-dates"><b>' + fmtBookingDate(b.start_date) + '</b> &rarr; <b>' + fmtBookingDate(b.end_date) + '</b> &middot; ' + nights + ' night' + (nights === 1 ? '' : 's') + ' &middot; via ' + escV3(sourceLabel) + '</div>'
     + '<div class="booking-meta">' + (b.customer_phone ? ('<span>' + escV3(b.customer_phone) + '</span>' + (waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener">Message on WhatsApp</a>' : '')) : '<span>No phone provided</span>') + '</div>'
-    + actionsHtml;
+    + actionsHtml
+    + paymentHtml;
   return div;
 }
 
@@ -1548,6 +1608,122 @@ window.setBookingStatus = async function(bookingId, newStatus, btnEl) {
   toast("Booking " + newStatus, "ok");
   renderBookingFilters();
   renderBookingsList();
+};
+
+// ── MANUAL BOOKING ENTRY (Pro) ─────────────────────────────────────────────
+window.openManualBookingModal = function() {
+  var sel = document.getElementById("mb_resource_id");
+  var rooms = (v3state.rooms || []).filter(function(r) { return r.resource_id && r.name; });
+  if (!rooms.length) {
+    toast("Add and save a room first, so it can sync to the booking calendar.", "err");
+    return;
+  }
+  sel.innerHTML = rooms.map(function(r) { return '<option value="' + escV3(r.resource_id) + '">' + escV3(r.name) + '</option>'; }).join("");
+  document.getElementById("mb_start_date").value = "";
+  document.getElementById("mb_end_date").value = "";
+  document.getElementById("mb_customer_name").value = "";
+  document.getElementById("mb_customer_phone").value = "";
+  document.getElementById("mb_customer_email").value = "";
+  document.getElementById("mb_channel").value = "phone";
+  document.getElementById("mb_status").value = "confirmed";
+  document.getElementById("manualBookingModal").classList.add("open");
+};
+window.closeManualBookingModal = function() {
+  document.getElementById("manualBookingModal").classList.remove("open");
+};
+window.closeManualBookingModalOutside = function(e) {
+  if (e.target === document.getElementById("manualBookingModal")) closeManualBookingModal();
+};
+window.submitManualBooking = async function() {
+  var resourceId = document.getElementById("mb_resource_id").value;
+  var startDate = document.getElementById("mb_start_date").value;
+  var endDate = document.getElementById("mb_end_date").value;
+  var customerName = document.getElementById("mb_customer_name").value.trim();
+  var customerPhone = document.getElementById("mb_customer_phone").value.trim();
+  var customerEmail = document.getElementById("mb_customer_email").value.trim();
+  var channel = document.getElementById("mb_channel").value;
+  var status = document.getElementById("mb_status").value;
+
+  if (!resourceId) { toast("Choose a room", "err"); return; }
+  if (!startDate || !endDate) { toast("Choose check-in and check-out dates", "err"); return; }
+  if (startDate >= endDate) { toast("Check-out must be after check-in", "err"); return; }
+  if (!customerName) { toast("Guest name is required", "err"); return; }
+
+  var btn = document.getElementById("mbSubmitBtn");
+  btn.disabled = true; btn.textContent = "Adding…";
+  var r = await bookingsApi("/bookings/manual", {
+    method: "POST",
+    body: JSON.stringify({
+      site_id: siteId,
+      resource_id: resourceId,
+      start_date: startDate,
+      end_date: endDate,
+      customer_name: customerName,
+      customer_phone: customerPhone || null,
+      customer_email: customerEmail || null,
+      channel: channel,
+      status: status
+    })
+  });
+  btn.disabled = false; btn.textContent = "Add booking";
+  if (!r.ok) {
+    toast((r.data && r.data.error) || "Couldn't add booking — try again", "err");
+    return;
+  }
+  toast("Booking added ✓", "ok");
+  closeManualBookingModal();
+  window.loadBookings(true);
+};
+
+// ── PAYMENT TRACKING (Pro) ─────────────────────────────────────────────────
+window.openMarkPaidPrompt = async function(bookingId) {
+  var amountStr = prompt("Amount received (leave blank to skip):", "");
+  if (amountStr === null) return; // cancelled
+  var amount = amountStr.trim() ? parseFloat(amountStr) : null;
+  if (amountStr.trim() && isNaN(amount)) { toast("Enter a valid number", "err"); return; }
+  var reference = prompt("Payment reference (optional, e.g. EcoCash ref):", "") || "";
+
+  var r = await bookingsApi("/bookings/" + encodeURIComponent(bookingId) + "/mark-paid", {
+    method: "POST",
+    body: JSON.stringify({ amount: amount, currency: "USD", reference: reference || null })
+  });
+  if (!r.ok) {
+    toast((r.data && r.data.error) || "Couldn't mark as paid — try again", "err");
+    return;
+  }
+  var item = bookingsState.list.find(function(b) { return b.id === bookingId; });
+  if (item) {
+    item.payment_status = "paid";
+    if (r.data && r.data.amount != null) item.amount = r.data.amount;
+    if (r.data && r.data.currency) item.currency = r.data.currency;
+  }
+  toast("Marked as paid ✓", "ok");
+  renderBookingsList();
+};
+
+window.toggleBookingPayments = async function(bookingId, btnEl) {
+  var histEl = document.getElementById("booking-payhist-" + bookingId);
+  if (!histEl) return;
+  var isOpen = histEl.style.display !== "none";
+  if (isOpen) { histEl.style.display = "none"; if (btnEl) btnEl.textContent = "Payment history"; return; }
+  histEl.style.display = "block";
+  if (btnEl) btnEl.textContent = "Hide history";
+  histEl.innerHTML = '<div style="padding:8px 0;font-size:12px;color:var(--ink3)">Loading…</div>';
+  var r = await bookingsApi("/bookings/" + encodeURIComponent(bookingId) + "/payments");
+  if (!r.ok) {
+    histEl.innerHTML = '<div style="padding:8px 0;font-size:12px;color:var(--ink3)">Couldn\'t load payment history.</div>';
+    return;
+  }
+  var payments = (r.data && r.data.payments) || [];
+  if (!payments.length) {
+    histEl.innerHTML = '<div style="padding:8px 0;font-size:12px;color:var(--ink3)">No payment events recorded yet.</div>';
+    return;
+  }
+  histEl.innerHTML = payments.map(function(p) {
+    var d = new Date(p.created_at * 1000);
+    var dateLabel = d.toLocaleDateString();
+    return '<div class="booking-payment-line"><span class="ppill">' + escV3(p.type) + '</span> ' + (p.amount != null ? escV3(String(p.currency || "USD")) + " " + escV3(String(p.amount)) : "—") + ' <span style="color:var(--ink3)">' + dateLabel + '</span></div>';
+  }).join("");
 };
 // ── END OWNER BOOKINGS LIST ─────────────────────────────────────────────────
 
@@ -1959,6 +2135,17 @@ function toast(msg,type){var wrap=document.getElementById("toastWrap");if(!wrap)
 .booking-btn-cancel{background:transparent;color:var(--ink3);border-color:var(--line2)}
 .booking-btn-cancel:hover{border-color:var(--ink3);color:var(--ink)}
 .booking-btn:disabled{opacity:.5;cursor:default}
+.booking-payment-row{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line2);flex-wrap:wrap}
+.booking-payment-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em}
+.booking-payment-badge.paid{background:var(--green-bg);color:var(--green)}
+.booking-payment-badge.unpaid{background:var(--gold-bg);color:var(--gold-dk)}
+.booking-btn-markpaid{flex:0 0 auto;background:var(--pro-bg);color:var(--pro);padding:6px 12px}
+.booking-btn-markpaid:hover{background:var(--pro);color:#fff}
+.booking-btn-viewpay{flex:0 0 auto;background:transparent;color:var(--ink3);border-color:var(--line2);padding:6px 12px}
+.booking-payment-history{margin-top:8px;font-size:12.5px}
+.booking-payment-line{padding:4px 0;border-bottom:1px solid var(--line)}
+.booking-payment-line:last-child{border-bottom:none}
+.ppill{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;background:var(--surface);color:var(--ink2);padding:2px 7px;border-radius:10px;margin-right:6px}
 </style>
 </body>
 </html>
