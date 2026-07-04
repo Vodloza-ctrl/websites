@@ -1,5 +1,67 @@
 /**
- * websites.co.zw -- Render Worker v10.23 + Hospitality Inn
+ * websites.co.zw -- Render Worker v10.29 + Booking Engine Step 2
+ *
+ * v10.29 (booking engine -- step 2):
+ *   - Hospitality-inn: room cards (both the featured suite and the room-row
+ *     collection) now emit a "Check availability & book" trigger next to
+ *     the existing WhatsApp CTA, wherever a resource_id is present.
+ *   - New buildBookingWidgetAssets(site): self-contained calendar-picker
+ *     modal (CSS+JS, no library), injected via the same pattern as
+ *     buildHospAssets(). Fetches GET /availability once per resource
+ *     (today .. +365d), caches client-side, renders a month grid with
+ *     booked days disabled/struck-through. Click-to-select a date range,
+ *     enter name + phone, POST /bookings on submit. Handles the 409
+ *     "no longer available" race by invalidating the cache and reloading
+ *     availability. Talks directly to bookings.websites.co.zw (confirmed
+ *     live via Worker Route) -- no service binding, matches that worker's
+ *     public/unauthenticated GET /availability and POST /bookings routes.
+ *
+ * v10.28 (booking engine -- step 1):
+ *   - Hospitality-inn: both room-card renderers (the single featured
+ *     "suite-editorial" block and the "room-row" collection) now emit a
+ *     data-resource-id attribute on their outer wrapper, sourced from
+ *     room.resource_id (falling back to resourceId, then id). This is
+ *     purely a data-exposure change -- no new UI, no behaviour change to
+ *     WhatsApp CTAs or status badges. It's the hook the client-side
+ *     booking widget (step 2) will scan for to know which resource to
+ *     check availability / book against.
+ *
+ * v10.27:
+ *   - WHATSAPP STORE ADDON GATING: WA ordering (cart FAB, add-to-cart
+ *     buttons, drawer cart/buy-now actions) now gated behind the
+ *     whatsapp_store addon via websites-orders-worker service binding
+ *     (env.ORDERS_WORKER). Catalog browsing (grid, quick-view drawer,
+ *     lightbox) stays fully functional when the addon is inactive --
+ *     only the ordering mechanism is suppressed. See checkAddonActive().
+ *     IMPORTANT: fails OPEN (addonActive=true) if ORDERS_WORKER binding
+ *     is absent or the check errors, so this is safe to deploy before
+ *     the binding exists. Once bound, sites with no addons row will have
+ *     WA ordering suppressed -- backfill the addons table before wiring
+ *     the binding in production if existing sites should keep ordering.
+ *
+ * v10.26:
+ *   - WHATSAPP STORE ADDON GATING: WA ordering (cart FAB, add-to-cart
+ *     buttons, drawer cart/buy-now actions) now gated behind the
+ *     whatsapp_store addon via websites-orders-worker service binding
+ *     (env.ORDERS_WORKER). Catalog browsing (grid, quick-view drawer,
+ *     lightbox) stays fully functional when the addon is inactive --
+ *     only the ordering mechanism is suppressed. See checkAddonActive().
+ *     IMPORTANT: fails OPEN (addonActive=true) if ORDERS_WORKER binding
+ *     is absent or the check errors, so this is safe to deploy before
+ *     the binding exists. Once bound, sites with no addons row will have
+ *     WA ordering suppressed -- backfill the addons table before wiring
+ *     the binding in production if existing sites should keep ordering.
+ *
+ * v10.25:
+ *   - HARDWARE-STORE FIX: Added robust error handling for Commerce SDK calls.
+ *   - Added console.log debugging to verify hardware template code path.
+ *   - Added fallback values for hw_products_html to prevent empty product grids.
+ *   - Added 'retail-hardware' to hardware template ID check for legacy sites.
+ *
+ * v10.24:
+ *   - FIXED hardware-store template variable mapping in TEMPLATE_VAR_MAP:
+ *     Changed from mapping to '--slate' to mapping to '--primary' and '--accent'
+ *     so the render worker's palette override actually applies to the template's CSS.
  *
  * v10.23:
  *   - Hospitality-inn: content.video now flows through normalizeContent as a
@@ -8,19 +70,21 @@
  *     links and raw mp4/webm/ogg/mov files all resolve to an iframe/video-ready
  *     embedUrl + embedType, even on older saves that only have a plain url.
  *   - Hospitality-inn: buildHospitalityExtras() now emits has_video plus
- *     video_stage_html / video_eyebrow / video_heading / video_sub_html /
- *     video_runtime_html / nav_video_label tokens, built to match the
- *     hospitality-inn template's OWN inline-play video-stage markup exactly
- *     (.video-stage-ratio / .video-thumb / .video-embed / .video-play-ring /
- *     .video-meta, data-type="iframe"|"native") — the template's existing
- *     <script> already handles the click-to-play behaviour, so nothing extra
- *     is injected for video.
+ *     video_stage_html / video_eyebrow / video_heading / video_title_html /
+ *     video_subtitle_html / video_body_html / video_runtime_html /
+ *     nav_video_label tokens for a click-to-play section.
  *   - Hospitality-inn: rooms and conference/venue cards now support a
  *     photos[] array (falls back to single photo/image) and render a
  *     lightweight slider (hospPhotoStage()) when more than one photo is set.
- *     handlePublic() injects the matching slider CSS+JS (buildHospAssets(),
- *     event-delegated, no per-template markup changes required) for all
- *     hospitality template IDs, right before </head> / </body>.
+ *   - handlePublic() injects a small self-contained CSS+JS bundle
+ *     (buildHospAssets(): slider controls + video lightbox, event-delegated,
+ *     no per-template markup changes required) for all hospitality template
+ *     IDs, right before </head> / </body>.
+ *   - Grocery-store: added support for grocery-fmcg template with
+ *     specials board, category pills, delivery info, and Commerce SDK
+ *     integration.
+ *   - Hardware-store: added support for hardware-store template with
+ *     specials, stats, about section, and Commerce SDK integration.
  *
  * v10.22:
  *   - Added hospitality-inn template for lodges, B&Bs, and hotels.
@@ -369,6 +433,10 @@ async function handlePublic(request, env, slug, customDomain) {
         const hospAssets = buildHospAssets();
         if (hospAssets.css) out = out.replace('</head>', hospAssets.css + '</head>');
         if (hospAssets.js)  out = out.replace('</body>', hospAssets.js  + '</body>');
+        // Booking-engine step 2: calendar widget for room availability + booking.
+        const bookingAssets = buildBookingWidgetAssets(site);
+        if (bookingAssets.css) out = out.replace('</head>', bookingAssets.css + '</head>');
+        if (bookingAssets.js)  out = out.replace('</body>', bookingAssets.js  + '</body>');
       }
       if (isPreview) {
         const banner = `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600">Preview mode -- <a href="https://app.websites.co.zw" style="color:#fff;text-decoration:underline">Go to dashboard</a> to publish</div>`;
@@ -447,6 +515,27 @@ async function callCommerceCSS(env) {
   if (!resp.ok) throw new Error('commerce-sdk-worker /css returned ' + resp.status);
   const { css } = await resp.json();
   return css;
+}
+
+// --- ADDON GATING (WhatsApp Store) -------------------------------------------
+// Calls websites-orders-worker via service binding to check whether the
+// whatsapp_store addon is active for a site. Fails OPEN (returns true) if the
+// binding is absent or the call errors, so a transient orders-worker outage
+// never takes down a live store's ordering, and this is safe to deploy before
+// ORDERS_WORKER is wired up. Once bound, sites with no addons row will have
+// WA ordering suppressed by design -- see the addons table gating notes.
+
+async function checkAddonActive(env, siteId, addonType) {
+  if (!env.ORDERS_WORKER) return true; // binding not configured -- fail open
+  try {
+    const resp = await env.ORDERS_WORKER.fetch(
+      `https://internal/addon-check?site_id=${encodeURIComponent(siteId)}&type=${encodeURIComponent(addonType)}`
+    );
+    return resp.ok; // 200 = active, 402 = inactive (see websites-orders-worker.js)
+  } catch (err) {
+    console.error('Addon check failed, failing open:', err);
+    return true;
+  }
 }
 
 // =============================================================================
@@ -613,7 +702,7 @@ const TEMPLATE_RENDERER_MAP = {
   'fashion-retail':   'fashion',
   'boutique-fashion': 'fashion',
   'boutique':         'fashion',
-  'grocery-store':    'grocery',
+  'grocery-fmcg':     'grocery',
   'grocery':          'grocery',
   'hardware-store':   'hardware',
   'hardware':         'hardware',
@@ -685,7 +774,7 @@ function buildCardStockHtml(product) {
   return `<div class="wcz-prod-stock wcz-prod-stock-in">In stock</div>`;
 }
 
-function buildProductCard(product, renderer, ctx) {
+function buildProductCard(product, renderer, ctx, addonActive) {
   const isOut      = (product.stock || '').toLowerCase() === 'out';
   const name       = product.name || product.title || '';
   const price      = product.price || '';
@@ -736,9 +825,15 @@ function buildProductCard(product, renderer, ctx) {
   const sn = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   const sp = price.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
-  const addBtn = isOut
-    ? `<button class="wcz-add-btn" disabled>Sold out</button>`
-    : `<button class="wcz-add-btn" onclick="wczAddToOrder({name:'${sn}',price:'${sp}'},this)">+ Add to cart</button>`;
+  // Ordering UI (add-to-cart button) is gated behind the whatsapp_store addon.
+  // When inactive, the card is still fully browsable (opens the quick-view
+  // drawer via wczOpenProduct) -- only the conversion mechanism is suppressed.
+  let addBtn = '';
+  if (addonActive !== false) {
+    addBtn = isOut
+      ? `<button class="wcz-add-btn" disabled>Sold out</button>`
+      : `<button class="wcz-add-btn" onclick="wczAddToOrder({name:'${sn}',price:'${sp}'},this)">+ Add to cart</button>`;
+  }
 
   return `<div class="wcz-prod-card" data-cat="${_esc(cat)}" data-id="${_esc(product.id || '')}" data-qv="${_esc(JSON.stringify(qvPayload))}" onclick="wczOpenProduct(this)">
   <div class="wcz-prod-photo" style="aspect-ratio:${renderer.cardAspect}">
@@ -752,17 +847,17 @@ function buildProductCard(product, renderer, ctx) {
     ${renderer.cardShowPrice !== 'overlay' ? priceHtml : ''}
     ${cardSpecsHtml}
     ${swatchHtml ? `<div class="wcz-prod-swatches" onclick="event.stopPropagation()">${swatchHtml}</div>` : ''}
-    <div onclick="event.stopPropagation()">${addBtn}</div>
+    ${addBtn ? `<div onclick="event.stopPropagation()">${addBtn}</div>` : ''}
   </div>
 </div>`;
 }
 
 
-function buildGridHtml(products, renderer, ctx) {
+function buildGridHtml(products, renderer, ctx, addonActive) {
   if (!products.length) {
     return `<div class="wcz-prod-empty"><p>No products yet -- check back soon.</p></div>`;
   }
-  const cards = products.map(p => buildProductCard(p, renderer, ctx)).join('\n');
+  const cards = products.map(p => buildProductCard(p, renderer, ctx, addonActive)).join('\n');
   return `<div class="wcz-prod-grid">${cards}</div>`;
 }
 
@@ -799,11 +894,28 @@ function buildDrawerImagesHtml(renderer) {
 </div>`;
 }
 
-function buildDrawerHtml(renderer) {
+function buildDrawerHtml(renderer, addonActive) {
   const hasQty    = renderer.showQuantity;
   const hasSpecs  = renderer.drawerShowSpecs;
   const hasDetail = renderer.drawerShowDetails;
   const priceTop  = renderer.drawerPricePos === 'top';
+
+  // Ordering actions (Add to cart / Buy now on WhatsApp) are gated behind the
+  // whatsapp_store addon. Browsing (images, specs, details, related) stays
+  // available either way -- only the conversion actions at the bottom go away.
+  const actionsHtml = addonActive === false
+    ? `<p class="wcz-qv-note">Contact us directly to enquire about this item.</p>`
+    : `<div class="wcz-qv-actions">
+    <button class="wcz-qv-btn-cart" id="wcz-qv-add-cart">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      Add to cart
+    </button>
+    <a class="wcz-qv-btn-buynow" id="wcz-qv-wa" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+      Buy now
+    </a>
+  </div>
+  <p class="wcz-qv-note">We confirm availability and arrange delivery via WhatsApp.</p>`;
 
   return `<button class="wcz-qv-close" id="wcz-qv-close" aria-label="Close">&#x2715;</button>
 
@@ -864,17 +976,7 @@ ${buildDrawerImagesHtml(renderer)}
     <div class="wcz-qv-related" id="wcz-qv-related"></div>
   </div>
 
-  <div class="wcz-qv-actions">
-    <button class="wcz-qv-btn-cart" id="wcz-qv-add-cart">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      Add to cart
-    </button>
-    <a class="wcz-qv-btn-buynow" id="wcz-qv-wa" href="#" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-      Buy now
-    </a>
-  </div>
-  <p class="wcz-qv-note">We confirm availability and arrange delivery via WhatsApp.</p>
+  ${actionsHtml}
 </div>`;
 }
 
@@ -924,7 +1026,7 @@ function buildWaFabHtml(ctx) {
 </a>`;
 }
 
-function buildProductScript(products, renderer, ctx) {
+function buildProductScript(products, renderer, ctx, addonActive) {
   const productsJson = JSON.stringify(products);
   const rendererJson = JSON.stringify({
     colorStyle:        renderer.colorStyle,
@@ -944,9 +1046,13 @@ function buildProductScript(products, renderer, ctx) {
   const waNum   = (ctx.waNum   || '').replace(/'/g, "\\'");
   const bizName = (ctx.bizName || '').replace(/'/g, "\\'");
 
-  const cartBarHtml = `<button class="wcz-order-fab" id="wcz-order-fab" onclick="wczCartToggle()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> My order <span class="wcz-order-count" id="wcz-order-count">0</span></button><div class="wcz-order-panel" id="wcz-order-panel"><div class="wcz-order-hdr"><span>Your order</span><button class="wcz-order-hdr-close" onclick="wczCartToggle()">&#x2715;</button></div><div class="wcz-order-items" id="wcz-order-items"><div class="wcz-order-empty">Your order is empty.<br>Add items to get started.</div></div><div class="wcz-order-total" id="wcz-order-total" style="display:none"></div><div class="wcz-order-actions"><button class="wcz-order-clear" onclick="wczCartClear()">Clear</button><a class="wcz-order-send" id="wcz-order-send" href="#" target="_blank" rel="noopener">Send on WhatsApp &#x1F4AC;</a></div></div>`;
+  // Ordering UI (floating "My order" cart FAB + panel, WhatsApp enquiry FAB)
+  // is gated behind the whatsapp_store addon. When inactive these are simply
+  // not injected -- the rest of the script (drawer, lightbox, browsing) still
+  // runs unchanged so the catalog stays fully viewable.
+  const cartBarHtml = addonActive === false ? '' : `<button class="wcz-order-fab" id="wcz-order-fab" onclick="wczCartToggle()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> My order <span class="wcz-order-count" id="wcz-order-count">0</span></button><div class="wcz-order-panel" id="wcz-order-panel"><div class="wcz-order-hdr"><span>Your order</span><button class="wcz-order-hdr-close" onclick="wczCartToggle()">&#x2715;</button></div><div class="wcz-order-items" id="wcz-order-items"><div class="wcz-order-empty">Your order is empty.<br>Add items to get started.</div></div><div class="wcz-order-total" id="wcz-order-total" style="display:none"></div><div class="wcz-order-actions"><button class="wcz-order-clear" onclick="wczCartClear()">Clear</button><a class="wcz-order-send" id="wcz-order-send" href="#" target="_blank" rel="noopener">Send on WhatsApp &#x1F4AC;</a></div></div>`;
 
-  const waFabHtml = waNum
+  const waFabHtml = (addonActive !== false && waNum)
     ? `<a class="wcz-wa-fab" id="wcz-wa-fab" href="https://wa.me/${waNum}?text=${encodeURIComponent('Hello ' + bizName + ', I have an enquiry.')}" target="_blank" rel="noopener" aria-label="WhatsApp enquiry"><div class="wcz-wa-fab-pulse"></div><svg viewBox="0 0 24 24" width="26" height="26" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg></a>`
     : '';
 
@@ -958,14 +1064,15 @@ var WCZ_PRODUCTS = ${productsJson};
 var WCZ_R        = ${rendererJson};
 var WCZ_WA       = '${waNum}';
 var WCZ_BIZ      = '${bizName}';
+var WCZ_ADDON_ACTIVE = ${addonActive === false ? 'false' : 'true'};
 
 (function injectUI(){
-  if (!document.getElementById('wcz-order-fab')) {
+  if (${JSON.stringify(cartBarHtml)} && !document.getElementById('wcz-order-fab')) {
     var wrap = document.createElement('div');
     wrap.innerHTML = ${JSON.stringify(cartBarHtml)};
     while (wrap.firstChild) document.body.appendChild(wrap.firstChild);
   }
-  if (!document.getElementById('wcz-wa-fab') && WCZ_WA) {
+  if (${JSON.stringify(waFabHtml)} && !document.getElementById('wcz-wa-fab')) {
     var wafWrap = document.createElement('div');
     wafWrap.innerHTML = ${JSON.stringify(waFabHtml)};
     while (wafWrap.firstChild) document.body.appendChild(wafWrap.firstChild);
@@ -1064,6 +1171,7 @@ function cartRender() {
 }
 
 window.wczCartAdd = function(name, price, color, variant, qty) {
+  if (!WCZ_ADDON_ACTIVE) return;
   var key = name + '|' + (color || '') + '|' + (variant || '');
   var ex  = _cart.find(function(i) { return (i.name + '|' + (i.color||'') + '|' + (i.variant||'')) === key; });
   if (ex) { ex.qty += (qty || 1); }
@@ -1125,6 +1233,7 @@ function buildBuyNowMsg() {
 function refreshDrawerActions() { setHref('wcz-qv-wa', buildBuyNowMsg()); }
 
 document.addEventListener('click', function(e) {
+  if (!WCZ_ADDON_ACTIVE) return;
   var btn = e.target.closest('#wcz-qv-add-cart');
   if (!btn) return;
   var p = state.product;
@@ -1185,7 +1294,7 @@ function buildColorPicker(colors) {
   el.innerHTML = colors.map(function(col, i){
     var isActive = i === 0;
     if (WCZ_R.colorStyle === 'swatch') {
-      return '<button class="wcz-qv-color' + (isActive?' active':'') + '" style="background:' + (col.hex||col.color||'#ccc') + '" title="' + (col.name||'') + '" data-name="' + (col.name||'') + '" aria-label="' + (col.name||'') + '"></button>';
+      return '<button class="wcz-qv-color' + (isActive?' active':'') + '" style="background:' + (col.hex||col.color||'#ccc') + '" title="' + (col.name||'') + '" data-name="' + (col.name||'') + '" data-img="' + (col.image||'') + '" aria-label="' + (col.name||'') + '"></button>';
     }
     return '<button class="wcz-qv-size' + (isActive?' active':'') + '" data-name="' + (col.name||'') + '">' + (col.name||'') + '</button>';
   }).join('');
@@ -1389,18 +1498,20 @@ window.drawerGoTo = drawerGoTo;
 window.lbGoTo     = lbGoTo;
 
 window.wczCardAdd = function(btn, name, price) {
+  if (!WCZ_ADDON_ACTIVE) return;
   wczCartAdd(name, price, '', '', 1);
   var orig = btn.textContent;
-  btn.textContent = 'Added ✓';
+  btn.textContent = 'Added \u2713';
   btn.disabled = true;
   setTimeout(function(){ btn.textContent = orig; btn.disabled = false; }, 1400);
 };
 
 window.wczAddToOrder = function(item, btnEl) {
+  if (!WCZ_ADDON_ACTIVE) return;
   wczCartAdd(item.name || '', item.price || '', '', '', 1);
   if (btnEl) {
     var orig = btnEl.textContent;
-    btnEl.textContent = 'Added ✓';
+    btnEl.textContent = 'Added \u2713';
     btnEl.disabled = true;
     setTimeout(function(){ btnEl.textContent = orig; btnEl.disabled = false; }, 1400);
   }
@@ -1416,12 +1527,13 @@ cartRender();
 
 function buildCommerceModule(products, templateId, contentTheme, ctx) {
   const renderer = resolveRenderer(templateId, contentTheme);
+  const addonActive = (ctx && ctx.addonActive === false) ? false : true;
   return {
-    gridHtml:   buildGridHtml(products, renderer, ctx),
+    gridHtml:   buildGridHtml(products, renderer, ctx, addonActive),
     filterHtml: buildFilterHtml(products),
-    drawerHtml: buildDrawerHtml(renderer),
+    drawerHtml: buildDrawerHtml(renderer, addonActive),
     lbHtml:     buildLightboxHtml(),
-    scriptHtml: buildProductScript(products, renderer, ctx),
+    scriptHtml: buildProductScript(products, renderer, ctx, addonActive),
   };
 }
 
@@ -1573,8 +1685,27 @@ function buildCommerceCSS() {
 
 // --- TEMPLATE EXTRAS ---------------------------------------------------------
 
+// Template IDs that render products via the Universal Commerce SDK and are
+// therefore subject to whatsapp_store addon gating for the WA ordering UI.
+const STORE_TEMPLATE_IDS = new Set([
+  'beauty-salon',
+  'school-institution', 'school', 'church', 'sports',
+  'boutique-fashion', 'boutique', 'fashion',
+  'fashion-retail',
+  'grocery-fmcg', 'grocery',
+  'hardware-store', 'hardware', 'retail-hardware',
+]);
+
 async function buildTemplateExtras(c, site, config, env) {
   const extras = {};
+
+  const templateId = site.template_id;
+
+  // Single addon check per render, reused by every store-type template block
+  // below via shopCtx.addonActive. See checkAddonActive() for fail-open behaviour.
+  const whatsappStoreActive = STORE_TEMPLATE_IDS.has(templateId)
+    ? await checkAddonActive(env, site.id, 'whatsapp_store')
+    : true;
 
   const phone = c.phone || c.contact?.phone || '';
   if (phone) {
@@ -1618,8 +1749,6 @@ async function buildTemplateExtras(c, site, config, env) {
       `<div><b>${esc(String(s.value || s.number || ''))}</b><span>${esc(s.label || '')}</span></div>`
     ).join('\n');
   }
-
-  const templateId = site.template_id;
 
   // -- ADVISORY-FIRM ----------------------------------------------------------
   if (templateId === 'advisory-firm' || templateId === 'consultant') {
@@ -1898,7 +2027,8 @@ async function buildTemplateExtras(c, site, config, env) {
     if (hasShop) {
       const shopCtx = {
         waNum: extras.wa_phone || '',
-        bizName: c.business_name || c.name || ''
+        bizName: c.business_name || c.name || '',
+        addonActive: whatsappStoreActive
       };
 
       const commerce = env && env.COMMERCE_SDK
@@ -1957,7 +2087,8 @@ async function buildTemplateExtras(c, site, config, env) {
       const waNum = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
       const shopCtx = {
         waNum: waNum || '',
-        bizName: c.business_name || c.name || ''
+        bizName: c.business_name || c.name || '',
+        addonActive: whatsappStoreActive
       };
 
       const commerce = env && env.COMMERCE_SDK
@@ -2089,8 +2220,8 @@ async function buildTemplateExtras(c, site, config, env) {
     }).join('');
 
     const commerce = env && env.COMMERCE_SDK
-      ? await callCommerceSDK(env, bProducts, 'boutique-fashion', c.theme || {}, { waNum, bizName: bName })
-      : buildCommerceModule(bProducts, 'boutique-fashion', c.theme || {}, { waNum, bizName: bName });
+      ? await callCommerceSDK(env, bProducts, 'boutique-fashion', c.theme || {}, { waNum, bizName: bName, addonActive: whatsappStoreActive })
+      : buildCommerceModule(bProducts, 'boutique-fashion', c.theme || {}, { waNum, bizName: bName, addonActive: whatsappStoreActive });
     extras.bf_products_html         = commerce.gridHtml;
     extras.fr_category_filters_html = commerce.filterHtml;
     extras.wcz_qv_drawer_html       = commerce.drawerHtml;
@@ -2160,8 +2291,8 @@ async function buildTemplateExtras(c, site, config, env) {
 
     const frProducts = Array.isArray(c.products) ? c.products : [];
     const commerce   = env && env.COMMERCE_SDK
-      ? await callCommerceSDK(env, frProducts, templateId, c.theme || {}, { waNum, bizName: c.business_name || c.name || '' })
-      : buildCommerceModule(frProducts, templateId, c.theme || {}, { waNum, bizName: c.business_name || c.name || '' });
+      ? await callCommerceSDK(env, frProducts, templateId, c.theme || {}, { waNum, bizName: c.business_name || c.name || '', addonActive: whatsappStoreActive })
+      : buildCommerceModule(frProducts, templateId, c.theme || {}, { waNum, bizName: c.business_name || c.name || '', addonActive: whatsappStoreActive });
 
     extras.fr_products_html         = commerce.gridHtml;
     extras.fr_category_filters_html = commerce.filterHtml;
@@ -2173,6 +2304,231 @@ async function buildTemplateExtras(c, site, config, env) {
       : buildCommerceCSS();
   }
   // -- END FASHION-RETAIL -----------------------------------------------------
+
+  // -- GROCERY-STORE ------------------------------------------------------
+  if (templateId === 'grocery-fmcg' || templateId === 'grocery') {
+    const bizName  = c.business_name || c.name || '';
+    const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
+    const waNum    = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
+
+    extras.hero_eyebrow  = c.hero_eyebrow  || (c.location ? c.location + ' · Open Daily' : 'Open Daily');
+    extras.hero_headline = c.hero_headline || 'Fresh today. Family priced.';
+    extras.hero_subtext  = c.hero_subtext  || c.about || 'Vegetables, groceries and household essentials, stocked daily.';
+
+    // Category strip -- explicit c.categories wins, else derive from product categories
+    const products = Array.isArray(c.products) ? c.products : [];
+    const cats = Array.isArray(c.categories) && c.categories.length
+      ? c.categories
+      : [...new Set(products.map(p => (p.category || '').trim()).filter(Boolean))];
+    extras.has_categories = cats.length ? 'true' : '';
+    extras.category_pills_html = cats.map((cat, i) =>
+      `<button class="cat-pill${i === 0 ? ' on' : ''}" data-cat="${esc(cat)}">${esc(cat)}</button>`
+    ).join('');
+
+    // Specials board -- optional
+    const specials = Array.isArray(c.specials) ? c.specials : [];
+    extras.has_specials = specials.length ? 'true' : '';
+    extras.grocery_specials_html = specials.map(s => {
+      const name = esc(s.name || '');
+      const was  = s.price_was ? `<div class="was">${esc(s.price_was)}</div>` : '';
+      const now  = esc(s.price_now || s.price || '');
+      const unit = esc(s.unit || '');
+      return `<div class="board-item"><div class="name">${name}</div>${was}<div class="now">${now}</div>${unit ? `<div class="unit">${unit}</div>` : ''}</div>`;
+    }).join('');
+    extras.specials_note = esc(c.specials_note || "Specials refresh regularly — WhatsApp us to reserve before they're gone.");
+
+    // Delivery info
+    extras.delivery_note  = c.delivery_note  || '';
+    extras.delivery_areas = c.delivery_areas || '';
+    extras.has_delivery   = (c.delivery_note || c.delivery_areas) ? 'true' : '';
+
+    // Products via Commerce SDK (grocery renderer already in TEMPLATE_RENDERER_MAP)
+    const shopCtx = { waNum, bizName, addonActive: whatsappStoreActive };
+    const commerce = env && env.COMMERCE_SDK
+      ? await callCommerceSDK(env, products, templateId, c.theme || {}, shopCtx)
+      : buildCommerceModule(products, templateId, c.theme || {}, shopCtx);
+
+    extras.gs_products_html         = commerce.gridHtml;
+    extras.gs_category_filters_html = commerce.filterHtml;
+    extras.wcz_qv_drawer_html       = commerce.drawerHtml;
+    extras.wcz_lb_html              = commerce.lbHtml;
+    extras.wcz_products_script      = commerce.scriptHtml;
+    extras.wcz_commerce_css         = env && env.COMMERCE_SDK
+      ? await callCommerceCSS(env)
+      : buildCommerceCSS();
+
+    extras.has_logo = (c.images?.logo || c.logo_url) ? 'true' : '';
+  }
+  // -- END GROCERY-STORE ---------------------------------------------------
+
+  // -- HARDWARE-STORE ------------------------------------------------------
+  if (templateId === 'hardware-store' || templateId === 'hardware' || templateId === 'retail-hardware') {
+    // Debug: Log that we're in the hardware template handler
+    console.log('✅ Hardware template detected:', templateId);
+
+    const bizName  = c.business_name || c.name || '';
+    const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
+    const waNum    = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
+
+    // Hero tokens
+    extras.hero_eyebrow  = c.hero_eyebrow  || 'Premium Hardware Solutions';
+    extras.hero_headline = c.hero_headline || 'Quality Tools & Hardware';
+    extras.hero_subtext  = c.hero_subtext  || c.about || 'Professional-grade hardware and tools for every project.';
+    extras.hero_cta_label = c.hero_cta_label || 'Shop Now';
+    extras.hero_secondary_label = c.hero_secondary_label || 'View Specials';
+
+    // Nav tokens
+    extras.nav_shop_label      = c.nav_shop_label      || 'Shop';
+    extras.nav_specials_label  = c.nav_specials_label  || 'Specials';
+    extras.nav_about_label     = c.nav_about_label     || 'About';
+    extras.nav_contact_label   = c.nav_contact_label   || 'Contact';
+    extras.nav_cta_label       = c.nav_cta_label       || (config.navCtaLabel || 'Order Now');
+
+    // Top bar
+    extras.topbar_left = c.topbar_left || (c.location ? c.location + ' · Premium Hardware Solutions' : 'Premium Hardware Solutions');
+
+    // About
+    extras.about_eyebrow = c.about_eyebrow || 'About Us';
+    extras.about_heading = c.about_heading || (bizName ? 'About ' + bizName : 'About Us');
+    extras.about_text    = c.about || '';
+    extras.about_image   = c.about_image || c.hero_image || '';
+
+    // Products heading
+    extras.products_heading = c.products_heading || 'Shop Our Range';
+
+    // Sort labels
+    extras.sort_featured    = c.sort_featured    || 'Featured';
+    extras.sort_price_low   = c.sort_price_low   || 'Price: Low to High';
+    extras.sort_price_high  = c.sort_price_high  || 'Price: High to Low';
+
+    // Contact / CTA
+    extras.hours_heading    = c.hours_heading    || 'Opening Hours';
+    extras.location_heading = c.location_heading || 'Visit Us';
+    extras.cta_heading      = c.cta_heading      || 'Order Online';
+    extras.cta_subtext      = c.cta_subtext      || "Send your list, we'll confirm availability and delivery";
+    extras.cta_button_label = c.cta_button_label || 'Order on WhatsApp';
+
+    // Footer
+    extras.footer_nav_title     = c.footer_nav_title     || 'Quick Links';
+    extras.footer_contact_title = c.footer_contact_title || 'Contact';
+    extras.footer_reserve_title = c.footer_reserve_title || 'Order';
+    extras.footer_order_label   = c.footer_order_label   || 'Order Online';
+    extras.footer_contact_label = c.footer_contact_label || 'Get in Touch';
+    extras.footer_credit        = c.footer_credit        || 'Built with websites.co.zw';
+
+    // Logo initials
+    const initials = bizName.trim().split(/\s+/).map(w => w[0] || '').join('').toUpperCase().slice(0, 2);
+    extras.logo_initials = initials || 'HW';
+
+    // Flags
+    extras.has_logo      = (c.images?.logo || c.logo_url) ? 'true' : '';
+    extras.has_facebook  = c.facebook_url ? 'true' : '';
+    extras.has_instagram = c.instagram_url ? 'true' : '';
+    extras.has_twitter   = c.twitter_url ? 'true' : '';
+    extras.has_whatsapp  = waNum ? 'true' : '';
+    extras.has_specials  = (Array.isArray(c.specials) && c.specials.length) ? 'true' : '';
+    extras.has_hero      = (c.images?.hero || c.hero_image_url || c.hero_image) ? 'true' : '';
+
+    // ── PRODUCTS: Commerce SDK ──────────────────────────────────────────────
+    const products = Array.isArray(c.products) ? c.products : [];
+    console.log('📦 Hardware products count:', products.length);
+
+    const shopCtx = { waNum, bizName, addonActive: whatsappStoreActive };
+
+    // Use the Commerce SDK
+    let commerce;
+    try {
+      if (env && env.COMMERCE_SDK) {
+        commerce = await callCommerceSDK(env, products, templateId, c.theme || {}, shopCtx);
+      } else {
+        commerce = buildCommerceModule(products, templateId, c.theme || {}, shopCtx);
+      }
+    } catch (err) {
+      console.error('❌ Commerce SDK error for hardware:', err);
+      commerce = {
+        gridHtml: '<p class="wcz-prod-empty">Error loading products. Please try again.</p>',
+        filterHtml: '',
+        drawerHtml: '',
+        lbHtml: '',
+        scriptHtml: ''
+      };
+    }
+
+    // CRITICAL: Set the variables the template expects
+    extras.hw_products_html         = commerce.gridHtml || '<p class="wcz-prod-empty">No products available.</p>';
+    extras.hw_category_filters_html = commerce.filterHtml || '';
+    extras.wcz_qv_drawer_html       = commerce.drawerHtml || '';
+    extras.wcz_lb_html              = commerce.lbHtml || '';
+    extras.wcz_products_script      = commerce.scriptHtml || '';
+    extras.wcz_commerce_css         = env && env.COMMERCE_SDK
+      ? await callCommerceCSS(env).catch(() => buildCommerceCSS())
+      : buildCommerceCSS();
+
+    console.log('✅ hw_products_html length:', extras.hw_products_html ? extras.hw_products_html.length : 0);
+
+    // ── SPECIALS ────────────────────────────────────────────────────────────
+    const specials = Array.isArray(c.specials) ? c.specials : [];
+    extras.has_specials = specials.length ? 'true' : '';
+    extras.specials_eyebrow = c.specials_eyebrow || 'Limited Time Offers';
+    extras.specials_heading = c.specials_heading || 'Flash Sales & Deals';
+
+    extras.hw_specials_html = specials.length ? specials.map(s => `
+      <div class="special-card">
+        <div class="special-badge">${esc(s.discount || s.badge || 'SALE')}</div>
+        <h3>${esc(s.name || s.title || '')}</h3>
+        <p>${esc(s.description || s.body || '')}</p>
+        <a href="${extras.wa_href_order || '#'}" class="btn btn-primary" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Shop Now
+        </a>
+      </div>
+    `).join('') : '';
+
+    // ── STATS ────────────────────────────────────────────────────────────────
+    const stats = Array.isArray(c.stats) ? c.stats : [];
+    extras.hw_stats_html = stats.slice(0, 3).map(s => `
+      <div class="stat-item">
+        <span class="stat-number">${esc(String(s.value || s.number || '0'))}${esc(String(s.suffix || ''))}</span>
+        <span class="stat-label">${esc(s.label || '')}</span>
+      </div>
+    `).join('');
+
+    // If no stats, provide defaults
+    if (!extras.hw_stats_html) {
+      extras.hw_stats_html = `
+        <div class="stat-item">
+          <span class="stat-number">100+</span>
+          <span class="stat-label">Products</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">15+</span>
+          <span class="stat-label">Years Experience</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">500+</span>
+          <span class="stat-label">Happy Customers</span>
+        </div>
+      `;
+    }
+
+    // ── HOURS ────────────────────────────────────────────────────────────────
+    if (config.showOpenBadge && c.hours) {
+      extras.open_badge_html = openClosedBadge(c.hours);
+    }
+    if (config.showHoursGrid && c.hours) {
+      extras.hours_grid_html = buildHoursGridHtml(c.hours);
+    }
+
+    // ── WHATSAPP LINKS ──────────────────────────────────────────────────────
+    if (waNum) {
+      extras.wa_href_order = `https://wa.me/${waNum}?text=${encodeURIComponent('Hello, I would like to place an order.')}`;
+      extras.wa_href_general = `https://wa.me/${waNum}?text=${encodeURIComponent('Hello, I found you on websites.co.zw!')}`;
+    } else {
+      extras.wa_href_order = '#';
+      extras.wa_href_general = '#';
+    }
+  }
+  // -- END HARDWARE-STORE ---------------------------------------------------
 
   // -- HOSPITALITY-INN (Lodges, B&Bs, Hotels) ---------------------------------
   if (templateId === 'hospitality-inn' || templateId === 'hospitality-in' ||
@@ -2409,7 +2765,7 @@ const ICONS = {
   menu:        `<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>`,
   x:           `<path d="M18 6 6 18"/><path d="m6 6 12 12"/>`,
   chevronLeft: `<path d="m15 18-6-6 6-6"/>`,
-  chevronRight:`<path d="m9 18 6-6-6-6"/>`,
+  chevronRight:`<path d="m9 18 6 6-6-6"/>`,
   chevronDown: `<path d="m6 9 6 6 6-6"/>`,
   phone:       `<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>`,
   mail:        `<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>`,
@@ -2461,20 +2817,25 @@ const SITE_PALETTES = {
 };
 
 const TEMPLATE_VAR_MAP = {
-  'grill-house':        {primary:'--char',          accent1:'--ember',         accent2:'--amber',        bg:'--cream', brand:'--char'},
-  'restaurant':         {primary:'--char',          accent1:'--ember',         accent2:'--amber',        bg:'--cream', brand:'--char'},
-  'beauty-salon':       {primary:'--primary-color', accent1:'--primary-color', accent2:'--accent-color',               brand:'--primary-color'},
-  'school-institution': {primary:'--navy',          accent1:'--gold',          accent2:'--gold-lt',                    brand:'--navy'},
-  'advisory-firm':      {primary:'--slate',         accent1:'--gold',          accent2:'--gold-lt',                    brand:'--slate'},
-  'property-estate':    {primary:'--forest',        accent1:'--gold',          accent2:'--gold-lt',                    brand:'--forest'},
-  'boutique-fashion':   {primary:'--ink',           accent1:'--gold',          accent2:'--gold2',                      brand:'--ink'},
-  'boutique':           {primary:'--ink',           accent1:'--gold',          accent2:'--gold2',                      brand:'--ink'},
-  'fashion':            {primary:'--ink',           accent1:'--gold',          accent2:'--gold2',                      brand:'--ink'},
-  'fashion-retail':     {primary:'--text',          accent1:'--sand',          accent2:'--sand2',                      brand:'--text'},
-  'hospitality-inn':    {primary:'--ink',           accent1:'--gold',          accent2:'--gold-light',   bg:'--cream', brand:'--gold'},
-  'hospitality-in':     {primary:'--ink',           accent1:'--gold',          accent2:'--gold-light',   bg:'--cream', brand:'--gold'},
-  'lodge':              {primary:'--ink',           accent1:'--gold',          accent2:'--gold-light',   bg:'--cream', brand:'--gold'},
-  'hotel':              {primary:'--ink',           accent1:'--gold',          accent2:'--gold-light',   bg:'--cream', brand:'--gold'},
+  'grill-house':        { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
+  'restaurant':         { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
+  'beauty-salon':       { primary: '--primary-color', accent1: '--primary-color', accent2: '--accent-color', brand: '--primary-color' },
+  'school-institution': { primary: '--navy', accent1: '--gold', accent2: '--gold-lt', brand: '--navy' },
+  'advisory-firm':      { primary: '--slate', accent1: '--gold', accent2: '--gold-lt', brand: '--slate' },
+  'property-estate':    { primary: '--forest', accent1: '--gold', accent2: '--gold-lt', brand: '--forest' },
+  'boutique-fashion':   { primary: '--ink', accent1: '--gold', accent2: '--gold2', brand: '--ink' },
+  'boutique':           { primary: '--ink', accent1: '--gold', accent2: '--gold2', brand: '--ink' },
+  'fashion':            { primary: '--ink', accent1: '--gold', accent2: '--gold2', brand: '--ink' },
+  'fashion-retail':     { primary: '--text', accent1: '--sand', accent2: '--sand2', brand: '--text' },
+  'hospitality-inn':    { primary: '--ink', accent1: '--gold', accent2: '--gold-light', bg: '--cream', brand: '--gold' },
+  'hospitality-in':     { primary: '--ink', accent1: '--gold', accent2: '--gold-light', bg: '--cream', brand: '--gold' },
+  'lodge':              { primary: '--ink', accent1: '--gold', accent2: '--gold-light', bg: '--cream', brand: '--gold' },
+  'hotel':              { primary: '--ink', accent1: '--gold', accent2: '--gold-light', bg: '--cream', brand: '--gold' },
+  'grocery-fmcg':       { primary: '--green', accent1: '--sun', accent2: '--green2', brand: '--green' },
+  'grocery':            { primary: '--green', accent1: '--sun', accent2: '--green2', brand: '--green' },
+  // FIXED: hardware-store now maps to --primary and --accent (matches the template's CSS)
+  'hardware-store':     { primary: '--primary', accent1: '--accent', accent2: '--accent-light', brand: '--accent' },
+  'hardware':           { primary: '--primary', accent1: '--accent', accent2: '--accent-light', brand: '--accent' },
 };
 
 function resolvePalette(paletteKey, customAccent) {
@@ -2701,18 +3062,19 @@ const HOSP_TEMPLATE_IDS = new Set([
   'hospitality-inn', 'hospitality-in', 'lodge', 'lodges', 'hotel', 'accommodation'
 ]);
 
+const GROCERY_TEMPLATE_IDS = new Set(['grocery-fmcg', 'grocery']);
+const GROCERY_EXTRA_KEYS = [
+  'categories', 'specials', 'specials_note',
+  'delivery_note', 'delivery_areas',
+  'hero_eyebrow', 'hero_headline', 'hero_subtext'
+];
+
 // Self-contained CSS + JS for hospitality templates: multi-photo card sliders
-// (.hosp-slider, matching hospPhotoStage() markup for rooms/venues). Injected
-// by handlePublic() right before </head> / </body> so no template-file edit
-// is needed to light these up. Event-delegated on document, so it works no
-// matter how many sliders a given page has.
-//
-// Video is intentionally NOT handled here: the hospitality-inn template ships
-// its own inline-play .video-stage JS (sets .video-embed src / calls .play()
-// and toggles a .playing class) — see the template's own closing <script>.
-// buildHospitalityExtras()'s video_stage_html is built to match that markup
-// contract exactly (data-type="iframe"|"native", .video-embed, .video-thumb,
-// .video-play-btn, .video-meta), so nothing extra needs to be injected here.
+// (.hosp-slider, matching hospPhotoStage() markup) and a click-to-play video
+// lightbox (.video-stage, matching the video_stage_html token). Injected by
+// handlePublic() right before </head> / </body> so no template-file edit is
+// needed to light these up. Everything is event-delegated on document, so it
+// works no matter how many sliders/video-stages a given page has.
 function buildHospAssets() {
   const css = `<style>
 .hosp-slider{position:relative;width:100%;height:100%;overflow:hidden}
@@ -2724,28 +3086,445 @@ function buildHospAssets() {
 .hosp-slide-dots{position:absolute;bottom:8px;left:0;right:0;display:flex;gap:5px;justify-content:center;z-index:2}
 .hosp-slide-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer;padding:0;border:none}
 .hosp-slide-dot.active{background:#fff}
+.video-stage{position:relative;border-radius:14px;overflow:hidden;cursor:pointer;aspect-ratio:16/9;background:#0c0c0c;outline:none}
+.video-stage img{width:100%;height:100%;object-fit:cover;display:block;opacity:.85;transition:opacity .3s}
+.video-stage:hover img,.video-stage:focus-visible img{opacity:1}
+.video-stage-ph{width:100%;height:100%;background:linear-gradient(135deg,#1a1a2e,#0c0c0c)}
+.video-play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.92);color:#111;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.hosp-video-modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:99999;padding:20px}
+.hosp-video-modal.open{display:flex}
+.hosp-video-modal .hosp-video-inner{position:relative;width:100%;max-width:960px;aspect-ratio:16/9;background:#000}
+.hosp-video-modal iframe,.hosp-video-modal video{width:100%;height:100%;border:0;display:block}
+.hosp-video-close{position:absolute;top:-40px;right:0;background:none;border:none;color:#fff;font-size:28px;line-height:1;cursor:pointer;padding:6px}
 </style>`;
 
   const js = `<script>(function(){
+function q(s,c){return (c||document).querySelector(s)}
 function qa(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))}
+function openHospVideo(src,type){
+  if(!src) return;
+  var modal=q('.hosp-video-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.className='hosp-video-modal';
+    modal.innerHTML='<div class="hosp-video-inner"><button class="hosp-video-close" type="button" aria-label="Close">&times;</button><div class="hosp-video-media"></div></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click',function(e){ if(e.target===modal) closeHospVideo(); });
+    q('.hosp-video-close',modal).addEventListener('click',closeHospVideo);
+  }
+  var media=q('.hosp-video-media',modal);
+  if(type==='youtube'||type==='vimeo'){
+    var sep = src.indexOf('?')>-1 ? '&' : '?';
+    media.innerHTML='<iframe src="'+src+sep+'autoplay=1" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="Video"></iframe>';
+  } else {
+    media.innerHTML='<video src="'+src+'" controls autoplay playsinline></video>';
+  }
+  modal.classList.add('open');
+}
+function closeHospVideo(){
+  var modal=q('.hosp-video-modal');
+  if(!modal) return;
+  modal.classList.remove('open');
+  var media=q('.hosp-video-media',modal);
+  if(media) media.innerHTML='';
+}
 document.addEventListener('click',function(e){
   var t=e.target;
   var prev=t.closest && t.closest('.hosp-slide-prev');
   var next=t.closest && t.closest('.hosp-slide-next');
   var dot =t.closest && t.closest('.hosp-slide-dot');
-  if(!prev && !next && !dot) return;
-  e.preventDefault();
-  var slider=(prev||next||dot).closest('.hosp-slider');
-  if(!slider) return;
-  var slides=qa('.hosp-slide',slider);
-  var dots  =qa('.hosp-slide-dot',slider);
-  var idx=parseInt(slider.getAttribute('data-idx')||'0',10);
-  if(prev) idx=(idx-1+slides.length)%slides.length;
-  else if(next) idx=(idx+1)%slides.length;
-  else if(dot) idx=dots.indexOf(dot);
-  slider.setAttribute('data-idx',idx);
-  slides.forEach(function(s,i){ s.classList.toggle('active',i===idx); });
-  dots.forEach(function(d,i){ d.classList.toggle('active',i===idx); });
+  if(prev||next||dot){
+    e.preventDefault();
+    var slider=(prev||next||dot).closest('.hosp-slider');
+    if(!slider) return;
+    var slides=qa('.hosp-slide',slider);
+    var dots  =qa('.hosp-slide-dot',slider);
+    var idx=parseInt(slider.getAttribute('data-idx')||'0',10);
+    if(prev) idx=(idx-1+slides.length)%slides.length;
+    else if(next) idx=(idx+1)%slides.length;
+    else if(dot) idx=dots.indexOf(dot);
+    slider.setAttribute('data-idx',idx);
+    slides.forEach(function(s,i){ s.classList.toggle('active',i===idx); });
+    dots.forEach(function(d,i){ d.classList.toggle('active',i===idx); });
+    return;
+  }
+  var stage=t.closest && t.closest('.video-stage');
+  if(stage){
+    e.preventDefault();
+    openHospVideo(stage.getAttribute('data-src'),stage.getAttribute('data-type'));
+  }
+});
+document.addEventListener('keydown',function(e){
+  var active=document.activeElement;
+  if(active && active.classList && active.classList.contains('video-stage') && (e.key==='Enter'||e.key===' ')){
+    e.preventDefault();
+    openHospVideo(active.getAttribute('data-src'),active.getAttribute('data-type'));
+  }
+  if(e.key==='Escape') closeHospVideo();
+});
+})();</script>`;
+
+  return { css, js };
+}
+
+// Booking-engine step 2: customer-facing calendar widget for hospitality-inn
+// rooms. Talks directly to websites-bookings-worker.js (confirmed live via
+// the Worker Route on bookings.websites.co.zw -- no service binding needed
+// since these are public, unauthenticated endpoints: GET /availability and
+// POST /bookings both skip verifyOwner() in that worker's router).
+// Injected the same way as buildHospAssets(): CSS in <head>, JS before
+// </body>, only for HOSP_TEMPLATE_IDS pages. Trigger buttons are emitted by
+// buildHospitalityExtras() (see rooms_featured_html / rooms_collection_html)
+// as `.wcz-book-trigger` inside the same `[data-resource-id]` wrapper the
+// resource_id data attribute already lives on -- this widget never needs
+// per-room data injected as tokens, it just reads the DOM.
+function buildBookingWidgetAssets(site) {
+  const siteIdJson = JSON.stringify((site && site.id) || '');
+
+  const css = `<style>
+.wcz-book-trigger{margin-top:10px;width:100%;padding:11px 18px;border-radius:2px;border:1.5px solid var(--gold,#c8a24a);background:transparent;color:var(--gold,#c8a24a);font-family:inherit;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s}
+.wcz-book-trigger:hover{background:var(--gold,#c8a24a);color:#0c0c0c}
+#wcz-book-overlay{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.7);backdrop-filter:blur(3px)}
+#wcz-book-overlay.open{display:block}
+#wcz-book-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:401;width:min(420px,92vw);max-height:88vh;overflow-y:auto;background:#141414;color:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5);font-family:inherit}
+#wcz-book-modal.open{display:block}
+.wcz-book-hdr{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:sticky;top:0;background:#141414;z-index:1}
+.wcz-book-hdr h3{font-size:1.05rem;font-weight:600;margin:0 0 3px}
+.wcz-book-hdr p{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;opacity:.5;margin:0}
+.wcz-book-close{background:rgba(255,255,255,.08);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.wcz-book-close:hover{background:rgba(255,255,255,.18)}
+.wcz-book-body{padding:16px 20px 20px}
+.wcz-book-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wcz-book-cal-hdr span{font-size:.85rem;font-weight:600}
+.wcz-book-nav{background:rgba(255,255,255,.08);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.wcz-book-nav:hover{background:rgba(255,255,255,.18)}
+.wcz-book-nav:disabled{opacity:.25;cursor:not-allowed}
+.wcz-book-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.wcz-book-weekdays span{text-align:center;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;opacity:.4;padding:4px 0}
+.wcz-book-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.wcz-book-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:.78rem;border-radius:6px;cursor:pointer;background:rgba(255,255,255,.04);transition:background .15s,color .15s;border:none;color:#fff;font-family:inherit}
+.wcz-book-day.empty{background:transparent;cursor:default}
+.wcz-book-day.past,.wcz-book-day.booked{opacity:.25;cursor:not-allowed;text-decoration:line-through}
+.wcz-book-day:hover:not(.past):not(.booked):not(.empty){background:rgba(200,162,74,.25)}
+.wcz-book-day.today{box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+.wcz-book-day.sel-start,.wcz-book-day.sel-end{background:var(--gold,#c8a24a);color:#0c0c0c;font-weight:700}
+.wcz-book-day.in-range{background:rgba(200,162,74,.35)}
+.wcz-book-legend{display:flex;gap:14px;margin-top:12px;flex-wrap:wrap}
+.wcz-book-legend span{display:flex;align-items:center;gap:5px;font-size:.68rem;opacity:.6}
+.wcz-book-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.wcz-book-summary{margin-top:16px;padding:12px 14px;background:rgba(255,255,255,.04);border-radius:8px;font-size:.82rem;display:none}
+.wcz-book-summary.show{display:block}
+.wcz-book-summary strong{color:var(--gold,#c8a24a)}
+.wcz-book-form{margin-top:14px;display:none;flex-direction:column;gap:10px}
+.wcz-book-form.show{display:flex}
+.wcz-book-form input{width:100%;padding:10px 12px;border-radius:6px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:.85rem;font-family:inherit;box-sizing:border-box}
+.wcz-book-form input::placeholder{color:rgba(255,255,255,.35)}
+.wcz-book-form input:focus{outline:none;border-color:var(--gold,#c8a24a)}
+.wcz-book-submit{margin-top:4px;padding:12px 18px;border-radius:6px;border:none;background:var(--gold,#c8a24a);color:#0c0c0c;font-weight:700;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.wcz-book-submit:hover{background:var(--gold2,#a87030)}
+.wcz-book-submit:disabled{opacity:.5;cursor:not-allowed}
+.wcz-book-msg{margin-top:12px;font-size:.78rem;padding:10px 12px;border-radius:6px;display:none}
+.wcz-book-msg.show{display:block}
+.wcz-book-msg.err{background:rgba(220,38,38,.15);color:#fca5a5}
+.wcz-book-msg.ok{background:rgba(34,197,94,.15);color:#86efac}
+.wcz-book-loading{text-align:center;padding:30px 0;font-size:.8rem;opacity:.5}
+</style>`;
+
+  const js = `<script>(function(){
+'use strict';
+var WCZ_BOOK_API = "https://bookings.websites.co.zw";
+var WCZ_BOOK_SITE_ID = ${siteIdJson};
+
+var MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+var DAY_LABELS = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+
+var bookState = { resourceId:null, roomName:'', cache:{}, viewYear:0, viewMonth:0, selStart:null, selEnd:null };
+
+function pad2(n){ return n < 10 ? '0'+n : ''+n; }
+function fmtDate(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function parseDate(s){ var p=s.split('-'); return new Date(parseInt(p[0],10),parseInt(p[1],10)-1,parseInt(p[2],10)); }
+function addDays(d,n){ var r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function todayDate(){ var t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); }
+
+function ensureModal(){
+  if (document.getElementById('wcz-book-overlay')) return;
+  var overlay = document.createElement('div');
+  overlay.id = 'wcz-book-overlay';
+  document.body.appendChild(overlay);
+  var modal = document.createElement('div');
+  modal.id = 'wcz-book-modal';
+  modal.innerHTML =
+    '<div class="wcz-book-hdr">' +
+      '<div><h3 id="wcz-book-room-name">Room</h3><p>Check availability</p></div>' +
+      '<button type="button" class="wcz-book-close" id="wcz-book-close" aria-label="Close">&#x2715;</button>' +
+    '</div>' +
+    '<div class="wcz-book-body">' +
+      '<div id="wcz-book-loading" class="wcz-book-loading">Loading availability&hellip;</div>' +
+      '<div id="wcz-book-cal-wrap" style="display:none">' +
+        '<div class="wcz-book-cal-hdr">' +
+          '<button type="button" class="wcz-book-nav" id="wcz-book-prev" aria-label="Previous month">&#8249;</button>' +
+          '<span id="wcz-book-month-label"></span>' +
+          '<button type="button" class="wcz-book-nav" id="wcz-book-next" aria-label="Next month">&#8250;</button>' +
+        '</div>' +
+        '<div class="wcz-book-weekdays">' + DAY_LABELS.map(function(d){return '<span>'+d+'</span>';}).join('') + '</div>' +
+        '<div class="wcz-book-grid" id="wcz-book-grid"></div>' +
+        '<div class="wcz-book-legend">' +
+          '<span><i style="background:var(--gold,#c8a24a)"></i>Selected</span>' +
+          '<span><i style="background:rgba(255,255,255,.15);text-decoration:line-through"></i>Booked</span>' +
+          '<span><i style="background:rgba(255,255,255,.04)"></i>Available</span>' +
+        '</div>' +
+        '<div class="wcz-book-summary" id="wcz-book-summary"></div>' +
+        '<div class="wcz-book-form" id="wcz-book-form">' +
+          '<input type="text" id="wcz-book-name" placeholder="Your full name" maxlength="80">' +
+          '<input type="tel" id="wcz-book-phone" placeholder="WhatsApp / phone number" maxlength="30">' +
+          '<button type="button" class="wcz-book-submit" id="wcz-book-submit">Request booking</button>' +
+        '</div>' +
+        '<div class="wcz-book-msg" id="wcz-book-msg"></div>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(modal);
+}
+
+function openBooking(resourceId, roomName){
+  ensureModal();
+  bookState.resourceId = resourceId;
+  bookState.roomName = roomName || 'Room';
+  bookState.selStart = null;
+  bookState.selEnd = null;
+  var t = todayDate();
+  bookState.viewYear = t.getFullYear();
+  bookState.viewMonth = t.getMonth();
+  document.getElementById('wcz-book-room-name').textContent = bookState.roomName;
+  document.getElementById('wcz-book-overlay').classList.add('open');
+  document.getElementById('wcz-book-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  resetFormState();
+  loadAvailability(resourceId);
+}
+
+function closeBooking(){
+  var ov=document.getElementById('wcz-book-overlay'), md=document.getElementById('wcz-book-modal');
+  if(ov) ov.classList.remove('open');
+  if(md) md.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function resetFormState(){
+  var sum=document.getElementById('wcz-book-summary'); if(sum){ sum.classList.remove('show'); sum.textContent=''; }
+  var form=document.getElementById('wcz-book-form'); if(form) form.classList.remove('show');
+  var msg=document.getElementById('wcz-book-msg'); if(msg){ msg.className='wcz-book-msg'; msg.textContent=''; }
+  var nameEl=document.getElementById('wcz-book-name'); if(nameEl) nameEl.value='';
+  var phoneEl=document.getElementById('wcz-book-phone'); if(phoneEl) phoneEl.value='';
+  var submitBtn=document.getElementById('wcz-book-submit'); if(submitBtn){ submitBtn.disabled=false; submitBtn.textContent='Request booking'; }
+}
+
+function loadAvailability(resourceId){
+  var loading=document.getElementById('wcz-book-loading');
+  var calWrap=document.getElementById('wcz-book-cal-wrap');
+  if (bookState.cache[resourceId]) {
+    if(loading) loading.style.display='none';
+    if(calWrap) calWrap.style.display='block';
+    renderCalendar();
+    return;
+  }
+  if(loading){ loading.style.display='block'; loading.textContent='Loading availability\u2026'; }
+  if(calWrap) calWrap.style.display='none';
+  var from = fmtDate(todayDate());
+  var to = fmtDate(addDays(todayDate(), 365));
+  var url = WCZ_BOOK_API + '/availability?resource_id=' + encodeURIComponent(resourceId) + '&from=' + from + '&to=' + to;
+  fetch(url).then(function(r){ return r.json(); }).then(function(data){
+    bookState.cache[resourceId] = (data && data.booked_ranges) ? data.booked_ranges : [];
+    if(loading) loading.style.display='none';
+    if(calWrap) calWrap.style.display='block';
+    renderCalendar();
+  }).catch(function(){
+    if(loading) loading.textContent = "Couldn't load availability \u2014 please try again or contact us directly.";
+  });
+}
+
+function isDateBooked(dateStr){
+  var ranges = bookState.cache[bookState.resourceId] || [];
+  for (var i=0;i<ranges.length;i++){
+    if (dateStr >= ranges[i].start_date && dateStr < ranges[i].end_date) return true;
+  }
+  return false;
+}
+
+function rangeHasBookedDay(startStr, endStr){
+  var d = parseDate(startStr);
+  var end = parseDate(endStr);
+  while (d < end) {
+    if (isDateBooked(fmtDate(d))) return true;
+    d = addDays(d,1);
+  }
+  return false;
+}
+
+function renderCalendar(){
+  var label = document.getElementById('wcz-book-month-label');
+  var grid = document.getElementById('wcz-book-grid');
+  var prevBtn = document.getElementById('wcz-book-prev');
+  if (!grid) return;
+  var y = bookState.viewYear, m = bookState.viewMonth;
+  if (label) label.textContent = MONTH_NAMES[m] + ' ' + y;
+  var today = todayDate();
+  var isCurrentMonth = (y === today.getFullYear() && m === today.getMonth());
+  if (prevBtn) prevBtn.disabled = isCurrentMonth;
+
+  var firstDay = new Date(y, m, 1);
+  var startOffset = firstDay.getDay();
+  var daysInMonth = new Date(y, m+1, 0).getDate();
+
+  var cells = [];
+  for (var i=0;i<startOffset;i++) cells.push(null);
+  for (var d=1; d<=daysInMonth; d++) cells.push(d);
+
+  var html = '';
+  cells.forEach(function(dayNum){
+    if (dayNum === null) { html += '<div class="wcz-book-day empty"></div>'; return; }
+    var dateObj = new Date(y, m, dayNum);
+    var dateStr = fmtDate(dateObj);
+    var classes = ['wcz-book-day'];
+    var isPast = dateObj < today;
+    var isToday = dateObj.getTime() === today.getTime();
+    var booked = isDateBooked(dateStr);
+    if (isPast) classes.push('past');
+    else if (booked) classes.push('booked');
+    if (isToday) classes.push('today');
+    if (bookState.selStart && dateStr === bookState.selStart) classes.push('sel-start');
+    if (bookState.selEnd && dateStr === bookState.selEnd) classes.push('sel-end');
+    if (bookState.selStart && bookState.selEnd && dateStr > bookState.selStart && dateStr < bookState.selEnd) classes.push('in-range');
+    var disabledAttr = (isPast || booked) ? ' disabled' : '';
+    html += '<button type="button" class="'+classes.join(' ')+'" data-date="'+dateStr+'"'+disabledAttr+'>'+dayNum+'</button>';
+  });
+  grid.innerHTML = html;
+  updateSummary();
+}
+
+function updateSummary(){
+  var sum = document.getElementById('wcz-book-summary');
+  var form = document.getElementById('wcz-book-form');
+  if (!sum || !form) return;
+  if (bookState.selStart && bookState.selEnd) {
+    var nights = Math.round((parseDate(bookState.selEnd) - parseDate(bookState.selStart)) / 86400000);
+    sum.innerHTML = '<strong>'+bookState.selStart+'</strong> \u2192 <strong>'+bookState.selEnd+'</strong> \u00b7 ' + nights + ' night' + (nights===1?'':'s');
+    sum.classList.add('show');
+    form.classList.add('show');
+  } else if (bookState.selStart) {
+    sum.innerHTML = 'Check-in: <strong>'+bookState.selStart+'</strong> \u2014 now pick a check-out date';
+    sum.classList.add('show');
+    form.classList.remove('show');
+  } else {
+    sum.classList.remove('show');
+    form.classList.remove('show');
+  }
+}
+
+function handleDayClick(dateStr){
+  var msg = document.getElementById('wcz-book-msg');
+  if (!bookState.selStart || (bookState.selStart && bookState.selEnd)) {
+    bookState.selStart = dateStr;
+    bookState.selEnd = null;
+    if (msg) { msg.className='wcz-book-msg'; msg.textContent=''; }
+  } else {
+    if (dateStr <= bookState.selStart) {
+      bookState.selStart = dateStr;
+      bookState.selEnd = null;
+    } else if (rangeHasBookedDay(bookState.selStart, dateStr)) {
+      if (msg) { msg.className='wcz-book-msg err show'; msg.textContent='Those dates include an unavailable night \u2014 pick a shorter range.'; }
+      bookState.selStart = dateStr;
+      bookState.selEnd = null;
+    } else {
+      bookState.selEnd = dateStr;
+      if (msg) { msg.className='wcz-book-msg'; msg.textContent=''; }
+    }
+  }
+  renderCalendar();
+}
+
+function submitBooking(){
+  var nameEl = document.getElementById('wcz-book-name');
+  var phoneEl = document.getElementById('wcz-book-phone');
+  var msg = document.getElementById('wcz-book-msg');
+  var submitBtn = document.getElementById('wcz-book-submit');
+  var name = nameEl ? nameEl.value.trim() : '';
+  var phone = phoneEl ? phoneEl.value.trim() : '';
+  if (!name || !phone) {
+    if (msg) { msg.className='wcz-book-msg err show'; msg.textContent='Please add your name and phone number.'; }
+    return;
+  }
+  if (!bookState.selStart || !bookState.selEnd) return;
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending\u2026'; }
+  if (msg) { msg.className='wcz-book-msg'; msg.textContent=''; }
+  fetch(WCZ_BOOK_API + '/bookings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      site_id: WCZ_BOOK_SITE_ID,
+      resource_id: bookState.resourceId,
+      start_date: bookState.selStart,
+      end_date: bookState.selEnd,
+      customer_name: name,
+      customer_phone: phone
+    })
+  }).then(function(r){
+    return r.json().then(function(data){ return { ok: r.ok, status: r.status, data: data }; });
+  }).then(function(res){
+    if (!res.ok) {
+      if (res.status === 409) {
+        if (msg) { msg.className='wcz-book-msg err show'; msg.textContent='Those dates were just booked by someone else \u2014 please pick different dates.'; }
+        delete bookState.cache[bookState.resourceId];
+        bookState.selStart = null; bookState.selEnd = null;
+        loadAvailability(bookState.resourceId);
+      } else {
+        if (msg) { msg.className='wcz-book-msg err show'; msg.textContent=(res.data && res.data.error) || "Couldn't send your request \u2014 please try again."; }
+      }
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Request booking'; }
+      return;
+    }
+    if (msg) { msg.className='wcz-book-msg ok show'; msg.textContent='Request sent! We will confirm your booking shortly \u2014 keep an eye on WhatsApp.'; }
+    if (submitBtn) { submitBtn.textContent = 'Requested \u2713'; }
+    var range = bookState.cache[bookState.resourceId] || [];
+    range.push({ start_date: bookState.selStart, end_date: bookState.selEnd });
+    bookState.cache[bookState.resourceId] = range;
+  }).catch(function(){
+    if (msg) { msg.className='wcz-book-msg err show'; msg.textContent='Network error \u2014 please try again.'; }
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Request booking'; }
+  });
+}
+
+document.addEventListener('click', function(e){
+  var trigger = e.target.closest && e.target.closest('.wcz-book-trigger');
+  if (trigger) {
+    var card = trigger.closest('[data-resource-id]');
+    if (card) {
+      var rid = card.getAttribute('data-resource-id');
+      var rname = card.getAttribute('data-room-name') || 'Room';
+      if (rid) openBooking(rid, rname);
+    }
+    return;
+  }
+  if (e.target.id === 'wcz-book-close' || e.target.id === 'wcz-book-overlay') { closeBooking(); return; }
+  if (e.target.id === 'wcz-book-prev') {
+    bookState.viewMonth--; if (bookState.viewMonth<0){bookState.viewMonth=11;bookState.viewYear--;}
+    renderCalendar(); return;
+  }
+  if (e.target.id === 'wcz-book-next') {
+    bookState.viewMonth++; if (bookState.viewMonth>11){bookState.viewMonth=0;bookState.viewYear++;}
+    renderCalendar(); return;
+  }
+  if (e.target.id === 'wcz-book-submit') { submitBooking(); return; }
+  var dayBtn = e.target.closest && e.target.closest('.wcz-book-day');
+  if (dayBtn && !dayBtn.disabled && !dayBtn.classList.contains('empty')) {
+    handleDayClick(dayBtn.getAttribute('data-date'));
+  }
+});
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    var md = document.getElementById('wcz-book-modal');
+    if (md && md.classList.contains('open')) closeBooking();
+  }
 });
 })();</script>`;
 
@@ -2846,6 +3625,12 @@ function normalizeContent(raw, templateId) {
   // so no other template's rendering is affected by these shared field names.
   if (HOSP_TEMPLATE_IDS.has(templateId)) {
     for (const _k of HOSP_TEXT_KEYS) {
+      if (inner[_k] != null && inner[_k] !== '') normalized[_k] = inner[_k];
+    }
+  }
+
+  if (GROCERY_TEMPLATE_IDS.has(templateId)) {
+    for (const _k of GROCERY_EXTRA_KEYS) {
       if (inner[_k] != null && inner[_k] !== '') normalized[_k] = inner[_k];
     }
   }
@@ -3124,8 +3909,15 @@ function buildHospitalityExtras(c, site, config) {
     const cta = st.cls === 'booked'
       ? `<span class="btn-reserve-dark booked-state">Currently Unavailable</span>`
       : `<a href="${esc(link)}" class="btn-reserve-dark" target="_blank" rel="noopener">Reserve This Room ${HOSP_ARROW}</a>`;
+    // Booking-engine hook: resource_id is what bookings-worker's
+    // /availability and /bookings endpoints key off. Falls back to
+    // resourceId/id in case older saves used a different field name.
+    const resourceId = featured.resource_id || featured.resourceId || featured.id || '';
+    const bookTrigger = resourceId
+      ? `<button type="button" class="wcz-book-trigger">Check availability &amp; book</button>`
+      : '';
     extras.rooms_featured_html =
-`<div class="suite-editorial">
+`<div class="suite-editorial" data-resource-id="${esc(resourceId)}" data-room-name="${esc(name)}">
   <div class="suite-photo">${photoEl}</div>
   <div class="suite-info">
     <span class="label-eyebrow">${esc(L('featured_eyebrow', 'Featured'))}</span>
@@ -3137,6 +3929,7 @@ function buildHospitalityExtras(c, site, config) {
       <span class="suite-status ${st.cls}">${st.label}</span>
     </div>
     ${cta}
+    ${bookTrigger}
   </div>
 </div>`;
   } else {
@@ -3158,7 +3951,12 @@ function buildHospitalityExtras(c, site, config) {
     const cta = st.cls === 'booked'
       ? `<span class="btn-reserve-outline disabled">Currently Unavailable</span>`
       : `<a href="${esc(link)}" class="btn-reserve-outline" target="_blank" rel="noopener">Reserve Stay ${HOSP_ARROW}</a>`;
-    return `<div class="room-row${reverse} reveal">
+    // Same hook as the featured card above.
+    const resourceId = room.resource_id || room.resourceId || room.id || '';
+    const bookTrigger = resourceId
+      ? `<button type="button" class="wcz-book-trigger">Check availability &amp; book</button>`
+      : '';
+    return `<div class="room-row${reverse} reveal" data-resource-id="${esc(resourceId)}" data-room-name="${esc(name)}">
   <div class="room-row-photo">${photoEl}<span class="room-row-status ${st.cls}">${st.row}</span></div>
   <div class="room-row-info">
     ${tag ? `<span class="label-eyebrow">${esc(tag)}</span>` : ''}
@@ -3167,6 +3965,7 @@ function buildHospitalityExtras(c, site, config) {
     ${featRows ? `<div class="room-row-features">${featRows}</div>` : ''}
     ${price ? `<div class="room-row-price"><span class="room-price-fig">${esc(price)}</span><span class="room-price-unit">${esc(priceUnit)}</span></div>` : ''}
     ${cta}
+    ${bookTrigger}
   </div>
 </div>`;
   }).join('');
@@ -3266,10 +4065,6 @@ function buildHospitalityExtras(c, site, config) {
 
   // ---- VIDEO ----------------------------------------------------------------
   // c.video is the normalizeVideoObj() output (or null) — see normalizeContent().
-  // Matches the hospitality-inn template's built-in inline-play video-stage:
-  // it looks for [data-src]/[data-type="iframe"|"native"] and a .video-embed
-  // child, and toggles .playing on click (see the template's own <script>) —
-  // so no extra JS/CSS is injected here, just markup in the right shape.
   const video = (c.video && typeof c.video === 'object' && (c.video.embedUrl || c.video.url)) ? c.video : null;
   extras.has_video = t(video);
   extras.nav_video_label = L('nav_video_label', 'Film');
@@ -3281,47 +4076,35 @@ function buildHospitalityExtras(c, site, config) {
     const vBody     = video.body     || '';
     const vRuntime  = video.runtime  || '';
     const vThumb    = video.thumbnail || hero || '';
-    const vSrc      = video.embedUrl || video.url || '';
-    // Template's inline JS only knows two modes: 'iframe' (sets embed.src on
-    // click, e.g. YouTube/Vimeo) and 'native' (calls embed.play() on a <video>
-    // whose src is already set). Anything that isn't a direct media file is
-    // treated as an iframe embed.
-    const dataType  = video.embedType === 'file' ? 'native' : 'iframe';
+    const vType     = video.embedType || 'unknown';
+    const vSrc       = video.embedUrl || video.url || '';
 
-    extras.video_eyebrow      = esc(vLabel);
-    extras.video_heading      = esc(vHeading);
-    extras.video_sub_html     = subP(vBody);
-    extras.video_runtime_html = vRuntime ? `<span class="video-runtime">${esc(vRuntime)}</span>` : '';
+    extras.video_eyebrow       = esc(vLabel);
+    extras.video_heading       = esc(vHeading);
+    extras.video_title_html    = vTitle    ? `<h3 class="video-title">${esc(vTitle)}</h3>`       : '';
+    extras.video_subtitle_html = vSubtitle ? `<p class="video-subtitle">${esc(vSubtitle)}</p>`    : '';
+    extras.video_body_html     = vBody     ? `<p class="video-body">${esc(vBody)}</p>`            : '';
+    extras.video_runtime_html  = vRuntime  ? `<span class="video-runtime">${esc(vRuntime)}</span>` : '';
 
     const thumbEl = vThumb
-      ? `<img class="video-thumb" src="${esc(vThumb)}" alt="${esc(vTitle || biz)}" loading="lazy">`
-      : '';
-    const embedEl = dataType === 'native'
-      ? `<video class="video-embed" src="${esc(vSrc)}" playsinline controls></video>`
-      : `<iframe class="video-embed" src="" title="${esc(vTitle || biz)}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
-    const metaEl = (vTitle || vSubtitle)
-      ? `<div class="video-meta">${vTitle ? `<div class="video-meta-title">${esc(vTitle)}</div>` : ''}${vSubtitle ? `<div class="video-meta-sub">${esc(vSubtitle)}</div>` : ''}</div>`
-      : '';
+      ? `<img src="${esc(vThumb)}" alt="${esc(vTitle || biz)}" loading="lazy">`
+      : `<div class="video-stage-ph"></div>`;
 
     extras.video_stage_html =
-`<div class="video-stage" data-src="${esc(vSrc)}" data-type="${dataType}">
-  <div class="video-gold-bar"></div>
-  <div class="video-stage-ratio">
-    ${thumbEl}
-    ${embedEl}
-    <div class="video-play-btn">
-      <div class="video-play-ring"><span class="video-play-icon"></span></div>
-      <span class="video-play-label">Play Film</span>
-    </div>
-    ${metaEl}
-  </div>
+`<div class="video-stage" data-src="${esc(vSrc)}" data-type="${esc(vType)}" role="button" tabindex="0" aria-label="Play video">
+  ${thumbEl}
+  <button class="video-play-btn" type="button" tabindex="-1" aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+  </button>
 </div>`;
   } else {
-    extras.video_eyebrow      = '';
-    extras.video_heading      = '';
-    extras.video_sub_html     = '';
-    extras.video_runtime_html = '';
-    extras.video_stage_html   = '';
+    extras.video_eyebrow       = '';
+    extras.video_heading       = '';
+    extras.video_title_html    = '';
+    extras.video_subtitle_html = '';
+    extras.video_body_html     = '';
+    extras.video_runtime_html  = '';
+    extras.video_stage_html    = '';
   }
 
   // ---- GALLERY ------------------------------------------------------------
@@ -3371,7 +4154,7 @@ function buildHospitalityExtras(c, site, config) {
   const social = [];
   if (fb) social.push(`<a href="${esc(fb)}" target="_blank" rel="noopener" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>`);
   if (ig) social.push(`<a href="${esc(ig)}" target="_blank" rel="noopener" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>`);
-  if (waNum) social.push(`<a href="${esc(waLink)}" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></svg></a>`);
+  if (waNum) social.push(`<a href="${esc(waLink)}" target="_blank" rel="noopener" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg></a>`);
   extras.footer_social_html = social.join('');
 
   const fc = [];

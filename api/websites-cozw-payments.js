@@ -1,15 +1,33 @@
 /**
- * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)
+ * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.2
  * ---------------------------------------------------------------------------
+ * SINGLE SOURCE OF TRUTH for Paynow. The auth Worker (app.websites.co.zw)
+ * no longer talks to Paynow directly — /api/sites/:id/publish and
+ * /api/sites/:id/renew delegate here via POST /pay.
+ *
+ * v1.2 CHANGE: returnurl now carries ?site=<id>&purpose=<publish|renewal>&ref=<reference>
+ * instead of ?paid=1&site=<id>&ref=<reference>. Paynow's return no longer
+ * lands directly on the dashboard — it lands on checkout.html, which is the
+ * page that actually polls /pay/status for a CONFIRMED result before doing
+ * anything. checkout.html needs `site` (to know where to send the browser
+ * once it's confirmed paid) and `purpose` (to show "published" vs "renewed"
+ * wording); it doesn't use `paid`, since it never trusts the return alone —
+ * only a poll result of "paid" triggers the redirect to
+ * dashboard/customer.html?paid=1&site=<id>[&renewed=1].
+ *
  * Routes (on api.websites.co.zw):
  *   POST /pay            initiate a publish/renewal payment via Paynow
- *   POST /paynow/result  Paynow's server webhook (resulturl)
+ *   POST /paynow/result  Paynow's server webhook (resulturl) — point your
+ *                        Paynow merchant dashboard's Result URL here, not
+ *                        at app.websites.co.zw.
  *   GET  /pay/status     manual poll fallback for the dashboard
  *   OPTIONS *            CORS preflight
  *
  * Currency split: USD -> PAYNOW_USD_* , ZIG -> PAYNOW_ZIG_* . Two separate
  * Paynow integrations; we never auto-convert. A missing key for a currency
- * makes that currency unavailable rather than misrouting.
+ * makes that currency unavailable rather than misrouting. (ZiG is currently
+ * disabled in the checkout UI until a live RBZ rate is wired up — this
+ * Worker still supports it once that happens.)
  *
  * Idempotency: the unique `reference` is the key. The webhook AND the poll can
  * both confirm the same transaction; the conditional UPDATE on status='pending'
@@ -18,6 +36,9 @@
  *
  * Bindings: DB (D1). Vars: ALLOWED_ORIGIN, RESULT_URL, RETURN_URL.
  * Secrets: PAYNOW_USD_ID, PAYNOW_USD_KEY, PAYNOW_ZIG_ID, PAYNOW_ZIG_KEY.
+ *
+ * RETURN_URL should be set to:  https://www.websites.co.zw/checkout/
+ * RESULT_URL should be set to:  https://api.websites.co.zw/paynow/result
  */
 
 const PAYNOW_INITIATE_URL = "https://www.paynow.co.zw/interface/initiatetransaction";
@@ -82,7 +103,7 @@ async function handlePay(request, env) {
   }
 
   const reference = `WCZ-${crypto.randomUUID().replace(/-/g, "")}`;
-  const email = typeof body.email === "string" ? body.email : "noreply@websites.co.zw";
+  const email = typeof body.email === "string" && body.email ? body.email : "noreply@websites.co.zw";
 
   // Create the pending payment row up front so we always have a record.
   await env.DB.prepare(
@@ -98,12 +119,16 @@ async function handlePay(request, env) {
   }
 
   // Build + sign the Paynow initiate request (field order matters for the hash).
+  // returnurl carries site + purpose + ref — checkout.html reads these to
+  // know which site it's confirming and where to send the browser once its
+  // own poll of /pay/status comes back "paid" (never trusts the return alone).
+  const returnUrl = `${env.RETURN_URL}?site=${encodeURIComponent(siteId)}&purpose=${encodeURIComponent(purpose)}&ref=${encodeURIComponent(reference)}`;
   const fields = [
     ["id", creds.id],
     ["reference", reference],
     ["amount", amount.toFixed(2)],
     ["additionalinfo", `websites.co.zw ${purpose} (${currency})`],
-    ["returnurl", `${env.RETURN_URL}?ref=${encodeURIComponent(reference)}`],
+    ["returnurl", returnUrl],
     ["resulturl", env.RESULT_URL],
     ["authemail", email],
     ["status", "Message"],
@@ -225,6 +250,13 @@ async function confirmPaid(env, payment) {
        updated_at = unixepoch()
      WHERE id = ?1`
   ).bind(payment.site_id, YEAR_SECONDS).run();
+
+  // Cache purge so the public site reflects "published" immediately.
+  try {
+    const site = await env.DB.prepare("SELECT draft_subdomain, custom_domain, custom_domain_status FROM sites WHERE id=?1").bind(payment.site_id).first();
+    if (site?.draft_subdomain) await caches.default.delete(new Request(`https://${site.draft_subdomain}.websites.co.zw/`));
+    if (site?.custom_domain && site.custom_domain_status === "active") await caches.default.delete(new Request(`https://${site.custom_domain}/`));
+  } catch { /* non-fatal */ }
 }
 
 /* ========================================================================= *

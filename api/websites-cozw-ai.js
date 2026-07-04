@@ -1,6 +1,7 @@
 /**
  * websites.co.zw — AI Content Generation Worker  v2.1
  * Changes from v2.0: Added person_bio to TUNE_ALLOWED_FIELDS
+ * v2.2: Fixed template ID from "retail-hardware" to "hardware-store"
  */
 
 const ANTHROPIC_VERSION   = "2023-06-01";
@@ -61,7 +62,7 @@ const TEMPLATE_CATALOGUE = [
   { id: "property-estate",    name: "Property Estate",     desc: "Listings-first hero, agent cards — for real estate agencies and property managers." },
   { id: "boutique-fashion",   name: "Boutique Fashion",    desc: "Dark editorial layout, masonry product grid — for fashion, cosmetics, jewellery boutiques." },
   { id: "grocery-fmcg",       name: "Grocery & Spaza",     desc: "Category navigation, stock badges — for grocers, spaza shops, FMCG retailers." },
-  { id: "retail-hardware",    name: "Hardware & Retail",   desc: "Dense catalogue, quote-builder feel — for hardware stores, electronics, general retail." },
+  { id: "hardware-store",     name: "Hardware & Retail",   desc: "Dense catalogue, quote-builder feel — for hardware stores, electronics, general retail." },
   { id: "bold-retail",        name: "General Business",    desc: "Split hero, service cards, team section — safe general-purpose default for any SME that doesn't fit a narrower template." },
 ];
 
@@ -91,7 +92,7 @@ export default {
     if (request.method === "OPTIONS")
       return new Response(null, { status: 204, headers: corsHeaders(origin) });
     if (url.pathname === "/health")
-      return json({ ok: true, service: "websites-cozw-ai", version: "2.1" }, 200, origin);
+      return json({ ok: true, service: "websites-cozw-ai", version: "2.2" }, 200, origin);
     if (url.pathname === "/generate" && request.method === "POST")
       return handleGenerate(request, env, origin);
     if (url.pathname === "/recommend-template" && request.method === "POST")
