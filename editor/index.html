@@ -122,8 +122,9 @@ img{display:block;max-width:100%}
 .preview-loading-ring{width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
 .preview-loading p{font-size:13px;color:var(--ink3)}
 @media(min-width:900px){.preview-drawer{position:relative;transform:none!important;height:auto;min-height:0;border-top:none;border-left:1px solid var(--line);flex:1;overflow:hidden;}.preview-bar{border-top:none}.preview-frame-wrap{height:calc(100vh - var(--bar) - 48px)}.preview-toggle-btn{display:none!important}.layout{padding-top:var(--bar)}}
-.dock{position:fixed;bottom:0;left:0;right:0;height:var(--dock);background:var(--card);border-top:1px solid var(--line);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
-.dock-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;cursor:pointer;font-size:10.5px;font-weight:600;color:var(--ink3);transition:color .12s;position:relative;}
+.dock{position:fixed;bottom:0;left:0;right:0;height:var(--dock);background:var(--card);border-top:1px solid var(--line);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.dock::-webkit-scrollbar{display:none}
+.dock-item{flex:0 0 auto;width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 4px;cursor:pointer;font-size:10.5px;font-weight:600;color:var(--ink3);transition:color .12s;position:relative;}
 .dock-item.active{color:var(--green)}
 .dock-item svg{width:22px;height:22px}
 .dock-item .dock-dot{position:absolute;top:8px;right:calc(50% - 14px);width:7px;height:7px;border-radius:50%;background:var(--gold);border:2px solid var(--card);display:none;}
@@ -1827,6 +1828,31 @@ function injectV3Nav(){
   var navSection=document.createElement("div");navSection.className="nav-section";navSection.textContent="Content";navSection.style.marginTop="6px";
   sidebar.insertBefore(tplLabel,insertBefore);sidebar.insertBefore(tplChip,insertBefore);sidebar.insertBefore(navSection,insertBefore);
   extraNavs.forEach(function(n){var div=document.createElement("div");div.className="nav-item";div.id=n.id;div.dataset.tab=n.tab;div.style.display="none";div.innerHTML=n.icon+" <span>"+n.label+"</span>";div.onclick=function(){switchTabV3(n.tab,div);};sidebar.insertBefore(div,insertBefore);});
+
+  // Mobile: below 900px the sidebar above is hidden entirely and the
+  // bottom .dock takes over -- but the dock only ever had the 6 static
+  // items hardcoded in the HTML (Basics/Images/Products/Contact/Publish/
+  // Design). Without this, every template-specific tab (Bookings, Rooms,
+  // Amenities, Conferencing, ...) was completely unreachable on mobile:
+  // present in the DOM, correctly built, just with no button anywhere to
+  // navigate to it. The dock is now horizontally scrollable (see CSS) so
+  // it can hold all of these alongside the original 6 without breaking
+  // their layout. Dock item ids mirror the sidebar ones with "nav-v3-"
+  // swapped for "dock-v3-", which is what showNavItem() below relies on
+  // to toggle both together from one call site.
+  var dock = document.querySelector(".dock");
+  if (dock) {
+    extraNavs.forEach(function(n){
+      var d=document.createElement("div");
+      d.className="dock-item";
+      d.id=n.id.replace("nav-v3-","dock-v3-");
+      d.dataset.tab=n.tab;
+      d.style.display="none";
+      d.innerHTML=n.icon+"<span>"+n.label+"</span>";
+      d.onclick=function(){switchTabV3(n.tab,d);};
+      dock.appendChild(d);
+    });
+  }
 }
 function switchTabV3(tab,clickEl){document.querySelectorAll(".tab-section").forEach(function(s){s.classList.remove("active");});var t=document.getElementById("tab-"+tab);if(t)t.classList.add("active");document.querySelectorAll(".nav-item,.dock-item").forEach(function(i){i.classList.remove("active");});if(clickEl)clickEl.classList.add("active");document.querySelectorAll("[data-tab='"+tab+"']").forEach(function(i){i.classList.add("active");});window.scrollTo({top:0,behavior:"smooth"});}
 window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","bookings","amenities","conference","dining","experiences","packages"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);if(tab==="bookings"&&typeof window.loadBookings==="function")window.loadBookings();return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
@@ -1840,7 +1866,15 @@ function applyTemplateConfigV3(tpl){
   if(cfg.services){var st=document.getElementById("services-tab-title");var nl=document.getElementById("nav-v3-services");if(st)st.textContent=cfg.servicesLbl||"Services";if(nl){var sp=nl.querySelector("span");if(sp)sp.textContent=cfg.servicesLbl||"Services";}}
   if(cfg.team){var tt=document.getElementById("team-tab-title");var nl2=document.getElementById("nav-v3-team");if(tt)tt.textContent=cfg.teamLbl||"Team";if(nl2){var sp2=nl2.querySelector("span");if(sp2)sp2.textContent=cfg.teamLbl||"Team";}}
 }
-function showNavItem(id,show){var el=document.getElementById(id);if(el)el.style.display=show?"":"none";}
+function showNavItem(id,show){
+  var el=document.getElementById(id);if(el)el.style.display=show?"":"none";
+  // Every extraNavs entry now has a mobile-dock counterpart with the same
+  // id suffix (nav-v3-X -> dock-v3-X) -- toggling both from this one call
+  // site keeps sidebar and dock permanently in sync without touching every
+  // showNavItem() call in applyTemplateConfigV3() below.
+  var dockEl=document.getElementById(id.replace("nav-v3-","dock-v3-"));
+  if(dockEl)dockEl.style.display=show?"":"none";
+}
 window.openTplModalV3=function(){var curTpl=g("f_template")||"bold-retail";var mbody=document.getElementById("tplModalBody");if(!mbody)return;mbody.innerHTML=TEMPLATES_V3.map(function(t){return'<div class="tpl-card'+(t.id===curTpl?" current":"")+'" onclick="selectTemplateV3(\''+t.id+'\')"><div class="tpl-card-icon">'+t.icon+'</div><div class="tpl-card-name">'+t.name+'</div><div class="tpl-card-desc">'+t.desc+'</div></div>';}).join("");document.getElementById("tplModal").classList.add("open");};
 window.closeTplModal=function(){document.getElementById("tplModal").classList.remove("open");};
 window.closeTplModalOutside=function(e){if(e.target===document.getElementById("tplModal"))closeTplModal();};
