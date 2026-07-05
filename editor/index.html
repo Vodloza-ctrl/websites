@@ -381,6 +381,20 @@ img{display:block;max-width:100%}
           </div>
         </div>
       </div>
+      <div class="panel" id="pageCopyPanel" style="display:none">
+        <div class="panel-head"><div><h2>Page copy</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Customize the section headings on your site — useful if you're not a law firm (a clinic, dentist, or general consultancy might word these differently)</div></div></div>
+        <div class="panel-body">
+          <div class="two">
+            <div class="fld-group"><label class="fld-label" for="f_services_eyebrow">Services section label <span class="fld-hint">optional</span></label><input class="fld-input" id="f_services_eyebrow" placeholder="e.g. What we do" oninput="markDirty()"></div>
+            <div class="fld-group"><label class="fld-label" for="f_services_heading">Services heading <span class="fld-hint">optional</span></label><input class="fld-input" id="f_services_heading" placeholder="e.g. Practice areas / Our services / Treatments" oninput="markDirty()"></div>
+          </div>
+          <div class="fld-group"><label class="fld-label" for="f_services_intro">Services intro <span class="fld-hint">optional</span></label><textarea class="fld-textarea" id="f_services_intro" placeholder="e.g. Practical, partner-led counsel across the areas that matter most." oninput="markDirty()"></textarea></div>
+          <div class="fld-group"><label class="fld-label" for="f_team_subtext">Team section intro <span class="fld-hint">optional</span></label><textarea class="fld-textarea" id="f_team_subtext" placeholder="e.g. You work directly with our team — never passed to someone unfamiliar with your case." oninput="markDirty()"></textarea></div>
+          <div class="fld-group"><label class="fld-label" for="f_why_heading">"Why us" heading <span class="fld-hint">optional</span></label><input class="fld-input" id="f_why_heading" placeholder="e.g. Advice you can rely on." oninput="markDirty()"></div>
+          <div class="fld-group"><label class="fld-label" for="f_contact_heading">Contact heading <span class="fld-hint">optional</span></label><input class="fld-input" id="f_contact_heading" placeholder="e.g. Let's talk about what you need." oninput="markDirty()"></div>
+          <div class="fld-group"><label class="fld-label" for="f_contact_intro">Contact intro <span class="fld-hint">optional</span></label><textarea class="fld-textarea" id="f_contact_intro" placeholder="e.g. Book a free initial consultation. Tell us where you are and what you need." oninput="markDirty()"></textarea></div>
+        </div>
+      </div>
     </div>
     <div class="tab-section" id="tab-images">
       <div class="panel">
@@ -928,6 +942,12 @@ function populateForm(){
   var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel"};
   var tlabel=document.getElementById("currentTemplateLabel");
   if(tlabel)tlabel.textContent=templateNames[state.site.template_id]||state.site.template_id||"General Business";
+  set("f_services_eyebrow",c.services_eyebrow||"");set("f_services_heading",c.services_heading||"");
+  set("f_services_intro",c.services_intro||"");set("f_team_subtext",c.team_subtext||"");
+  set("f_why_heading",c.why_heading||"");set("f_contact_heading",c.contact_heading||"");
+  set("f_contact_intro",c.contact_intro||"");
+  var pcPanel=document.getElementById("pageCopyPanel");
+  if(pcPanel)pcPanel.style.display=(state.site.template_id==="advisory-firm")?"":"none";
   set("f_phone",ct.phone||"");set("f_whatsapp",ct.whatsapp||"");
   set("f_email",ct.email||"");set("f_address",ct.address||"");
   set("f_location",c.location||"");set("f_map_embed_url",c.map_embed_url||c.contact?.map_embed_url||"");
@@ -1037,6 +1057,13 @@ function buildContent(brief){
       video:videoObj,
       video_eyebrow:g("f_video_eyebrow")||null,
       video_heading:g("f_video_heading")||null,
+      services_eyebrow:g("f_services_eyebrow")||null,
+      services_heading:g("f_services_heading")||null,
+      services_intro:g("f_services_intro")||null,
+      team_subtext:g("f_team_subtext")||null,
+      why_heading:g("f_why_heading")||null,
+      contact_heading:g("f_contact_heading")||null,
+      contact_intro:g("f_contact_intro")||null,
     })
   };
 }
@@ -1319,7 +1346,7 @@ var TPL_CFG={
   "grill-house":{services:0,menu:1,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Services"},
   "beauty-salon":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Stylists",servicesLbl:"Services & Pricing",bookingServices:1},
   "school-institution":{services:"Programmes",menu:0,listings:0,hours:0,stats:1,events:1,team:1,teamLbl:"Staff",servicesLbl:"Programmes"},
-  "advisory-firm":{services:"Practice Areas",menu:0,listings:0,hours:0,stats:1,events:0,team:1,teamLbl:"Our People",servicesLbl:"Practice Areas"},
+  "advisory-firm":{services:"Practice Areas",menu:0,listings:0,hours:0,stats:1,events:0,team:1,teamLbl:"Our People",servicesLbl:"Practice Areas",bookingServices:1,pageCopy:1},
   "property-estate":{services:0,menu:0,listings:1,hours:0,stats:0,events:0,team:1,teamLbl:"Agents",servicesLbl:"Services"},
   "boutique-fashion":{services:0,menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
   "grocery-fmcg":{services:0,menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
@@ -1453,7 +1480,7 @@ window.__syncRoomsToBookingsWorker = async function(siteId) {
 // guest can pick at booking time) -- extend this list as slot-booking
 // support reaches consultant/real-estate. Kept as one array so a future
 // template needs one line here, not scattered template_id checks.
-var SLOT_BOOKING_TEMPLATE_IDS = ["beauty-salon"];
+var SLOT_BOOKING_TEMPLATE_IDS = ["beauty-salon", "advisory-firm"];
 function isSlotBookingTemplate(tpl) {
   return SLOT_BOOKING_TEMPLATE_IDS.indexOf(tpl) > -1;
 }
@@ -2028,6 +2055,8 @@ function applyTemplateConfigV3(tpl){
   showNavItem("nav-v3-services",!!cfg.services);showNavItem("nav-v3-menu",!!cfg.menu);showNavItem("nav-v3-listings",!!cfg.listings);showNavItem("nav-v3-team",!!cfg.team);showNavItem("nav-v3-hours",!!cfg.hours);showNavItem("nav-v3-stats",!!cfg.stats);showNavItem("nav-v3-events",!!cfg.events);showNavItem("nav-v3-testis",true);
   showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-bookings",!!cfg.rooms);showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);showNavItem("nav-v3-packages",!!cfg.packages);
   showNavItem("nav-v3-booking-services",!!cfg.bookingServices);
+  var pcPanel=document.getElementById("pageCopyPanel");
+  if(pcPanel)pcPanel.style.display=cfg.pageCopy?"":"none";
   if(cfg.services){var st=document.getElementById("services-tab-title");var nl=document.getElementById("nav-v3-services");if(st)st.textContent=cfg.servicesLbl||"Services";if(nl){var sp=nl.querySelector("span");if(sp)sp.textContent=cfg.servicesLbl||"Services";}}
   if(cfg.team){var tt=document.getElementById("team-tab-title");var nl2=document.getElementById("nav-v3-team");if(tt)tt.textContent=cfg.teamLbl||"Team";if(nl2){var sp2=nl2.querySelector("span");if(sp2)sp2.textContent=cfg.teamLbl||"Team";}}
 }
