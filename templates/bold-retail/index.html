@@ -346,8 +346,224 @@ footer{border-top:1px solid var(--line);padding:38px 0}
   <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open')" style="color:var(--signal-deep);font-family:var(--display);font-size:1.5rem;font-weight:600">My quote</button>
 </div>
 
-<!-- ALL SECTIONS RENDERED IN ORDER FROM THE EDITOR -->
-{{br_ordered_sections_html}}
+<!-- HERO -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="hero-index mono">{{business_type_label}} &middot; {{location}}</div>
+        <h1 class="hero-h1">{{br_hero_headline_html}}</h1>
+        <p class="hero-sub">{{tagline}}</p>
+        <div class="hero-actions">
+          <a href="{{wa_href_order}}" class="btn-primary" target="_blank" rel="noopener">Get a quote</a>
+          <a href="#services" class="btn-ghost">See what we do</a>
+        </div>
+      </div>
+      <div class="hero-media">
+        <div class="hero-media-frame">
+          {{#if has_hero_image}}<img src="{{hero_image_url}}" alt="{{business_name}}">{{/if}}
+        </div>
+        <div class="hero-tag"><b>Why {{business_name}}</b>{{unique_selling_point}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-rule"></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="pane">
+  <div class="wrap">
+    <div class="about-grid">
+      <div class="about-img reveal">
+        {{#if gallery_0_url}}<img src="{{gallery_0_url}}" alt="{{business_name}}">{{/if}}
+      </div>
+      <div class="about-text reveal">
+        <div class="eyebrow">About us</div>
+        <h2 class="sec-h2">{{business_name}}</h2>
+        <p class="about-body">{{about}}</p>
+        <div class="about-socials">
+          {{#if has_facebook}}<a href="{{facebook_url}}" class="soc-link" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>{{/if}}
+          {{#if has_instagram}}<a href="{{instagram_url}}" class="soc-link" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>{{/if}}
+          {{#if has_tiktok}}<a href="{{tiktok_url}}" class="soc-link" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.17 8.17 0 0 0 4.77 1.52V6.77a4.85 4.85 0 0 1-1-.08z"/></svg>
+          </a>{{/if}}
+          {{#if has_whatsapp_social}}<a href="{{wa_href_general}}" class="soc-link" target="_blank" rel="noopener" aria-label="WhatsApp">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+          </a>{{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE LEDGER (services) -->
+{{#if has_services}}
+<section id="services" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">{{services_eyebrow}}</div>
+        <h2 class="sec-h2">{{services_heading}}</h2>
+        <p class="sec-sub">{{services_intro}}</p>
+      </div>
+      <div class="sec-index mono">Register of services</div>
+    </div>
+    <div class="ledger reveal" id="br-ledger">
+      {{br_services_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- CATALOGUE — SDK-driven -->
+{{#if has_products}}
+<section id="work" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">Catalogue</div>
+        <h2 class="sec-h2">What we supply</h2>
+        <p class="sec-sub">Message us on WhatsApp with what you need — we'll confirm price and availability the same day.</p>
+      </div>
+    </div>
+    <div class="cat-filter-bar" id="wcz-cat-filters">
+      {{fr_category_filters_html}}
+    </div>
+    <div id="wcz-products">
+      {{br_products_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- VIDEO -->
+{{#if has_video}}
+<section id="video" class="pane">
+  <div class="wrap">
+    <div class="video-grid">
+      <div class="video-stage reveal" id="br-video-stage" data-embed-type="{{video_embed_type}}" data-embed-url="{{video_embed_url}}">
+        {{#if video_thumbnail_url}}<img src="{{video_thumbnail_url}}" alt="{{video_title}}">{{/if}}
+        <div class="video-play" id="br-video-play">
+          <div class="video-play-btn">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--ink)"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        {{#if video_runtime}}<span class="video-runtime mono">{{video_runtime}}</span>{{/if}}
+      </div>
+      <div class="video-copy reveal">
+        <div class="eyebrow video-label">{{video_label}}</div>
+        <h2 class="sec-h2">{{video_heading}}</h2>
+        <p class="video-body">{{video_body}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- TEAM -->
+{{#if has_team}}
+<section id="team" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">The people</div>
+        <h2 class="sec-h2">Meet the team</h2>
+        <p class="sec-sub">{{team_subtext}}</p>
+      </div>
+    </div>
+    <div class="team-grid reveal" id="br-team">
+      {{br_team_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- TESTIMONIALS -->
+{{#if has_testimonials}}
+<section id="testimonials" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">On record</div>
+        <h2 class="sec-h2">What clients say</h2>
+      </div>
+    </div>
+    <div class="testi-grid reveal" id="br-testimonials">
+      {{br_testimonials_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- GALLERY -->
+{{#if has_gallery}}
+<section id="gallery" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">The work</div>
+        <h2 class="sec-h2">Gallery</h2>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="gallery-grid" id="br-gallery">
+      {{br_gallery_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- CONTACT -->
+<section id="contact" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">Get in touch</div>
+        <h2 class="sec-h2">{{contact_heading}}</h2>
+        <p class="sec-sub">{{contact_intro}}</p>
+      </div>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info reveal">
+        {{#if phone}}<div class="cinfo-item">
+          <div class="cinfo-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div><div class="cinfo-label">Phone</div><div class="cinfo-val">{{phone}}</div></div>
+        </div>{{/if}}
+        {{#if email}}<div class="cinfo-item">
+          <div class="cinfo-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </div>
+          <div><div class="cinfo-label">Email</div><div class="cinfo-val">{{email}}</div></div>
+        </div>{{/if}}
+        {{#if address}}<div class="cinfo-item">
+          <div class="cinfo-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div><div class="cinfo-label">Location</div><div class="cinfo-val">{{address}}</div></div>
+        </div>{{/if}}
+        {{#if has_map}}<div class="cinfo-item" style="margin-top:6px">
+          <iframe src="{{map_embed_url}}" width="100%" height="220" style="border:1px solid var(--line2);border-radius:var(--r)" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>{{/if}}
+      </div>
+      <div class="contact-cta reveal">
+        <div class="eyebrow">Fastest reply</div>
+        <h3>Talk to us on<br><span style="color:#9fb2ff">WhatsApp</span></h3>
+        <p>Tell us what you need — quotes, availability, or a call-back — and we'll respond the same day.</p>
+        <a href="{{wa_href_order}}" class="wa-btn" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+          Message us now
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- FOOTER -->
 <footer>
