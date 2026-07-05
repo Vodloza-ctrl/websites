@@ -563,6 +563,7 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-experiences"><div class="panel"><div class="panel-head"><div><h2>Experiences &amp; Activities</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Safaris, game drives, tours — anything guests can book or join</div></div><button class="btn btn-green btn-sm" onclick="addExperience()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="experiences-rep-list"><div class="empty-state" id="experiences-rep-empty"><span class="es-icon">🌍</span><p>No experiences yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-packages"><div class="panel"><div class="panel-head"><div><h2>Packages &amp; Deals</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Bundled offers — e.g. honeymoon package, weekend getaway, all-inclusive stay</div></div><button class="btn btn-green btn-sm" onclick="addPackage()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="packages-rep-list"><div class="empty-state" id="packages-rep-empty"><span class="es-icon">🎁</span><p>No packages yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-team"><div class="panel"><div class="panel-head"><div><h2 id="team-tab-title">Team</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="team-tab-sub">Hover cards flip to show bio on desktop</div></div><button class="btn btn-green btn-sm" onclick="addTeamMember()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="team-rep-list"><div class="empty-state" id="team-rep-empty"><span class="es-icon">👤</span><p>No team members yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-booking-services"><div class="panel"><div class="panel-head"><div><h2>Bookable Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">What clients can actually book online — separate from the price list shown on your site</div></div><button class="btn btn-green btn-sm" onclick="addBookingService()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="booking-services-rep-list"><div class="empty-state" id="booking-services-rep-empty"><span class="es-icon">📅</span><p>No bookable services yet. Add one so clients can book real appointments online.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-hours"><div class="panel"><div class="panel-head"><h2>Opening Hours</h2></div><div class="panel-body"><p style="font-size:12.5px;color:var(--ink3);margin-bottom:12px">A live Open/Closed badge shows on your site based on these times.</p><div class="hours-grid-wrap" id="hours-grid-wrap"><div class="hours-hdr">Day</div><div class="hours-hdr">Opens</div><div class="hours-hdr">Closes</div><div class="hours-hdr">Closed?</div></div></div></div></div>
     <div class="tab-section" id="tab-stats"><div class="panel"><div class="panel-head"><div><h2>Stats / Numbers</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Numbers animate (count up) when visitors scroll to them</div></div><button class="btn btn-green btn-sm" onclick="addStat()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="stats-rep-list"><div class="empty-state" id="stats-rep-empty"><span class="es-icon">📊</span><p>Add key numbers — e.g. 500+ students, 15 years, 98% pass rate</p></div></div></div></div></div>
     <div class="tab-section" id="tab-events"><div class="panel"><div class="panel-head"><div><h2>Events / Schedule</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown as a timeline on your site</div></div><button class="btn btn-green btn-sm" onclick="addEvent()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="events-rep-list"><div class="empty-state" id="events-rep-empty"><span class="es-icon">📅</span><p>No events yet. Add term dates or announcements.</p></div></div></div></div></div>
@@ -776,6 +777,20 @@ window.onSave = async function() {
     if (typeof window.__syncRoomsToBookingsWorker === "function") {
       try { await window.__syncRoomsToBookingsWorker(siteId); }
       catch (e) { /* non-fatal — booking sync errors are swallowed here */ }
+    }
+
+    // Slot-booking templates (beauty-salon today): sync Team members as
+    // bookable stylist resources FIRST, then Bookable Services second --
+    // a service's "belongs to" link needs the stylist's resource_id to
+    // already exist. Both no-op instantly for every non-slot-booking
+    // template via isSlotBookingTemplate(), so this is safe to always call.
+    if (typeof window.__syncTeamToBookingsWorker === "function") {
+      try { await window.__syncTeamToBookingsWorker(siteId); }
+      catch (e) { /* non-fatal */ }
+    }
+    if (typeof window.__syncServicesToBookingsWorker === "function") {
+      try { await window.__syncServicesToBookingsWorker(siteId); }
+      catch (e) { /* non-fatal */ }
     }
 
     toast("Saved ✓", "ok");
@@ -1302,7 +1317,7 @@ var TEMPLATES_V3=[
 var TPL_CFG={
   "bold-retail":{services:"Services",menu:0,listings:0,hours:0,stats:0,events:0,team:1,teamLbl:"Team",servicesLbl:"Services"},
   "grill-house":{services:0,menu:1,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Services"},
-  "beauty-salon":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Stylists",servicesLbl:"Services & Pricing"},
+  "beauty-salon":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Stylists",servicesLbl:"Services & Pricing",bookingServices:1},
   "school-institution":{services:"Programmes",menu:0,listings:0,hours:0,stats:1,events:1,team:1,teamLbl:"Staff",servicesLbl:"Programmes"},
   "advisory-firm":{services:"Practice Areas",menu:0,listings:0,hours:0,stats:1,events:0,team:1,teamLbl:"Our People",servicesLbl:"Practice Areas"},
   "property-estate":{services:0,menu:0,listings:1,hours:0,stats:0,events:0,team:1,teamLbl:"Agents",servicesLbl:"Services"},
@@ -1311,7 +1326,7 @@ var TPL_CFG={
   "hardware-store":{services:"Our Services",menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Our Services"},
   "hospitality-inn":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,packages:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"}
 };
-var v3state={services:[],menu:[],listings:[],team:[],stats:[],events:[],testimonials:[],hours:{},rooms:[],amenities:[],conference:[],experiences:[],packages:[],dining:{},previewDevice:"desktop"};
+var v3state={services:[],menu:[],listings:[],team:[],stats:[],events:[],testimonials:[],hours:{},rooms:[],amenities:[],conference:[],experiences:[],packages:[],dining:{},bookingServices:[],previewDevice:"desktop"};
 
 window.__mergeV3IntoState = function() {
   if (window.state && window.state.content) {
@@ -1329,6 +1344,7 @@ window.__mergeV3IntoState = function() {
     inner.conference = v3state.conference;
     inner.experiences = v3state.experiences;
     inner.packages = v3state.packages;
+    inner.booking_services = v3state.bookingServices;
     var dn = v3state.dining || {};
     var hasDining = !!(dn.name || dn.description || (Array.isArray(dn.highlights) && dn.highlights.length) || dn.image);
     inner.dining = hasDining ? dn : null;
@@ -1428,11 +1444,128 @@ window.__syncRoomsToBookingsWorker = async function(siteId) {
   // this just gets that updated content onto the server. Silent — no toast,
   // no dirty-flag changes — the user already saw "Saved ✓" for their actual edit.
   if (assignedNewIds) {
-    await persistRoomResourceIds(siteId);
+    await persistSyncedContent(siteId);
   }
 };
 
-async function persistRoomResourceIds(siteId) {
+// Templates whose "Team" members double as real bookable resources (the
+// same entity is both a marketing bio AND a stylist/consultant/agent a
+// guest can pick at booking time) -- extend this list as slot-booking
+// support reaches consultant/real-estate. Kept as one array so a future
+// template needs one line here, not scattered template_id checks.
+var SLOT_BOOKING_TEMPLATE_IDS = ["beauty-salon"];
+function isSlotBookingTemplate(tpl) {
+  return SLOT_BOOKING_TEMPLATE_IDS.indexOf(tpl) > -1;
+}
+
+// Syncs Team members -> bookings-worker `resources` rows, exactly mirroring
+// __syncRoomsToBookingsWorker() above (same self-healing PUT-then-POST
+// fallback, same deletion tracking, same persist-back-to-content pattern).
+// Only runs for slot-booking templates -- a school's list of teachers, for
+// instance, must never spawn phantom bookable resources just because it
+// has a Team tab.
+//
+// IMPORTANT ORDERING: this must run BEFORE __syncServicesToBookingsWorker()
+// in onSave(), since a service that's owned by a specific stylist needs
+// that stylist's resource_id to already exist -- see the "belongs to"
+// dropdown in the Bookable Services tab, which can only offer team members
+// that already carry a resource_id.
+window.__syncTeamToBookingsWorker = async function(siteId) {
+  var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
+  if (!isSlotBookingTemplate(tpl)) return;
+  if (!Array.isArray(v3state.team)) return;
+
+  var deleted = v3state._deletedTeamResourceIds || [];
+  for (var d = 0; d < deleted.length; d++) {
+    await bookingsApi("/resources/" + encodeURIComponent(deleted[d]), { method: "DELETE" });
+  }
+  v3state._deletedTeamResourceIds = [];
+
+  var assignedNewIds = false;
+  for (var i = 0; i < v3state.team.length; i++) {
+    var member = v3state.team[i];
+    if (!member.name) continue;
+
+    var needsCreate = !member.resource_id;
+    if (member.resource_id) {
+      var putResult = await bookingsApi("/resources/" + encodeURIComponent(member.resource_id), {
+        method: "PUT",
+        body: JSON.stringify({ name: member.name, active: 1 })
+      });
+      if (!putResult.ok) { member.resource_id = null; needsCreate = true; }
+    }
+    if (needsCreate) {
+      var r = await bookingsApi("/resources", {
+        method: "POST",
+        body: JSON.stringify({ site_id: siteId, name: member.name })
+      });
+      if (r.ok && r.data && r.data.resource && r.data.resource.id) {
+        member.resource_id = r.data.resource.id;
+        assignedNewIds = true;
+      }
+    }
+  }
+
+  if (assignedNewIds) await persistSyncedContent(siteId);
+};
+
+// Syncs Bookable Services -> bookings-worker `booking_services` rows.
+// Same self-healing PUT-then-POST fallback and deletion-tracking pattern
+// as rooms/team above. resource_id (the optional "belongs to a specific
+// stylist" link) is sent straight through from whatever the owner picked
+// in the editor -- that dropdown only ever offers team members that
+// already have a resource_id (see the Bookable Services tab), so this
+// never sends a local-only id the backend wouldn't recognize.
+window.__syncServicesToBookingsWorker = async function(siteId) {
+  var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
+  if (!isSlotBookingTemplate(tpl)) return;
+  if (!Array.isArray(v3state.bookingServices)) return;
+
+  var deleted = v3state._deletedServiceIds || [];
+  for (var d = 0; d < deleted.length; d++) {
+    await bookingsApi("/services/" + encodeURIComponent(deleted[d]), { method: "DELETE" });
+  }
+  v3state._deletedServiceIds = [];
+
+  var assignedNewIds = false;
+  for (var i = 0; i < v3state.bookingServices.length; i++) {
+    var svc = v3state.bookingServices[i];
+    if (!svc.name || !svc.duration_min) continue; // nothing meaningful to sync yet
+
+    var payload = {
+      name: svc.name,
+      duration_min: parseInt(svc.duration_min, 10),
+      price: svc.price ? Number(svc.price) : null,
+      staff_mode: svc.staff_mode === "any" ? "any" : "choose",
+      resource_id: svc.resource_id || "",
+    };
+
+    var needsCreate = !svc.service_id;
+    if (svc.service_id) {
+      var putResult = await bookingsApi("/services/" + encodeURIComponent(svc.service_id), {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      });
+      if (!putResult.ok) { svc.service_id = null; needsCreate = true; }
+    }
+    if (needsCreate) {
+      var createPayload = Object.assign({ site_id: siteId }, payload);
+      if (!createPayload.resource_id) delete createPayload.resource_id;
+      var r = await bookingsApi("/services", {
+        method: "POST",
+        body: JSON.stringify(createPayload)
+      });
+      if (r.ok && r.data && r.data.service && r.data.service.id) {
+        svc.service_id = r.data.service.id;
+        assignedNewIds = true;
+      }
+    }
+  }
+
+  if (assignedNewIds) await persistSyncedContent(siteId);
+};
+
+async function persistSyncedContent(siteId) {
   if (!window.state || !window.state.content) return;
   try {
     await window.__api("/api/sites/" + encodeURIComponent(siteId), {
@@ -1440,9 +1573,9 @@ async function persistRoomResourceIds(siteId) {
       body: JSON.stringify({ content: window.state.content })
     });
   } catch (e) {
-    // Best-effort. If this fails, the in-memory resource_id still works for
-    // the rest of THIS session (PUT not POST on next sync) — it only risks
-    // a duplicate again if the page is reloaded before a save succeeds here.
+    // Best-effort. If this fails, the in-memory ids still work for the
+    // rest of THIS session (PUT not POST on next sync) — it only risks a
+    // duplicate again if the page is reloaded before a save succeeds here.
   }
 }
 // ── END BOOKINGS WORKER SYNC ──────────────────────────────────────────────
@@ -1831,6 +1964,7 @@ function injectV3Nav(){
     {id:"nav-v3-services",tab:"services",label:"Services",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M4 6h10l-1.2 7H5.2L4 6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>'},
     {id:"nav-v3-rooms",tab:"rooms",label:"Rooms",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M1 15V9a1 1 0 011-1h14a1 1 0 011 1v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M2 10V6a1 1 0 011-1h10a1 1 0 011 1v4" stroke="currentColor" stroke-width="1.4"/><path d="M9 10v3M1 15h16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>'},
     {id:"nav-v3-bookings",tab:"bookings",label:"Bookings",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7h14M6 1.5v3M12 1.5v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M6.5 11l2 2 3-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+    {id:"nav-v3-booking-services",tab:"booking-services",label:"Bookable Services",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M9 5.5v4l2.5 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9 2v1.5M9 14.5V16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'},
     {id:"nav-v3-amenities",tab:"amenities",label:"Amenities",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M9 2l1.8 4.6L15.5 8l-4.2 2.3L9 15l-2.3-4.7L2.5 8l4.7-1.4L9 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>'},
     {id:"nav-v3-conference",tab:"conference",label:"Conferencing",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><circle cx="6" cy="6" r="2.2" stroke="currentColor" stroke-width="1.3"/><circle cx="13" cy="7" r="1.8" stroke="currentColor" stroke-width="1.3"/><path d="M2 15v-1a4 4 0 014-4h.5a4 4 0 014 3.6" stroke="currentColor" stroke-width="1.3"/><path d="M11.5 15v-.8a3.4 3.4 0 013.4-3" stroke="currentColor" stroke-width="1.3"/></svg>'},
     {id:"nav-v3-dining",tab:"dining",label:"Dining",icon:'<svg viewBox="0 0 18 18" fill="none" width="17" height="17"><path d="M4 1.5v6.5c0 1 .8 1.8 1.8 1.8V16.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4 1.5v3.7M6.5 1.5v3.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M14 1.5s-2.2 1-2.2 4 .7 3.3.7 3.3v7.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
@@ -1883,8 +2017,9 @@ function switchTabV3(tab,clickEl){document.querySelectorAll(".tab-section").forE
   // bookingsState.loaded guard keeps this cheap on repeat visits (no
   // network call unless data was never loaded or a refresh is forced).
   if(tab==="bookings"&&typeof window.loadBookings==="function")window.loadBookings();
+  if(tab==="booking-services")renderRepListV3("booking-services-rep-list",v3state.bookingServices,renderBookingServiceRowV3,"booking-services-rep-empty");
 }
-window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","bookings","amenities","conference","dining","experiences","packages"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
+window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","bookings","amenities","conference","dining","experiences","packages","booking-services"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
 function applyTemplateConfigV3(tpl){
   var cfg=TPL_CFG[tpl]||TPL_CFG["bold-retail"];var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};
   var iconEl=document.getElementById("v3-tpl-icon");var nameEl=document.getElementById("v3-tpl-name");
@@ -1892,6 +2027,7 @@ function applyTemplateConfigV3(tpl){
   var ctLabel=document.getElementById("currentTemplateLabel");if(ctLabel)ctLabel.textContent=tmeta.name||tpl;
   showNavItem("nav-v3-services",!!cfg.services);showNavItem("nav-v3-menu",!!cfg.menu);showNavItem("nav-v3-listings",!!cfg.listings);showNavItem("nav-v3-team",!!cfg.team);showNavItem("nav-v3-hours",!!cfg.hours);showNavItem("nav-v3-stats",!!cfg.stats);showNavItem("nav-v3-events",!!cfg.events);showNavItem("nav-v3-testis",true);
   showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-bookings",!!cfg.rooms);showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);showNavItem("nav-v3-packages",!!cfg.packages);
+  showNavItem("nav-v3-booking-services",!!cfg.bookingServices);
   if(cfg.services){var st=document.getElementById("services-tab-title");var nl=document.getElementById("nav-v3-services");if(st)st.textContent=cfg.servicesLbl||"Services";if(nl){var sp=nl.querySelector("span");if(sp)sp.textContent=cfg.servicesLbl||"Services";}}
   if(cfg.team){var tt=document.getElementById("team-tab-title");var nl2=document.getElementById("nav-v3-team");if(tt)tt.textContent=cfg.teamLbl||"Team";if(nl2){var sp2=nl2.querySelector("span");if(sp2)sp2.textContent=cfg.teamLbl||"Team";}}
 }
@@ -2115,6 +2251,74 @@ window.updateTeamV3=function(idx,key,val){if(v3state.team[idx]){v3state.team[idx
 window.handleTeamPhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var zoneId="team-photo-zone-"+idx;var zone=document.getElementById(zoneId);if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';var url=await window.uploadToR2(file,"team");if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleTeamPhotoUpload("+idx+",this)");return;}v3state.team[idx].photo=url;window.markDirty();var freshZone=document.getElementById(zoneId);if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleTeamPhotoUpload("+idx+",this)");toast("Photo uploaded ✓","ok");};
 window.onTuneTeamBio=async function(idx){var taId='team-bio-'+idx;var btnId='team-bio-tune-'+idx;var ta=document.getElementById(taId);var btn=document.getElementById(btnId);if(!ta||!ta.value.trim()){toast("Add a bio first","err");return;}if(btn){btn.disabled=true;btn.textContent="Tuning…";}var improved=await tuneText("person_bio",ta.value);if(btn){btn.disabled=false;btn.textContent="✦ Tune";}if(!improved)return;ta.value=improved;updateTeamV3(idx,"bio",improved);toast("Bio tuned ✓","ok");};
 
+// ── BOOKABLE SERVICES (slot bookings) ──────────────────────────────────────
+// Deliberately separate from the existing "Services" tab (v3state.services)
+// -- that one is marketing copy (a price-list card with a photo and
+// description shown on the site). This is real booking data: duration,
+// staff assignment, and an optional link to one specific stylist -- fields
+// the marketing services list was never designed to carry, and conflating
+// the two would mean either breaking the price-list display or bolting
+// booking fields onto content that's meant to be purely descriptive.
+function bookingServiceStaffModeOptions(mode){
+  return '<option value="choose"'+(mode!=="any"?" selected":"")+'>Guest picks a stylist</option><option value="any"'+(mode==="any"?" selected":"")+'>Any available stylist</option>';
+}
+// Only offers team members that already carry a resource_id -- i.e.
+// they've survived at least one save/sync cycle. A team member added
+// moments ago and never saved has no resource_id yet, so it can't be
+// meaningfully assigned as the owner of a service (the backend has no
+// matching resources row to point at).
+function bookingServiceResourceOptions(selectedId){
+  var opts = '<option value="">Shared (any qualifying stylist)</option>';
+  (v3state.team||[]).forEach(function(m){
+    if(!m.resource_id) return;
+    opts += '<option value="'+escV3(m.resource_id)+'"'+(selectedId===m.resource_id?" selected":"")+'>'+escV3(m.name||"Unnamed")+'</option>';
+  });
+  return opts;
+}
+function renderBookingServiceRowV3(s, idx){
+  var staffModeOpts = bookingServiceStaffModeOptions(s.staff_mode);
+  var resourceOpts = bookingServiceResourceOptions(s.resource_id || "");
+  var hasStylists = (v3state.team||[]).some(function(m){ return !!m.resource_id; });
+  var body =
+    row2V3(
+      fldV3("Service name","",s.name,"e.g. Haircut","updateBookingServiceV3("+idx+",'name',this.value)"),
+      fldV3("Duration (minutes)","",s.duration_min,"30","updateBookingServiceV3("+idx+",'duration_min',this.value)",' type="number" min="5" step="5"')
+    )
+    + row2V3(
+      fldV3("Price <span class=\"fld-hint\">optional</span>","",s.price,"$15","updateBookingServiceV3("+idx+",'price',this.value)"),
+      '<div class="fld-group"><label class="fld-label">Staff assignment</label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'staff_mode',this.value)\">"+staffModeOpts+'</select></div>'
+    )
+    + '<div class="fld-group"><label class="fld-label">Belongs to <span class="fld-hint">optional — locks this service to one specific stylist</span></label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'resource_id',this.value)\">"+resourceOpts+'</select>'
+    + (hasStylists ? '' : '<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Add stylists in the Team tab and save once — they\'ll appear here to assign specific services to.</div>')
+    + '</div>';
+  return makeRepItemV3(s.name || "Service", body, "removeBookingServiceV3("+idx+")");
+}
+window.addBookingService = function(){
+  v3state.bookingServices.push({
+    id: 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    service_id: null, name: "", duration_min: 30, price: "", staff_mode: "choose", resource_id: "",
+  });
+  renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty");
+  window.markDirty();
+};
+window.removeBookingServiceV3 = function(idx){
+  var svc = v3state.bookingServices[idx];
+  if (svc && svc.service_id) {
+    if (!Array.isArray(v3state._deletedServiceIds)) v3state._deletedServiceIds = [];
+    v3state._deletedServiceIds.push(svc.service_id);
+  }
+  v3state.bookingServices.splice(idx, 1);
+  renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty");
+  window.markDirty();
+};
+window.updateBookingServiceV3 = function(idx, key, val){
+  if (v3state.bookingServices[idx]) { v3state.bookingServices[idx][key] = val; window.markDirty(); }
+  if (key === "name") {
+    var items = document.querySelectorAll("#booking-services-rep-list .rep-item");
+    if (items[idx]) { var t = items[idx].querySelector(".rep-item-title"); if (t) t.textContent = val || "Service"; }
+  }
+};
+
 function listingPhotosHtml(photos,idx,isPro){
   var html='<div class="fld-group"><label class="fld-label">Photos '+(isPro?'<span class="fld-hint">— up to 5, Pro plan</span>':'<span class="fld-hint">— 1 photo on Starter</span>')+'</label><div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">';
   (photos||[]).forEach(function(url,pi){html+=listingPhotoThumb(url,idx,pi);});
@@ -2208,6 +2412,19 @@ function loadV3DataFromSite(){
   if(Array.isArray(inner.packages))v3state.packages=inner.packages;
   if(inner.dining&&typeof inner.dining==="object")v3state.dining=inner.dining;
 
+  // Bookable services need a stable local id for list-item tracking, and
+  // separately a 'service_id' once synced to the bookings worker's D1 --
+  // same pattern as rooms carrying 'id' plus 'resource_id'. Legacy/never-
+  // synced services simply won't have service_id yet; the first save
+  // POSTs them as new booking_services rows.
+  function ensureServiceLocalId(s) {
+    if (!s.id) s.id = 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    return s;
+  }
+  if (Array.isArray(inner.booking_services)) {
+    v3state.bookingServices = inner.booking_services.map(ensureServiceLocalId);
+  }
+
   renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty");
   renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty");
   renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");
@@ -2220,6 +2437,7 @@ function loadV3DataFromSite(){
   renderRepListV3("experiences-rep-list",v3state.experiences,renderExperienceRowV3,"experiences-rep-empty");
   renderRepListV3("packages-rep-list",v3state.packages,renderPackageRowV3,"packages-rep-empty");
   renderRepListV3("amenities-rep-list",v3state.amenities,renderAmenityRowV3,"amenities-rep-empty");
+  renderRepListV3("booking-services-rep-list",v3state.bookingServices,renderBookingServiceRowV3,"booking-services-rep-empty");
   renderAmenityPresetChips();
   renderDiningPanel();
   renderHoursGrid();
