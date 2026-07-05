@@ -159,6 +159,13 @@ section.pane{padding:96px 0;border-top:1px solid var(--line)}
 
 /* ── CATALOGUE (products — SDK-driven) ──────────────────*/
 .cat-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
+.cat-filter-bar .fr-cat{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:8px 18px;border:1px solid var(--line2);border-radius:var(--r);color:var(--ink2);
+  cursor:pointer;transition:border-color .15s,background .15s,color .15s;background:transparent;
+}
+.cat-filter-bar .fr-cat:hover{border-color:var(--ink)}
+.cat-filter-bar .fr-cat.active{border-color:var(--signal);color:var(--signal-deep);background:rgba(36,81,255,.06)}
 
 /* ── VIDEO ───────────────────────────────────────────── */
 .video-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
@@ -167,7 +174,7 @@ section.pane{padding:96px 0;border-top:1px solid var(--line)}
 .video-stage iframe,.video-stage video{width:100%;height:100%;border:none;display:block}
 .video-play{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;background:rgba(20,23,28,.28);
-  transition:background .2s;
+  transition:background .2s;cursor:pointer;
 }
 .video-play:hover{background:rgba(20,23,28,.4)}
 .video-play-btn{
@@ -267,6 +274,15 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
 
+/* ── FEATURED BADGE ──────────────────────────────────── */
+.feat-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--signal);color:#fff;font-family:var(--mono);
+  font-size:.55rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 8px;border-radius:2px;position:absolute;top:-10px;left:64px;z-index:2;
+}
+.ledger-row.highlighted{background:rgba(36,81,255,.04);border-left:2px solid var(--signal);padding-left:22px}
+
 /* ── RESPONSIVE ──────────────────────────────────────── */
 @media(max-width:900px){
   .hero-grid,.about-grid,.video-grid,.contact-grid{grid-template-columns:1fr;gap:44px}
@@ -306,8 +322,8 @@ footer{border-top:1px solid var(--line);padding:38px 0}
   </a>
   <div class="nav-links">
     <a href="#services">Services</a>
-    <a href="#work">Work</a>
-    <a href="#team">Team</a>
+    {{#if has_products}}<a href="#work">Work</a>{{/if}}
+    {{#if has_team}}<a href="#team">Team</a>{{/if}}
     <a href="#contact">Contact</a>
     <button class="nav-wa" id="wcz-nav-cart" onclick="wczNavCta()">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -324,8 +340,8 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 <div id="nav-mob">
   <span class="mob-close" id="mob-close">&#x2715;</span>
   <a href="#services" class="mob-link">Services</a>
-  <a href="#work" class="mob-link">Work</a>
-  <a href="#team" class="mob-link">Team</a>
+  {{#if has_products}}<a href="#work" class="mob-link">Work</a>{{/if}}
+  {{#if has_team}}<a href="#team" class="mob-link">Team</a>{{/if}}
   <a href="#contact" class="mob-link">Contact</a>
   <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open')" style="color:var(--signal-deep);font-family:var(--display);font-size:1.5rem;font-weight:600">My quote</button>
 </div>
@@ -556,8 +572,8 @@ footer{border-top:1px solid var(--line);padding:38px 0}
       <div class="footer-brand">{{business_name}}</div>
       <div class="footer-links">
         <a href="#services">Services</a>
-        <a href="#work">Work</a>
-        <a href="#team">Team</a>
+        {{#if has_products}}<a href="#work">Work</a>{{/if}}
+        {{#if has_team}}<a href="#team">Team</a>{{/if}}
         <a href="#contact">Contact</a>
       </div>
     </div>
