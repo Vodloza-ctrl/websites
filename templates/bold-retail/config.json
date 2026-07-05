@@ -1,0 +1,39 @@
+{
+  "templateId": "bold-retail",
+  "selfContainedNav": true,
+  "defaultPalette": "clean-white",
+  "defaultPrimaryColor": "#14171c",
+  "defaultTypeLabel": "Business",
+  "showOpenBadge": false,
+  "showHoursGrid": false,
+  "googleFonts": "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+  "sections": ["hero", "about", "services", "products", "video", "team", "testimonials", "gallery", "contact"],
+  "lists": ["services", "products", "team", "testimonials", "gallery"],
+  "conditionals": [
+    "has_logo",
+    "has_hero_image",
+    "has_services",
+    "has_products",
+    "has_video",
+    "has_team",
+    "has_gallery",
+    "has_testimonials",
+    "has_facebook",
+    "has_instagram",
+    "has_tiktok",
+    "has_whatsapp_social",
+    "has_map",
+    "phone",
+    "email",
+    "address"
+  ],
+  "typeLabels": {
+    "bold-retail": "Business",
+    "retail": "Business",
+    "general": "Business",
+    "general-business": "Business",
+    "sme": "Business",
+    "company": "Business",
+    "services": "Business"
+  }
+}
