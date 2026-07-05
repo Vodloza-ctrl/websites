@@ -1605,20 +1605,25 @@ function renderBookingsList() {
     if (bookingsState.filter === "declined") return b.status === "declined" || b.status === "cancelled";
     return b.status === bookingsState.filter;
   });
-  listEl.querySelectorAll(".booking-item").forEach(function(el) { el.remove(); });
-  var emptyEl = document.getElementById("booking-empty");
+
+  // Full rebuild every render, rather than hunting for a persistent
+  // #booking-empty node to toggle -- loadBookings()'s temporary "Loading
+  // bookings…" state replaces listEl's entire innerHTML (including that
+  // node's id), which previously left it permanently un-findable once
+  // real data arrived: the loading spinner then sat there forever, with
+  // nothing left able to locate or remove it. Rebuilding from scratch
+  // here removes that whole class of bug instead of patching around it.
+  listEl.innerHTML = "";
+
   if (!items.length) {
-    if (!emptyEl) {
-      emptyEl = document.createElement("div");
-      emptyEl.className = "empty-state";
-      emptyEl.id = "booking-empty";
-      listEl.appendChild(emptyEl);
-    }
-    emptyEl.style.display = "";
+    var emptyEl = document.createElement("div");
+    emptyEl.className = "empty-state";
+    emptyEl.id = "booking-empty";
     emptyEl.innerHTML = '<span class="es-icon">📋</span><p>' + (bookingsState.list.length ? "No bookings match this filter." : "No bookings yet. Once a guest requests a room, it'll show up here.") + "</p>";
+    listEl.appendChild(emptyEl);
     return;
   }
-  if (emptyEl) emptyEl.style.display = "none";
+
   items.forEach(function(b) {
     listEl.appendChild(renderBookingItem(b));
   });
