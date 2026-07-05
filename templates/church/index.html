@@ -13,6 +13,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 {{wcz_commerce_css}}
 <style>
+/* ── TOKENS ─────────────────────────────────────────────
+   Warm, earthy tones with a refined, premium feel.
+   The amber accents evoke a sense of tradition and
+   spiritual warmth, while the cream background keeps
+   the page feeling open and inviting. */
 :root{
   --warm: #2C1A0E;
   --warm2: #4A2E1A;
@@ -46,10 +51,16 @@ ul{list-style:none}
 ::selection{background:var(--amber);color:#fff}
 
 .wrap{max-width:1120px;margin:0 auto;padding:0 26px}
-.eyebrow{font-family:var(--sans);font-size:.8rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:10px}
+.eyebrow{font-family:var(--sans);font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:10px}
 .eyebrow::before{content:'';display:block;width:28px;height:2px;background:var(--amber)}
 .eyebrow-center{text-align:center;justify-content:center}
 .eyebrow-center::before{display:none}
+
+/* ── ICON SYSTEM (Lucide-style) ────────────────────────*/
+.icon{width:1em;height:1em;display:inline-block;vertical-align:middle;stroke-width:1.8;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.icon-lg{width:1.4em;height:1.4em}
+.icon-xl{width:2em;height:2em}
+.icon-filled{fill:currentColor;stroke:none}
 
 /* ── NAV ────────────────────────────────────────────────*/
 #nav{
@@ -60,12 +71,14 @@ ul{list-style:none}
 }
 #nav.scrolled{background:rgba(250,245,238,.93);backdrop-filter:blur(14px);border-bottom-color:var(--line)}
 .nav-logo{font-family:var(--display);font-size:1.08rem;font-weight:700;display:flex;align-items:center;gap:10px}
-.nav-logo .cross{width:32px;height:32px;border-radius:8px;background:var(--warm);display:grid;place-items:center;flex:none}
-.nav-logo .cross svg{width:14px;height:14px;fill:var(--amber)}
+.nav-logo .cross{width:32px;height:32px;border-radius:8px;background:var(--warm);display:grid;place-items:center;flex:none;color:var(--amber)}
+.nav-logo .cross svg{width:16px;height:16px}
 .nav-logo img{height:32px;width:auto;object-fit:contain}
 .nav-links{display:flex;align-items:center;gap:28px}
-.nav-links a{font-size:.9rem;font-weight:500;color:var(--ink2);transition:color .2s}
+.nav-links a{font-size:.9rem;font-weight:500;color:var(--ink2);transition:color .2s;position:relative}
 .nav-links a:hover{color:var(--warm)}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1.5px;background:var(--amber);transition:width .25s}
+.nav-links a:hover::after{width:100%}
 .nav-cta{
   font-family:var(--sans);font-size:.8rem;font-weight:600;
   padding:10px 20px;background:var(--warm);color:#fff;border-radius:var(--r-sm);
@@ -79,15 +92,16 @@ ul{list-style:none}
 }
 .nav-wa:hover{background:#1a9e4e;transform:translateY(-1px)}
 .nav-ham{display:none;flex-direction:column;gap:5px;padding:4px;cursor:pointer}
-.nav-ham span{display:block;width:22px;height:1.5px;background:var(--ink)}
+.nav-ham span{display:block;width:22px;height:1.5px;background:var(--ink);transition:all .25s}
 #nav-mob{
   display:none;position:fixed;inset:0;z-index:99;background:var(--cream);
   flex-direction:column;align-items:center;justify-content:center;gap:24px;
 }
 #nav-mob.open{display:flex}
-#nav-mob a{font-family:var(--display);font-size:1.3rem;font-weight:600;color:var(--ink)}
+#nav-mob a{font-family:var(--display);font-size:1.3rem;font-weight:600;color:var(--ink);transition:color .2s}
 #nav-mob a:hover{color:var(--amber)}
-.mob-close{position:absolute;top:26px;right:26px;font-size:1.4rem;opacity:.5;cursor:pointer}
+.mob-close{position:absolute;top:26px;right:26px;font-size:1.4rem;opacity:.5;cursor:pointer;transition:opacity .2s}
+.mob-close:hover{opacity:1}
 
 /* ── HERO ────────────────────────────────────────────────*/
 #hero{position:relative;min-height:72vh;display:flex;align-items:center;color:#fff;padding-top:72px}
@@ -96,6 +110,7 @@ ul{list-style:none}
 .hero-wrap{position:relative;z-index:2;padding:60px 26px;width:100%}
 .hero-eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--amber2)}
 .hero-h1{font-family:var(--display);font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:700;line-height:1.08;margin:14px 0 18px;max-width:18ch}
+.hero-h1 em{font-style:normal;color:var(--amber2)}
 .hero-sub{font-size:1.12rem;max-width:44ch;color:rgba(255,255,255,.88);line-height:1.7}
 .hero-actions{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap}
 .hero-actions .btn-ghost{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.4);color:#fff}
@@ -108,7 +123,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .sec-head h2{font-family:var(--display);font-size:clamp(1.9rem,3.5vw,2.8rem);font-weight:600;margin-top:10px;line-height:1.1}
 .sec-head p{color:var(--ink2);margin-top:10px;font-size:1.05rem}
 
-.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem;padding:12px 24px;border-radius:var(--r-sm);transition:background .2s,transform .1s;border:none;cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem;padding:12px 24px;border-radius:var(--r-sm);transition:background .2s,transform .1s;border:none;cursor:pointer;font-family:var(--sans)}
 .btn-primary{background:var(--warm);color:#fff}
 .btn-primary:hover{background:var(--amber);transform:translateY(-1px)}
 .btn-outline{background:transparent;border:1.5px solid var(--warm);color:var(--warm)}
@@ -117,24 +132,30 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .btn-wa:hover{background:#1a9e4e;transform:translateY(-1px)}
 .btn-ghost{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.4);color:#fff}
 .btn-ghost:hover{background:rgba(255,255,255,.25)}
+.btn-white{background:#fff;color:var(--warm)}
+.btn-white:hover{background:var(--amber2);color:#fff}
 
 /* ── SERVICE TIMES BAR ──────────────────────────────────*/
 .times-bar{background:var(--warm);color:#fff;padding:14px 0}
 .times-grid{display:flex;align-items:center;gap:40px;flex-wrap:wrap}
 .time-item .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--amber2);font-weight:700;display:block}
 .time-item .val{font-weight:600;font-size:.96rem}
+.time-item .icon{color:var(--amber2);margin-right:4px}
 
 /* ── VALUES / CORE ──────────────────────────────────────*/
 .values-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
 .vcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:28px 24px;text-align:center;transition:box-shadow .2s,transform .2s}
 .vcard:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
-.vcard .icon{width:52px;height:52px;border-radius:12px;background:var(--cream);display:grid;place-items:center;font-size:1.5rem;margin:0 auto 16px}
+.vcard .icon-wrap{width:52px;height:52px;border-radius:12px;background:var(--cream);display:grid;place-items:center;margin:0 auto 16px;color:var(--amber)}
+.vcard .icon-wrap svg{width:26px;height:26px}
 .vcard h3{font-family:var(--display);font-size:1.1rem;margin-bottom:8px}
 .vcard p{font-size:.9rem;color:var(--ink2);line-height:1.5}
 
 /* ── PASTOR / LEADERSHIP ────────────────────────────────*/
 .pastor-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center}
 .pastor-img{width:100%;border-radius:var(--r);aspect-ratio:4/4.5;object-fit:cover;box-shadow:var(--shadow-lg)}
+.pastor-img-wrap{position:relative}
+.pastor-img-wrap .icon-wrap{position:absolute;bottom:16px;left:16px;background:var(--cream);border-radius:var(--r-sm);padding:8px;color:var(--amber)}
 .pastor-kicker{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
 .pastor-grid h2{font-family:var(--display);font-size:clamp(1.8rem,3vw,2.6rem);margin:12px 0 16px}
 .pastor-grid p{color:var(--ink2);font-size:1.02rem;line-height:1.7;margin-bottom:12px}
@@ -143,7 +164,8 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .min-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
 .mcard{border:1px solid var(--line);border-radius:var(--r);padding:22px 24px;display:flex;gap:16px;align-items:flex-start;background:var(--paper);transition:box-shadow .2s}
 .mcard:hover{box-shadow:var(--shadow)}
-.mcard .ico{width:44px;height:44px;border-radius:10px;background:var(--cream);display:grid;place-items:center;font-size:1.2rem;flex:none}
+.mcard .icon-wrap{width:44px;height:44px;border-radius:10px;background:var(--cream);display:grid;place-items:center;flex:none;color:var(--amber)}
+.mcard .icon-wrap svg{width:22px;height:22px}
 .mcard h3{font-family:var(--display);font-size:1rem;margin-bottom:6px}
 .mcard p{font-size:.88rem;color:var(--ink2);line-height:1.5}
 
@@ -164,17 +186,16 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .give-band .eyebrow::before{display:none}
 .give-band h2{font-family:var(--display);font-size:clamp(2rem,3.5vw,2.8rem);margin:10px 0 14px}
 .give-band p{color:rgba(255,255,255,.8);max-width:44ch;margin:0 auto 28px;font-size:1.05rem;line-height:1.7}
-.give-band .btn-white{background:#fff;color:var(--warm)}
-.give-band .btn-white:hover{background:var(--amber2);color:#fff}
 
 /* ── LOCATION ────────────────────────────────────────────*/
 .location-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:40px;align-items:center}
-.location-map{background:linear-gradient(135deg,#e8e0d8 0%,#d5cbc0 100%);border-radius:var(--r);aspect-ratio:16/10;overflow:hidden;border:1px solid var(--line);display:grid;place-items:center;color:var(--ink3);font-size:1.4rem;position:relative}
+.location-map{background:linear-gradient(135deg,#e8e0d8 0%,#d5cbc0 100%);border-radius:var(--r);aspect-ratio:16/10;overflow:hidden;border:1px solid var(--line);display:grid;place-items:center;color:var(--ink3);position:relative}
 .location-map iframe{width:100%;height:100%;border:0}
-.location-map .map-placeholder{font-size:2.6rem;opacity:.4}
+.location-map .map-placeholder{opacity:.3}
+.location-map .map-placeholder svg{width:48px;height:48px}
 .address-box h3{font-family:var(--display);font-size:1.4rem;margin-bottom:16px}
 .addr-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
-.addr-row .ico{font-size:1.1rem;margin-top:2px;flex:none;width:22px;text-align:center}
+.addr-row .icon{color:var(--amber);flex:none;width:22px;text-align:center;margin-top:2px}
 .addr-row p{font-size:.92rem;color:var(--ink2);line-height:1.5}
 
 /* ── COMMERCE / PRODUCTS ──────────────────────────────────*/
@@ -190,11 +211,13 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 /* ── TESTIMONIALS ────────────────────────────────────── */
 .testi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
 .testi-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:28px 26px}
-.testi-stars{display:flex;gap:2px;color:var(--amber);font-size:.9rem;margin-bottom:12px}
+.testi-stars{display:flex;gap:2px;color:var(--amber);margin-bottom:12px}
+.testi-stars svg{width:14px;height:14px}
 .testi-text{font-size:.96rem;line-height:1.7;color:var(--ink2);margin-bottom:18px}
 .testi-author{display:flex;align-items:center;gap:12px}
 .testi-avatar{width:38px;height:38px;border-radius:50%;background:var(--warm);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.75rem;overflow:hidden;flex:none}
 .testi-avatar img{width:100%;height:100%;object-fit:cover}
+.testi-avatar .icon{color:#fff;width:18px;height:18px}
 .testi-name{font-weight:600;font-size:.9rem}
 .testi-role{font-size:.78rem;color:var(--ink2)}
 
@@ -202,8 +225,10 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
 .team-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;text-align:center;transition:box-shadow .2s}
 .team-card:hover{box-shadow:var(--shadow)}
-.team-photo{aspect-ratio:1/1;overflow:hidden;background:var(--warm)}
+.team-photo{aspect-ratio:1/1;overflow:hidden;background:var(--warm);position:relative}
 .team-photo img{width:100%;height:100%;object-fit:cover}
+.team-photo .icon-wrap{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.15)}
+.team-photo .icon-wrap svg{width:40px;height:40px}
 .team-info{padding:16px 14px 20px}
 .team-name{font-family:var(--display);font-size:1rem;font-weight:600}
 .team-role{font-size:.78rem;color:var(--ink2);margin-top:4px}
@@ -236,7 +261,9 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
 .contact-info{display:flex;flex-direction:column;gap:20px}
 .cinfo-item{display:flex;gap:14px;align-items:flex-start}
-.cinfo-icon{width:40px;height:40px;flex:none;border:1px solid var(--line);border-radius:var(--r-sm);display:grid;place-items:center;color:var(--ink2);font-size:1rem}
+.cinfo-icon{width:40px;height:40px;flex:none;border:1px solid var(--line);border-radius:var(--r-sm);display:grid;place-items:center;color:var(--amber);transition:border-color .2s,background .2s}
+.cinfo-icon svg{width:18px;height:18px}
+.cinfo-item:hover .cinfo-icon{border-color:var(--amber);background:rgba(192,122,43,.06)}
 .cinfo-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);font-weight:700}
 .cinfo-val{font-size:.95rem;color:var(--ink2);line-height:1.5}
 .contact-cta{background:var(--warm);color:#fff;border-radius:var(--r);padding:42px 36px}
@@ -253,8 +280,9 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
 .footer-links a{font-size:.82rem;color:rgba(255,255,255,.6);transition:color .2s}
 .footer-links a:hover{color:#fff}
 .footer-social{display:flex;gap:8px}
-.footer-social a{width:34px;height:34px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;color:#fff;font-size:.8rem;transition:background .2s}
-.footer-social a:hover{background:rgba(255,255,255,.1)}
+.footer-social a{width:34px;height:34px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;color:#fff;font-size:.8rem;transition:background .2s,color .2s}
+.footer-social a:hover{background:rgba(255,255,255,.1);color:var(--amber2)}
+.footer-social a svg{width:16px;height:16px}
 .footer-copy{font-size:.78rem;color:rgba(255,255,255,.4);width:100%;text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)}
 
 /* ── REVEAL ──────────────────────────────────────────── */
@@ -293,11 +321,69 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
 </head>
 <body>
 
+<!-- ── ICON DEFINITIONS ────────────────────────────────────────────────────── -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Cross -->
+    <symbol id="icon-cross" viewBox="0 0 24 24"><rect x="10" y="2" width="4" height="20" rx="1.5"/><rect x="2" y="10" width="20" height="4" rx="1.5"/></symbol>
+    <!-- Menu -->
+    <symbol id="icon-menu" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></symbol>
+    <!-- X -->
+    <symbol id="icon-x" viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></symbol>
+    <!-- Heart -->
+    <symbol id="icon-heart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></symbol>
+    <!-- Hands/Community -->
+    <symbol id="icon-hands" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></symbol>
+    <!-- Globe -->
+    <symbol id="icon-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+    <!-- Clock -->
+    <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <!-- Calendar -->
+    <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+    <!-- User -->
+    <symbol id="icon-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <!-- Users -->
+    <symbol id="icon-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <!-- Phone -->
+    <symbol id="icon-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+    <!-- Mail -->
+    <symbol id="icon-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+    <!-- Map Pin -->
+    <symbol id="icon-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <!-- Arrow Right -->
+    <symbol id="icon-arrow-right" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+    <!-- Check -->
+    <symbol id="icon-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+    <!-- Star -->
+    <symbol id="icon-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+    <!-- WhatsApp -->
+    <symbol id="icon-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></symbol>
+    <!-- Youtube -->
+    <symbol id="icon-youtube" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></symbol>
+    <!-- Facebook -->
+    <symbol id="icon-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+    <!-- Instagram -->
+    <symbol id="icon-instagram" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></symbol>
+    <!-- Gift -->
+    <symbol id="icon-gift" viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7" rx="1"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></symbol>
+    <!-- Book Open -->
+    <symbol id="icon-book" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+    <!-- Music -->
+    <symbol id="icon-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+    <!-- Shield -->
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <!-- Coffee -->
+    <symbol id="icon-coffee" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></symbol>
+    <!-- Shopping Cart -->
+    <symbol id="icon-cart" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></symbol>
+  </defs>
+</svg>
+
 <!-- NAV -->
 <nav id="nav">
   <a class="nav-logo" href="#">
     <span class="cross">
-      <svg viewBox="0 0 16 16" fill="none"><rect x="6.5" y="1" width="3" height="14" rx="1.2" fill="currentColor"/><rect x="1" y="5.5" width="14" height="3" rx="1.2" fill="currentColor"/></svg>
+      <svg class="icon" viewBox="0 0 24 24"><use href="#icon-cross"/></svg>
     </span>
     {{#if has_logo}}<img src="{{logo_url}}" alt="{{business_name}}">{{/if}}
     {{business_name}}
@@ -310,7 +396,7 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
     {{#if has_products}}<a href="#shop">Shop</a>{{/if}}
     <a href="#contact">Contact</a>
     <button class="nav-wa" id="wcz-nav-cart" onclick="wczNavCta()">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <svg class="icon" viewBox="0 0 24 24"><use href="#icon-cart"/></svg>
       <span id="wcz-nav-cart-label">Order</span>
       <span class="wcz-nav-cart-count" id="wcz-nav-cart-count" style="display:none">0</span>
     </button>
@@ -349,10 +435,10 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
         <a href="#contact">Contact</a>
       </div>
       <div class="footer-social">
-        {{#if has_facebook}}<a href="{{facebook_url}}" target="_blank" rel="noopener" aria-label="Facebook">f</a>{{/if}}
-        {{#if has_youtube}}<a href="{{youtube_url}}" target="_blank" rel="noopener" aria-label="YouTube">▶</a>{{/if}}
-        {{#if has_instagram}}<a href="{{instagram_url}}" target="_blank" rel="noopener" aria-label="Instagram">✉</a>{{/if}}
-        {{#if has_whatsapp}}<a href="{{wa_href_general}}" target="_blank" rel="noopener" aria-label="WhatsApp">💬</a>{{/if}}
+        {{#if has_facebook}}<a href="{{facebook_url}}" target="_blank" rel="noopener" aria-label="Facebook"><svg class="icon" viewBox="0 0 24 24"><use href="#icon-facebook"/></svg></a>{{/if}}
+        {{#if has_youtube}}<a href="{{youtube_url}}" target="_blank" rel="noopener" aria-label="YouTube"><svg class="icon" viewBox="0 0 24 24"><use href="#icon-youtube"/></svg></a>{{/if}}
+        {{#if has_instagram}}<a href="{{instagram_url}}" target="_blank" rel="noopener" aria-label="Instagram"><svg class="icon" viewBox="0 0 24 24"><use href="#icon-instagram"/></svg></a>{{/if}}
+        {{#if has_whatsapp}}<a href="{{wa_href_general}}" target="_blank" rel="noopener" aria-label="WhatsApp"><svg class="icon" viewBox="0 0 24 24"><use href="#icon-whatsapp"/></svg></a>{{/if}}
       </div>
     </div>
     <div class="footer-copy">&#169; {{current_year}} {{business_name}} &#8212; powered by websites.co.zw</div>
