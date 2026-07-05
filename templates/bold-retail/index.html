@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{seo_title}}</title>
+<meta name="description" content="{{seo_description}}">
+<meta property="og:title" content="{{business_name}}">
+<meta property="og:description" content="{{seo_description}}">
+<meta property="og:image" content="{{hero_image_url}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+{{wcz_commerce_css}}
+<style>
+/* ── TOKENS ─────────────────────────────────────────────
+   Paper-white ground, near-black ink, one disciplined
+   "signal" cobalt used only on numerals, rules and the
+   one live CTA — a ledger/prospectus register, not a
+   moodboard. This is the one accent spend for the page. */
+:root{
+  --paper:   #f7f6f3;
+  --paper2:  #ffffff;
+  --ink:     #14171c;
+  --ink2:    #34383f;
+  --ink3:    #6b6f77;
+  --line:    rgba(20,23,28,.13);
+  --line2:   rgba(20,23,28,.24);
+  --signal:  #2451ff;
+  --signal-deep: #17348f;
+  --wa:      #1f9e57;
+  --r:       3px;
+  --display: "Space Grotesk", sans-serif;
+  --sans:    "IBM Plex Sans", system-ui, sans-serif;
+  --mono:    "IBM Plex Mono", monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;font-size:16px}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
+ul{list-style:none}
+::selection{background:var(--signal);color:#fff}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.mono{font-family:var(--mono)}
+.eyebrow{
+  font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--signal-deep);display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:'';display:block;width:26px;height:1px;background:var(--signal)}
+
+/* ── NAV ────────────────────────────────────────────────*/
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;height:72px;
+  padding:0 24px;display:flex;align-items:center;justify-content:space-between;
+  background:rgba(247,246,243,0);border-bottom:1px solid transparent;
+  transition:background .35s,border-color .35s,backdrop-filter .35s;
+}
+#nav.scrolled{background:rgba(247,246,243,.92);backdrop-filter:blur(14px);border-bottom-color:var(--line)}
+.nav-logo{font-family:var(--display);font-size:1.08rem;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.nav-logo img{height:30px;width:auto;object-fit:contain}
+.nav-links{display:flex;align-items:center;gap:30px}
+.nav-links a{font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;font-weight:500;color:var(--ink2);transition:color .2s}
+.nav-links a:hover{color:var(--signal-deep)}
+.nav-wa{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;font-weight:500;
+  padding:10px 20px;background:var(--ink);color:var(--paper2);border-radius:var(--r);
+  transition:background .2s,transform .1s;display:flex;align-items:center;gap:8px;
+}
+.nav-wa:hover,.nav-wa.wcz-nav-cart-active{background:var(--signal-deep);transform:translateY(-1px)}
+.nav-ham{display:none;flex-direction:column;gap:5px;padding:4px;cursor:pointer}
+.nav-ham span{display:block;width:22px;height:1.5px;background:var(--ink)}
+#nav-mob{
+  display:none;position:fixed;inset:0;z-index:99;background:var(--paper2);
+  flex-direction:column;align-items:center;justify-content:center;gap:30px;
+}
+#nav-mob.open{display:flex}
+#nav-mob a,#nav-mob button{font-family:var(--display);font-size:1.5rem;font-weight:600;color:var(--ink)}
+#nav-mob a:hover,#nav-mob button:hover{color:var(--signal-deep)}
+.mob-close{position:absolute;top:26px;right:26px;font-size:1.4rem;opacity:.5}
+
+/* ── HERO (split) ───────────────────────────────────────*/
+#hero{padding:150px 0 0}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center;padding-bottom:76px}
+.hero-index{font-family:var(--mono);font-size:.72rem;color:var(--ink3);letter-spacing:.08em;margin-bottom:22px}
+.hero-h1{
+  font-family:var(--display);font-size:clamp(2.5rem,4.6vw,4.1rem);font-weight:600;line-height:1.04;letter-spacing:-.02em;
+  margin-bottom:26px;
+}
+.hero-h1 em{font-style:normal;color:var(--signal)}
+.hero-sub{font-size:1.05rem;color:var(--ink2);max-width:460px;line-height:1.75;margin-bottom:38px}
+.hero-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.btn-primary{
+  font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
+  padding:15px 30px;background:var(--ink);color:var(--paper2);border-radius:var(--r);
+  transition:background .2s,transform .1s;
+}
+.btn-primary:hover{background:var(--signal-deep);transform:translateY(-1px)}
+.btn-ghost{
+  font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
+  padding:14px 26px;border:1px solid var(--line2);border-radius:var(--r);color:var(--ink2);
+  transition:border-color .2s,background .2s,color .2s;
+}
+.btn-ghost:hover{border-color:var(--ink);background:var(--paper2);color:var(--ink)}
+.hero-media{position:relative}
+.hero-media-frame{position:relative;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden;aspect-ratio:4/5;background:var(--ink)}
+.hero-media-frame img{width:100%;height:100%;object-fit:cover;opacity:.94}
+.hero-tag{
+  position:absolute;left:-1px;bottom:22px;background:var(--paper2);border:1px solid var(--line2);border-left:3px solid var(--signal);
+  padding:14px 20px;max-width:230px;font-size:.82rem;color:var(--ink2);line-height:1.5;
+}
+.hero-tag b{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--signal-deep);margin-bottom:5px}
+.hero-rule{height:1px;background:var(--line)}
+
+/* ── SECTION SCAFFOLD ────────────────────────────────────*/
+section.pane{padding:96px 0;border-top:1px solid var(--line)}
+.sec-head{margin-bottom:52px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.sec-h2{font-family:var(--display);font-size:clamp(1.7rem,3.2vw,2.5rem);font-weight:600;letter-spacing:-.02em;line-height:1.08;margin-top:14px}
+.sec-sub{margin-top:14px;color:var(--ink3);font-size:.98rem;max-width:480px;line-height:1.7}
+.sec-index{font-family:var(--mono);font-size:.72rem;color:var(--ink3);letter-spacing:.08em;text-align:right}
+
+/* ── ABOUT ────────────────────────────────────────────── */
+.about-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:72px;align-items:center}
+.about-img{position:relative;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden}
+.about-img img{width:100%;aspect-ratio:1/1;object-fit:cover}
+.about-body{color:var(--ink2);line-height:1.85;font-size:1.02rem;margin-top:8px}
+.about-socials{margin-top:34px;display:flex;gap:12px}
+.soc-link{
+  width:40px;height:40px;border:1px solid var(--line2);border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;color:var(--ink2);
+  transition:border-color .2s,background .2s,color .2s;
+}
+.soc-link:hover{border-color:var(--signal);color:var(--signal-deep);background:rgba(36,81,255,.06)}
+
+/* ── THE LEDGER (services) ──────────────────────────────
+   Signature element: services read like line items in a
+   professional docket — index, name, note, category —
+   joined by a dotted leader instead of a card grid. */
+.ledger{border-top:1px solid var(--line2)}
+.ledger-row{
+  display:grid;grid-template-columns:64px 1.4fr 1.6fr auto;gap:24px;align-items:baseline;
+  padding:26px 0;border-bottom:1px solid var(--line);transition:background .2s;
+}
+.ledger-row:hover{background:rgba(20,23,28,.02)}
+.ledger-num{font-family:var(--mono);font-size:.78rem;color:var(--signal-deep);letter-spacing:.04em}
+.ledger-name{font-family:var(--display);font-size:1.18rem;font-weight:600;letter-spacing:-.01em}
+.ledger-note{color:var(--ink3);font-size:.92rem;line-height:1.6;position:relative}
+.ledger-tag{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);
+  white-space:nowrap;text-align:right;
+}
+.ledger-tag b{display:block;font-size:.95rem;color:var(--ink);font-family:var(--sans);font-weight:600;letter-spacing:0;margin-top:3px}
+@media(min-width:701px){
+  .ledger-name{position:relative}
+}
+
+/* ── CATALOGUE (products — SDK-driven) ──────────────────*/
+.cat-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
+
+/* ── VIDEO ───────────────────────────────────────────── */
+.video-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.video-stage{position:relative;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden;background:var(--ink);aspect-ratio:16/9}
+.video-stage img{width:100%;height:100%;object-fit:cover;opacity:.75}
+.video-stage iframe,.video-stage video{width:100%;height:100%;border:none;display:block}
+.video-play{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;background:rgba(20,23,28,.28);
+  transition:background .2s;
+}
+.video-play:hover{background:rgba(20,23,28,.4)}
+.video-play-btn{
+  width:64px;height:64px;border-radius:50%;background:var(--paper2);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.28);
+}
+.video-runtime{
+  position:absolute;bottom:16px;right:16px;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;
+  background:rgba(20,23,28,.65);color:#fff;padding:5px 10px;border-radius:2px;
+}
+.video-copy .sec-h2{margin-top:0}
+.video-label{margin-bottom:10px}
+.video-body{color:var(--ink2);line-height:1.8;margin-top:18px;font-size:.98rem}
+
+/* ── TEAM ────────────────────────────────────────────── */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px;background:var(--line)}
+.team-card{background:var(--paper2);padding:0}
+.team-photo{aspect-ratio:4/5;overflow:hidden;background:var(--ink)}
+.team-photo img{width:100%;height:100%;object-fit:cover;filter:grayscale(35%);transition:filter .3s}
+.team-card:hover .team-photo img{filter:grayscale(0)}
+.team-info{padding:22px 22px 26px}
+.team-name{font-family:var(--display);font-size:1.05rem;font-weight:600;letter-spacing:-.01em}
+.team-role{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--signal-deep);margin-top:6px}
+.team-bio{font-size:.86rem;color:var(--ink3);margin-top:12px;line-height:1.6}
+
+/* ── TESTIMONIALS ────────────────────────────────────── */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1px;background:var(--line)}
+.testi-card{background:var(--paper2);padding:34px 32px}
+.testi-mark{font-family:var(--display);font-size:2.2rem;color:var(--signal);line-height:1;margin-bottom:14px}
+.testi-text{font-size:.98rem;line-height:1.75;color:var(--ink2);margin-bottom:24px}
+.testi-author{display:flex;align-items:center;gap:12px}
+.testi-avatar{
+  width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--paper2);overflow:hidden;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;
+}
+.testi-avatar img{width:100%;height:100%;object-fit:cover}
+.testi-name{font-family:var(--mono);font-size:.74rem;font-weight:500;letter-spacing:.03em}
+.testi-role{font-size:.76rem;color:var(--ink3);margin-top:2px}
+
+/* ── GALLERY ─────────────────────────────────────────── */
+.gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:210px;gap:3px}
+.gallery-grid .g-item{overflow:hidden;cursor:pointer;background:var(--ink)}
+.gallery-grid .g-item img{width:100%;height:100%;object-fit:cover;opacity:.92;transition:transform .4s,opacity .3s;filter:grayscale(15%)}
+.gallery-grid .g-item:hover img{transform:scale(1.05);opacity:1;filter:grayscale(0)}
+.gallery-grid .g-item:nth-child(1){grid-column:span 2;grid-row:span 2}
+.gallery-grid .g-item:nth-child(6){grid-column:span 2}
+
+/* ── LIGHTBOX (bespoke gallery) ─────────────────────────*/
+#lb{
+  position:fixed;inset:0;z-index:300;background:rgba(20,23,28,.94);display:none;
+  align-items:center;justify-content:center;padding:40px;
+}
+#lb.open{display:flex}
+#lb img{max-width:min(1100px,90vw);max-height:86vh;object-fit:contain;border:1px solid rgba(255,255,255,.12)}
+#lb-close,#lb-prev,#lb-next{
+  position:absolute;color:#fff;font-size:1.4rem;width:46px;height:46px;display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(255,255,255,.25);border-radius:50%;transition:background .2s;
+}
+#lb-close:hover,#lb-prev:hover,#lb-next:hover{background:rgba(255,255,255,.12)}
+#lb-close{top:26px;right:26px}
+#lb-prev{left:26px;top:50%;transform:translateY(-50%)}
+#lb-next{right:26px;top:50%;transform:translateY(-50%)}
+
+/* ── CONTACT ─────────────────────────────────────────── */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
+.contact-info{display:flex;flex-direction:column;gap:24px}
+.cinfo-item{display:flex;gap:16px;align-items:flex-start}
+.cinfo-icon{
+  width:40px;height:40px;flex-shrink:0;border:1px solid var(--line2);border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;margin-top:2px;color:var(--ink2);
+}
+.cinfo-label{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--signal-deep);margin-bottom:4px}
+.cinfo-val{font-size:.98rem;color:var(--ink2);line-height:1.5}
+.contact-cta{background:var(--ink);color:var(--paper2);border-radius:var(--r);padding:48px 42px}
+.contact-cta .eyebrow{color:#9fb2ff}
+.contact-cta .eyebrow::before{background:#9fb2ff}
+.contact-cta h3{font-family:var(--display);font-size:1.7rem;font-weight:600;line-height:1.18;margin-top:16px;margin-bottom:16px}
+.contact-cta p{opacity:.72;line-height:1.75;margin-bottom:32px;font-size:.95rem}
+.wa-btn{
+  display:inline-flex;align-items:center;gap:12px;
+  font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
+  padding:16px 28px;background:var(--wa);color:#fff;border-radius:var(--r);
+  transition:background .2s,transform .1s;
+}
+.wa-btn:hover{background:#188045;transform:translateY(-1px)}
+
+/* ── FOOTER ──────────────────────────────────────────── */
+footer{border-top:1px solid var(--line);padding:38px 0}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-brand{font-family:var(--display);font-weight:600;font-size:.92rem;letter-spacing:-.01em}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);transition:color .2s}
+.footer-links a:hover{color:var(--ink)}
+.footer-copy{font-family:var(--mono);font-size:.62rem;color:var(--ink3);margin-top:16px}
+
+/* ── REVEAL ──────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media(max-width:900px){
+  .hero-grid,.about-grid,.video-grid,.contact-grid{grid-template-columns:1fr;gap:44px}
+  .hero-media{order:-1}
+  .ledger-row{grid-template-columns:44px 1fr;row-gap:8px}
+  .ledger-note{grid-column:1/-1;order:3}
+  .ledger-tag{grid-column:2;text-align:left}
+  .gallery-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-grid .g-item:nth-child(1){grid-column:span 1;grid-row:span 1}
+  .gallery-grid .g-item:nth-child(6){grid-column:span 1}
+}
+@media(max-width:700px){
+  .nav-links{display:none}
+  .nav-ham{display:flex}
+  .hero-h1{font-size:2.4rem}
+  .sec-head{flex-direction:column;align-items:flex-start}
+  .footer-inner{flex-direction:column;align-items:flex-start;gap:12px}
+}
+@media(max-width:480px){
+  .wrap{padding:0 18px}
+  .gallery-grid{grid-auto-rows:150px}
+  .contact-cta{padding:36px 26px}
+}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  *{transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-logo" href="#">
+    {{#if has_logo}}<img src="{{logo_url}}" alt="{{business_name}}">{{/if}}
+    {{business_name}}
+  </a>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#work">Work</a>
+    <a href="#team">Team</a>
+    <a href="#contact">Contact</a>
+    <button class="nav-wa" id="wcz-nav-cart" onclick="wczNavCta()">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span id="wcz-nav-cart-label">Get a quote</span>
+      <span class="wcz-nav-cart-count" id="wcz-nav-cart-count" style="display:none">0</span>
+    </button>
+  </div>
+  <div class="nav-ham" id="nav-ham" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<div id="nav-mob">
+  <span class="mob-close" id="mob-close">&#x2715;</span>
+  <a href="#services" class="mob-link">Services</a>
+  <a href="#work" class="mob-link">Work</a>
+  <a href="#team" class="mob-link">Team</a>
+  <a href="#contact" class="mob-link">Contact</a>
+  <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open')" style="color:var(--signal-deep);font-family:var(--display);font-size:1.5rem;font-weight:600">My quote</button>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="hero-index mono">{{business_type_label}} &middot; {{location}}</div>
+        <h1 class="hero-h1">{{br_hero_headline_html}}</h1>
+        <p class="hero-sub">{{tagline}}</p>
+        <div class="hero-actions">
+          <a href="{{wa_href_order}}" class="btn-primary" target="_blank" rel="noopener">Get a quote</a>
+          <a href="#services" class="btn-ghost">See what we do</a>
+        </div>
+      </div>
+      <div class="hero-media">
+        <div class="hero-media-frame">
+          {{#if has_hero_image}}<img src="{{hero_image_url}}" alt="{{business_name}}">{{/if}}
+        </div>
+        <div class="hero-tag"><b>Why {{business_name}}</b>{{unique_selling_point}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-rule"></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="pane">
+  <div class="wrap">
+    <div class="about-grid">
+      <div class="about-img reveal">
+        {{#if gallery_0_url}}<img src="{{gallery_0_url}}" alt="{{business_name}}">{{/if}}
+      </div>
+      <div class="about-text reveal">
+        <div class="eyebrow">About us</div>
+        <h2 class="sec-h2">{{business_name}}</h2>
+        <p class="about-body">{{about}}</p>
+        <div class="about-socials">
+          {{#if has_facebook}}<a href="{{facebook_url}}" class="soc-link" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>{{/if}}
+          {{#if has_instagram}}<a href="{{instagram_url}}" class="soc-link" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>{{/if}}
+          {{#if has_tiktok}}<a href="{{tiktok_url}}" class="soc-link" target="_blank" rel="noopener" aria-label="TikTok">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.17 8.17 0 0 0 4.77 1.52V6.77a4.85 4.85 0 0 1-1-.08z"/></svg>
+          </a>{{/if}}
+          {{#if has_whatsapp_social}}<a href="{{wa_href_general}}" class="soc-link" target="_blank" rel="noopener" aria-label="WhatsApp">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+          </a>{{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE LEDGER (services) -->
+{{#if has_services}}
+<section id="services" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">{{services_eyebrow}}</div>
+        <h2 class="sec-h2">{{services_heading}}</h2>
+        <p class="sec-sub">{{services_intro}}</p>
+      </div>
+      <div class="sec-index mono">Register of services</div>
+    </div>
+    <div class="ledger reveal" id="br-ledger">
+      {{br_services_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- CATALOGUE — SDK-driven -->
+{{#if has_products}}
+<section id="work" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">Catalogue</div>
+        <h2 class="sec-h2">What we supply</h2>
+        <p class="sec-sub">Message us on WhatsApp with what you need — we'll confirm price and availability the same day.</p>
+      </div>
+    </div>
+    <div class="cat-filter-bar" id="wcz-cat-filters">
+      {{fr_category_filters_html}}
+    </div>
+    <div id="wcz-products">
+      {{br_products_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- VIDEO -->
+{{#if has_video}}
+<section id="video" class="pane">
+  <div class="wrap">
+    <div class="video-grid">
+      <div class="video-stage reveal" id="br-video-stage" data-embed-type="{{video_embed_type}}" data-embed-url="{{video_embed_url}}">
+        {{#if video_thumbnail_url}}<img src="{{video_thumbnail_url}}" alt="{{video_title}}">{{/if}}
+        <div class="video-play" id="br-video-play">
+          <div class="video-play-btn">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="var(--ink)"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        {{#if video_runtime}}<span class="video-runtime mono">{{video_runtime}}</span>{{/if}}
+      </div>
+      <div class="video-copy reveal">
+        <div class="eyebrow video-label">{{video_label}}</div>
+        <h2 class="sec-h2">{{video_heading}}</h2>
+        <p class="video-body">{{video_body}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- TEAM -->
+{{#if has_team}}
+<section id="team" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">The people</div>
+        <h2 class="sec-h2">Meet the team</h2>
+        <p class="sec-sub">{{team_subtext}}</p>
+      </div>
+    </div>
+    <div class="team-grid reveal" id="br-team">
+      {{br_team_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- TESTIMONIALS -->
+{{#if has_testimonials}}
+<section id="testimonials" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">On record</div>
+        <h2 class="sec-h2">What clients say</h2>
+      </div>
+    </div>
+    <div class="testi-grid reveal" id="br-testimonials">
+      {{br_testimonials_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- GALLERY -->
+{{#if has_gallery}}
+<section id="gallery" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">The work</div>
+        <h2 class="sec-h2">Gallery</h2>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="gallery-grid" id="br-gallery">
+      {{br_gallery_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- CONTACT -->
+<section id="contact" class="pane">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="eyebrow">Get in touch</div>
+        <h2 class="sec-h2">{{contact_heading}}</h2>
+        <p class="sec-sub">{{contact_intro}}</p>
+      </div>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info reveal">
+        {{#if phone}}<div class="cinfo-item">
+          <div class="cinfo-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div><div class="cinfo-label">Phone</div><div class="cinfo-val">{{phone}}</div></div>
+        </div>{{/if}}
+        {{#if email}}<div class="cinfo-item">
+          <div class="cinfo-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </div>
+          <div><div class="cinfo-label">Email</div><div class="cinfo-val">{{email}}</div></div>
+        </div>{{/if}}
+        {{#if address}}<div class="cinfo-item">
+          <div class="cinfo-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div><div class="cinfo-label">Location</div><div class="cinfo-val">{{address}}</div></div>
+        </div>{{/if}}
+        {{#if has_map}}<div class="cinfo-item" style="margin-top:6px">
+          <iframe src="{{map_embed_url}}" width="100%" height="220" style="border:1px solid var(--line2);border-radius:var(--r)" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>{{/if}}
+      </div>
+      <div class="contact-cta reveal">
+        <div class="eyebrow">Fastest reply</div>
+        <h3>Talk to us on<br><span style="color:#9fb2ff">WhatsApp</span></h3>
+        <p>Tell us what you need — quotes, availability, or a call-back — and we'll respond the same day.</p>
+        <a href="{{wa_href_order}}" class="wa-btn" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+          Message us now
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-brand">{{business_name}}</div>
+      <div class="footer-links">
+        <a href="#services">Services</a>
+        <a href="#work">Work</a>
+        <a href="#team">Team</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-copy">&#169; {{current_year}} {{business_name}} &#8212; powered by websites.co.zw</div>
+  </div>
+</footer>
+
+<!-- SDK OVERLAYS: drawer + lightbox injected by render worker -->
+<div id="wcz-qv-overlay"></div>
+<div id="wcz-qv-drawer">
+  {{wcz_qv_drawer_html}}
+</div>
+{{wcz_lb_html}}
+
+<!-- GALLERY LIGHTBOX ELEMENT (bespoke, for br-gallery) -->
+<div id="lb" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <span id="lb-close" aria-label="Close">&#x2715;</span>
+  <span id="lb-prev" aria-label="Previous">&#8249;</span>
+  <img id="lb-img" src="" alt="">
+  <span id="lb-next" aria-label="Next">&#8250;</span>
+</div>
+
+<!-- NAV + REVEAL + LIGHTBOX + VIDEO + FILTER JS -->
+<script>
+(function(){
+'use strict';
+
+// ── NAV ────────────────────────────────────────────────
+var nav = document.getElementById('nav');
+window.addEventListener('scroll', function(){
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+}, {passive:true});
+nav.classList.toggle('scrolled', window.scrollY > 60);
+
+var ham  = document.getElementById('nav-ham');
+var mob  = document.getElementById('nav-mob');
+var mcls = document.getElementById('mob-close');
+if(ham && mob){
+  ham.addEventListener('click', function(){ mob.classList.add('open'); });
+  if(mcls) mcls.addEventListener('click', function(){ mob.classList.remove('open'); });
+  mob.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ mob.classList.remove('open'); });
+  });
+}
+
+// ── REVEAL ─────────────────────────────────────────────
+var obs = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, {threshold:0.12});
+document.querySelectorAll('.reveal').forEach(function(el){ obs.observe(el); });
+
+// ── GALLERY LIGHTBOX (bespoke br-gallery, separate from SDK wcz-lb) ────────
+var lbEl    = document.getElementById('lb');
+var lbImg   = document.getElementById('lb-img');
+var lbClose = document.getElementById('lb-close');
+var lbPrev  = document.getElementById('lb-prev');
+var lbNext  = document.getElementById('lb-next');
+var lbItems = [];
+var lbIdx   = 0;
+
+if (lbEl) {
+  function lbShow(idx){
+    lbIdx = ((idx % lbItems.length) + lbItems.length) % lbItems.length;
+    lbImg.src = lbItems[lbIdx];
+    lbImg.alt = 'Gallery photo '+(lbIdx+1);
+    lbEl.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function lbHide(){
+    lbEl.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('#br-gallery .g-item').forEach(function(item, i){
+    var img = item.querySelector('img');
+    if(img) lbItems.push(img.src);
+    item.addEventListener('click', function(){ lbShow(i); });
+  });
+
+  if(lbClose) lbClose.addEventListener('click', lbHide);
+  if(lbPrev)  lbPrev.addEventListener('click', function(){ lbShow(lbIdx-1); });
+  if(lbNext)  lbNext.addEventListener('click', function(){ lbShow(lbIdx+1); });
+  lbEl.addEventListener('click', function(e){ if(e.target===lbEl) lbHide(); });
+  document.addEventListener('keydown', function(e){
+    if(!lbEl.classList.contains('open')) return;
+    if(e.key==='Escape') lbHide();
+    if(e.key==='ArrowLeft') lbShow(lbIdx-1);
+    if(e.key==='ArrowRight') lbShow(lbIdx+1);
+  });
+}
+
+// ── VIDEO PLAY-IN-PLACE ─────────────────────────────────
+var videoStage = document.getElementById('br-video-stage');
+var videoPlay  = document.getElementById('br-video-play');
+if (videoStage && videoPlay) {
+  videoPlay.addEventListener('click', function(){
+    var type = videoStage.dataset.embedType || '';
+    var src  = videoStage.dataset.embedUrl  || '';
+    if (!src) return;
+    var el;
+    if (type === 'file') {
+      el = document.createElement('video');
+      el.src = src; el.controls = true; el.autoplay = true; el.playsInline = true;
+    } else {
+      el = document.createElement('iframe');
+      el.src = src + (src.indexOf('?') > -1 ? '&' : '?') + 'autoplay=1';
+      el.allow = 'autoplay; fullscreen; picture-in-picture';
+      el.allowFullscreen = true;
+    }
+    videoStage.innerHTML = '';
+    videoStage.appendChild(el);
+  });
+}
+
+// ── CATEGORY FILTER (SDK cards) ────────────────────────
+var filterBar = document.getElementById('wcz-cat-filters');
+if (filterBar) {
+  filterBar.querySelectorAll('.fr-cat').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      filterBar.querySelectorAll('.fr-cat').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var cat = btn.dataset.cat || '';
+      document.querySelectorAll('#wcz-products .wcz-prod-card').forEach(function(card){
+        card.style.display = (!cat || card.dataset.cat === cat) ? '' : 'none';
+      });
+    });
+  });
+}
+
+})();
+</script>
+
+<!-- SDK product script injected by render worker -->
+{{wcz_products_script}}
+
+</body>
+</html>
