@@ -221,7 +221,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
       <!--WCZ:show_shop--><a href="#shop">Shop</a><!--WCZ:/show_shop-->
       <a href="#visit">Visit</a>
     </nav>
-    <button class="btn btn-book-modal" onclick="openBooking()">Book now</button>
+    <button class="btn btn-book-modal wcz-slot-book-trigger" type="button">Book now</button>
   </div>
 </header>
 
@@ -234,7 +234,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
     <h1><!--WCZ:hero_headline--></h1>
     <p class="hero-sub"><!--WCZ:hero_subtext--></p>
     <div class="hero-actions">
-      <button class="btn btn-book-modal" onclick="openBooking()">Book an appointment</button>
+      <button class="btn btn-book-modal wcz-slot-book-trigger" type="button">Book an appointment</button>
       <a href="#shop" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.45)">Shop products</a>
     </div>
     <div class="hero-badge"><!--WCZ:hero_badge--></div>
@@ -251,10 +251,30 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
     </div>
     <!--WCZ:services_html-->
     <div class="svc-book-row">
-      <button class="btn btn-primary" onclick="openBooking()">Book a service</button>
+      <button class="btn btn-primary wcz-slot-book-trigger" type="button">Book a service</button>
     </div>
   </div>
 </section>
+
+<!-- BOOK AN APPOINTMENT — real bookable services (booking_services table),
+     separate from the marketing "Services & pricing" list above. Each card
+     gets its own .wcz-slot-book-trigger with real service data, skipping
+     straight to the stylist/date/time flow for that one service. Hidden
+     entirely if the owner hasn't set up any bookable services yet. -->
+<!--WCZ:has_bookable_services-->
+<section class="services-section" id="book-appointment" style="background:var(--paper)">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="sec-eyebrow">Book online</span>
+      <h2>Book an appointment</h2>
+      <p>Pick a service and a time that works for you — no waiting for a reply.</p>
+    </div>
+    <div class="svc-flat">
+      <!--WCZ:bookable_services_html-->
+    </div>
+  </div>
+</section>
+<!--WCZ:/has_bookable_services-->
 
 <!-- GALLERY -->
 <!--WCZ:has_gallery-->
@@ -312,7 +332,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
     <h2><!--WCZ:cta_heading--></h2>
     <p><!--WCZ:cta_subtext--></p>
     <div class="booking-actions">
-      <button class="btn btn-book-modal" onclick="openBooking()">Book on WhatsApp</button>
+      <button class="btn btn-book-modal wcz-slot-book-trigger" type="button">Book now</button>
       <a href="tel:<!--WCZ:phone-->" class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,.35)">Call us</a>
     </div>
     <div class="booking-hours">
@@ -381,105 +401,8 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
 <!-- PRODUCT SCRIPT -->
 {{wcz_products_script}}
 
-<!-- BOOKING MODAL -->
-<div class="modal-backdrop" id="bookingModal" onclick="if(event.target===this)closeBooking()">
-  <div class="modal">
-    <button class="modal-close" onclick="closeBooking()" aria-label="Close">×</button>
-    <h3>Book an appointment</h3>
-    <p>Choose a service and your preferred time — we'll confirm on WhatsApp.</p>
-
-    <div class="form-row">
-      <label for="modal-service">Service</label>
-      <select id="modal-service">
-        <option value="">— choose a service —</option>
-        <!-- populated by JS from BOOKING_SERVICES -->
-      </select>
-    </div>
-
-    <div class="form-row">
-      <label for="modal-date">Preferred date</label>
-      <input type="date" id="modal-date" min="">
-    </div>
-
-    <div class="form-row">
-      <label for="modal-time">Preferred time</label>
-      <select id="modal-time">
-        <option value="">— choose a time —</option>
-        <option>Morning (9am – 12pm)</option>
-        <option>Afternoon (12pm – 3pm)</option>
-        <option>Late afternoon (3pm – 6pm)</option>
-      </select>
-    </div>
-
-    <div class="form-row">
-      <label for="modal-name">Your name</label>
-      <input type="text" id="modal-name" placeholder="e.g. Tanya">
-    </div>
-
-    <button class="btn btn-wa" style="width:100%;justify-content:center;margin-top:8px" onclick="sendBookingWA()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      Send booking request
-    </button>
-
-    <p class="modal-note">We'll reply on WhatsApp within the hour to confirm your slot.</p>
-
-    <!-- Pro upsell — visible only on basic plan -->
-    <!--WCZ:show_booking_upsell-->
-    <div class="upsell-pill">
-      <strong>✦ Upgrade to Pro Bookings</strong>
-      Get an automated WhatsApp bot that confirms bookings, sends reminders and manages your calendar — <a href="https://websites.co.zw/upgrade" style="color:var(--plum);font-weight:500">learn more →</a>
-    </div>
-    <!--WCZ:/show_booking_upsell-->
-  </div>
-</div>
-
 <script>
-// ── BOOKING SERVICES (injected by render Worker) ──
-const BOOKING_SERVICES = <!--WCZ:booking_services_json-->;
-const WA_PHONE = "<!--WCZ:wa_phone-->";
-
-// Populate service dropdown
-(function(){
-  const sel = document.getElementById('modal-service');
-  BOOKING_SERVICES.forEach(function(s){
-    const o = document.createElement('option');
-    o.value = s.name;
-    o.textContent = s.price ? s.name + ' — ' + s.price : s.name;
-    sel.appendChild(o);
-  });
-
-  // Set min date to today
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('modal-date').min = today;
-  document.getElementById('modal-date').value = today;
-})();
-
-function openBooking(){
-  document.getElementById('bookingModal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeBooking(){
-  document.getElementById('bookingModal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-function sendBookingWA(){
-  const svc  = document.getElementById('modal-service').value;
-  const date = document.getElementById('modal-date').value;
-  const time = document.getElementById('modal-time').value;
-  const name = document.getElementById('modal-name').value.trim();
-  if(!svc){ alert('Please choose a service'); return; }
-  const parts = [];
-  if(name) parts.push('Hi, my name is ' + name + '.');
-  parts.push("I'd like to book: " + svc + '.');
-  if(date) parts.push('Preferred date: ' + date + '.');
-  if(time) parts.push('Preferred time: ' + time + '.');
-  const msg = encodeURIComponent(parts.join(' '));
-  const phone = WA_PHONE.replace(/\D/g,'');
-  window.open('https://wa.me/' + phone + '?text=' + msg, '_blank');
-  closeBooking();
-}
-
-// ── SERVICE TABS ──
+// ── SERVICE TABS ── (marketing "Services & pricing" category tabs — unrelated to booking)
 function switchTab(catId){
   document.querySelectorAll('.svc-tab').forEach(function(t){ t.classList.remove('active'); });
   document.querySelectorAll('.svc-panel').forEach(function(p){ p.classList.remove('active'); });
@@ -503,9 +426,6 @@ if (filterBar) {
     });
   });
 }
-
-// ESC closes modal
-document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeBooking(); });
 </script>
 </body>
 </html>
