@@ -1873,8 +1873,18 @@ function injectV3Nav(){
     });
   }
 }
-function switchTabV3(tab,clickEl){document.querySelectorAll(".tab-section").forEach(function(s){s.classList.remove("active");});var t=document.getElementById("tab-"+tab);if(t)t.classList.add("active");document.querySelectorAll(".nav-item,.dock-item").forEach(function(i){i.classList.remove("active");});if(clickEl)clickEl.classList.add("active");document.querySelectorAll("[data-tab='"+tab+"']").forEach(function(i){i.classList.add("active");});window.scrollTo({top:0,behavior:"smooth"});}
-window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","bookings","amenities","conference","dining","experiences","packages"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);if(tab==="bookings"&&typeof window.loadBookings==="function")window.loadBookings();return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
+function switchTabV3(tab,clickEl){document.querySelectorAll(".tab-section").forEach(function(s){s.classList.remove("active");});var t=document.getElementById("tab-"+tab);if(t)t.classList.add("active");document.querySelectorAll(".nav-item,.dock-item").forEach(function(i){i.classList.remove("active");});if(clickEl)clickEl.classList.add("active");document.querySelectorAll("[data-tab='"+tab+"']").forEach(function(i){i.classList.add("active");});window.scrollTo({top:0,behavior:"smooth"});
+  // Auto-load bookings data on tab entry, regardless of which element was
+  // clicked to get here. Previously this only happened via window.switchTab's
+  // special-case check below, but the sidebar nav-item and mobile dock-item
+  // onclick handlers call switchTabV3() directly, bypassing that wrapper
+  // entirely -- meaning tapping "Bookings" in the nav never actually
+  // fetched anything, only a manual "Refresh" tap did. loadBookings()'s own
+  // bookingsState.loaded guard keeps this cheap on repeat visits (no
+  // network call unless data was never loaded or a refresh is forced).
+  if(tab==="bookings"&&typeof window.loadBookings==="function")window.loadBookings();
+}
+window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","bookings","amenities","conference","dining","experiences","packages"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
 function applyTemplateConfigV3(tpl){
   var cfg=TPL_CFG[tpl]||TPL_CFG["bold-retail"];var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};
   var iconEl=document.getElementById("v3-tpl-icon");var nameEl=document.getElementById("v3-tpl-name");
