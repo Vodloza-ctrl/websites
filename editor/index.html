@@ -548,7 +548,7 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-menu"><div class="panel"><div class="panel-head"><div><h2>Menu Items</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Group by category — each becomes a tab on your site</div></div><button class="btn btn-green btn-sm" onclick="addMenuItem()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="menu-rep-list"><div class="empty-state" id="menu-rep-empty"><span class="es-icon">🍽️</span><p>No menu items yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-listings"><div class="panel"><div class="panel-head"><div><h2>Property Listings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each listing appears as a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addListing()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="listings-rep-list"><div class="empty-state" id="listings-rep-empty"><span class="es-icon">🏘️</span><p>No listings yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-rooms"><div class="panel"><div class="panel-head"><div><h2>Rooms &amp; Suites</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each room becomes its own card — the first room shown is featured on your site</div></div><button class="btn btn-green btn-sm" onclick="addRoom()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="rooms-rep-list"><div class="empty-state" id="rooms-rep-empty"><span class="es-icon">🛏️</span><p>No rooms yet. Add your first room type.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-bookings"><div class="panel"><div class="panel-head"><div><h2>Bookings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Guest requests from your room booking calendar</div></div><div style="display:flex;gap:8px"><button class="btn btn-green btn-sm" id="addBookingBtn" style="display:none" onclick="openManualBookingModal()">+ Add booking</button><button class="btn btn-ghost btn-sm" onclick="loadBookings(true)">↻ Refresh</button></div></div><div class="panel-body">
+    <div class="tab-section" id="tab-bookings"><div class="panel"><div class="panel-head"><div><h2>Bookings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Guest requests and appointments</div></div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="openBlockTimeModal()">Block time off</button><button class="btn btn-green btn-sm" id="addBookingBtn" style="display:none" onclick="openManualBookingModal()">+ Add booking</button><button class="btn btn-ghost btn-sm" onclick="loadBookings(true)">↻ Refresh</button></div></div><div class="panel-body">
       <div id="bookingsPricingSection" style="display:none;margin-bottom:14px"></div>
       <div id="bookingsProUpsell" style="display:none;margin-bottom:14px"><div class="upsell-pro upsell"><div class="upsell-ico">⭐</div><div class="upsell-body"><strong>Manual entry &amp; payment tracking — Pro only</strong><p>Log phone, walk-in, and email bookings directly, and track deposits and payments with one-tap "mark as paid". Available on Bookings <b>Pro</b> ($25/mo).</p></div></div></div>
       <div class="booking-filters" id="booking-filters"></div>
@@ -619,6 +619,50 @@ img{display:block;max-width:100%}
         <div class="fld-group"><label class="fld-label">Status</label><select class="fld-select" id="mb_status"><option value="confirmed">Confirmed</option><option value="pending">Pending (tentative hold)</option></select></div>
       </div>
       <button class="btn btn-green" style="width:100%;margin-top:6px" id="mbSubmitBtn" onclick="submitManualBooking()">Add booking</button>
+    </div>
+  </div>
+</div>
+<div class="tpl-modal-overlay" id="blockTimeModal" onclick="closeBlockTimeModalOutside(event)">
+  <div class="tpl-modal-box" style="max-width:460px">
+    <div class="tpl-modal-head"><h2>Block time off</h2><button class="btn btn-ghost btn-sm" onclick="closeBlockTimeModal()">✕ Close</button></div>
+    <div class="tpl-modal-body" style="display:block">
+      <div class="fld-group"><label class="fld-label">Which resource</label><select class="fld-select" id="bt_resource_id"></select></div>
+
+      <!-- Interval fields (hospitality rooms/venues) -->
+      <div id="bt_interval_fields" style="display:none">
+        <div class="two">
+          <div class="fld-group"><label class="fld-label">From</label><input class="fld-input" type="date" id="bt_start_date"></div>
+          <div class="fld-group"><label class="fld-label">To</label><input class="fld-input" type="date" id="bt_end_date"></div>
+        </div>
+      </div>
+
+      <!-- Slot fields (stylists/consultants) -->
+      <div id="bt_slot_fields" style="display:none">
+        <div class="fld-group">
+          <label class="fld-label">Block type</label>
+          <div style="display:flex;gap:16px;margin-top:4px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;cursor:pointer"><input type="radio" name="bt_mode" id="bt_whole_day" value="whole" checked onchange="toggleBlockTimeMode()"> Whole day(s)</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;cursor:pointer"><input type="radio" name="bt_mode" id="bt_partial_day" value="partial" onchange="toggleBlockTimeMode()"> Specific hours</label>
+          </div>
+        </div>
+        <div id="bt_slot_wholeday_fields">
+          <div class="two">
+            <div class="fld-group"><label class="fld-label">From</label><input class="fld-input" type="date" id="bt_slot_date"></div>
+            <div class="fld-group"><label class="fld-label">To <span class="fld-hint">optional — leave blank for one day</span></label><input class="fld-input" type="date" id="bt_slot_end_date"></div>
+          </div>
+        </div>
+        <div id="bt_slot_hours_fields" style="display:none">
+          <div class="fld-group"><label class="fld-label">Date</label><input class="fld-input" type="date" id="bt_slot_date_single"></div>
+          <div class="two">
+            <div class="fld-group"><label class="fld-label">From</label><input class="fld-input" type="time" id="bt_start_time"></div>
+            <div class="fld-group"><label class="fld-label">To</label><input class="fld-input" type="time" id="bt_end_time"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fld-group"><label class="fld-label">Reason <span class="fld-hint">optional</span></label><input class="fld-input" id="bt_reason" placeholder="e.g. Maintenance, holiday, staff meeting"></div>
+      <div id="btMsg" style="font-size:12px;color:var(--ink3);margin-bottom:8px;display:none"></div>
+      <button class="btn btn-green" style="width:100%;margin-top:6px" id="btSubmitBtn" onclick="submitBlockTime()">Block time</button>
     </div>
   </div>
 </div>
@@ -1618,8 +1662,9 @@ async function persistSyncedContent(siteId) {
 var bookingsState = { list: [], filter: "all", loaded: false, tier: null };
 
 function bookingRoomName(resourceId) {
-  var r = (v3state.rooms || []).find(function(x) { return x.resource_id === resourceId; });
-  return (r && r.name) ? r.name : "Room";
+  if (!resourceId) return "All resources";
+  var r = (v3state.rooms || []).concat(v3state.team || []).find(function(x) { return x.resource_id === resourceId; });
+  return (r && r.name) ? r.name : "Resource";
 }
 
 function fmtBookingDate(s) {
@@ -1637,6 +1682,19 @@ function nightsBetween(a, b) {
   var da = new Date(parseInt(pa[0],10), parseInt(pa[1],10)-1, parseInt(pa[2],10));
   var db = new Date(parseInt(pb[0],10), parseInt(pb[1],10)-1, parseInt(pb[2],10));
   return Math.round((db - da) / 86400000);
+}
+
+// Slot bookings and slot-shaped blocks store start_ts/end_ts (epoch
+// seconds), not date strings -- this converts one back to Harare-local
+// date + time for display, mirroring the worker's own
+// harareLocalToUtcSec()/utcSecToHarareTimeString() in reverse. Zimbabwe is
+// UTC+2 with no DST, so this is always a fixed-offset shift.
+var HARARE_OFFSET_MS_EDITOR = 2 * 60 * 60 * 1000;
+function harareTsToDateTimeStrings(ts) {
+  var d = new Date(ts * 1000 + HARARE_OFFSET_MS_EDITOR);
+  var y = d.getUTCFullYear(), m = String(d.getUTCMonth() + 1).padStart(2, "0"), day = String(d.getUTCDate()).padStart(2, "0");
+  var h = String(d.getUTCHours()).padStart(2, "0"), min = String(d.getUTCMinutes()).padStart(2, "0");
+  return { date: y + "-" + m + "-" + day, time: h + ":" + min };
 }
 
 // ── BOOKINGS TIER (Pro gating for manual entry + payment tracking) ────────
@@ -1713,7 +1771,7 @@ function renderBookingsPricing() {
 
 window.loadBookings = async function(force) {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
-  if (tpl !== "hospitality-inn") return;
+  if (tpl !== "hospitality-inn" && !isSlotBookingTemplate(tpl)) return;
   if (!siteId) return;
   if (bookingsState.loaded && !force) { renderBookingsList(); return; }
   var listEl = document.getElementById("booking-list");
@@ -1734,8 +1792,14 @@ window.loadBookings = async function(force) {
 function renderBookingFilters() {
   var wrap = document.getElementById("booking-filters");
   if (!wrap) return;
-  var counts = { all: bookingsState.list.length, pending: 0, confirmed: 0, declined: 0 };
+  // Block rows are counted separately -- they'd otherwise inflate
+  // "Confirmed" (blocks are stored with status='confirmed' in the DB so
+  // they actually hold the time) with entries that aren't real guest
+  // bookings at all.
+  var counts = { all: 0, pending: 0, confirmed: 0, declined: 0, blocked: 0 };
   bookingsState.list.forEach(function(b) {
+    if (b.booking_type === "block") { if (b.status !== "cancelled") counts.blocked++; return; }
+    counts.all++;
     if (b.status === "pending") counts.pending++;
     else if (b.status === "confirmed") counts.confirmed++;
     else if (b.status === "declined" || b.status === "cancelled") counts.declined++;
@@ -1744,7 +1808,8 @@ function renderBookingFilters() {
     { key: "all", label: "All (" + counts.all + ")" },
     { key: "pending", label: "Pending (" + counts.pending + ")" },
     { key: "confirmed", label: "Confirmed (" + counts.confirmed + ")" },
-    { key: "declined", label: "Declined (" + counts.declined + ")" }
+    { key: "declined", label: "Declined (" + counts.declined + ")" },
+    { key: "blocked", label: "Blocked (" + counts.blocked + ")" }
   ];
   wrap.innerHTML = chips.map(function(c) {
     return '<button type="button" class="booking-filter-chip' + (bookingsState.filter === c.key ? " on" : "") + '" onclick="setBookingFilter(\'' + c.key + '\')">' + c.label + "</button>";
@@ -1761,6 +1826,8 @@ function renderBookingsList() {
   var listEl = document.getElementById("booking-list");
   if (!listEl) return;
   var items = bookingsState.list.filter(function(b) {
+    if (bookingsState.filter === "blocked") return b.booking_type === "block" && b.status !== "cancelled";
+    if (b.booking_type === "block") return false; // never mixed into the guest-booking filters below
     if (bookingsState.filter === "all") return true;
     if (bookingsState.filter === "declined") return b.status === "declined" || b.status === "cancelled";
     return b.status === bookingsState.filter;
@@ -1792,15 +1859,46 @@ function renderBookingsList() {
 function renderBookingItem(b) {
   var div = document.createElement("div");
   div.className = "booking-item";
-  var nights = nightsBetween(b.start_date, b.end_date);
+  var isBlock = b.booking_type === "block";
   var statusLabels = { pending: "Pending", confirmed: "Confirmed", declined: "Declined", cancelled: "Cancelled" };
-  var statusLabel = statusLabels[b.status] || b.status;
+  var statusLabel = isBlock ? "Blocked" : (statusLabels[b.status] || b.status);
+
+  // Date/time display branches on which fields are actually populated,
+  // not on booking_type alone -- a block row can be either shape
+  // depending on which endpoint created it (block-interval: start_date/
+  // end_date, block: start_ts/end_ts), same as a real booking can be.
+  var dateTimeHtml;
+  if (b.start_date && b.end_date) {
+    var nights = nightsBetween(b.start_date, b.end_date);
+    dateTimeHtml = '<b>' + fmtBookingDate(b.start_date) + '</b> &rarr; <b>' + fmtBookingDate(b.end_date) + '</b>' + (nights ? ' &middot; ' + nights + ' night' + (nights === 1 ? '' : 's') : '');
+  } else if (b.start_ts && b.end_ts) {
+    var startDT = harareTsToDateTimeStrings(b.start_ts);
+    var endDT = harareTsToDateTimeStrings(b.end_ts);
+    dateTimeHtml = (startDT.date === endDT.date)
+      ? ('<b>' + fmtBookingDate(startDT.date) + '</b> &middot; ' + startDT.time + '\u2013' + endDT.time)
+      : ('<b>' + fmtBookingDate(startDT.date) + ' ' + startDT.time + '</b> &rarr; <b>' + fmtBookingDate(endDT.date) + ' ' + endDT.time + '</b>');
+  } else {
+    dateTimeHtml = '\u2014';
+  }
+
   var phoneDigits = String(b.customer_phone || "").replace(/\D/g, "");
   var waLink = phoneDigits ? ("https://wa.me/" + (phoneDigits.indexOf("263") === 0 ? phoneDigits : "263" + phoneDigits.replace(/^0/, ""))) : "";
-  var sourceLabels = { web: "Website", whatsapp: "WhatsApp", phone: "Phone", walk_in: "Walk-in", email: "Email", other: "Other" };
+  var sourceLabels = { web: "Website", whatsapp: "WhatsApp", phone: "Phone", walk_in: "Walk-in", email: "Email", other: "Other", owner: "Owner" };
   var sourceLabel = sourceLabels[b.source] || b.source;
+
+  var titleLine = isBlock ? escV3(b.block_reason || "Blocked") : escV3(b.customer_name || "Guest");
+  var metaLine = isBlock
+    ? '<span style="color:var(--ink3)">No bookings can be made during this time</span>'
+    : (b.customer_phone
+        ? ('<span>' + escV3(b.customer_phone) + '</span>' + (waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener">Message on WhatsApp</a>' : ''))
+        : '<span>No phone provided</span>');
+
   var actionsHtml = "";
-  if (b.status === "pending") {
+  if (isBlock) {
+    if (b.status !== "cancelled") {
+      actionsHtml = '<div class="booking-actions"><button type="button" class="booking-btn booking-btn-cancel" onclick="setBookingStatus(\'' + b.id + '\',\'cancelled\',this)">Remove block</button></div>';
+    }
+  } else if (b.status === "pending") {
     actionsHtml = '<div class="booking-actions">'
       + '<button type="button" class="booking-btn booking-btn-confirm" onclick="setBookingStatus(\'' + b.id + '\',\'confirmed\',this)">Confirm</button>'
       + '<button type="button" class="booking-btn booking-btn-decline" onclick="setBookingStatus(\'' + b.id + '\',\'declined\',this)">Decline</button>'
@@ -1811,12 +1909,13 @@ function renderBookingItem(b) {
       + '</div>';
   }
 
-  // Pro-only: payment tracking. Only rendered when the site is actually on
-  // the Pro tier (server-enforced regardless -- this just avoids showing
+  // Pro-only: payment tracking. Never shown for blocks -- there's no
+  // customer to charge. Only rendered when the site is actually on the
+  // Pro tier (server-enforced regardless -- this just avoids showing
   // buttons that would 402). Shown for confirmed bookings, since marking a
   // pending or declined request as paid doesn't make sense.
   var paymentHtml = "";
-  if (bookingsState.tier === "pro" && b.status === "confirmed") {
+  if (!isBlock && bookingsState.tier === "pro" && b.status === "confirmed") {
     var isPaid = b.payment_status === "paid";
     paymentHtml = '<div class="booking-payment-row">'
       + '<span class="booking-payment-badge ' + (isPaid ? "paid" : "unpaid") + '">' + (isPaid ? "Paid" + (b.amount ? " — " + escV3(b.currency || "USD") + " " + escV3(String(b.amount)) : "") : "Unpaid") + '</span>'
@@ -1828,11 +1927,11 @@ function renderBookingItem(b) {
 
   div.innerHTML =
     '<div class="booking-item-top">'
-      + '<div><div class="booking-room">' + escV3(bookingRoomName(b.resource_id)) + '</div><div class="booking-guest">' + escV3(b.customer_name || "Guest") + '</div></div>'
-      + '<span class="booking-status ' + escV3(b.status || "") + '">' + escV3(statusLabel) + '</span>'
+      + '<div><div class="booking-room">' + escV3(bookingRoomName(b.resource_id)) + '</div><div class="booking-guest">' + titleLine + '</div></div>'
+      + '<span class="booking-status ' + (isBlock ? "blocked" : escV3(b.status || "")) + '">' + escV3(statusLabel) + '</span>'
     + '</div>'
-    + '<div class="booking-dates"><b>' + fmtBookingDate(b.start_date) + '</b> &rarr; <b>' + fmtBookingDate(b.end_date) + '</b> &middot; ' + nights + ' night' + (nights === 1 ? '' : 's') + ' &middot; via ' + escV3(sourceLabel) + '</div>'
-    + '<div class="booking-meta">' + (b.customer_phone ? ('<span>' + escV3(b.customer_phone) + '</span>' + (waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener">Message on WhatsApp</a>' : '')) : '<span>No phone provided</span>') + '</div>'
+    + '<div class="booking-dates">' + dateTimeHtml + (isBlock ? '' : ' &middot; via ' + escV3(sourceLabel)) + '</div>'
+    + '<div class="booking-meta">' + metaLine + '</div>'
     + actionsHtml
     + paymentHtml;
   return div;
@@ -1924,6 +2023,109 @@ window.submitManualBooking = async function() {
   }
   toast("Booking added ✓", "ok");
   closeManualBookingModal();
+  window.loadBookings(true);
+};
+
+// ── BLOCK TIME OFF (maintenance, holidays, staff time off) ─────────────────
+// Two backend shapes depending on the site's booking model:
+//   hospitality-inn (interval, date-range)  -> POST /bookings/block-interval
+//   slot-booking templates (salon, etc.)    -> POST /bookings/block
+// The modal shows only the field set relevant to whichever model this site
+// actually uses -- an owner never sees both. Un-blocking isn't handled
+// here at all -- it reuses the existing Cancel button on a block row
+// (setBookingStatus with 'cancelled'), no separate remove flow needed.
+window.openBlockTimeModal = function() {
+  var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
+  var isInterval = tpl === "hospitality-inn";
+  var isSlot = isSlotBookingTemplate(tpl);
+  if (!isInterval && !isSlot) { toast("Bookings isn't set up for this template yet", "err"); return; }
+
+  var resourceList = isInterval ? (v3state.rooms || []) : (v3state.team || []);
+  var synced = resourceList.filter(function(r) { return !!r.resource_id; });
+  var sel = document.getElementById("bt_resource_id");
+  sel.innerHTML = '<option value="">All ' + (isInterval ? "rooms" : "stylists") + '</option>'
+    + synced.map(function(r) { return '<option value="' + escV3(r.resource_id) + '">' + escV3(r.name) + '</option>'; }).join("");
+
+  document.getElementById("bt_interval_fields").style.display = isInterval ? "" : "none";
+  document.getElementById("bt_slot_fields").style.display = isSlot ? "" : "none";
+
+  set("bt_start_date", ""); set("bt_end_date", "");
+  set("bt_slot_date", ""); set("bt_slot_end_date", "");
+  set("bt_slot_date_single", ""); set("bt_start_time", ""); set("bt_end_time", "");
+  set("bt_reason", "");
+  document.getElementById("bt_whole_day").checked = true;
+  toggleBlockTimeMode();
+  var msg = document.getElementById("btMsg"); if (msg) msg.style.display = "none";
+
+  document.getElementById("blockTimeModal").classList.add("open");
+};
+window.closeBlockTimeModal = function() {
+  document.getElementById("blockTimeModal").classList.remove("open");
+};
+window.closeBlockTimeModalOutside = function(e) {
+  if (e.target === document.getElementById("blockTimeModal")) closeBlockTimeModal();
+};
+window.toggleBlockTimeMode = function() {
+  var wholeDayEl = document.getElementById("bt_whole_day");
+  var wholeDay = wholeDayEl ? wholeDayEl.checked : true;
+  document.getElementById("bt_slot_wholeday_fields").style.display = wholeDay ? "" : "none";
+  document.getElementById("bt_slot_hours_fields").style.display = wholeDay ? "none" : "";
+};
+
+window.submitBlockTime = async function() {
+  var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
+  var isInterval = tpl === "hospitality-inn";
+  var resourceId = g("bt_resource_id") || null;
+  var reason = g("bt_reason") || "Blocked";
+  var btn = document.getElementById("btSubmitBtn");
+  var msg = document.getElementById("btMsg");
+  function showMsg(text) { if (msg) { msg.style.display = "block"; msg.textContent = text; } }
+
+  var payload = { site_id: siteId, reason: reason };
+  if (resourceId) payload.resource_id = resourceId;
+  var endpoint;
+
+  if (isInterval) {
+    var sd = g("bt_start_date"), ed = g("bt_end_date");
+    if (!sd || !ed) { showMsg("Choose start and end dates"); return; }
+    payload.start_date = sd; payload.end_date = ed;
+    endpoint = "/bookings/block-interval";
+  } else {
+    var wholeDay = document.getElementById("bt_whole_day").checked;
+    if (wholeDay) {
+      var d = g("bt_slot_date");
+      if (!d) { showMsg("Choose a date"); return; }
+      payload.date = d;
+      var edSlot = g("bt_slot_end_date");
+      if (edSlot) payload.end_date = edSlot;
+    } else {
+      var d2 = g("bt_slot_date_single"), st = g("bt_start_time"), et = g("bt_end_time");
+      if (!d2 || !st || !et) { showMsg("Choose a date, start time, and end time"); return; }
+      payload.date = d2; payload.start_time = st; payload.end_time = et;
+    }
+    endpoint = "/bookings/block";
+  }
+
+  if (msg) msg.style.display = "none";
+  btn.disabled = true; btn.textContent = "Blocking…";
+  var r = await bookingsApi(endpoint, { method: "POST", body: JSON.stringify(payload) });
+  btn.disabled = false; btn.textContent = "Block time";
+
+  if (!r.ok) {
+    toast((r.data && r.data.error) || "Couldn't block that time — try again", "err");
+    return;
+  }
+  var blockedCount = (r.data && r.data.blocked) || 0;
+  var totalCount = (r.data && r.data.total) || 0;
+  if (blockedCount === 0) {
+    toast("Nothing blocked — that time may already have a confirmed booking", "err");
+    return;
+  } else if (blockedCount < totalCount) {
+    toast(blockedCount + " of " + totalCount + " blocked — the rest already had bookings", "ok");
+  } else {
+    toast("Blocked ✓", "ok");
+  }
+  closeBlockTimeModal();
   window.loadBookings(true);
 };
 
@@ -2053,7 +2255,7 @@ function applyTemplateConfigV3(tpl){
   if(iconEl)iconEl.textContent=tmeta.icon||"🏢";if(nameEl)nameEl.textContent=tmeta.name||tpl;
   var ctLabel=document.getElementById("currentTemplateLabel");if(ctLabel)ctLabel.textContent=tmeta.name||tpl;
   showNavItem("nav-v3-services",!!cfg.services);showNavItem("nav-v3-menu",!!cfg.menu);showNavItem("nav-v3-listings",!!cfg.listings);showNavItem("nav-v3-team",!!cfg.team);showNavItem("nav-v3-hours",!!cfg.hours);showNavItem("nav-v3-stats",!!cfg.stats);showNavItem("nav-v3-events",!!cfg.events);showNavItem("nav-v3-testis",true);
-  showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-bookings",!!cfg.rooms);showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);showNavItem("nav-v3-packages",!!cfg.packages);
+  showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-bookings",!!cfg.rooms||isSlotBookingTemplate(tpl));showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);showNavItem("nav-v3-packages",!!cfg.packages);
   showNavItem("nav-v3-booking-services",!!cfg.bookingServices);
   var pcPanel=document.getElementById("pageCopyPanel");
   if(pcPanel)pcPanel.style.display=cfg.pageCopy?"":"none";
@@ -2504,6 +2706,7 @@ function toast(msg,type){var wrap=document.getElementById("toastWrap");if(!wrap)
 .booking-status.pending{background:var(--gold-bg);color:var(--gold-dk)}
 .booking-status.confirmed{background:var(--green-bg);color:var(--green)}
 .booking-status.declined,.booking-status.cancelled{background:#f0f2f6;color:var(--ink3)}
+.booking-status.blocked{background:#fdecea;color:var(--red)}
 .booking-dates{font-size:13.5px;color:var(--ink2);font-weight:600;margin-bottom:4px}
 .booking-dates b{color:var(--ink)}
 .booking-meta{font-size:12.5px;color:var(--ink3);display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
