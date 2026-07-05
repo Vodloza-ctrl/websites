@@ -1278,6 +1278,15 @@ document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key
 <script>
 (function(){
 "use strict";
+// This script block is a SEPARATE closure from the first one -- it has no
+// access to that block's `var siteId`. Every Bookings function below
+// (loadBookings, bookingsApi, the pricing/purchase code) referenced a bare
+// `siteId` that was never declared in this scope at all, which is a
+// ReferenceError the moment any of them actually run -- this bug existed
+// from the moment the Bookings tab was written; it just never got
+// exercised far enough to surface until every other blocker (dead
+// resource ids, wrong domain, missing migration) was already fixed.
+var siteId=new URLSearchParams(location.search).get("site");
 var TEMPLATES_V3=[
   {id:"bold-retail",icon:"🏢",name:"General Business",desc:"Any SME — split hero, service cards, team"},
   {id:"grill-house",icon:"🍖",name:"Restaurant & Food",desc:"Full-bleed hero, menu tabs, live hours"},
