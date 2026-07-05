@@ -1659,7 +1659,7 @@ function renderBookingItem(b) {
   if (bookingsState.tier === "pro" && b.status === "confirmed") {
     var isPaid = b.payment_status === "paid";
     paymentHtml = '<div class="booking-payment-row">'
-      + '<span class="booking-payment-badge ' + (isPaid ? "paid" : "unpaid") + '">' + (isPaid ? "Paid" + (b.amount ? " — " + esc(b.currency || "USD") + " " + esc(String(b.amount)) : "") : "Unpaid") + '</span>'
+      + '<span class="booking-payment-badge ' + (isPaid ? "paid" : "unpaid") + '">' + (isPaid ? "Paid" + (b.amount ? " — " + escV3(b.currency || "USD") + " " + escV3(String(b.amount)) : "") : "Unpaid") + '</span>'
       + (isPaid ? '' : '<button type="button" class="booking-btn booking-btn-markpaid" onclick="openMarkPaidPrompt(\'' + b.id + '\')">Mark as paid</button>')
       + '<button type="button" class="booking-btn booking-btn-viewpay" onclick="toggleBookingPayments(\'' + b.id + '\',this)">Payment history</button>'
       + '</div>'
