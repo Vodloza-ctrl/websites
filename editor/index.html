@@ -264,14 +264,19 @@ img{display:block;max-width:100%}
 .prod-img-add input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .variant-chip button:hover{opacity:1}
 @media (max-width: 899px) {
-  .topbar { padding: 0 8px; gap: 6px; }
-  .topbar-logo { font-size: 14px; }
+  .topbar { padding: 0 8px; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .topbar::-webkit-scrollbar { display: none; }
+  .topbar-logo { font-size: 14px; flex-shrink: 0; }
   .topbar-logo .flag { display: none; }
   .topbar-site { display: none; }
-  .topbar-actions { gap: 5px; }
-  .topbar-actions .btn-sm { font-size: 12px; padding: 7px 9px; }
-  .topbar-actions .btn-ghost .btn-txt,
-  .topbar-actions .btn-danger .btn-txt { display: none; }
+  .topbar-actions { gap: 5px; flex-shrink: 0; }
+  .topbar-actions .btn-sm { font-size: 12px; padding: 7px 9px; white-space: nowrap; }
+  /* Button text stays visible on mobile now -- an icon-only "←" or eye
+     symbol with no label (Dashboard, Preview, Delete) was genuinely
+     ambiguous with no hover state to fall back on for touch users.
+     If the topbar ever gets too tight for a given phone width, it now
+     scrolls horizontally (see .topbar above) rather than silently
+     dropping labels -- clarity over saved pixels. */
   #saveBtn { padding: 7px 14px; }
   #undoBtn { padding: 7px 9px; font-size: 12px; }
 }
@@ -564,7 +569,7 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-testimonials"><div class="panel"><div class="panel-head"><div><h2>Testimonials</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown in an auto-scrolling carousel</div></div><button class="btn btn-green btn-sm" onclick="addTestimonial()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="testimonials-rep-list"><div class="empty-state" id="testimonials-rep-empty"><span class="es-icon">💬</span><p>No testimonials yet.</p></div></div></div></div></div>
   </main>
   <div class="preview-drawer" id="previewDrawer">
-    <div class="preview-bar"><h3>Live preview</h3><span class="preview-url" id="previewUrlLabel">—</span><button class="btn btn-ghost btn-sm" onclick="refreshPreview()">↺ Refresh</button><button class="btn btn-ghost btn-sm" onclick="togglePreview()">✕</button></div>
+    <div class="preview-bar"><h3>Live preview</h3><span class="preview-url" id="previewUrlLabel">—</span><button class="btn btn-ghost btn-sm" onclick="refreshPreview()" title="Reload the preview">↺ Refresh</button><button class="btn btn-ghost btn-sm" onclick="togglePreview()" title="Close preview, back to editing">✕ Close</button></div>
     <div class="preview-frame-wrap"><div class="preview-loading" id="previewLoading"><div class="preview-loading-ring"></div><p>Save your site to preview it</p></div><iframe class="preview-frame" id="previewFrame" title="Site preview" style="display:none"></iframe></div>
   </div>
 </div>
