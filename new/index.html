@@ -319,6 +319,7 @@ var INDS=[
   {id:"grocery",ic:"&#128722;",lb:"Grocery & Retail"},
   {id:"hardware",ic:"&#128295;",lb:"Hardware & Trade"},
   {id:"hospitality",ic:"&#127976;",lb:"Lodge / B&B / Hotel"},
+  {id:"church",ic:"&#128736;",lb:"Church / Ministry"},
   {id:"general",ic:"&#127962;",lb:"General Business"},
 ];
 var TPLS=[
@@ -332,6 +333,7 @@ var TPLS=[
   {id:"hardware-store",ic:"&#128295;",nm:"Hardware & Retail",ds:"Dense catalogue, quote builder",bg:"linear-gradient(160deg,#0d1a2e,#1a3366)",ct:"#60a5fa",inds:["hardware","grocery","general"],rec:["hardware"]},
   {id:"bold-retail",ic:"&#127962;",nm:"General Business",ds:"Split hero, service cards, team",bg:"linear-gradient(160deg,#1a1a2e,#16213e)",ct:"#e94560",inds:["food","beauty","education","professional","property","fashion","grocery","hardware","hospitality","general"],rec:["general"]},
   {id:"hospitality-inn",ic:"&#127976;",nm:"Lodge / B&B / Hotel",ds:"Room cards, WhatsApp booking, availability badges",bg:"linear-gradient(160deg,#0a1f1a,#1a4a3a)",ct:"#c8a24a",inds:["hospitality"],rec:["hospitality"]},
+  {id:"church",ic:"&#128736;",nm:"Church / Ministry",ds:"Sermon highlights, events, community focus",bg:"linear-gradient(160deg,#1a0a2e,#3d1a5c)",ct:"#c8a24a",inds:["church"],rec:["church"]},
 ];
 var CITIES=["Bulawayo","Harare","Gweru","Mutare","Masvingo","Kwekwe","Kadoma","Vic Falls"];
 // Per-industry example text, shown as placeholders on the optional "tell the
@@ -346,6 +348,7 @@ var IND_HINTS={
   grocery:{services:"Fresh produce\nBulk grains\nHousehold essentials",usp:"e.g. Lowest prices in the suburb",customers:"e.g. Local households"},
   hardware:{services:"Building materials\nPlumbing supplies\nTool hire",usp:"e.g. Same-day delivery",customers:"e.g. Contractors, homeowners"},
   hospitality:{services:"Overnight stays\nConferencing\nWeddings",usp:"e.g. Only lodge with a view of the falls",customers:"e.g. Tourists, corporate travellers"},
+  church:{services:"Sunday services\nBible study\nYouth ministry\nCommunity outreach",usp:"e.g. Welcoming community with a heart for Bulawayo",customers:"e.g. Families, young adults, all are welcome"},
   general:{services:"Consultations\nOn-site visits\nRepairs",usp:"e.g. Same-day response",customers:"e.g. Local homeowners and businesses"}
 };
 var AI_STEPS=[
