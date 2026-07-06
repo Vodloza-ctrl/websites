@@ -356,7 +356,8 @@ img{display:block;max-width:100%}
             <label class="fld-label">Website template</label>
             <select class="fld-select" id="f_template" onchange="markDirty();buildSectionsList()">
               <optgroup label="Services &amp; Professional">
-                <option value="school-institution">School / Academy / NGO / Church</option>
+                <option value="school-institution">School / Academy / NGO</option>
+                <option value="church">Church / Ministry</option>
                 <option value="bold-retail">General Business</option>
                 <option value="grill-house">Restaurant / Café / Grill</option>
                 <option value="beauty-salon">Salon / Spa / Clinic</option>
@@ -977,7 +978,7 @@ function populateForm(){
     set("f_services",Array.isArray(svcs)?svcs.map(function(s){return typeof s==="string"?s:(s.title||"");}).filter(Boolean).join("\n"):"");
   }else{set("f_name",c.business_name||state.site.site_name||"");set("f_tagline",c.tagline||"");set("f_city",c.location||"");}
   if(state.site.template_id)set("f_template",state.site.template_id);
-  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel"};
+  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel"};
   var tlabel=document.getElementById("currentTemplateLabel");
   if(tlabel)tlabel.textContent=templateNames[state.site.template_id]||state.site.template_id||"General Business";
   set("f_services_eyebrow",c.services_eyebrow||"");set("f_services_heading",c.services_heading||"");
@@ -1336,6 +1337,7 @@ var ALL_SECS_V3 = {
   "grill-house": [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
   "beauty-salon": [{key:"hero",label:"Hero banner"},{key:"services",label:"Services & prices"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
   "school-institution": [{key:"hero",label:"Hero banner"},{key:"stats",label:"Key stats"},{key:"about",label:"About us"},{key:"services",label:"Programmes"},{key:"team",label:"Leadership"},{key:"events",label:"Term dates"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"shop",label:"Shop"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
+  "church": [{key:"hero",label:"Hero banner"},{key:"times",label:"Service Times"},{key:"about",label:"About us"},{key:"values",label:"Our Values"},{key:"pastor",label:"Pastor / Leadership"},{key:"services",label:"Ministries"},{key:"events",label:"Events"},{key:"give",label:"Giving"},{key:"video",label:"Video"},{key:"products",label:"Shop"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
   "advisory-firm": [{key:"hero",label:"Hero banner"},{key:"services",label:"Practice areas"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"stats",label:"Credentials"},{key:"team",label:"The team"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
   "property-estate": [{key:"hero",label:"Listings / Hero"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"team",label:"Our agents"},{key:"testimonials",label:"Reviews"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
   "boutique-fashion": [{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
@@ -1372,6 +1374,7 @@ var TEMPLATES_V3=[
   {id:"grill-house",icon:"🍖",name:"Restaurant & Food",desc:"Full-bleed hero, menu tabs, live hours"},
   {id:"beauty-salon",icon:"💅",name:"Beauty & Wellness",desc:"Price list, before/after slider"},
   {id:"school-institution",icon:"🎓",name:"School & Academy",desc:"Stats bar, programmes, term dates"},
+  {id:"church",icon:"⛪",name:"Church / Ministry",desc:"Sermon highlights, events, community focus"},
   {id:"advisory-firm",icon:"⚖️",name:"Consultant & Legal",desc:"Minimal hero, accordion services"},
   {id:"property-estate",icon:"🏘️",name:"Real Estate",desc:"Listings as hero, filter tabs, agent cards"},
   {id:"boutique-fashion",icon:"👗",name:"Fashion & Boutique",desc:"Dark editorial, masonry grid"},
@@ -1384,6 +1387,7 @@ var TPL_CFG={
   "grill-house":{services:0,menu:1,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Services"},
   "beauty-salon":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Stylists",servicesLbl:"Services & Pricing",bookingServices:1},
   "school-institution":{services:"Programmes",menu:0,listings:0,hours:0,stats:1,events:1,team:1,teamLbl:"Staff",servicesLbl:"Programmes"},
+  "church":{services:"Ministries",menu:0,listings:0,hours:1,stats:0,events:1,team:1,teamLbl:"Leadership",servicesLbl:"Ministries",pageCopy:0},
   "advisory-firm":{services:"Practice Areas",menu:0,listings:0,hours:0,stats:1,events:0,team:1,teamLbl:"Our People",servicesLbl:"Practice Areas",bookingServices:1,pageCopy:1},
   "property-estate":{services:0,menu:0,listings:1,hours:0,stats:0,events:0,team:1,teamLbl:"Agents",servicesLbl:"Services"},
   "boutique-fashion":{services:0,menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
