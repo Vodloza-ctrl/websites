@@ -34,5 +34,6 @@
     "faith": "Church"
   },
   "navLinks": ["#about:About", "#ministries:Ministries", "#events:Events", "#give:Give", "#gallery:Gallery", "#contact:Contact"],
-  "navCtaLabel": "Plan Your Visit"
+  "navCtaLabel": "Plan Your Visit",
+  "heroImageUrl": "{{hero_image_url}}"
 }
