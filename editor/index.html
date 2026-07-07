@@ -2831,5 +2831,369 @@ function toast(msg,type){var wrap=document.getElementById("toastWrap");if(!wrap)
 .booking-payment-line:last-child{border-bottom:none}
 .ppill{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;background:var(--surface);color:var(--ink2);padding:2px 7px;border-radius:10px;margin-right:6px}
 </style>
+  <script>
+// ─── FIX: Domain modal functions (must be globally accessible) ────────────
+
+// Domain state
+var domainState = {
+  selectedType: null,
+  selectedDomain: null,
+  comResults: [],
+  isLoading: false,
+};
+
+// Open domain modal
+window.openDomainModal = function() {
+  console.log('Opening domain modal...');
+  var modal = document.getElementById('domainModal');
+  if (!modal) {
+    console.error('Domain modal not found in DOM');
+    toast('Domain selection is not available. Please try again.', 'err');
+    return;
+  }
+  
+  // Reset fields
+  document.getElementById('domainSearchInput').value = '';
+  document.getElementById('domainResults').innerHTML = '';
+  document.getElementById('cozwChoice1').value = '';
+  document.getElementById('cozwChoice2').value = '';
+  document.getElementById('cozwChoice3').value = '';
+  document.getElementById('ownDomainInput').value = '';
+  
+  domainState.selectedDomain = null;
+  domainState.selectedType = null;
+  updateDomainSummary();
+  
+  modal.classList.add('open');
+};
+
+window.closeDomainModal = function() {
+  var modal = document.getElementById('domainModal');
+  if (modal) modal.classList.remove('open');
+};
+
+window.closeDomainModalOutside = function(e) {
+  if (e.target === document.getElementById('domainModal')) {
+    closeDomainModal();
+  }
+};
+
+// Domain search
+window.searchDomain = async function() {
+  var input = document.getElementById('domainSearchInput');
+  var query = input.value.trim();
+  if (!query || query.length < 2) {
+    toast('Enter at least 2 characters to search', 'err');
+    return;
+  }
+
+  var resultsDiv = document.getElementById('domainResults');
+  var loadingDiv = document.getElementById('domainSearchLoading');
+  loadingDiv.style.display = 'block';
+  resultsDiv.innerHTML = '';
+  domainState.isLoading = true;
+
+  try {
+    var token = localStorage.getItem('wcz_token') || '';
+    var response = await fetch('https://app.websites.co.zw/api/domain/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? 'Bearer ' + token : ''
+      },
+      body: JSON.stringify({ query: query, tld: 'com' })
+    });
+
+    var data = await response.json();
+    loadingDiv.style.display = 'none';
+    domainState.isLoading = false;
+
+    if (!data.ok) {
+      resultsDiv.innerHTML = '<div style="padding:8px 0;color:var(--red);font-size:13px">' + (data.error || 'Search failed') + '</div>';
+      return;
+    }
+
+    if (data.manual) {
+      resultsDiv.innerHTML = '<div style="padding:8px 0;color:var(--ink3);font-size:13px">Use the .co.zw form above to submit your choices.</div>';
+      selectDomainType('cozw');
+      return;
+    }
+
+    domainState.comResults = data.suggestions || [];
+
+    if (domainState.comResults.length === 0) {
+      resultsDiv.innerHTML = '<div style="padding:8px 0;color:var(--ink3);font-size:13px">No results found. Try a different name.</div>';
+      return;
+    }
+
+    resultsDiv.innerHTML = domainState.comResults.map(function(s) {
+      var isSelected = domainState.selectedDomain && domainState.selectedDomain.name === s.domain;
+      return '<div class="domain-result ' + (s.available ? 'available' : 'taken') + '" ' +
+        (s.available ? 'onclick="selectComDomain(\'' + s.domain + '\',' + s.price + ')"' : '') +
+        ' style="' + (isSelected ? 'border-color:var(--green);background:var(--green-bg)' : '') + '">' +
+        '<span class="name">' + s.domain + ' ' + (isSelected ? '<span class="selected-check">✓</span>' : '') + '</span>' +
+        (s.available ? '<span class="price">$' + s.price + '/year</span>' : '<span class="taken-label">❌ Taken</span>') +
+        '</div>';
+    }).join('');
+
+  } catch (e) {
+    loadingDiv.style.display = 'none';
+    domainState.isLoading = false;
+    resultsDiv.innerHTML = '<div style="padding:8px 0;color:var(--red);font-size:13px">Network error. Please try again.</div>';
+  }
+};
+
+window.selectComDomain = function(domain, price) {
+  domainState.selectedType = 'com';
+  domainState.selectedDomain = {
+    name: domain,
+    type: 'com',
+    cost: price || 12
+  };
+  updateDomainSummary();
+  
+  // Highlight selection
+  document.querySelectorAll('.domain-result').forEach(function(el) {
+    el.style.borderColor = '';
+    el.style.background = '';
+    var nameSpan = el.querySelector('.name');
+    if (nameSpan && nameSpan.textContent.trim().replace('✓', '').trim() === domain) {
+      el.style.borderColor = 'var(--green)';
+      el.style.background = 'var(--green-bg)';
+      nameSpan.innerHTML = domain + ' <span class="selected-check">✓</span>';
+    }
+  });
+  
+  document.querySelectorAll('.domain-option').forEach(function(el) { el.classList.remove('selected'); });
+  document.getElementById('domainOptCom').classList.add('selected');
+};
+
+window.selectDomainType = function(type) {
+  document.querySelectorAll('.domain-option').forEach(function(el) { el.classList.remove('selected'); });
+  var optMap = {
+    'com': 'domainOptCom',
+    'cozw': 'domainOptCozw',
+    'own': 'domainOptOwn'
+  };
+  var opt = document.getElementById(optMap[type]);
+  if (opt) opt.classList.add('selected');
+
+  if (type === 'com') {
+    if (domainState.selectedDomain && domainState.selectedDomain.type === 'com') {
+      updateDomainSummary();
+      return;
+    }
+    domainState.selectedType = 'com';
+    domainState.selectedDomain = null;
+    updateDomainSummary();
+  } else if (type === 'cozw') {
+    var c1 = document.getElementById('cozwChoice1').value.trim();
+    var c2 = document.getElementById('cozwChoice2').value.trim();
+    var c3 = document.getElementById('cozwChoice3').value.trim();
+    if (c1 || c2 || c3) {
+      var choices = [c1, c2, c3].filter(Boolean);
+      domainState.selectedType = 'cozw';
+      domainState.selectedDomain = {
+        choices: choices,
+        type: 'cozw',
+        cost: 10
+      };
+      updateDomainSummary();
+    } else {
+      domainState.selectedType = 'cozw';
+      domainState.selectedDomain = null;
+      updateDomainSummary();
+    }
+  } else if (type === 'own') {
+    var own = document.getElementById('ownDomainInput').value.trim();
+    if (own) {
+      domainState.selectedType = 'own';
+      domainState.selectedDomain = {
+        name: own,
+        type: 'own',
+        cost: 0
+      };
+      updateDomainSummary();
+    } else {
+      domainState.selectedType = 'own';
+      domainState.selectedDomain = null;
+      updateDomainSummary();
+    }
+  }
+};
+
+window.updateCozwPreview = function() {
+  var c1 = document.getElementById('cozwChoice1').value.trim();
+  var c2 = document.getElementById('cozwChoice2').value.trim();
+  var c3 = document.getElementById('cozwChoice3').value.trim();
+  var choices = [c1, c2, c3].filter(Boolean);
+  
+  if (choices.length > 0) {
+    domainState.selectedType = 'cozw';
+    domainState.selectedDomain = {
+      choices: choices,
+      type: 'cozw',
+      cost: 10
+    };
+  } else {
+    domainState.selectedDomain = null;
+  }
+  updateDomainSummary();
+  
+  if (domainState.selectedType === 'cozw') {
+    document.querySelectorAll('.domain-option').forEach(function(el) { el.classList.remove('selected'); });
+    document.getElementById('domainOptCozw').classList.add('selected');
+  }
+};
+
+window.updateOwnPreview = function() {
+  var own = document.getElementById('ownDomainInput').value.trim();
+  if (own) {
+    domainState.selectedType = 'own';
+    domainState.selectedDomain = {
+      name: own,
+      type: 'own',
+      cost: 0
+    };
+    document.querySelectorAll('.domain-option').forEach(function(el) { el.classList.remove('selected'); });
+    document.getElementById('domainOptOwn').classList.add('selected');
+  } else {
+    domainState.selectedDomain = null;
+  }
+  updateDomainSummary();
+};
+
+window.updateDomainSummary = function() {
+  var summary = document.getElementById('selectedDomainSummary');
+  var nameEl = document.getElementById('selectedDomainName');
+  var costEl = document.getElementById('selectedDomainCost');
+  var btn = document.getElementById('confirmDomainBtn');
+
+  if (domainState.selectedDomain) {
+    summary.style.display = 'block';
+    if (domainState.selectedDomain.type === 'com') {
+      nameEl.textContent = domainState.selectedDomain.name;
+      costEl.textContent = '$' + domainState.selectedDomain.cost + '/year';
+    } else if (domainState.selectedDomain.type === 'cozw') {
+      var choices = domainState.selectedDomain.choices || [];
+      var display = choices.length > 0 ? choices[0] + '.co.zw' + (choices.length > 1 ? ' (+' + (choices.length - 1) + ' more)' : '');
+      nameEl.textContent = display || 'Choices submitted';
+      costEl.textContent = '$' + domainState.selectedDomain.cost + '/year';
+    } else if (domainState.selectedDomain.type === 'own') {
+      nameEl.textContent = domainState.selectedDomain.name || 'Your own domain';
+      costEl.textContent = '$0/year';
+    }
+    btn.disabled = false;
+  } else {
+    summary.style.display = 'none';
+    btn.disabled = true;
+  }
+};
+
+window.confirmDomainSelection = function() {
+  if (!domainState.selectedDomain) {
+    toast('Please select a domain', 'err');
+    return;
+  }
+  closeDomainModal();
+  doPublish(domainState.selectedDomain);
+};
+
+// ─── OVERRIDE PUBLISH FUNCTIONS ────────────────────────────────────────────
+
+// Store original functions if they exist
+var _origOnPublish = window.onPublish;
+var _origOnPublishPro = window.onPublishPro;
+
+// Override with domain modal
+window.onPublish = function() {
+  console.log('Publish clicked - opening domain modal');
+  openDomainModal();
+};
+
+window.onPublishPro = function() {
+  console.log('Pro publish clicked - opening domain modal');
+  openDomainModal();
+};
+
+// Actual publish function
+window.doPublish = async function(domainData) {
+  var siteId = new URLSearchParams(location.search).get('site');
+  if (!siteId) {
+    toast('No site selected', 'err');
+    return;
+  }
+
+  var plan = 'starter';
+  var currency = 'USD';
+  
+  var payloadDomainData = null;
+  if (domainData) {
+    if (domainData.type === 'com') {
+      payloadDomainData = {
+        name: domainData.name,
+        type: 'com',
+        cost: domainData.cost || 12
+      };
+    } else if (domainData.type === 'cozw') {
+      payloadDomainData = {
+        choices: domainData.choices || [],
+        type: 'cozw',
+        cost: domainData.cost || 10
+      };
+    } else if (domainData.type === 'own') {
+      payloadDomainData = {
+        name: domainData.name,
+        type: 'own',
+        cost: 0
+      };
+    }
+  }
+
+  var body = {
+    plan: plan,
+    currency: currency,
+    domain_data: payloadDomainData
+  };
+
+  try {
+    var token = localStorage.getItem('wcz_token') || '';
+    toast('Initiating payment...', 'ok');
+    
+    var response = await fetch('https://app.websites.co.zw/api/sites/' + encodeURIComponent(siteId) + '/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? 'Bearer ' + token : ''
+      },
+      body: JSON.stringify(body)
+    });
+
+    var data = await response.json();
+    
+    if (!response.ok) {
+      toast(data.error || 'Payment initialization failed', 'err');
+      console.error('Publish error:', data);
+      return;
+    }
+
+    if (data.payment_url) {
+      toast('Redirecting to payment...', 'ok');
+      window.location.href = data.payment_url;
+    } else if (data.redirect_url) {
+      toast('Redirecting to payment...', 'ok');
+      window.location.href = data.redirect_url;
+    } else {
+      toast('Payment URL not received', 'err');
+      console.error('No payment URL in response:', data);
+    }
+  } catch (e) {
+    toast('Network error. Please try again.', 'err');
+    console.error('Publish network error:', e);
+  }
+};
+
+console.log('Domain modal functions loaded successfully!');
+</script>
 </body>
 </html>
