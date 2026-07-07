@@ -10,7 +10,8 @@
 <meta property="og:image" content="{{hero_image_url}}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Google Fonts - dynamically loaded based on font pair -->
+<link id="google-fonts-link" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 {{wcz_commerce_css}}
 <style>
 /* ── TOKENS ─────────────────────────────────────────────
@@ -35,19 +36,28 @@
   --line2: rgba(44,26,14,.22);
   --r: 12px;
   --r-sm: 8px;
-  --display: "Fraunces", serif;
-  --sans: "Plus Jakarta Sans", sans-serif;
   --shadow: 0 4px 24px rgba(44,26,14,.08);
   --shadow-lg: 0 20px 60px rgba(44,26,14,.15);
   /* Dynamic palette variables */
   --nav-bg: rgba(250,245,238,0);
   --nav-scrolled-bg: rgba(250,245,238,.93);
   --hero-overlay: linear-gradient(0deg,rgba(44,26,14,.85) 0%,rgba(44,26,14,.3) 70%);
+  /* Font variables - will be overridden by JS */
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-head: "Fraunces", serif;
+}
+
+/* ── FONT OVERRIDES ───────────────────────────────────── */
+body, body * { font-family: var(--font-body); }
+h1, h2, h3, h4, h5, h6,
+h1 *, h2 *, h3 *, h4 *, h5 *, h6 *,
+.hero-h1, .nav-logo, .display-font {
+  font-family: var(--font-head);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;font-size:16px}
-body{font-family:var(--sans);background:var(--cream);color:var(--ink);line-height:1.65;overflow-x:hidden}
+body{font-family:var(--font-body);background:var(--cream);color:var(--ink);line-height:1.65;overflow-x:hidden}
 img{max-width:100%;height:auto;display:block}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
@@ -55,7 +65,7 @@ ul{list-style:none}
 ::selection{background:var(--amber);color:#fff}
 
 .wrap{max-width:1120px;margin:0 auto;padding:0 26px}
-.eyebrow{font-family:var(--sans);font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:10px}
+.eyebrow{font-family:var(--font-body);font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:10px}
 .eyebrow::before{content:'';display:block;width:28px;height:2px;background:var(--amber)}
 .eyebrow-center{text-align:center;justify-content:center}
 .eyebrow-center::before{display:none}
@@ -85,7 +95,7 @@ ul{list-style:none}
 #nav.scrolled .nav-links a:hover{
   color:var(--warm);
 }
-.nav-logo{font-family:var(--display);font-size:1.08rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.nav-logo{font-family:var(--font-head);font-size:1.08rem;font-weight:700;display:flex;align-items:center;gap:10px}
 /* HIDE the cross icon when logo exists */
 .nav-logo .cross{width:32px;height:32px;border-radius:8px;background:var(--warm);display:grid;place-items:center;flex:none;color:var(--amber)}
 .nav-logo .cross svg{width:16px;height:16px}
@@ -97,13 +107,13 @@ ul{list-style:none}
 .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1.5px;background:var(--amber);transition:width .25s}
 .nav-links a:hover::after{width:100%}
 .nav-cta{
-  font-family:var(--sans);font-size:.8rem;font-weight:600;
+  font-family:var(--font-body);font-size:.8rem;font-weight:600;
   padding:10px 20px;background:var(--warm);color:#fff;border-radius:var(--r-sm);
   transition:background .2s,transform .1s;display:flex;align-items:center;gap:8px;
 }
 .nav-cta:hover{background:var(--amber);transform:translateY(-1px)}
 .nav-wa{
-  font-family:var(--sans);font-size:.75rem;font-weight:600;
+  font-family:var(--font-body);font-size:.75rem;font-weight:600;
   padding:9px 16px;background:#25D366;color:#fff;border-radius:var(--r-sm);
   transition:background .2s,transform .1s;display:flex;align-items:center;gap:8px;
 }
@@ -117,7 +127,7 @@ ul{list-style:none}
   flex-direction:column;align-items:center;justify-content:center;gap:24px;
 }
 #nav-mob.open{display:flex}
-#nav-mob a{font-family:var(--display);font-size:1.3rem;font-weight:600;color:var(--ink);transition:color .2s}
+#nav-mob a{font-family:var(--font-head);font-size:1.3rem;font-weight:600;color:var(--ink);transition:color .2s}
 #nav-mob a:hover{color:var(--amber)}
 .mob-close{position:absolute;top:26px;right:26px;font-size:1.4rem;opacity:.5;cursor:pointer;transition:opacity .2s}
 .mob-close:hover{opacity:1}
@@ -126,7 +136,6 @@ ul{list-style:none}
 #hero{position:relative;min-height:72vh;display:flex;align-items:center;color:#fff;padding-top:72px;background:var(--warm);}
 #hero .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:none;}
 #hero.has-hero .hero-bg{display:block;}
-#hero:has(.hero-bg[src]:not([src=""])) .hero-bg{display:block;}
 #hero::after{
   content:"";
   position:absolute;
@@ -139,7 +148,7 @@ ul{list-style:none}
 #hero:not(.has-hero)::after{display:none;}
 .hero-wrap{position:relative;z-index:2;padding:60px 26px;width:100%}
 .hero-eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--amber2)}
-.hero-h1{font-family:var(--display);font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:700;line-height:1.08;margin:14px 0 18px;max-width:18ch}
+.hero-h1{font-family:var(--font-head);font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:700;line-height:1.08;margin:14px 0 18px;max-width:18ch}
 .hero-h1 em{font-style:normal;color:var(--amber2)}
 .hero-sub{font-size:1.12rem;max-width:44ch;color:rgba(255,255,255,.88);line-height:1.7}
 .hero-actions{display:flex;gap:14px;margin-top:28px;flex-wrap:wrap}
@@ -150,10 +159,10 @@ ul{list-style:none}
 section.pane{padding:72px 0}
 section.pane-alt{background:var(--paper);padding:72px 0}
 .sec-head{text-align:center;max-width:640px;margin:0 auto 48px}
-.sec-head h2{font-family:var(--display);font-size:clamp(1.9rem,3.5vw,2.8rem);font-weight:600;margin-top:10px;line-height:1.1}
+.sec-head h2{font-family:var(--font-head);font-size:clamp(1.9rem,3.5vw,2.8rem);font-weight:600;margin-top:10px;line-height:1.1}
 .sec-head p{color:var(--ink2);margin-top:10px;font-size:1.05rem}
 
-.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem;padding:12px 24px;border-radius:var(--r-sm);transition:background .2s,transform .1s;border:none;cursor:pointer;font-family:var(--sans)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem;padding:12px 24px;border-radius:var(--r-sm);transition:background .2s,transform .1s;border:none;cursor:pointer;font-family:var(--font-body)}
 .btn-primary{background:var(--warm);color:#fff}
 .btn-primary:hover{background:var(--amber);transform:translateY(-1px)}
 .btn-outline{background:transparent;border:1.5px solid var(--warm);color:var(--warm)}
@@ -178,7 +187,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .vcard:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
 .vcard .icon-wrap{width:52px;height:52px;border-radius:12px;background:var(--cream);display:grid;place-items:center;margin:0 auto 16px;color:var(--amber)}
 .vcard .icon-wrap svg{width:26px;height:26px}
-.vcard h3{font-family:var(--display);font-size:1.1rem;margin-bottom:8px}
+.vcard h3{font-family:var(--font-head);font-size:1.1rem;margin-bottom:8px}
 .vcard p{font-size:.9rem;color:var(--ink2);line-height:1.5}
 
 /* ── PASTOR / LEADERSHIP ────────────────────────────────*/
@@ -187,7 +196,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .pastor-img-wrap{position:relative}
 .pastor-img-wrap .icon-wrap{position:absolute;bottom:16px;left:16px;background:var(--cream);border-radius:var(--r-sm);padding:8px;color:var(--amber)}
 .pastor-kicker{font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:700}
-.pastor-grid h2{font-family:var(--display);font-size:clamp(1.8rem,3vw,2.6rem);margin:12px 0 16px}
+.pastor-grid h2{font-family:var(--font-head);font-size:clamp(1.8rem,3vw,2.6rem);margin:12px 0 16px}
 .pastor-grid p{color:var(--ink2);font-size:1.02rem;line-height:1.7;margin-bottom:12px}
 
 /* ── MINISTRIES ──────────────────────────────────────────*/
@@ -196,7 +205,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .mcard:hover{box-shadow:var(--shadow)}
 .mcard .icon-wrap{width:44px;height:44px;border-radius:10px;background:var(--cream);display:grid;place-items:center;flex:none;color:var(--amber)}
 .mcard .icon-wrap svg{width:22px;height:22px}
-.mcard h3{font-family:var(--display);font-size:1rem;margin-bottom:6px}
+.mcard h3{font-family:var(--font-head);font-size:1rem;margin-bottom:6px}
 .mcard p{font-size:.88rem;color:var(--ink2);line-height:1.5}
 
 /* ── EVENTS ──────────────────────────────────────────────*/
@@ -204,7 +213,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .event-item{display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px;transition:box-shadow .2s}
 .event-item:hover{box-shadow:var(--shadow)}
 .event-date{text-align:center;background:var(--warm);border-radius:var(--r-sm);padding:6px 0;color:#fff;min-width:48px}
-.event-date .day{font-family:var(--display);font-size:1.4rem;font-weight:600;line-height:1}
+.event-date .day{font-family:var(--font-head);font-size:1.4rem;font-weight:600;line-height:1}
 .event-date .month{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em}
 .event-info h3{font-size:.96rem;font-weight:600}
 .event-info p{font-size:.84rem;color:var(--ink2);margin-top:2px}
@@ -214,7 +223,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .give-band{background:var(--warm);color:#fff;text-align:center;border-radius:var(--r);padding:54px 40px}
 .give-band .eyebrow{color:var(--amber2);justify-content:center}
 .give-band .eyebrow::before{display:none}
-.give-band h2{font-family:var(--display);font-size:clamp(2rem,3.5vw,2.8rem);margin:10px 0 14px}
+.give-band h2{font-family:var(--font-head);font-size:clamp(2rem,3.5vw,2.8rem);margin:10px 0 14px}
 .give-band p{color:rgba(255,255,255,.8);max-width:44ch;margin:0 auto 28px;font-size:1.05rem;line-height:1.7}
 
 /* ── LOCATION ────────────────────────────────────────────*/
@@ -223,7 +232,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .location-map iframe{width:100%;height:100%;border:0}
 .location-map .map-placeholder{opacity:.3}
 .location-map .map-placeholder svg{width:48px;height:48px}
-.address-box h3{font-family:var(--display);font-size:1.4rem;margin-bottom:16px}
+.address-box h3{font-family:var(--font-head);font-size:1.4rem;margin-bottom:16px}
 .addr-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
 .addr-row .icon{color:var(--amber);flex:none;width:22px;text-align:center;margin-top:2px}
 .addr-row p{font-size:.92rem;color:var(--ink2);line-height:1.5}
@@ -231,7 +240,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 /* ── COMMERCE / PRODUCTS ──────────────────────────────────*/
 .cat-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
 .cat-filter-bar .fr-cat{
-  font-family:var(--sans);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
+  font-family:var(--font-body);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;
   padding:8px 18px;border:1px solid var(--line2);border-radius:20px;color:var(--ink2);
   cursor:pointer;transition:border-color .15s,background .15s,color .15s;background:transparent;
 }
@@ -260,7 +269,7 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .team-photo .icon-wrap{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.15)}
 .team-photo .icon-wrap svg{width:40px;height:40px}
 .team-info{padding:16px 14px 20px}
-.team-name{font-family:var(--display);font-size:1rem;font-weight:600}
+.team-name{font-family:var(--font-head);font-size:1rem;font-weight:600}
 .team-role{font-size:.78rem;color:var(--ink2);margin-top:4px}
 .team-bio{font-size:.84rem;color:var(--ink3);margin-top:8px;line-height:1.5}
 
@@ -301,13 +310,13 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 .contact-cta{background:var(--warm);color:#fff;border-radius:var(--r);padding:42px 36px}
 .contact-cta .eyebrow{color:var(--amber2)}
 .contact-cta .eyebrow::before{background:var(--amber2)}
-.contact-cta h3{font-family:var(--display);font-size:1.6rem;margin:12px 0 16px}
+.contact-cta h3{font-family:var(--font-head);font-size:1.6rem;margin:12px 0 16px}
 .contact-cta p{opacity:.8;line-height:1.7;margin-bottom:24px;font-size:.95rem}
 
 /* ── FOOTER ──────────────────────────────────────────── */
 footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
 .footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-.footer-brand{font-family:var(--display);font-size:1rem;font-weight:700;color:#fff}
+.footer-brand{font-family:var(--font-head);font-size:1rem;font-weight:700;color:#fff}
 .footer-links{display:flex;gap:20px}
 .footer-links a{font-size:.82rem;color:rgba(255,255,255,.6);transition:color .2s}
 .footer-links a:hover{color:#fff}
@@ -450,7 +459,7 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
   <a href="#give" class="mob-link">Give</a>
   {{#if has_products}}<a href="#shop" class="mob-link">Shop</a>{{/if}}
   <a href="#contact" class="mob-link">Contact</a>
-  <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open')" style="color:var(--amber);font-family:var(--display);font-size:1.3rem;font-weight:600">My order</button>
+  <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open')" style="color:var(--amber);font-family:var(--font-head);font-size:1.3rem;font-weight:600">My order</button>
 </div>
 
 <!-- ALL SECTIONS RENDERED IN ORDER FROM THE EDITOR -->
@@ -500,6 +509,37 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
 (function(){
 'use strict';
 
+// ── FONT PAIR SYSTEM ──────────────────────────────────
+// Map of font pairs - matches config
+var FONT_PAIRS = {
+  'clean-sans': { body: "'Space Grotesk',sans-serif", head: "'Space Grotesk',sans-serif", google: "Space+Grotesk:wght@400;500;600;700" },
+  'grotesk-serif': { body: "'Hanken Grotesk',sans-serif", head: "'Fraunces',serif", google: "Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700|Hanken+Grotesk:wght@400;500;600;700" },
+  'playfair-jakarta': { body: "'Plus Jakarta Sans',sans-serif", head: "'Playfair Display',serif", google: "Playfair+Display:wght@500;600;700|Plus+Jakarta+Sans:wght@400;500;600;700" },
+  'garamond-jost': { body: "'Jost',sans-serif", head: "'Cormorant Garamond',serif", google: "Cormorant+Garamond:wght@500;600;700|Jost:wght@400;500;600;700" },
+  'sports-sans': { body: "'Barlow',sans-serif", head: "'Barlow Condensed',sans-serif", google: "Barlow:wght@400;500;600;700|Barlow+Condensed:wght@500;600;700" },
+  'display-mono': { body: "'DM Sans',sans-serif", head: "'DM Mono',monospace", google: "DM+Sans:wght@400;500;600;700|DM+Mono:wght@400;500" }
+};
+var DEFAULT_FONT = 'grotesk-serif';
+
+function loadFontPair(pairKey) {
+  var pair = FONT_PAIRS[pairKey] || FONT_PAIRS[DEFAULT_FONT];
+  // Update CSS variables
+  document.documentElement.style.setProperty('--font-body', pair.body);
+  document.documentElement.style.setProperty('--font-head', pair.head);
+  // Update Google Fonts link
+  var link = document.getElementById('google-fonts-link');
+  if (link) {
+    var family = pair.google;
+    if (family) {
+      // Only set if not already loading these fonts
+      var href = 'https://fonts.googleapis.com/css2?family=' + family + '&display=swap';
+      if (link.getAttribute('href') !== href) {
+        link.setAttribute('href', href);
+      }
+    }
+  }
+}
+
 // ── NAV ────────────────────────────────────────────────
 var nav = document.getElementById('nav');
 window.addEventListener('scroll', function(){
@@ -534,25 +574,61 @@ function checkHeroImage() {
   var heroImg = hero.querySelector('.hero-bg');
   if (!heroImg) return;
   
-  // Check if image has a valid src
+  // Check if image has a valid src - look at the actual src attribute value
   var src = heroImg.getAttribute('src');
-  if (src && src !== '' && src !== '#' && !src.includes('placeholder')) {
+  // Also check if there's a data attribute from the renderer
+  var dataSrc = heroImg.getAttribute('data-src') || heroImg.getAttribute('data-hero-url');
+  var effectiveSrc = dataSrc || src;
+  
+  // Check if it's a valid URL (not empty, not placeholder, not just #)
+  if (effectiveSrc && effectiveSrc !== '' && effectiveSrc !== '#' && 
+      !effectiveSrc.includes('placeholder') && !effectiveSrc.includes('data:image')) {
     hero.classList.add('has-hero');
-    console.log('Hero image found:', src);
+    // Ensure the img src is set properly
+    if (src !== effectiveSrc) {
+      heroImg.setAttribute('src', effectiveSrc);
+    }
+    console.log('Hero image found:', effectiveSrc);
   } else {
     console.log('No hero image found, using fallback');
+    // Try to find hero image from site data
+    if (window.state && window.state.content && window.state.content.content) {
+      var content = window.state.content.content;
+      if (content.images && content.images.hero) {
+        heroImg.setAttribute('src', content.images.hero);
+        hero.classList.add('has-hero');
+        console.log('Hero image loaded from state:', content.images.hero);
+      } else if (content.hero_image_url) {
+        heroImg.setAttribute('src', content.hero_image_url);
+        hero.classList.add('has-hero');
+        console.log('Hero image loaded from hero_image_url:', content.hero_image_url);
+      }
+    }
   }
 }
 
 // Run on load and after any DOM updates
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', checkHeroImage);
+  document.addEventListener('DOMContentLoaded', function() {
+    checkHeroImage();
+    // Load font pair from theme if available
+    if (window.state && window.state.content && window.state.content.theme) {
+      var fontPair = window.state.content.theme.font_pair || DEFAULT_FONT;
+      loadFontPair(fontPair);
+    }
+  });
 } else {
   checkHeroImage();
+  if (window.state && window.state.content && window.state.content.theme) {
+    var fontPair = window.state.content.theme.font_pair || DEFAULT_FONT;
+    loadFontPair(fontPair);
+  }
 }
 
 // Also check after a short delay for dynamic content
-setTimeout(checkHeroImage, 500);
+setTimeout(function() {
+  checkHeroImage();
+}, 500);
 
 // ── GALLERY LIGHTBOX ──────────────────────────────────
 var lbEl    = document.getElementById('lb');
