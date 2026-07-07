@@ -36,5 +36,14 @@
   "navLinks": ["#about:About", "#ministries:Ministries", "#events:Events", "#give:Give", "#gallery:Gallery", "#contact:Contact"],
   "navCtaLabel": "Plan Your Visit",
   "heroImageField": "hero_image",
-  "heroImageUrl": "{{hero_image_url}}"
+  "heroImageUrl": "{{hero_image_url}}",
+  "fontPairs": [
+    { "key": "clean-sans", "name": "Clean Sans", "body": "'Space Grotesk',sans-serif", "head": "'Space Grotesk',sans-serif" },
+    { "key": "grotesk-serif", "name": "Grotesk Serif", "body": "'Hanken Grotesk',sans-serif", "head": "'Fraunces',serif" },
+    { "key": "playfair-jakarta", "name": "Playfair", "body": "'Plus Jakarta Sans',sans-serif", "head": "'Playfair Display',serif" },
+    { "key": "garamond-jost", "name": "Garamond Jost", "body": "'Jost',sans-serif", "head": "'Cormorant Garamond',serif" },
+    { "key": "sports-sans", "name": "Sports Sans", "body": "'Barlow',sans-serif", "head": "'Barlow Condensed',sans-serif" },
+    { "key": "display-mono", "name": "Display Mono", "body": "'DM Sans',sans-serif", "head": "'DM Mono',monospace" }
+  ],
+  "defaultFontPair": "grotesk-serif"
 }
