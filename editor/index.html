@@ -2832,7 +2832,7 @@ function toast(msg,type){var wrap=document.getElementById("toastWrap");if(!wrap)
 .ppill{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;background:var(--surface);color:var(--ink2);padding:2px 7px;border-radius:10px;margin-right:6px}
 </style>
   <script>
-// ─── FIX: Domain modal functions (must be globally accessible) ────────────
+// ─── DOMAIN MODAL FUNCTIONS (Globally accessible) ──────────────────────────
 
 // Domain state
 var domainState = {
@@ -2842,23 +2842,40 @@ var domainState = {
   isLoading: false,
 };
 
-// Open domain modal
+// ── Toast fallback (uses the existing toast if available) ──
+function domainToast(msg, type) {
+  if (typeof toast === 'function') {
+    toast(msg, type);
+  } else {
+    // Fallback alert if toast isn't available
+    alert(msg);
+  }
+}
+
+// ── Open domain modal ──
 window.openDomainModal = function() {
   console.log('Opening domain modal...');
   var modal = document.getElementById('domainModal');
   if (!modal) {
     console.error('Domain modal not found in DOM');
-    toast('Domain selection is not available. Please try again.', 'err');
+    domainToast('Domain selection is not available. Please try again.', 'err');
     return;
   }
   
   // Reset fields
-  document.getElementById('domainSearchInput').value = '';
-  document.getElementById('domainResults').innerHTML = '';
-  document.getElementById('cozwChoice1').value = '';
-  document.getElementById('cozwChoice2').value = '';
-  document.getElementById('cozwChoice3').value = '';
-  document.getElementById('ownDomainInput').value = '';
+  var searchInput = document.getElementById('domainSearchInput');
+  var resultsDiv = document.getElementById('domainResults');
+  var c1 = document.getElementById('cozwChoice1');
+  var c2 = document.getElementById('cozwChoice2');
+  var c3 = document.getElementById('cozwChoice3');
+  var ownInput = document.getElementById('ownDomainInput');
+  
+  if (searchInput) searchInput.value = '';
+  if (resultsDiv) resultsDiv.innerHTML = '';
+  if (c1) c1.value = '';
+  if (c2) c2.value = '';
+  if (c3) c3.value = '';
+  if (ownInput) ownInput.value = '';
   
   domainState.selectedDomain = null;
   domainState.selectedType = null;
@@ -2878,18 +2895,25 @@ window.closeDomainModalOutside = function(e) {
   }
 };
 
-// Domain search
+// ── Domain search ──
 window.searchDomain = async function() {
   var input = document.getElementById('domainSearchInput');
+  if (!input) {
+    domainToast('Search input not found', 'err');
+    return;
+  }
+  
   var query = input.value.trim();
   if (!query || query.length < 2) {
-    toast('Enter at least 2 characters to search', 'err');
+    domainToast('Enter at least 2 characters to search', 'err');
     return;
   }
 
   var resultsDiv = document.getElementById('domainResults');
   var loadingDiv = document.getElementById('domainSearchLoading');
-  loadingDiv.style.display = 'block';
+  if (!resultsDiv) return;
+  
+  if (loadingDiv) loadingDiv.style.display = 'block';
   resultsDiv.innerHTML = '';
   domainState.isLoading = true;
 
@@ -2905,7 +2929,7 @@ window.searchDomain = async function() {
     });
 
     var data = await response.json();
-    loadingDiv.style.display = 'none';
+    if (loadingDiv) loadingDiv.style.display = 'none';
     domainState.isLoading = false;
 
     if (!data.ok) {
@@ -2937,7 +2961,7 @@ window.searchDomain = async function() {
     }).join('');
 
   } catch (e) {
-    loadingDiv.style.display = 'none';
+    if (loadingDiv) loadingDiv.style.display = 'none';
     domainState.isLoading = false;
     resultsDiv.innerHTML = '<div style="padding:8px 0;color:var(--red);font-size:13px">Network error. Please try again.</div>';
   }
@@ -2965,7 +2989,8 @@ window.selectComDomain = function(domain, price) {
   });
   
   document.querySelectorAll('.domain-option').forEach(function(el) { el.classList.remove('selected'); });
-  document.getElementById('domainOptCom').classList.add('selected');
+  var comOpt = document.getElementById('domainOptCom');
+  if (comOpt) comOpt.classList.add('selected');
 };
 
 window.selectDomainType = function(type) {
@@ -2987,11 +3012,14 @@ window.selectDomainType = function(type) {
     domainState.selectedDomain = null;
     updateDomainSummary();
   } else if (type === 'cozw') {
-    var c1 = document.getElementById('cozwChoice1').value.trim();
-    var c2 = document.getElementById('cozwChoice2').value.trim();
-    var c3 = document.getElementById('cozwChoice3').value.trim();
-    if (c1 || c2 || c3) {
-      var choices = [c1, c2, c3].filter(Boolean);
+    var c1 = document.getElementById('cozwChoice1');
+    var c2 = document.getElementById('cozwChoice2');
+    var c3 = document.getElementById('cozwChoice3');
+    var val1 = c1 ? c1.value.trim() : '';
+    var val2 = c2 ? c2.value.trim() : '';
+    var val3 = c3 ? c3.value.trim() : '';
+    if (val1 || val2 || val3) {
+      var choices = [val1, val2, val3].filter(Boolean);
       domainState.selectedType = 'cozw';
       domainState.selectedDomain = {
         choices: choices,
@@ -3005,7 +3033,8 @@ window.selectDomainType = function(type) {
       updateDomainSummary();
     }
   } else if (type === 'own') {
-    var own = document.getElementById('ownDomainInput').value.trim();
+    var ownInput = document.getElementById('ownDomainInput');
+    var own = ownInput ? ownInput.value.trim() : '';
     if (own) {
       domainState.selectedType = 'own';
       domainState.selectedDomain = {
@@ -3023,10 +3052,13 @@ window.selectDomainType = function(type) {
 };
 
 window.updateCozwPreview = function() {
-  var c1 = document.getElementById('cozwChoice1').value.trim();
-  var c2 = document.getElementById('cozwChoice2').value.trim();
-  var c3 = document.getElementById('cozwChoice3').value.trim();
-  var choices = [c1, c2, c3].filter(Boolean);
+  var c1 = document.getElementById('cozwChoice1');
+  var c2 = document.getElementById('cozwChoice2');
+  var c3 = document.getElementById('cozwChoice3');
+  var val1 = c1 ? c1.value.trim() : '';
+  var val2 = c2 ? c2.value.trim() : '';
+  var val3 = c3 ? c3.value.trim() : '';
+  var choices = [val1, val2, val3].filter(Boolean);
   
   if (choices.length > 0) {
     domainState.selectedType = 'cozw';
@@ -3042,12 +3074,14 @@ window.updateCozwPreview = function() {
   
   if (domainState.selectedType === 'cozw') {
     document.querySelectorAll('.domain-option').forEach(function(el) { el.classList.remove('selected'); });
-    document.getElementById('domainOptCozw').classList.add('selected');
+    var opt = document.getElementById('domainOptCozw');
+    if (opt) opt.classList.add('selected');
   }
 };
 
 window.updateOwnPreview = function() {
-  var own = document.getElementById('ownDomainInput').value.trim();
+  var ownInput = document.getElementById('ownDomainInput');
+  var own = ownInput ? ownInput.value.trim() : '';
   if (own) {
     domainState.selectedType = 'own';
     domainState.selectedDomain = {
@@ -3056,7 +3090,8 @@ window.updateOwnPreview = function() {
       cost: 0
     };
     document.querySelectorAll('.domain-option').forEach(function(el) { el.classList.remove('selected'); });
-    document.getElementById('domainOptOwn').classList.add('selected');
+    var opt = document.getElementById('domainOptOwn');
+    if (opt) opt.classList.add('selected');
   } else {
     domainState.selectedDomain = null;
   }
@@ -3070,29 +3105,29 @@ window.updateDomainSummary = function() {
   var btn = document.getElementById('confirmDomainBtn');
 
   if (domainState.selectedDomain) {
-    summary.style.display = 'block';
+    if (summary) summary.style.display = 'block';
     if (domainState.selectedDomain.type === 'com') {
-      nameEl.textContent = domainState.selectedDomain.name;
-      costEl.textContent = '$' + domainState.selectedDomain.cost + '/year';
+      if (nameEl) nameEl.textContent = domainState.selectedDomain.name;
+      if (costEl) costEl.textContent = '$' + domainState.selectedDomain.cost + '/year';
     } else if (domainState.selectedDomain.type === 'cozw') {
       var choices = domainState.selectedDomain.choices || [];
       var display = choices.length > 0 ? choices[0] + '.co.zw' + (choices.length > 1 ? ' (+' + (choices.length - 1) + ' more)' : '');
-      nameEl.textContent = display || 'Choices submitted';
-      costEl.textContent = '$' + domainState.selectedDomain.cost + '/year';
+      if (nameEl) nameEl.textContent = display || 'Choices submitted';
+      if (costEl) costEl.textContent = '$' + domainState.selectedDomain.cost + '/year';
     } else if (domainState.selectedDomain.type === 'own') {
-      nameEl.textContent = domainState.selectedDomain.name || 'Your own domain';
-      costEl.textContent = '$0/year';
+      if (nameEl) nameEl.textContent = domainState.selectedDomain.name || 'Your own domain';
+      if (costEl) costEl.textContent = '$0/year';
     }
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
   } else {
-    summary.style.display = 'none';
-    btn.disabled = true;
+    if (summary) summary.style.display = 'none';
+    if (btn) btn.disabled = true;
   }
 };
 
 window.confirmDomainSelection = function() {
   if (!domainState.selectedDomain) {
-    toast('Please select a domain', 'err');
+    domainToast('Please select a domain', 'err');
     return;
   }
   closeDomainModal();
@@ -3101,11 +3136,6 @@ window.confirmDomainSelection = function() {
 
 // ─── OVERRIDE PUBLISH FUNCTIONS ────────────────────────────────────────────
 
-// Store original functions if they exist
-var _origOnPublish = window.onPublish;
-var _origOnPublishPro = window.onPublishPro;
-
-// Override with domain modal
 window.onPublish = function() {
   console.log('Publish clicked - opening domain modal');
   openDomainModal();
@@ -3116,11 +3146,11 @@ window.onPublishPro = function() {
   openDomainModal();
 };
 
-// Actual publish function
+// ── Actual publish function ──
 window.doPublish = async function(domainData) {
   var siteId = new URLSearchParams(location.search).get('site');
   if (!siteId) {
-    toast('No site selected', 'err');
+    domainToast('No site selected', 'err');
     return;
   }
 
@@ -3158,7 +3188,7 @@ window.doPublish = async function(domainData) {
 
   try {
     var token = localStorage.getItem('wcz_token') || '';
-    toast('Initiating payment...', 'ok');
+    domainToast('Initiating payment...', 'ok');
     
     var response = await fetch('https://app.websites.co.zw/api/sites/' + encodeURIComponent(siteId) + '/publish', {
       method: 'POST',
@@ -3172,23 +3202,23 @@ window.doPublish = async function(domainData) {
     var data = await response.json();
     
     if (!response.ok) {
-      toast(data.error || 'Payment initialization failed', 'err');
+      domainToast(data.error || 'Payment initialization failed', 'err');
       console.error('Publish error:', data);
       return;
     }
 
     if (data.payment_url) {
-      toast('Redirecting to payment...', 'ok');
+      domainToast('Redirecting to payment...', 'ok');
       window.location.href = data.payment_url;
     } else if (data.redirect_url) {
-      toast('Redirecting to payment...', 'ok');
+      domainToast('Redirecting to payment...', 'ok');
       window.location.href = data.redirect_url;
     } else {
-      toast('Payment URL not received', 'err');
+      domainToast('Payment URL not received', 'err');
       console.error('No payment URL in response:', data);
     }
   } catch (e) {
-    toast('Network error. Please try again.', 'err');
+    domainToast('Network error. Please try again.', 'err');
     console.error('Publish network error:', e);
   }
 };
