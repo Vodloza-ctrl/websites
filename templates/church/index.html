@@ -236,10 +236,12 @@ section.pane-alt{background:var(--paper);padding:72px 0}
 
 /* ── GALLERY ─────────────────────────────────────────── */
 .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:180px;gap:4px}
-.gallery-grid .g-item{overflow:hidden;cursor:pointer;background:var(--warm)}
+.gallery-grid .g-item{overflow:hidden;cursor:pointer;background:var(--warm);position:relative}
 .gallery-grid .g-item img{width:100%;height:100%;object-fit:cover;opacity:.92;transition:transform .4s,opacity .3s}
 .gallery-grid .g-item:hover img{transform:scale(1.04);opacity:1}
 .gallery-grid .g-item:nth-child(1){grid-column:span 2;grid-row:span 2}
+.gallery-grid .g-item:nth-child(2){grid-column:span 1;grid-row:span 2}
+.gallery-grid .g-item:nth-child(4){grid-column:span 2;grid-row:span 1}
 
 /* ── GALLERY LIGHTBOX ────────────────────────────────────*/
 #lb{
@@ -300,6 +302,8 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
   .times-grid{gap:20px}
   .gallery-grid{grid-template-columns:repeat(2,1fr)}
   .gallery-grid .g-item:nth-child(1){grid-column:span 1;grid-row:span 1}
+  .gallery-grid .g-item:nth-child(2){grid-column:span 1;grid-row:span 1}
+  .gallery-grid .g-item:nth-child(4){grid-column:span 1;grid-row:span 1}
   .contact-grid{grid-template-columns:1fr}
 }
 @media(max-width:600px){
@@ -500,36 +504,49 @@ var lbNext  = document.getElementById('lb-next');
 var lbItems = [];
 var lbIdx   = 0;
 
-if (lbEl) {
-  function lbShow(idx){
-    lbIdx = ((idx % lbItems.length) + lbItems.length) % lbItems.length;
-    lbImg.src = lbItems[lbIdx];
-    lbImg.alt = 'Gallery photo '+(lbIdx+1);
-    lbEl.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function lbHide(){
-    lbEl.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  document.querySelectorAll('#br-gallery .g-item').forEach(function(item, i){
+// Find gallery items - look for items inside the gallery section with .g-item class
+var gallerySection = document.getElementById('gallery') || document.querySelector('section[id*="gallery"]');
+if (gallerySection) {
+  var items = gallerySection.querySelectorAll('.g-item');
+  items.forEach(function(item, i){
     var img = item.querySelector('img');
-    if(img) lbItems.push(img.src);
-    item.addEventListener('click', function(){ lbShow(i); });
-  });
-
-  if(lbClose) lbClose.addEventListener('click', lbHide);
-  if(lbPrev)  lbPrev.addEventListener('click', function(){ lbShow(lbIdx-1); });
-  if(lbNext)  lbNext.addEventListener('click', function(){ lbShow(lbIdx+1); });
-  lbEl.addEventListener('click', function(e){ if(e.target===lbEl) lbHide(); });
-  document.addEventListener('keydown', function(e){
-    if(!lbEl.classList.contains('open')) return;
-    if(e.key==='Escape') lbHide();
-    if(e.key==='ArrowLeft') lbShow(lbIdx-1);
-    if(e.key==='ArrowRight') lbShow(lbIdx+1);
+    if(img && img.src) {
+      lbItems.push(img.src);
+      item.addEventListener('click', function(e){
+        e.preventDefault();
+        lbShow(i);
+      });
+      // Add cursor pointer if not already
+      item.style.cursor = 'pointer';
+    }
   });
 }
+
+function lbShow(idx){
+  if (!lbItems.length) return;
+  lbIdx = ((idx % lbItems.length) + lbItems.length) % lbItems.length;
+  lbImg.src = lbItems[lbIdx];
+  lbImg.alt = 'Gallery photo '+(lbIdx+1);
+  lbEl.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function lbHide(){
+  lbEl.classList.remove('open');
+  document.body.style.overflow = '';
+  lbImg.src = '';
+}
+
+if(lbClose) lbClose.addEventListener('click', lbHide);
+if(lbPrev)  lbPrev.addEventListener('click', function(e){ e.stopPropagation(); if(lbItems.length) lbShow(lbIdx-1); });
+if(lbNext)  lbNext.addEventListener('click', function(e){ e.stopPropagation(); if(lbItems.length) lbShow(lbIdx+1); });
+lbEl.addEventListener('click', function(e){ if(e.target===lbEl) lbHide(); });
+document.addEventListener('keydown', function(e){
+  if(!lbEl.classList.contains('open')) return;
+  if(e.key==='Escape') lbHide();
+  if(e.key==='ArrowLeft' && lbItems.length) lbShow(lbIdx-1);
+  if(e.key==='ArrowRight' && lbItems.length) lbShow(lbIdx+1);
+});
 
 // ── CATEGORY FILTER (SDK cards) ────────────────────────
 var filterBar = document.getElementById('wcz-cat-filters');
