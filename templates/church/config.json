@@ -7,8 +7,30 @@
   "showOpenBadge": false,
   "showHoursGrid": false,
   "googleFonts": "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
-  "sections": ["hero", "about", "services", "ministries", "events", "give", "products", "team", "testimonials", "gallery", "contact"],
-  "lists": ["services", "ministries", "events", "team", "testimonials", "gallery", "products"],
+  "sections": [
+    "hero",
+    "times", 
+    "about",
+    "values",
+    "pastor",
+    "ministries",
+    "events",
+    "give",
+    "products",
+    "team",
+    "testimonials",
+    "gallery",
+    "contact"
+  ],
+  "lists": [
+    "services",
+    "ministries", 
+    "events",
+    "team",
+    "testimonials",
+    "gallery",
+    "products"
+  ],
   "conditionals": [
     "has_logo",
     "has_hero_image",
@@ -33,7 +55,14 @@
     "church-institution": "Church",
     "faith": "Church"
   },
-  "navLinks": ["#about:About", "#ministries:Ministries", "#events:Events", "#give:Give", "#gallery:Gallery", "#contact:Contact"],
+  "navLinks": [
+    "#about:About",
+    "#ministries:Ministries", 
+    "#events:Events",
+    "#give:Give",
+    "#gallery:Gallery",
+    "#contact:Contact"
+  ],
   "navCtaLabel": "Plan Your Visit",
   "heroImageField": "hero_image",
   "heroImageUrl": "{{hero_image_url}}",
@@ -45,5 +74,20 @@
     { "key": "sports-sans", "name": "Sports Sans", "body": "'Barlow',sans-serif", "head": "'Barlow Condensed',sans-serif" },
     { "key": "display-mono", "name": "Display Mono", "body": "'DM Sans',sans-serif", "head": "'DM Mono',monospace" }
   ],
-  "defaultFontPair": "grotesk-serif"
+  "defaultFontPair": "grotesk-serif",
+  "sectionLabels": {
+    "hero": "Hero Banner",
+    "times": "Service Times",
+    "about": "About Us",
+    "values": "Our Values",
+    "pastor": "Pastor / Leadership",
+    "ministries": "Ministries",
+    "events": "Events",
+    "give": "Giving",
+    "products": "Shop",
+    "team": "Team",
+    "testimonials": "Testimonials",
+    "gallery": "Gallery",
+    "contact": "Contact"
+  }
 }
