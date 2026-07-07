@@ -531,7 +531,6 @@ function loadFontPair(pairKey) {
   if (link) {
     var family = pair.google;
     if (family) {
-      // Only set if not already loading these fonts
       var href = 'https://fonts.googleapis.com/css2?family=' + family + '&display=swap';
       if (link.getAttribute('href') !== href) {
         link.setAttribute('href', href);
