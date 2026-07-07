@@ -33,6 +33,6 @@
     "church-institution": "Church",
     "faith": "Church"
   },
-  "navLinks": ["#about:About", "#ministries:Ministries", "#events:Events", "#give:Give", "#contact:Contact"],
+  "navLinks": ["#about:About", "#ministries:Ministries", "#events:Events", "#give:Give", "#gallery:Gallery", "#contact:Contact"],
   "navCtaLabel": "Plan Your Visit"
 }
