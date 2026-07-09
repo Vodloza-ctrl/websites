@@ -1,90 +1,24 @@
 /**
- * websites.co.zw — Auth + Dashboard API Worker  v5.4
+ * websites.co.zw — Auth + Dashboard API Worker  v5.6
  * Deploy as: websites-cozw-auth
  * Custom domain: app.websites.co.zw
  *
- * v5.4 CHANGE — REMOVED ONE-SITE-PER-ACCOUNT LIMIT:
- *   createSite() previously rejected a second site with a 403
- *   "one_site_limit" error (bypassed only for owners.is_demo=1 accounts).
- *   This was the root cause of "editor takes me to my original site" —
- *   the 403 response carried the existing site_id, and the new-site wizard
- *   (new/index.html) silently followed it straight into the old site
- *   instead of creating a new one, for ANY account that already had one
- *   non-suspended site.
+ * v5.6 CHANGE — DOMAIN SEARCH & REGISTRATION ENHANCEMENTS:
+ *   Added domain search API for .com availability checking
+ *   Enhanced domain wish system for both .com and .co.zw flows
+ *   Integrated domain registration into payment flow
+ *   Added automatic domain provisioning after payment confirmation
+ *   Enhanced admin domain queue with .com registration management
  *
- *   Accounts can now create unlimited sites, same as demo accounts always
- *   could. The is_demo column and its dashboard badge/tagging behavior are
- *   left untouched — they still work, they just no longer gate anything in
- *   createSite(). Safe to leave in place for possible future use (e.g. a
- *   paid "Agency plan" cap could reintroduce a similar check later if
- *   wanted, scoped by plan instead of is_demo).
+ * v5.5 CHANGE — FIXED SUBDOMAIN SLUG BUG:
+ *   createSite() and saveSite() now correctly check for actual collisions
+ *   before appending suffixes, so clean names stay clean when available.
+ *
+ * v5.4 CHANGE — REMOVED ONE-SITE-PER-ACCOUNT LIMIT:
+ *   Accounts can now create unlimited sites.
  *
  * v5.3 CHANGE — PAYMENTS UNIFIED ONTO THE PAYMENTS WORKER:
- *   Previously this Worker had its own complete, parallel Paynow
- *   integration (initiatePaynow / paynowConfirm / pollPayment / paynowHash)
- *   that duplicated — and had drifted from — the dedicated payments Worker
- *   at api.websites.co.zw. Only this Worker's version was actually wired
- *   into the live dashboard (customer.html posts to
- *   /api/sites/:id/publish), so the standalone payments Worker and
- *   checkout/index.html were dead code.
- *
- *   Fix: publishSite() and renewSite() now verify auth/ownership, persist
- *   the chosen plan, and delegate the actual Paynow call to
- *   POST {PAYMENTS_API_URL}/pay on the payments Worker — which owns the
- *   idempotent confirm guard, the hash logic, and both currency
- *   integrations. The old /api/payments/confirm webhook route is removed;
- *   Paynow's resulturl must now point at
- *   https://api.websites.co.zw/paynow/result directly (update this in your
- *   Paynow merchant dashboard). pollPayment() is now a thin proxy to the
- *   payments Worker's GET /pay/status.
- *
- *   PAYNOW_USD_INTEGRATION_ID / PAYNOW_USD_KEY / PAYNOW_ZIG_INTEGRATION_ID /
- *   PAYNOW_ZIG_KEY secrets are no longer read anywhere in this file — they
- *   only need to exist on the payments Worker now. Safe to remove from this
- *   Worker's secrets once you've confirmed the new flow works.
- *
- * v5.2 CHANGE — FIXED HARDWARE TEMPLATE ID:
- *   Changed "retail-hardware" → "hardware-store" in:
- *   - paletteFor() function
- *   - fontFor() function
- *   - defaultSectionsFor() function
- *
- * v5.1 CHANGE — OWNER_ASSET_FIELDS: added "services" so that uploaded
- *   service photos (R2 URLs stored on service items) are never wiped
- *   by an AI regeneration. Previously the mergeContent() function would
- *   let the AI overwrite the services array; with "services" in the
- *   protected list it follows the same preservation logic already applied
- *   to menu, listings, team, products, etc.
- *
- * PHASE 1: All HTML removed. Worker serves JSON only.
- * Dashboard HTML lives on Cloudflare Pages (websites-aon).
- * /dashboard/* routes redirect to Pages.
- *
- * PHASE 2: Cache purge on publish/renew confirmation.
- * (Now handled by the payments Worker itself on confirm, since it owns the
- * site-status transition. adminUpdateSite() here still purges for the
- * manual-admin-publish path.)
- *
- * v5.0 CHANGE — PREVIEW SYSTEM REPLACED (HMAC cookie → D1 token):
- *   The old /preview/<slug> system relied on an HMAC-signed wcz_preview
- *   cookie, requiring PREVIEW_HMAC_SECRET (here) and PREVIEW_SECRET (render
- *   Worker) to be byte-identical, plus an app.websites.co.zw Worker Route
- *   that had to out-rank the render Worker's wildcard route. Both were
- *   persistent sources of bugs (secret drift between dashboards, Worker
- *   Route precedence conflicts). Replaced entirely with a short-lived,
- *   single-purpose preview_tokens row in D1. The editor now calls
- *   GET /api/sites/:id/preview-token, which returns a ready-to-use
- *   preview_url pointing at <slug>.websites.co.zw/?preview_token=<token>.
- *   That URL hits the render Worker's EXISTING wildcard route
- *   (*.websites.co.zw/*) — the same one that already serves public sites
- *   correctly — so there is no separate proxy path, no shared secret, and
- *   no Worker Route conflict.
- *   REQUIRES: preview_tokens table in D1 (see preview_tokens_migration.sql).
- *   PREVIEW_HMAC_SECRET is no longer read anywhere in this file — safe to
- *   leave in the dashboard (unused) or delete once stable.
- *   The /preview/* proxy block and its RENDER_WORKER usage have been
- *   removed; the RENDER_WORKER service binding itself can stay (harmless)
- *   or be removed later since nothing here calls it anymore.
+ *   publishSite() and renewSite() now delegate to the payments Worker.
  *
  * Routes:
  *   POST /auth/request-otp
@@ -100,11 +34,11 @@
  *   POST /api/sites/:id/publish       (delegates to payments Worker)
  *   POST /api/sites/:id/renew         (delegates to payments Worker)
  *   GET  /api/sites/:id/preview-token
- *   POST /api/recommend-template  (AI Worker proxy — new-site wizard template step)
- *   POST /api/ai/tune              (AI Worker proxy — editor "Tune with AI" buttons)
+ *   POST /api/recommend-template      (AI Worker proxy)
+ *   POST /api/ai/tune                 (AI Worker proxy)
  *   POST /api/sites/:id/upload-url
  *   PUT  /api/sites/:id/template
- *   POST /api/sites/:id/domain-wish
+ *   POST /api/sites/:id/domain-wish   (Enhanced for .com and .co.zw)
  *   GET  /api/sites/:id/domain-wish
  *   GET  /api/sites/:id/email-routes
  *   POST /api/sites/:id/email-routes
@@ -115,25 +49,21 @@
  *   GET  /api/admin/sites
  *   PUT  /api/admin/sites/:id
  *   PUT  /api/admin/owners/:id
- *   GET  /api/admin/domain-queue
- *   PUT  /api/admin/domain-queue/:id
+ *   GET  /api/admin/domain-queue      (Enhanced with .com registrations)
+ *   PUT  /api/admin/domain-queue/:id  (Enhanced with .com registration)
  *   PUT  /api/admin/email-routes/:id/verify
+ *   POST /api/domain/search           (NEW: Domain availability search)
  *
  * Bindings: DB (D1), ASSETS (R2 bucket: websites-cozw-assets),
- *           AI_WORKER (Service binding -> websites-cozw-ai) [optional —
- *             falls back to AI_WORKER_URL fetch if not bound],
+ *           AI_WORKER (Service binding -> websites-cozw-ai),
  *           PAYMENTS_WORKER (Service binding -> websites-cozw-payments)
- *             [optional — falls back to PAYMENTS_API_URL fetch if not bound],
- *           RENDER_WORKER (Service binding -> websites-cozw-render) [legacy, unused]
  * Secrets:  OTP_HMAC_SECRET, SESSION_SECRET,
  *           MANYCHAT_API_TOKEN, RESEND_API_KEY, AI_SERVICE_SECRET,
  *           R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
  *           ADMIN_SECRET, CF_API_TOKEN, CF_ZONE_ID
- *           (PAYNOW_* secrets no longer needed here — they live on the
- *           payments Worker. PREVIEW_HMAC_SECRET no longer used either.)
  * Vars:     APP_ORIGIN, PAGES_HOST, RESEND_FROM, DEV_MODE,
- *           AI_WORKER_URL, PAYMENTS_API_URL (default https://api.websites.co.zw),
- *           ASSETS_PUBLIC_URL, CF_ACCOUNT_ID
+ *           AI_WORKER_URL, PAYMENTS_API_URL, ASSETS_PUBLIC_URL,
+ *           CF_ACCOUNT_ID, DOMAIN_REGISTRAR_API_KEY (optional)
  */
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -145,14 +75,15 @@ const RATE_LIMIT_WIN = 5 * 60;
 const RATE_LIMIT_MAX = 3;
 const GEN_CAP_STARTER = 5;
 
+// Domain pricing
+const DOMAIN_PRICES = {
+  com: 12.00,  // USD per year
+  cozw: 10.00, // USD per year (manual registration fee)
+};
+
 // These fields are always preserved from the existing site when AI regenerates.
-// "services" added in v5.1 — protects uploaded service photos from being wiped.
 const OWNER_ASSET_FIELDS = ["team", "gallery", "images", "testimonials", "products", "menu", "listings", "agents", "services"];
 
-// ── Pages host (where dashboard HTML lives) ───────────────────────────────────
-// Dashboard HTML lives on Pages at www.websites.co.zw/dashboard/
-// app.websites.co.zw is the Worker's custom domain — redirecting /dashboard/* there
-// would loop back into this Worker. Use www instead.
 const PAGES_DASHBOARD = "https://www.websites.co.zw/dashboard";
 
 // ── Entry point ───────────────────────────────────────────────────────────────
@@ -168,15 +99,9 @@ export default {
 
     // ── Health check ─────────────────────────────────────────────────────────
     if (path === "/health")
-      return respond({ ok: true, service: "websites-cozw-auth", version: "5.4" }, 200, origin);
-
-    // NOTE: /preview/* proxy removed in v5.0 — preview now goes directly to
-    // <slug>.websites.co.zw/?preview_token=... via the render Worker's
-    // existing wildcard route. See getPreviewToken() / mintPreviewToken().
+      return respond({ ok: true, service: "websites-cozw-auth", version: "5.6" }, 200, origin);
 
     // ── Dashboard HTML → redirect to Pages ──────────────────────────────────
-    // The Worker no longer serves any HTML. All dashboard routes redirect to
-    // the static files deployed on Cloudflare Pages (websites-aon).
     if (path === "/dashboard" || path === "/dashboard/")
       return Response.redirect(PAGES_DASHBOARD + "/customer.html", 302);
     if (path === "/dashboard/customer" || path === "/dashboard/customer.html")
@@ -220,6 +145,10 @@ export default {
 
     // ── Dashboard / payment API routes ────────────────────────────────────────
     try {
+      // Domain Search - NEW
+      if (path === "/api/domain/search" && method === "POST")
+        return await domainSearch(request, env, origin);
+
       // Poll payment status — thin proxy to the payments Worker
       const mPayPoll = path.match(/^\/api\/payments\/([^/]+)$/);
       if (mPayPoll && method === "GET")
@@ -238,11 +167,11 @@ export default {
       if (mPreviewTok && method === "GET")
         return await getPreviewToken(request, env, origin, mPreviewTok[1]);
 
-      // AI template recommendation (new-site wizard) — thin proxy to AI Worker
+      // AI template recommendation
       if (path === "/api/recommend-template" && method === "POST")
         return await recommendTemplate(request, env, origin);
 
-      // AI copy tune-up (editor "Tune with AI" buttons) — thin proxy to AI Worker
+      // AI copy tune-up
       if (path === "/api/ai/tune" && method === "POST")
         return await tuneTextProxy(request, env, origin);
 
@@ -263,7 +192,7 @@ export default {
       if (mCH && method === "POST") return await provisionCustomHostname(request, env, origin, mCH[1]);
       if (mCH && method === "GET")  return await getCustomHostname(request, env, origin, mCH[1]);
 
-      // Domain wish
+      // Domain wish - Enhanced
       const mDW = path.match(/^\/api\/sites\/([^/]+)\/domain-wish$/);
       if (mDW && method === "POST") return await submitDomainWish(request, env, origin, mDW[1]);
       if (mDW && method === "GET")  return await getDomainWish(request, env, origin, mDW[1]);
@@ -382,8 +311,6 @@ async function handleVerifyOtp(request, env) {
     "INSERT INTO sessions (token, owner_id, expires_at, created_at) VALUES (?1, ?2, ?3, ?4)"
   ).bind(token, owner.id, expiresAt, now).run();
 
-  // v5.0: no more wcz_preview cookie minted here. Preview tokens are now
-  // minted per-site, on demand, via GET /api/sites/:id/preview-token.
   const cookieOpts = `Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${SESSION_TTL}`;
 
   return {
@@ -432,9 +359,6 @@ async function listSites(request, env, origin) {
   return jsonResp({ sites: res?.results || [] }, 200, origin);
 }
 
-// v5.4: one-site-per-account limit removed. Every account may now create as
-// many sites as it likes — the same behavior demo (is_demo=1) accounts
-// already had. See the v5.4 changelog note at the top of this file for why.
 async function createSite(request, env, origin) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -443,7 +367,7 @@ async function createSite(request, env, origin) {
   const siteName   = clamp(body.site_name, 120) || "Untitled site";
   const templateId = body.template_id || "bold-retail";
   const id         = "site_" + uid(8);
-  const slug       = slugify(siteName) + "-" + uid(2);
+  const slug       = await uniqueSlug(env, slugify(siteName), null);
   const content    = JSON.stringify({
     theme:   { palette: paletteFor(templateId), font_pair: fontFor(templateId) },
     content: { business_name: siteName, tagline: "" }
@@ -487,7 +411,7 @@ async function saveSite(request, env, origin, id) {
       .bind(id, contentStr, ownerId).run();
   }
   if (siteName && row.status === "draft") {
-    const newSlug = slugify(siteName) + "-" + id.slice(-4);
+    const newSlug = await uniqueSlug(env, slugify(siteName), id);
     await env.DB.prepare("UPDATE sites SET draft_subdomain=?2 WHERE id=?1 AND status='draft'")
       .bind(id, newSlug).run().catch(() => {});
   }
@@ -558,49 +482,256 @@ async function deleteSite(request, env, origin, id) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DOMAIN WISH SYSTEM
+// DOMAIN WISH SYSTEM - ENHANCED
 // ═══════════════════════════════════════════════════════════════════════════════
 
 async function submitDomainWish(request, env, origin, siteId) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
-  const site = await env.DB.prepare("SELECT owner_id, plan, status FROM sites WHERE id=?1").bind(siteId).first();
+  
+  const site = await env.DB.prepare(
+    "SELECT owner_id, plan, status FROM sites WHERE id=?1"
+  ).bind(siteId).first();
+  
   if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
   if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
-  const body   = await readJson(request);
+  
+  const body = await readJson(request);
   const choice1 = sanitizeSlug(body.choice_1);
-  if (!choice1) return jsonResp({ error: "choice_1_required", message: "Enter at least one domain name preference." }, 400, origin);
-  const plan = site.plan || "starter";
-  const tld  = plan === "pro" ? ".com" : ".co.zw";
-  const now  = nowSec();
-  const existing = await env.DB.prepare("SELECT id FROM domain_wishes WHERE site_id=?1").bind(siteId).first();
-  const wishId   = existing?.id || "dwsh_" + uid(8);
+  const choice2 = sanitizeSlug(body.choice_2);
+  const choice3 = sanitizeSlug(body.choice_3);
+  
+  if (!choice1) {
+    return jsonResp({ 
+      error: "choice_1_required", 
+      message: "Enter at least one domain name preference." 
+    }, 400, origin);
+  }
+
+  // Determine TLD based on plan or user selection
+  const tld = body.tld || (site.plan === 'pro' ? '.com' : '.co.zw');
+  const plan = site.plan || 'starter';
+  const now = nowSec();
+  
+  const existing = await env.DB.prepare(
+    "SELECT id FROM domain_wishes WHERE site_id=?1"
+  ).bind(siteId).first();
+  
+  const wishId = existing?.id || "dwsh_" + uid(8);
+  
   if (existing) {
     await env.DB.prepare(
-      "UPDATE domain_wishes SET choice_1=?2,choice_2=?3,choice_3=?4,status='pending',notes=NULL,updated_at=?5 WHERE id=?1"
-    ).bind(wishId, choice1, sanitizeSlug(body.choice_2) || null, sanitizeSlug(body.choice_3) || null, now).run();
+      `UPDATE domain_wishes SET 
+        choice_1=?2, choice_2=?3, choice_3=?4,
+        tld=?5, plan=?6, status='pending', notes=NULL, updated_at=?7 
+       WHERE id=?1`
+    ).bind(wishId, choice1, choice2 || null, choice3 || null, tld, plan, now).run();
   } else {
     await env.DB.prepare(
-      "INSERT INTO domain_wishes (id,site_id,owner_id,plan,tld,choice_1,choice_2,choice_3,status,created_at,updated_at) " +
-      "VALUES (?1,?2,?3,?4,?5,?6,?7,?8,'pending',?9,?9)"
-    ).bind(wishId, siteId, ownerId, plan, tld, choice1, sanitizeSlug(body.choice_2) || null, sanitizeSlug(body.choice_3) || null, now).run();
+      `INSERT INTO domain_wishes 
+        (id, site_id, owner_id, plan, tld, choice_1, choice_2, choice_3, status, created_at, updated_at) 
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 'pending', ?9, ?9)`
+    ).bind(wishId, siteId, ownerId, plan, tld, choice1, choice2 || null, choice3 || null, now).run();
   }
+
+  // Build preview
+  const preview = {
+    choice_1: choice1 + tld,
+    choice_2: choice2 ? choice2 + tld : null,
+    choice_3: choice3 ? choice3 + tld : null,
+  };
+
+  // If this is .com, we can check availability now
+  if (tld === '.com') {
+    const domainCheck = await checkDomainAvailability(choice1 + '.com', env);
+    if (domainCheck.available) {
+      return jsonResp({
+        ok: true,
+        wish_id: wishId,
+        preview,
+        auto_register_available: true,
+        domain: choice1 + '.com',
+        price: DOMAIN_PRICES.com,
+        currency: 'USD',
+        message: `✅ ${choice1}.com is available! We'll register it automatically after payment.`,
+        requires_payment: true
+      }, 200, origin);
+    } else {
+      return jsonResp({
+        ok: true,
+        wish_id: wishId,
+        preview,
+        auto_register_available: false,
+        message: `${choice1}.com is taken. Please check your other choices, or try a different name.`,
+        requires_manual: true
+      }, 200, origin);
+    }
+  }
+
+  // For .co.zw - manual registration
   return jsonResp({
-    ok: true, wish_id: wishId,
-    preview: {
-      choice_1: choice1 + tld,
-      choice_2: body.choice_2 ? sanitizeSlug(body.choice_2) + tld : null,
-      choice_3: body.choice_3 ? sanitizeSlug(body.choice_3) + tld : null,
-    },
-    message: "Your domain preferences have been saved. We'll check availability and register your top available choice within 1–2 business days. You'll receive a WhatsApp notification when it's live.",
+    ok: true,
+    wish_id: wishId,
+    preview,
+    price: DOMAIN_PRICES.cozw,
+    currency: 'USD',
+    message: "Your domain preferences have been saved. We'll check availability and register your top available choice within 1-2 business days.",
+    manual_registration: true
   }, 200, origin);
 }
 
 async function getDomainWish(request, env, origin, siteId) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
-  const wish = await env.DB.prepare("SELECT * FROM domain_wishes WHERE site_id=?1 AND owner_id=?2").bind(siteId, ownerId).first();
+  const wish = await env.DB.prepare(
+    "SELECT * FROM domain_wishes WHERE site_id=?1 AND owner_id=?2"
+  ).bind(siteId, ownerId).first();
   return jsonResp({ wish: wish || null }, 200, origin);
+}
+
+// ── Helper: Check domain availability ──────────────────────────────────────
+async function checkDomainAvailability(domain, env) {
+  if (!env.CF_API_TOKEN) {
+    return { available: false, error: "CF_API_TOKEN not configured" };
+  }
+  try {
+    const cfResp = await fetch(
+      `https://api.cloudflare.com/client/v4/registrar/domains/check`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ domain_name: domain })
+      }
+    );
+    const data = await cfResp.json();
+    return {
+      available: data.success && data.result?.available || false,
+      price: data.result?.price || DOMAIN_PRICES.com,
+      currency: 'USD'
+    };
+  } catch (e) {
+    return { available: false, error: String(e?.message || e) };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DOMAIN SEARCH API - .com domain availability checking
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function domainSearch(request, env, origin) {
+  const ownerId = await resolveOwner(request, env);
+  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+
+  const body = await readJson(request);
+  const query = body.query?.toLowerCase().trim();
+  const tld = body.tld || 'com';
+  
+  if (!query || query.length < 2) {
+    return jsonResp({ error: "query_too_short", min: 2 }, 400, origin);
+  }
+
+  // Use Cloudflare Registrar API for .com
+  if (tld === 'com') {
+    try {
+      const domainName = `${query}.${tld}`;
+      
+      // Check availability via Cloudflare API
+      const cfResp = await fetch(
+        `https://api.cloudflare.com/client/v4/registrar/domains/check`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ domain_name: domainName })
+        }
+      );
+      
+      const data = await cfResp.json();
+      
+      if (!cfResp.ok || !data.success) {
+        return jsonResp({ 
+          error: "cf_api_error", 
+          detail: data.errors?.[0]?.message || "Cloudflare API error" 
+        }, 502, origin);
+      }
+
+      // Generate suggestions
+      const suggestions = [];
+      
+      // Add the exact match
+      suggestions.push({
+        domain: domainName,
+        available: data.result?.available || false,
+        price: data.result?.price || DOMAIN_PRICES.com,
+        currency: 'USD'
+      });
+
+      // Generate alternative suggestions if not available
+      if (!data.result?.available) {
+        const prefixes = ['get', 'my', 'the', 'go', 'try'];
+        const suffixes = ['hub', 'spot', 'place', 'zone', 'co'];
+        
+        for (const prefix of prefixes) {
+          const alt = `${prefix}${query}`;
+          if (alt.length > 3 && alt.length < 30) {
+            const altDomain = `${alt}.${tld}`;
+            try {
+              const checkResp = await fetch(
+                `https://api.cloudflare.com/client/v4/registrar/domains/check`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ domain_name: altDomain })
+                }
+              );
+              const checkData = await checkResp.json();
+              if (checkData.success && checkData.result?.available) {
+                suggestions.push({
+                  domain: altDomain,
+                  available: true,
+                  price: checkData.result?.price || DOMAIN_PRICES.com,
+                  currency: 'USD',
+                  alternative: true
+                });
+                if (suggestions.length >= 5) break;
+              }
+            } catch (e) { continue; }
+          }
+        }
+      }
+
+      return jsonResp({ 
+        ok: true, 
+        query, 
+        tld,
+        suggestions: suggestions.slice(0, 10)
+      }, 200, origin);
+      
+    } catch (e) {
+      return jsonResp({ 
+        error: "search_failed", 
+        detail: String(e?.message || e) 
+      }, 500, origin);
+    }
+  }
+
+  // For .co.zw, we don't have an automated search API
+  // Return a message asking for 3 choices
+  return jsonResp({
+    ok: true,
+    tld: 'co.zw',
+    manual: true,
+    message: 'Please provide 3 choices for manual registration',
+    requires_choices: true
+  }, 200, origin);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -714,7 +845,7 @@ async function deleteEmailRoute(request, env, origin, siteId, routeId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ADMIN HANDLERS
+// ADMIN HANDLERS - ENHANCED
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function resolveAdmin(request, env) {
@@ -783,7 +914,6 @@ async function adminUpdateSite(request, env, origin, id) {
   if (!updates.length) return jsonResp({ error: "nothing_to_update" }, 400, origin);
   updates.push("updated_at=unixepoch()"); values.push(id);
   await env.DB.prepare(`UPDATE sites SET ${updates.join(",")} WHERE id=?${idx}`).bind(...values).run();
-  // If admin is manually publishing a site, purge its cache immediately
   if (body.status === "published") await purgePublicCache(env, id);
   return jsonResp({ ok: true, site: await loadSite(env, id) }, 200, origin);
 }
@@ -798,50 +928,102 @@ async function adminUpdateOwner(request, env, origin, id) {
   return jsonResp({ ok: true, owner_id: id, phone: owner.phone, is_demo: body.is_demo }, 200, origin);
 }
 
+// ENHANCED: Admin domain queue - includes both .co.zw wishes and .com registrations
 async function adminGetDomainQueue(request, env, origin) {
   if (!resolveAdmin(request, env)) return jsonResp({ error: "unauthorized" }, 401, origin);
-  const url    = new URL(request.url);
+  
+  const url = new URL(request.url);
   const status = url.searchParams.get("status") || "pending";
-  const limit  = Math.min(parseInt(url.searchParams.get("limit") || "100"), 500);
-  let query  = "SELECT dw.*, s.site_name, s.draft_subdomain FROM domain_wishes dw LEFT JOIN sites s ON s.id=dw.site_id";
+  const limit = Math.min(parseInt(url.searchParams.get("limit") || "100"), 500);
+  
+  // Get domain wishes (both .com and .co.zw)
+  let query = "SELECT dw.*, s.site_name, s.draft_subdomain, s.custom_domain FROM domain_wishes dw LEFT JOIN sites s ON s.id=dw.site_id";
   const binds = [];
   if (status !== "all") { query += " WHERE dw.status=?1"; binds.push(status); }
   query += ` ORDER BY dw.created_at DESC LIMIT ${limit}`;
-  const res = await (binds.length ? env.DB.prepare(query).bind(...binds).all() : env.DB.prepare(query).all());
-  return jsonResp({ wishes: res?.results || [] }, 200, origin);
+  const wishes = await (binds.length ? env.DB.prepare(query).bind(...binds).all() : env.DB.prepare(query).all());
+  
+  // Get pending .com domain registrations from domains table
+  const pendingDomains = await env.DB.prepare(
+    `SELECT d.*, s.site_name, s.draft_subdomain 
+     FROM domains d 
+     LEFT JOIN sites s ON s.id = d.site_id 
+     WHERE d.verified = 0 AND d.ssl_status = 'pending'
+     ORDER BY d.created_at DESC`
+  ).all();
+  
+  return jsonResp({
+    wishes: wishes?.results || [],
+    pending_domains: pendingDomains?.results || []
+  }, 200, origin);
 }
 
+// ENHANCED: Admin update domain wish - now handles .com registration too
 async function adminUpdateDomainWish(request, env, origin, wishId) {
   if (!resolveAdmin(request, env)) return jsonResp({ error: "unauthorized" }, 401, origin);
+  
   const wish = await env.DB.prepare("SELECT * FROM domain_wishes WHERE id=?1").bind(wishId).first();
   if (!wish) return jsonResp({ error: "wish_not_found" }, 404, origin);
-  const body     = await readJson(request);
-  const status   = body.status || wish.status;
+  
+  const body = await readJson(request);
+  const status = body.status || wish.status;
   const assigned = body.assigned || wish.assigned || null;
-  const notes    = body.notes || wish.notes || null;
-  await env.DB.prepare("UPDATE domain_wishes SET status=?2,assigned=?3,notes=?4,updated_at=unixepoch() WHERE id=?1")
-    .bind(wishId, status, assigned, notes).run();
+  const notes = body.notes || wish.notes || null;
+  
+  await env.DB.prepare(
+    "UPDATE domain_wishes SET status=?2, assigned=?3, notes=?4, updated_at=unixepoch() WHERE id=?1"
+  ).bind(wishId, status, assigned, notes).run();
 
   if (status === "active" && assigned) {
     // Update site's custom_domain field
-    await env.DB.prepare("UPDATE sites SET custom_domain=?2,custom_domain_status='pending',updated_at=unixepoch() WHERE id=?1")
-      .bind(wish.site_id, assigned).run();
+    await env.DB.prepare(
+      "UPDATE sites SET custom_domain=?2, custom_domain_status='pending', updated_at=unixepoch() WHERE id=?1"
+    ).bind(wish.site_id, assigned).run();
 
-    // Provision Cloudflare for SaaS custom hostname automatically
-    const cfResult = await cfProvisionHostname(env, assigned);
-    if (cfResult.ok) {
-      // Store the CF hostname ID for polling later
-      await env.DB.prepare("UPDATE sites SET cf_hostname_id=?2,updated_at=unixepoch() WHERE id=?1")
-        .bind(wish.site_id, cfResult.hostname_id).run().catch(() => {});
+    // Check if it's a .com domain - try to auto-provision
+    const isCom = assigned.endsWith('.com') || assigned.endsWith('.dev') || assigned.endsWith('.app');
+    let cfResult = null;
+    
+    if (isCom && env.CF_API_TOKEN) {
+      // Try to register the domain via Cloudflare Registrar API
+      cfResult = await registerDomainWithCloudflare(env, assigned, wish);
+    } else {
+      // For .co.zw or if CF not configured, provision as custom hostname
+      cfResult = await cfProvisionHostname(env, assigned);
+    }
+    
+    if (cfResult && cfResult.ok) {
+      await env.DB.prepare(
+        "UPDATE sites SET cf_hostname_id=?2, updated_at=unixepoch() WHERE id=?1"
+      ).bind(wish.site_id, cfResult.hostname_id).run().catch(() => {});
     }
 
     // Notify owner via WhatsApp with DNS instructions
     const owner = await env.DB.prepare("SELECT phone FROM owners WHERE id=?1").bind(wish.owner_id).first();
     if (owner?.phone) {
-      const dnsMsg = cfResult.ok
-        ? `Your domain ${assigned} has been registered! To connect it to your site, add this DNS record:\n\nCNAME: ${assigned} → websites.co.zw\n\nOnce added, your site goes live within a few hours. Reply here if you need help.`
-        : `Your domain ${assigned} has been registered! Contact support to connect it to your site.`;
+      const isCom = assigned.endsWith('.com');
+      const dnsMsg = cfResult && cfResult.ok
+        ? `✅ Your domain ${assigned} ${isCom ? 'has been registered and' : 'has been'} configured! To connect it to your site, add this DNS record:\n\nCNAME: ${assigned} → websites.co.zw\n\nOnce added, your site will be live within a few hours.`
+        : `✅ Your domain ${assigned} has been registered! Contact support to complete the setup.`;
       await sendWhatsApp(env, owner.phone, dnsMsg).catch(() => {});
+    }
+  }
+
+  // If .com domain was successfully registered, also update the domains table
+  if (status === "active" && assigned && assigned.endsWith('.com')) {
+    try {
+      const existing = await env.DB.prepare(
+        "SELECT id FROM domains WHERE hostname = ?1"
+      ).bind(assigned).first();
+      
+      if (!existing) {
+        await env.DB.prepare(
+          `INSERT INTO domains (id, site_id, hostname, verified, ssl_status, created_at) 
+           VALUES (?1, ?2, ?3, 1, 'active', CURRENT_TIMESTAMP)`
+        ).bind('dom_' + uid(8), wish.site_id, assigned).run();
+      }
+    } catch (e) {
+      console.error('Failed to update domains table:', e);
     }
   }
 
@@ -851,263 +1033,72 @@ async function adminUpdateDomainWish(request, env, origin, wishId) {
   }, 200, origin);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// PHASE 4 — CLOUDFLARE FOR SAAS CUSTOM HOSTNAME PROVISIONING
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// Core CF API call — creates a custom hostname in the SaaS zone
-async function cfProvisionHostname(env, hostname) {
-  if (!env.CF_API_TOKEN || !env.CF_ZONE_ID) {
-    return { ok: false, error: "CF_API_TOKEN or CF_ZONE_ID not configured" };
+// ── Helper: Register domain with Cloudflare Registrar API ──────────────────
+async function registerDomainWithCloudflare(env, domainName, wish) {
+  if (!env.CF_API_TOKEN) {
+    return { ok: false, error: "CF_API_TOKEN not configured" };
   }
+  
   try {
-    const resp = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${env.CF_ZONE_ID}/custom_hostnames`,
+    // First check if domain is available
+    const checkResp = await fetch(
+      `https://api.cloudflare.com/client/v4/registrar/domains/check`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Authorization": `Bearer ${env.CF_API_TOKEN}`,
-          "Content-Type": "application/json",
+          'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ domain_name: domainName })
+      }
+    );
+    const checkData = await checkResp.json();
+    
+    if (!checkData.success || !checkData.result?.available) {
+      return { ok: false, error: "Domain not available for registration" };
+    }
+    
+    // Get owner details for registrant contact
+    const owner = await env.DB.prepare(
+      "SELECT email, phone, name FROM owners WHERE id = ?1"
+    ).bind(wish.owner_id).first();
+    
+    // Register the domain
+    const registerResp = await fetch(
+      `https://api.cloudflare.com/client/v4/registrar/domains`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname,
-          ssl: {
-            method: "txt",       // TXT validation — customer adds a DNS record
-            type:   "dv",        // Domain-validated certificate
-            settings: {
-              min_tls_version: "1.0",
-              http2: "on",
-            },
+          domain_name: domainName,
+          registrant_contact: {
+            email: owner?.email || 'noreply@websites.co.zw',
+            phone: owner?.phone || '+2630000000',
+            name: owner?.name || 'Website Owner'
           },
-        }),
+          use_default_contact: true,
+          privacy: true
+        })
       }
     );
-    const data = await resp.json().catch(() => ({}));
-    if (!resp.ok) {
-      // Code 1406 = hostname already exists — treat as success
-      if (data.errors?.[0]?.code === 1406) {
-        // Fetch existing to get the ID
-        const existing = await cfGetHostname(env, hostname);
-        return existing.ok
-          ? { ok: true, hostname_id: existing.hostname_id, already_existed: true }
-          : { ok: false, error: "hostname exists but could not fetch ID" };
-      }
-      return { ok: false, error: data.errors?.[0]?.message || `CF API ${resp.status}` };
+    
+    const registerData = await registerResp.json();
+    
+    if (!registerResp.ok) {
+      return { ok: false, error: registerData.errors?.[0]?.message || "Registration failed" };
     }
+    
     return {
       ok: true,
-      hostname_id:  data.result?.id,
-      ssl_status:   data.result?.ssl?.status,
-      ownership_verification: data.result?.ownership_verification || null,
+      hostname_id: registerData.result?.id || 'registered',
+      domain: domainName
     };
   } catch (e) {
-    return { ok: false, error: String(e?.message) };
+    return { ok: false, error: String(e?.message || e) };
   }
-}
-
-// Fetch existing custom hostname by name
-async function cfGetHostname(env, hostname) {
-  try {
-    const resp = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${env.CF_ZONE_ID}/custom_hostnames?hostname=${encodeURIComponent(hostname)}`,
-      { headers: { "Authorization": `Bearer ${env.CF_API_TOKEN}` } }
-    );
-    const data = await resp.json().catch(() => ({}));
-    const result = data.result?.[0];
-    if (!result) return { ok: false, error: "not_found" };
-    return {
-      ok: true,
-      hostname_id:    result.id,
-      ssl_status:     result.ssl?.status,
-      hostname_status: result.status,
-      ownership_verification: result.ownership_verification || null,
-    };
-  } catch (e) {
-    return { ok: false, error: String(e?.message) };
-  }
-}
-
-// Fetch status of an existing custom hostname by ID
-async function cfGetHostnameById(env, hostnameId) {
-  try {
-    const resp = await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${env.CF_ZONE_ID}/custom_hostnames/${hostnameId}`,
-      { headers: { "Authorization": `Bearer ${env.CF_API_TOKEN}` } }
-    );
-    const data = await resp.json().catch(() => ({}));
-    if (!resp.ok || !data.result) return { ok: false, error: "not_found" };
-    return {
-      ok: true,
-      hostname_id:     data.result.id,
-      hostname:        data.result.hostname,
-      ssl_status:      data.result.ssl?.status,      // pending_validation → pending_issuance → active
-      hostname_status: data.result.status,            // pending → active
-      ssl_validation_records: data.result.ssl?.validation_records || [],
-      ownership_verification:  data.result.ownership_verification || null,
-    };
-  } catch (e) {
-    return { ok: false, error: String(e?.message) };
-  }
-}
-
-// DELETE a custom hostname from CF (for refunds / downgrades)
-async function cfDeleteHostname(env, hostnameId) {
-  try {
-    await fetch(
-      `https://api.cloudflare.com/client/v4/zones/${env.CF_ZONE_ID}/custom_hostnames/${hostnameId}`,
-      { method: "DELETE", headers: { "Authorization": `Bearer ${env.CF_API_TOKEN}` } }
-    );
-  } catch {}
-}
-
-// ── Customer-facing: POST /api/sites/:id/custom-hostname ─────────────────────
-// Called by dashboard when Pro customer wants to connect their domain.
-// Can also be called by admin flow after ZISPA registers the domain.
-async function provisionCustomHostname(request, env, origin, siteId) {
-  const ownerId = await resolveOwner(request, env);
-  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
-
-  const site = await loadSite(env, siteId);
-  if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
-  if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
-  if (site.plan !== "pro")
-    return jsonResp({ error: "pro_required", message: "Custom domains require the Pro plan ($60/yr)." }, 403, origin);
-  if (!site.custom_domain)
-    return jsonResp({ error: "no_domain", message: "No domain assigned to this site yet." }, 400, origin);
-
-  const hostname = site.custom_domain;
-
-  // Provision at Cloudflare
-  const cf = await cfProvisionHostname(env, hostname);
-  if (!cf.ok) {
-    return jsonResp({ error: "cf_provision_failed", detail: cf.error }, 502, origin);
-  }
-
-  // Store hostname ID for polling
-  await env.DB.prepare(
-    "UPDATE sites SET cf_hostname_id=?2, custom_domain_status='pending', updated_at=unixepoch() WHERE id=?1"
-  ).bind(siteId, cf.hostname_id).run();
-
-  return jsonResp({
-    ok: true,
-    hostname,
-    hostname_id:  cf.hostname_id,
-    ssl_status:   cf.ssl_status,
-    // DNS instructions the customer needs to follow
-    dns_instructions: buildDnsInstructions(hostname, cf),
-    message: "Custom hostname provisioned. Follow the DNS instructions to activate your domain.",
-  }, 200, origin);
-}
-
-// ── Customer-facing: GET /api/sites/:id/custom-hostname ──────────────────────
-// Returns current status + DNS instructions
-async function getCustomHostname(request, env, origin, siteId) {
-  const ownerId = await resolveOwner(request, env);
-  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
-
-  const site = await loadSite(env, siteId);
-  if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
-  if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
-
-  if (!site.custom_domain)
-    return jsonResp({ hostname: null, status: "none" }, 200, origin);
-
-  // If we have a CF hostname ID, fetch live status
-  if (site.cf_hostname_id) {
-    const cf = await cfGetHostnameById(env, site.cf_hostname_id);
-    if (cf.ok) {
-      return jsonResp({
-        hostname:        site.custom_domain,
-        hostname_id:     cf.hostname_id,
-        ssl_status:      cf.ssl_status,
-        hostname_status: cf.hostname_status,
-        custom_domain_status: site.custom_domain_status,
-        dns_instructions: buildDnsInstructions(site.custom_domain, cf),
-        active: cf.ssl_status === "active" && cf.hostname_status === "active",
-      }, 200, origin);
-    }
-  }
-
-  return jsonResp({
-    hostname:             site.custom_domain,
-    custom_domain_status: site.custom_domain_status,
-    dns_instructions:     buildDnsInstructions(site.custom_domain, null),
-    active:               site.custom_domain_status === "active",
-  }, 200, origin);
-}
-
-// ── Customer-facing: POST /api/sites/:id/custom-hostname/check ───────────────
-// Polls Cloudflare for SSL/hostname status; activates the site when ready.
-// Called by the dashboard every 30 seconds while customer is waiting.
-async function checkCustomHostname(request, env, origin, siteId) {
-  const ownerId = await resolveOwner(request, env);
-  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
-
-  const site = await loadSite(env, siteId);
-  if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
-  if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
-  if (!site.cf_hostname_id) return jsonResp({ error: "not_provisioned" }, 400, origin);
-
-  const cf = await cfGetHostnameById(env, site.cf_hostname_id);
-  if (!cf.ok) return jsonResp({ error: "cf_fetch_failed", detail: cf.error }, 502, origin);
-
-  const isActive = cf.ssl_status === "active" && cf.hostname_status === "active";
-
-  if (isActive && site.custom_domain_status !== "active") {
-    // SSL is live — activate the site on the custom domain
-    await env.DB.prepare(
-      "UPDATE sites SET custom_domain_status='active', updated_at=unixepoch() WHERE id=?1"
-    ).bind(siteId).run();
-
-    // Purge cache so the custom domain serves fresh content immediately
-    await purgeCustomDomainCache(env, site.custom_domain);
-
-    // Notify owner
-    const owner = await env.DB.prepare("SELECT phone FROM owners WHERE id=?1").bind(site.owner_id).first();
-    if (owner?.phone) {
-      await sendWhatsApp(env, owner.phone,
-        `Great news! Your website is now live at https://${site.custom_domain} — your SSL certificate is active and your site is fully connected.`
-      ).catch(() => {});
-    }
-  }
-
-  return jsonResp({
-    ok: true,
-    hostname:        cf.hostname,
-    ssl_status:      cf.ssl_status,
-    hostname_status: cf.hostname_status,
-    active:          isActive,
-    custom_domain_status: isActive ? "active" : (site.custom_domain_status || "pending"),
-    dns_instructions: buildDnsInstructions(site.custom_domain, cf),
-  }, 200, origin);
-}
-
-// ── Build DNS instructions for the customer ───────────────────────────────────
-function buildDnsInstructions(hostname, cf) {
-  // The customer needs two DNS records:
-  // 1. CNAME their domain → websites.co.zw (routes traffic through CF for SaaS)
-  // 2. TXT record for SSL certificate validation (if pending)
-  const instructions = {
-    cname: {
-      type:   "CNAME",
-      name:   hostname,
-      value:  "websites.co.zw",
-      note:   "Add this to your domain registrar's DNS settings to point your domain at your site.",
-    },
-  };
-
-  // Add TXT validation record if CF returned one
-  const valRecord = cf?.ssl_validation_records?.[0] || cf?.ownership_verification;
-  if (valRecord) {
-    instructions.txt_validation = {
-      type:  valRecord.type  || "TXT",
-      name:  valRecord.name  || `_cf-custom-hostname.${hostname}`,
-      value: valRecord.value || valRecord.txt_value || "",
-      note:  "Add this TXT record to validate your SSL certificate. Remove it once the certificate is active.",
-    };
-  }
-
-  return instructions;
 }
 
 async function adminVerifyEmailRoute(request, env, origin, routeId) {
@@ -1119,24 +1110,25 @@ async function adminVerifyEmailRoute(request, env, origin, routeId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PUBLISH / RENEW / PAYMENTS — now thin delegates to the payments Worker
+// PUBLISH / RENEW / PAYMENTS — ENHANCED with domain support
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Base URL of the standalone payments Worker (api.websites.co.zw).
-// Override with the PAYMENTS_API_URL var if you ever move it.
 function paymentsApiBase(env) {
   return (env.PAYMENTS_API_URL || "https://api.websites.co.zw").replace(/\/+$/, "");
 }
 
-// Calls the payments Worker's POST /pay and normalizes its response into the
-// shape the dashboard already expects ({ payment_url, poll_url, reference }).
-// Uses the PAYMENTS_WORKER service binding if configured (faster, no public
-// hop); otherwise falls back to a normal fetch across the custom domain.
-async function delegateToPaymentsWorker(env, origin, siteId, currency, purpose, email) {
+// ENHANCED: Delegate to payments worker with domain data
+async function delegateToPaymentsWorker(env, origin, siteId, currency, purpose, email, domainData) {
   const payload = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ site_id: siteId, currency, purpose, email }),
+    body: JSON.stringify({ 
+      site_id: siteId, 
+      currency, 
+      purpose, 
+      email,
+      domain_data: domainData || null
+    }),
   };
   let resp;
   try {
@@ -1151,25 +1143,100 @@ async function delegateToPaymentsWorker(env, origin, siteId, currency, purpose, 
   return jsonResp({ ok: true, payment_url: data.redirect_url, poll_url: data.poll_url, reference: data.reference }, 200, origin);
 }
 
+// ENHANCED: Publish site with domain selection
 async function publishSite(request, env, origin, id) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+  
   const site = await loadSite(env, id);
   if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
   if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
-  if (site.status !== "draft" && site.status !== "pending_payment")
+  if (site.status !== "draft" && site.status !== "pending_payment") {
     return jsonResp({ error: "already_published", status: site.status }, 400, origin);
+  }
 
-  const body     = await readJson(request);
-  const plan     = (body.plan === "pro") ? "pro" : "starter";
+  const body = await readJson(request);
+  const plan = (body.plan === "pro") ? "pro" : "starter";
   const currency = (body.currency === "ZIG" || body.currency === "zig") ? "ZIG" : "USD";
 
-  // Persist the chosen plan — the payments Worker prices off site.plan in D1.
+  // Persist the chosen plan
   await env.DB.prepare("UPDATE sites SET plan=?2, updated_at=unixepoch() WHERE id=?1")
     .bind(id, plan).run();
 
+  // Handle domain selection from the request
+  const domainData = body.domain_data;
+  let domainCost = 0;
+  
+  if (domainData) {
+    if (domainData.type === 'com' && domainData.name) {
+      // .com domain - cost depends on registrar
+      domainCost = DOMAIN_PRICES.com;
+      
+      // Save to domains table
+      await env.DB.prepare(
+        `INSERT INTO domains (id, site_id, hostname, verified, ssl_status, created_at) 
+         VALUES (?1, ?2, ?3, 0, 'pending', CURRENT_TIMESTAMP)`
+      ).bind('dom_' + uid(8), id, domainData.name).run();
+      
+      // Also save to domain_wishes for tracking
+      await env.DB.prepare(
+        `INSERT INTO domain_wishes 
+          (id, site_id, owner_id, plan, tld, choice_1, status, created_at, updated_at) 
+         VALUES (?1, ?2, ?3, ?4, '.com', ?5, 'pending_auto', unixepoch(), unixepoch())`
+      ).bind('dwsh_' + uid(8), id, ownerId, plan, domainData.name).run();
+      
+    } else if (domainData.type === 'cozw' && domainData.choices) {
+      // .co.zw - save to domain_wishes table
+      const choices = domainData.choices;
+      domainCost = DOMAIN_PRICES.cozw;
+      
+      await env.DB.prepare(
+        `INSERT INTO domain_wishes 
+          (id, site_id, owner_id, plan, tld, choice_1, choice_2, choice_3, status, created_at, updated_at) 
+         VALUES (?1, ?2, ?3, ?4, '.co.zw', ?5, ?6, ?7, 'pending', unixepoch(), unixepoch())`
+      ).bind(
+        'dwsh_' + uid(8), 
+        id, 
+        ownerId, 
+        plan, 
+        choices[0] || '', 
+        choices[1] || null, 
+        choices[2] || null
+      ).run();
+      
+      // Notify admin team about the .co.zw request
+      await notifyAdminForDomainRegistration(env, id, choices);
+    } else if (domainData.type === 'own' && domainData.name) {
+      // User has their own domain - just save it
+      await env.DB.prepare(
+        "UPDATE sites SET custom_domain=?2, custom_domain_status='pending', updated_at=unixepoch() WHERE id=?1"
+      ).bind(id, domainData.name).run();
+      
+      // Provision custom hostname via Cloudflare for SaaS
+      const cfResult = await cfProvisionHostname(env, domainData.name);
+      if (cfResult.ok) {
+        await env.DB.prepare(
+          "UPDATE sites SET cf_hostname_id=?2, updated_at=unixepoch() WHERE id=?1"
+        ).bind(id, cfResult.hostname_id).run();
+      }
+    }
+  }
+
+  // Calculate total amount
+  const baseAmount = plan === 'pro' ? 60 : 30;
+  const totalAmount = baseAmount + domainCost;
+
   const owner = await env.DB.prepare("SELECT email FROM owners WHERE id=?1").bind(ownerId).first();
-  return delegateToPaymentsWorker(env, origin, id, currency, "publish", owner?.email || undefined);
+  
+  // Build domain data for the payment worker
+  const paymentDomainData = {
+    name: domainData?.name || null,
+    type: domainData?.type || null,
+    cost: domainCost,
+    choices: domainData?.choices || null
+  };
+  
+  return delegateToPaymentsWorker(env, origin, id, currency, "publish", owner?.email || undefined, paymentDomainData);
 }
 
 async function renewSite(request, env, origin, id) {
@@ -1186,9 +1253,32 @@ async function renewSite(request, env, origin, id) {
   return delegateToPaymentsWorker(env, origin, id, currency, "renewal", owner?.email || undefined);
 }
 
-// GET /api/payments/:ref — thin same-origin proxy to the payments Worker's
-// GET /pay/status, so the dashboard never has to call api.websites.co.zw
-// directly (keeps one CORS surface, one auth boundary).
+// ── Helper: Notify admin about .co.zw domain request ──────────────────────
+async function notifyAdminForDomainRegistration(env, siteId, choices) {
+  try {
+    const site = await env.DB.prepare(
+      "SELECT site_name, draft_subdomain FROM sites WHERE id=?1"
+    ).bind(siteId).first();
+    
+    const message = `📧 New .co.zw domain request for site "${site?.site_name || siteId}"\n\nChoices:\n1. ${choices[0] || ''}.co.zw\n2. ${choices[1] || ''}.co.zw\n3. ${choices[2] || ''}.co.zw\n\nSite: https://${site?.draft_subdomain || ''}.websites.co.zw\n\nPlease register the domain and update the domain wish status.`;
+    
+    // You can send this to Slack, email, or your admin dashboard
+    console.log('Domain registration request:', { siteId, choices, message });
+    
+    // If you have a Slack webhook, you can send it there
+    if (env.SLACK_WEBHOOK) {
+      await fetch(env.SLACK_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: message })
+      });
+    }
+  } catch (e) {
+    console.error('Failed to notify admin:', e);
+  }
+}
+
+// GET /api/payments/:ref — thin proxy to the payments Worker
 async function pollPayment(request, env, origin, ref) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1204,7 +1294,7 @@ async function pollPayment(request, env, origin, ref) {
   }
 }
 
-// ── PREVIEW TOKEN (v5.0 — D1-backed, no HMAC, no cookies) ─────────────────────
+// ── PREVIEW TOKEN ──────────────────────────────────────────────────────────────
 async function getPreviewToken(request, env, origin, id) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1218,10 +1308,9 @@ async function getPreviewToken(request, env, origin, id) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// AI WORKER PROXIES — thin server-to-server passthroughs
+// AI WORKER PROXIES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// POST /api/recommend-template — new-site wizard's template step
 async function recommendTemplate(request, env, origin) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1253,7 +1342,6 @@ async function recommendTemplate(request, env, origin) {
   }
 }
 
-// POST /api/ai/tune — editor's "Tune with AI" buttons
 async function tuneTextProxy(request, env, origin) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1328,7 +1416,7 @@ function defaultSectionsFor(t) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UPLOAD — pre-signed R2 PUT URL
+// UPLOAD
 // ═══════════════════════════════════════════════════════════════════════════════
 
 async function getUploadUrl(request, env, origin, id) {
@@ -1379,7 +1467,6 @@ async function presignR2Put({ host, key, contentType, expires, region, accessKey
 // SHARED HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// ─── CACHE PURGE ─────────────────────────────────────────────────────────────
 async function purgePublicCache(env, siteId) {
   try {
     const site = await env.DB.prepare(
@@ -1452,6 +1539,23 @@ async function readJson(request) { try { return await request.json(); } catch { 
 function clamp(v, max) { const s = String(v == null ? "" : v).trim(); return s.length > max ? s.slice(0, max) : s || null; }
 function slugify(s) { return String(s || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "site"; }
 function sanitizeSlug(v) { if (!v) return null; return String(v).toLowerCase().trim().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "").slice(0, 63) || null; }
+
+async function uniqueSlug(env, base, excludeSiteId) {
+  base = base || "site";
+  let candidate = base;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const sql = excludeSiteId
+      ? "SELECT id FROM sites WHERE draft_subdomain = ?1 AND id != ?2"
+      : "SELECT id FROM sites WHERE draft_subdomain = ?1";
+    const stmt = excludeSiteId
+      ? env.DB.prepare(sql).bind(candidate, excludeSiteId)
+      : env.DB.prepare(sql).bind(candidate);
+    const existing = await stmt.first();
+    if (!existing) return candidate;
+    candidate = base + "-" + uid(2);
+  }
+  return base + "-" + uid(4);
+}
 
 function paletteFor(t) {
   const m = {
@@ -1548,7 +1652,7 @@ async function sendEmail(env, email, code) {
   } catch { return false; }
 }
 
-// ── PREVIEW TOKEN MINTING (v5.0 — D1-backed, replaces HMAC version) ──────────
+// ── PREVIEW TOKEN MINTING ────────────────────────────────────────────────────
 async function mintPreviewToken(env, ownerId, siteId) {
   const token = "pvt_" + uid(24);
   const now   = nowSec();
@@ -1558,17 +1662,263 @@ async function mintPreviewToken(env, ownerId, siteId) {
   return token;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 4 — CLOUDFLARE FOR SAAS CUSTOM HOSTNAME PROVISIONING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function cfProvisionHostname(env, hostname) {
+  if (!env.CF_API_TOKEN || !env.CF_ZONE_ID) {
+    return { ok: false, error: "CF_API_TOKEN or CF_ZONE_ID not configured" };
+  }
+  try {
+    const resp = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${env.CF_ZONE_ID}/custom_hostnames`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.CF_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          hostname,
+          ssl: {
+            method: "txt",
+            type:   "dv",
+            settings: {
+              min_tls_version: "1.0",
+              http2: "on",
+            },
+          },
+        }),
+      }
+    );
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      if (data.errors?.[0]?.code === 1406) {
+        const existing = await cfGetHostname(env, hostname);
+        return existing.ok
+          ? { ok: true, hostname_id: existing.hostname_id, already_existed: true }
+          : { ok: false, error: "hostname exists but could not fetch ID" };
+      }
+      return { ok: false, error: data.errors?.[0]?.message || `CF API ${resp.status}` };
+    }
+    return {
+      ok: true,
+      hostname_id:  data.result?.id,
+      ssl_status:   data.result?.ssl?.status,
+      ownership_verification: data.result?.ownership_verification || null,
+    };
+  } catch (e) {
+    return { ok: false, error: String(e?.message) };
+  }
+}
+
+async function cfGetHostname(env, hostname) {
+  try {
+    const resp = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${env.CF_ZONE_ID}/custom_hostnames?hostname=${encodeURIComponent(hostname)}`,
+      { headers: { "Authorization": `Bearer ${env.CF_API_TOKEN}` } }
+    );
+    const data = await resp.json().catch(() => ({}));
+    const result = data.result?.[0];
+    if (!result) return { ok: false, error: "not_found" };
+    return {
+      ok: true,
+      hostname_id:    result.id,
+      ssl_status:     result.ssl?.status,
+      hostname_status: result.status,
+      ownership_verification: result.ownership_verification || null,
+    };
+  } catch (e) {
+    return { ok: false, error: String(e?.message) };
+  }
+}
+
+async function cfGetHostnameById(env, hostnameId) {
+  try {
+    const resp = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${env.CF_ZONE_ID}/custom_hostnames/${hostnameId}`,
+      { headers: { "Authorization": `Bearer ${env.CF_API_TOKEN}` } }
+    );
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok || !data.result) return { ok: false, error: "not_found" };
+    return {
+      ok: true,
+      hostname_id:     data.result.id,
+      hostname:        data.result.hostname,
+      ssl_status:      data.result.ssl?.status,
+      hostname_status: data.result.status,
+      ssl_validation_records: data.result.ssl?.validation_records || [],
+      ownership_verification:  data.result.ownership_verification || null,
+    };
+  } catch (e) {
+    return { ok: false, error: String(e?.message) };
+  }
+}
+
+async function cfDeleteHostname(env, hostnameId) {
+  try {
+    await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${env.CF_ZONE_ID}/custom_hostnames/${hostnameId}`,
+      { method: "DELETE", headers: { "Authorization": `Bearer ${env.CF_API_TOKEN}` } }
+    );
+  } catch {}
+}
+
+// ── Customer-facing: POST /api/sites/:id/custom-hostname ─────────────────────
+async function provisionCustomHostname(request, env, origin, siteId) {
+  const ownerId = await resolveOwner(request, env);
+  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+
+  const site = await loadSite(env, siteId);
+  if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
+  if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
+  if (site.plan !== "pro")
+    return jsonResp({ error: "pro_required", message: "Custom domains require the Pro plan ($60/yr)." }, 403, origin);
+  if (!site.custom_domain)
+    return jsonResp({ error: "no_domain", message: "No domain assigned to this site yet." }, 400, origin);
+
+  const hostname = site.custom_domain;
+
+  const cf = await cfProvisionHostname(env, hostname);
+  if (!cf.ok) {
+    return jsonResp({ error: "cf_provision_failed", detail: cf.error }, 502, origin);
+  }
+
+  await env.DB.prepare(
+    "UPDATE sites SET cf_hostname_id=?2, custom_domain_status='pending', updated_at=unixepoch() WHERE id=?1"
+  ).bind(siteId, cf.hostname_id).run();
+
+  return jsonResp({
+    ok: true,
+    hostname,
+    hostname_id:  cf.hostname_id,
+    ssl_status:   cf.ssl_status,
+    dns_instructions: buildDnsInstructions(hostname, cf),
+    message: "Custom hostname provisioned. Follow the DNS instructions to activate your domain.",
+  }, 200, origin);
+}
+
+// ── Customer-facing: GET /api/sites/:id/custom-hostname ──────────────────────
+async function getCustomHostname(request, env, origin, siteId) {
+  const ownerId = await resolveOwner(request, env);
+  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+
+  const site = await loadSite(env, siteId);
+  if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
+  if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
+
+  if (!site.custom_domain)
+    return jsonResp({ hostname: null, status: "none" }, 200, origin);
+
+  if (site.cf_hostname_id) {
+    const cf = await cfGetHostnameById(env, site.cf_hostname_id);
+    if (cf.ok) {
+      return jsonResp({
+        hostname:        site.custom_domain,
+        hostname_id:     cf.hostname_id,
+        ssl_status:      cf.ssl_status,
+        hostname_status: cf.hostname_status,
+        custom_domain_status: site.custom_domain_status,
+        dns_instructions: buildDnsInstructions(site.custom_domain, cf),
+        active: cf.ssl_status === "active" && cf.hostname_status === "active",
+      }, 200, origin);
+    }
+  }
+
+  return jsonResp({
+    hostname:             site.custom_domain,
+    custom_domain_status: site.custom_domain_status,
+    dns_instructions:     buildDnsInstructions(site.custom_domain, null),
+    active:               site.custom_domain_status === "active",
+  }, 200, origin);
+}
+
+// ── Customer-facing: POST /api/sites/:id/custom-hostname/check ───────────────
+async function checkCustomHostname(request, env, origin, siteId) {
+  const ownerId = await resolveOwner(request, env);
+  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+
+  const site = await loadSite(env, siteId);
+  if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
+  if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
+  if (!site.cf_hostname_id) return jsonResp({ error: "not_provisioned" }, 400, origin);
+
+  const cf = await cfGetHostnameById(env, site.cf_hostname_id);
+  if (!cf.ok) return jsonResp({ error: "cf_fetch_failed", detail: cf.error }, 502, origin);
+
+  const isActive = cf.ssl_status === "active" && cf.hostname_status === "active";
+
+  if (isActive && site.custom_domain_status !== "active") {
+    await env.DB.prepare(
+      "UPDATE sites SET custom_domain_status='active', updated_at=unixepoch() WHERE id=?1"
+    ).bind(siteId).run();
+
+    await purgeCustomDomainCache(env, site.custom_domain);
+
+    const owner = await env.DB.prepare("SELECT phone FROM owners WHERE id=?1").bind(site.owner_id).first();
+    if (owner?.phone) {
+      await sendWhatsApp(env, owner.phone,
+        `Great news! Your website is now live at https://${site.custom_domain} — your SSL certificate is active and your site is fully connected.`
+      ).catch(() => {});
+    }
+  }
+
+  return jsonResp({
+    ok: true,
+    hostname:        cf.hostname,
+    ssl_status:      cf.ssl_status,
+    hostname_status: cf.hostname_status,
+    active:          isActive,
+    custom_domain_status: isActive ? "active" : (site.custom_domain_status || "pending"),
+    dns_instructions: buildDnsInstructions(site.custom_domain, cf),
+  }, 200, origin);
+}
+
+// ── Build DNS instructions for the customer ───────────────────────────────────
+function buildDnsInstructions(hostname, cf) {
+  const instructions = {
+    cname: {
+      type:   "CNAME",
+      name:   hostname,
+      value:  "websites.co.zw",
+      note:   "Add this to your domain registrar's DNS settings to point your domain at your site.",
+    },
+  };
+
+  const valRecord = cf?.ssl_validation_records?.[0] || cf?.ownership_verification;
+  if (valRecord) {
+    instructions.txt_validation = {
+      type:  valRecord.type  || "TXT",
+      name:  valRecord.name  || `_cf-custom-hostname.${hostname}`,
+      value: valRecord.value || valRecord.txt_value || "",
+      note:  "Add this TXT record to validate your SSL certificate. Remove it once the certificate is active.",
+    };
+  }
+
+  return instructions;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
 async function hmac(secret, data) {
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
   return hex(sig);
 }
+
 function timingSafe(a, b) { if (a.length !== b.length) return false; let diff = 0; for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i); return diff === 0; }
+
 function hex(buf) { return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join(""); }
-function b64url(buf) { let b = ""; const a = new Uint8Array(typeof buf === "string" ? new TextEncoder().encode(buf) : buf); for (let i = 0; i < a.length; i++) b += String.fromCharCode(a[i]); return btoa(b).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+
 function uid(bytes) { bytes = bytes || 16; const b = new Uint8Array(bytes); crypto.getRandomValues(b); return [...b].map(x => x.toString(16).padStart(2, "0")).join(""); }
+
 function nowSec() { return Math.floor(Date.now() / 1000); }
+
 function normalizePhone(raw) { const p = String(raw || "").replace(/[^\d]/g, ""); if (!p || p.length < 7) return null; if (p.startsWith("263") && p.length >= 12) return p; if (p.startsWith("0") && p.length >= 10) return "263" + p.slice(1); if (p.length === 9 && (p.startsWith("7") || p.startsWith("8"))) return "263" + p; if (p.length >= 10) return p; return null; }
+
 function parseCookie(h) { const out = {}; String(h).split(";").forEach(pair => { const i = pair.indexOf("="); if (i > -1) out[pair.slice(0, i).trim()] = decodeURIComponent(pair.slice(i + 1).trim()); }); return out; }
 
 function respond(obj, defaultStatus, origin) {
@@ -1579,16 +1929,19 @@ function respond(obj, defaultStatus, origin) {
   applyCors(h, origin); cookies.forEach(c => h.append("Set-Cookie", c));
   return new Response(JSON.stringify(body), { status, headers: h });
 }
+
 function jsonResp(obj, status, origin) {
   const h = new Headers({ "Content-Type": "application/json; charset=utf-8" });
   applyCors(h, origin);
   return new Response(JSON.stringify(obj), { status: status || 200, headers: h });
 }
+
 function cors(resp, status, origin) {
   if (!resp) resp = new Response(null, { status: status || 204 });
   const h = new Headers(resp.headers); applyCors(h, origin);
   return new Response(resp.body, { status: resp.status, headers: h });
 }
+
 function applyCors(h, origin) {
   const allowed = [
     "https://app.websites.co.zw",
