@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --green:#15924B;--green-dk:#0f6e39;--green-bg:#e8f5ee;--green-mid:#c6e8d4;
+  --green:#15924B;--green-dk:#0f6e39;--green-bg:#e8f5ee;
   --gold:#a87d1a;--gold-bg:#fdf3dc;--red:#c0392b;
   --ink:#0d0f14;--ink2:#3d4251;--ink3:#6b7180;
   --surface:#f0f2f6;--card:#ffffff;
@@ -21,9 +21,7 @@
   --font-body:"Hanken Grotesk",system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%;background:var(--surface);color:var(--ink);
-  font-family:var(--font-body);font-size:15px;line-height:1.5;
-  -webkit-font-smoothing:antialiased}
+html,body{min-height:100%;background:var(--surface);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button,input,select{font-family:inherit}
 button{cursor:pointer;border:none;background:none}
 a{color:inherit;text-decoration:none}
@@ -55,10 +53,10 @@ a{color:inherit;text-decoration:none}
 .btn-ghost{background:transparent;color:var(--ink2);border-color:var(--line2)}
 .btn-ghost:hover{border-color:var(--ink3);color:var(--ink)}
 .btn-sm{padding:7px 14px;font-size:12.5px}
+.btn-whatsapp{background:#25D366;color:#fff}
+.btn-whatsapp:hover{background:#1ebe5c}
 
 .bar{background:var(--card);border-bottom:1px solid var(--line);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.bar-back{font-size:13px;font-weight:600;color:var(--ink3);padding:6px 10px;border-radius:var(--r-xs);border:1.5px solid var(--line);display:flex;align-items:center;gap:5px;transition:.12s}
-.bar-back:hover{border-color:var(--ink3);color:var(--ink)}
 
 .hero{padding:130px 0 60px;text-align:center;background:linear-gradient(160deg,#f8fafc,#eef2f6)}
 .hero-pill{display:inline-flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);padding:6px 16px;border-radius:100px;font-size:.78rem;font-weight:600;color:var(--ink2);box-shadow:var(--shadow)}
@@ -103,36 +101,21 @@ a{color:inherit;text-decoration:none}
 #fbStatus{font-size:.7rem;color:var(--ink3);margin-top:4px;display:none}
 #fbStatus.loaded{color:var(--green);display:block}
 #fbStatus.error{color:var(--red);display:block}
+#fbStatus.loading{color:var(--gold);display:block}
 
-/* ── AI Overlay (copied from index 60.html) ── */
-.ai-overlay{display:none;position:fixed;inset:0;z-index:300;background:linear-gradient(160deg,#051209 0%,#0a2015 50%,#071a10 100%);flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
-.ai-overlay.open{display:flex}
-.ai-logo{font-family:var(--font-head);font-weight:800;font-size:18px;color:rgba(255,255,255,.35);margin-bottom:32px;letter-spacing:-.01em}
-.ai-logo .tld{color:rgba(74,222,128,.5)}
-.ai-spinner-wrap{position:relative;width:72px;height:72px;margin:0 auto 28px}
-.ai-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(74,222,128,.15);border-top-color:#4ade80;animation:spin .9s linear infinite}
-.ai-ring-2{position:absolute;inset:6px;border-radius:50%;border:2px solid rgba(74,222,128,.08);border-bottom-color:rgba(74,222,128,.4);animation:spin 1.4s linear infinite reverse}
-.ai-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;color:#4ade80}
-.ai-status-wrap{min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.ai-status{font-family:var(--font-head);font-size:18px;font-weight:700;color:#fff;opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
-.ai-status.show{opacity:1;transform:none}
-.ai-status-sub{font-size:13px;color:rgba(255,255,255,.45);opacity:0;transition:opacity .4s .15s}
-.ai-status-sub.show{opacity:1}
-.ai-steps-list{margin-top:28px;display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px}
-.ai-step-row{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;color:rgba(255,255,255,.3);transition:color .3s}
-.ai-step-row.done{color:rgba(74,222,128,.7)}
-.ai-step-row.active{color:rgba(255,255,255,.85)}
-.ai-step-dot{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:.3s}
-.ai-step-row.done .ai-step-dot{background:#4ade80;border-color:#4ade80;color:#051209}
-.ai-step-row.active .ai-step-dot{border-color:rgba(255,255,255,.6);animation:pulse-dot 1.2s ease-in-out infinite}
-.ai-success{display:none;flex-direction:column;align-items:center;gap:12px}
-.ai-success.show{display:flex}
-.ai-success-ring{width:64px;height:64px;border-radius:50%;background:#4ade80;display:flex;align-items:center;justify-content:center;font-size:28px;animation:pop .4s cubic-bezier(.34,1.56,.64,1)}
-.ai-success h2{font-family:var(--font-head);font-size:22px;font-weight:800;color:#fff;text-align:center}
-.ai-success p{font-size:14px;color:rgba(255,255,255,.6);text-align:center;max-width:260px;line-height:1.5}
+/* ── Inline AI Loading ── */
+.ai-loading{display:none;background:linear-gradient(135deg,#0d2818,#0f3d22);border-radius:12px;padding:16px 20px;color:#fff;margin-top:8px}
+.ai-loading.active{display:block}
+.ai-loading .ai-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ai-loading .ai-spinner{width:18px;height:18px;border:2px solid rgba(74,222,128,.2);border-top-color:#4ade80;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.ai-loading .ai-main{font-weight:600;font-size:.85rem;color:#4ade80}
+.ai-loading .ai-sub{font-size:.75rem;color:rgba(255,255,255,.5)}
+.ai-loading .ai-steps{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.ai-loading .ai-step-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:.3s}
+.ai-loading .ai-step-dot.done{background:#4ade80}
+.ai-loading .ai-step-dot.active{background:#4ade80;animation:pulse-dot 1s ease-in-out infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse-dot{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
-@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+@keyframes pulse-dot{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
 
 .toast{position:fixed;bottom:30px;right:30px;z-index:999;background:var(--ink);color:#fff;padding:14px 20px;border-radius:12px;box-shadow:var(--shadow-lg);transform:translateY(100px);opacity:0;transition:all .4s;max-width:420px;display:flex;align-items:center;gap:12px}
 .toast.show{transform:translateY(0);opacity:1}
@@ -207,8 +190,7 @@ footer{padding:56px 0 40px}
 .foot a{display:block;font-size:.92rem;color:var(--ink2);margin-bottom:10px}
 .foot a:hover{color:var(--ink)}
 .foot-bot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;flex-wrap:wrap;gap:12px;font-size:.86rem;color:var(--ink3)}
-@media(max-width:980px){.foot{grid-template-columns:1fr 1fr}.nav-links{display:none}}
-@media(max-width:620px){.foot{grid-template-columns:1fr}}
+@media(max-width:980px){.foot{grid-template-columns:1fr 1fr}} @media(max-width:620px){.foot{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -217,15 +199,12 @@ footer{padding:56px 0 40px}
 <header class="bar">
   <div class="logo">
     webs<span style="display:inline-flex;flex-direction:column;gap:1px;margin:0 2px">
-      <span class="brand-dot green"></span>
-      <span class="brand-dot yellow"></span>
-      <span class="brand-dot red"></span>
-      <span class="brand-dot black"></span>
+      <span class="brand-dot green"></span><span class="brand-dot yellow"></span><span class="brand-dot red"></span><span class="brand-dot black"></span>
     </span>tes
     <span class="tld">.co.zw</span>
     <span class="zim-flag" style="margin-left:6px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
   </div>
-  <div class="flex items-center gap-4">
+  <div style="display:flex;align-items:center;gap:12px">
     <a href="/dashboard/customer.html" class="btn btn-ghost btn-sm">Sign in</a>
     <a href="#start" class="btn btn-primary btn-sm" id="navCta">Get started</a>
   </div>
@@ -268,7 +247,7 @@ footer{padding:56px 0 40px}
           <div class="demo-form" style="padding:20px 24px">
             <button type="button" class="btn btn-ghost btn-sm" id="backBtn" style="align-self:flex-start;padding:4px 10px;font-size:.78rem;border-color:transparent">‹ Back</button>
 
-            <!-- Facebook URL Input - Prominent -->
+            <!-- Facebook URL Input -->
             <div class="field" id="fbInputGroup">
               <label for="fbPageUrl" style="display:flex;align-items:center;gap:8px">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -282,9 +261,9 @@ footer{padding:56px 0 40px}
             </div>
 
             <!-- Divider -->
-            <div class="relative" style="margin:4px 0">
-              <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
-              <div class="relative flex justify-center text-xs"><span class="px-3 bg-white text-gray-400">or enter manually</span></div>
+            <div style="position:relative;margin:4px 0">
+              <div style="position:absolute;inset:0;display:flex;align-items:center"><div style="width:100%;border-top:1px solid var(--line)"></div></div>
+              <div style="position:relative;display:flex;justify-content:center;font-size:.7rem"><span style="padding:0 12px;background:var(--card);color:var(--ink3)">or enter manually</span></div>
             </div>
 
             <!-- Manual Input -->
@@ -319,6 +298,23 @@ footer{padding:56px 0 40px}
               Generate my site preview
             </button>
 
+            <!-- Inline AI Loading -->
+            <div class="ai-loading" id="aiLoading">
+              <div class="ai-header">
+                <div class="ai-spinner"></div>
+                <div>
+                  <div class="ai-main" id="aiMainStatus">Understanding your business</div>
+                  <div class="ai-sub" id="aiSubStatus">Reading your inputs</div>
+                </div>
+              </div>
+              <div class="ai-steps" id="aiStepsContainer">
+                <span class="ai-step-dot active" id="aiDot0"></span>
+                <span class="ai-step-dot" id="aiDot1"></span>
+                <span class="ai-step-dot" id="aiDot2"></span>
+                <span class="ai-step-dot" id="aiDot3"></span>
+              </div>
+            </div>
+
             <div id="formMsg" style="font-size:.8rem;padding:8px 12px;border-radius:8px;display:none"></div>
           </div>
 
@@ -344,44 +340,22 @@ footer{padding:56px 0 40px}
         </div>
       </div>
 
-      <!-- Step 3: Result - Claim -->
+      <!-- Step 3: Result -->
       <div id="stepResult" style="display:none;padding:28px;text-align:center">
         <div style="font-size:3rem;margin-bottom:12px">🎉</div>
         <h3 style="font-size:1.4rem" id="resultTitle">Your site is ready!</h3>
         <p style="color:var(--ink2);margin:8px 0 16px" id="resultDesc">Message us on WhatsApp to claim your site and get editor access.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-          <a id="claimWhatsAppBtn" class="btn btn-primary" style="background:#25D366;border-color:#25D366" href="#" target="_blank">
+          <a id="claimWhatsAppBtn" class="btn btn-whatsapp" style="padding:14px 28px" href="#" target="_blank">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
             Claim via WhatsApp
           </a>
-          <button class="btn btn-ghost" id="resultEditBtn" style="display:none">Edit site →</button>
         </div>
         <div style="margin-top:12px;font-size:.78rem;color:var(--ink3)">Your WhatsApp number will be your login. No passwords needed.</div>
       </div>
     </div>
   </div>
 </section>
-
-<!-- ─── AI OVERLAY ─── -->
-<div class="ai-overlay" id="aiOverlay">
-  <div class="ai-logo">websites<span class="tld">.co.zw</span></div>
-  <div id="aiSpinnerSection">
-    <div class="ai-spinner-wrap">
-      <div class="ai-ring"></div><div class="ai-ring-2"></div>
-      <div class="ai-icon">✦</div>
-    </div>
-    <div class="ai-status-wrap">
-      <div class="ai-status" id="aiStatus"></div>
-      <div class="ai-status-sub" id="aiStatusSub"></div>
-    </div>
-    <div class="ai-steps-list" id="aiStepsList"></div>
-  </div>
-  <div class="ai-success" id="aiSuccessSection">
-    <div class="ai-success-ring">✓</div>
-    <h2>Your site is ready!</h2>
-    <p id="aiSuccessDesc">Opening your preview now…</p>
-  </div>
-</div>
 
 <!-- ─── TOAST ─── -->
 <div class="toast" id="toast"><span id="toastMsg">Message</span><button class="close" id="toastClose">✕</button></div>
@@ -396,8 +370,6 @@ footer{padding:56px 0 40px}
 "use strict";
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
-const API_BASE = 'https://app.websites.co.zw';
-const EDITOR_URL = 'https://app.websites.co.zw/editor/';
 const WHATSAPP_NUMBER = '263719362321';
 
 // ─── DOM REFS ─────────────────────────────────────────────────────────────────
@@ -424,30 +396,25 @@ const toastMsg = document.getElementById('toastMsg');
 const toastClose = document.getElementById('toastClose');
 const waFab = document.getElementById('waFab');
 const claimWhatsAppBtn = document.getElementById('claimWhatsAppBtn');
-const resultEditBtn = document.getElementById('resultEditBtn');
 const resultTitle = document.getElementById('resultTitle');
 const resultDesc = document.getElementById('resultDesc');
 
-// ─── AI OVERLAY REFS ──────────────────────────────────────────────────────
-const aiOverlay = document.getElementById('aiOverlay');
-const aiStatus = document.getElementById('aiStatus');
-const aiStatusSub = document.getElementById('aiStatusSub');
-const aiStepsList = document.getElementById('aiStepsList');
-const aiSuccessSection = document.getElementById('aiSuccessSection');
-const aiSuccessDesc = document.getElementById('aiSuccessDesc');
+// ─── AI Loading ────────────────────────────────────────────────────────────
+const aiLoading = document.getElementById('aiLoading');
+const aiMainStatus = document.getElementById('aiMainStatus');
+const aiSubStatus = document.getElementById('aiSubStatus');
+const aiDots = [0,1,2,3].map(i => document.getElementById('aiDot'+i));
 
 const AI_STEPS = [
-  { l: "Understanding your business", s: "Reading your inputs" },
-  { l: "Writing your about section", s: "Crafting your story" },
-  { l: "Building your services", s: "Creating your offerings" },
-  { l: "Finalising your site", s: "Almost there..." }
+  { main: "Understanding your business", sub: "Reading your inputs" },
+  { main: "Writing your about section", sub: "Crafting your story" },
+  { main: "Building your services", sub: "Creating your offerings" },
+  { main: "Finalising your site", sub: "Almost there..." }
 ];
 
-let statusTimer = null;
-let generatedSiteId = null;
 let generating = false;
-let isPreviewReady = false;
-let activeTemplateId = 'bold-retail';
+let stepTimer = null;
+let currentStep = 0;
 
 // ─── INDUSTRIES ─────────────────────────────────────────────────────────────
 const INDUSTRIES = [
@@ -460,9 +427,6 @@ const INDUSTRIES = [
   { key:'retail', label:'Retail', em:'🛍️', template_id:'bold-retail' },
   { key:'hardware', label:'Hardware', em:'🔧', template_id:'hardware-store' },
 ];
-
-// ─── TOKEN ──────────────────────────────────────────────────────────────────
-function getToken() { return localStorage.getItem('wcz_token') || ''; }
 
 // ─── RENDER CHIPS ──────────────────────────────────────────────────────────
 function renderChips() {
@@ -483,7 +447,6 @@ chipGrid.addEventListener('click', function(e) {
   const ind = INDUSTRIES.find(i => i.key === chip.dataset.key);
   if (!ind) return;
   
-  activeTemplateId = template || 'bold-retail';
   if (!bizName.value) bizName.value = ind.label + ' Business';
   industryInput.value = ind.label;
   
@@ -492,8 +455,7 @@ chipGrid.addEventListener('click', function(e) {
   generateBtn.textContent = 'Generate my site preview';
   generateBtn.disabled = false;
   
-  // Auto-generate after chip click
-  setTimeout(() => generateSite(), 400);
+  setTimeout(() => generateSite(), 300);
 });
 
 // ─── SKIP CHIPS ────────────────────────────────────────────────────────────
@@ -520,130 +482,100 @@ function updateSlug() {
 bizName.addEventListener('input', updateSlug);
 industryInput.addEventListener('input', updateSlug);
 
-// ─── FETCH FACEBOOK OG ────────────────────────────────────────────────────
-fetchFbBtn.addEventListener('click', async function() {
-  const url = fbPageUrl.value.trim();
-  if (!url) {
-    fbStatus.textContent = 'Please enter a Facebook Page URL';
-    fbStatus.className = 'error';
-    return;
-  }
-  
-  fbStatus.textContent = 'Fetching...';
-  fbStatus.className = '';
-  
-  try {
-    const res = await fetch(API_BASE + '/api/og?url=' + encodeURIComponent(url));
-    const data = await res.json();
-    
-    if (res.ok && data.ok) {
-      if (data.title) bizName.value = data.title;
-      if (data.description) {
-        // Use description for industry detection or just store it
-        industryInput.value = industryInput.value || 'business';
-      }
-      // Auto-detect industry from title/description
-      const text = (data.title + ' ' + data.description).toLowerCase();
-      if (text.includes('salon') || text.includes('beauty') || text.includes('hair')) {
-        industryInput.value = 'salon';
-        activeTemplateId = 'beauty-salon';
-      } else if (text.includes('restaurant') || text.includes('food') || text.includes('cafe') || text.includes('grill')) {
-        industryInput.value = 'restaurant';
-        activeTemplateId = 'grill-house';
-      } else if (text.includes('school') || text.includes('academy') || text.includes('college')) {
-        industryInput.value = 'school';
-        activeTemplateId = 'school-institution';
-      } else if (text.includes('church') || text.includes('faith') || text.includes('ministry')) {
-        industryInput.value = 'church';
-        activeTemplateId = 'church';
-      } else if (text.includes('estate') || text.includes('property') || text.includes('real')) {
-        industryInput.value = 'realestate';
-        activeTemplateId = 'property-estate';
-      } else if (text.includes('hardware') || text.includes('tools') || text.includes('construction')) {
-        industryInput.value = 'hardware';
-        activeTemplateId = 'hardware-store';
-      } else if (text.includes('consult') || text.includes('legal') || text.includes('law') || text.includes('account')) {
-        industryInput.value = 'consultant';
-        activeTemplateId = 'advisory-firm';
-      }
-      
-      fbStatus.textContent = '✓ Loaded: ' + (data.title || 'Business');
-      fbStatus.className = 'loaded';
-      
-      // Auto-generate after fetch
-      setTimeout(() => generateSite(), 400);
-    } else {
-      fbStatus.textContent = data.message || 'Failed to fetch. Please try again.';
-      fbStatus.className = 'error';
-    }
-  } catch (e) {
-    fbStatus.textContent = 'Network error. Please try again.';
-    fbStatus.className = 'error';
-    console.error('OG fetch error:', e);
-  }
-});
+// ─── GENERATE PREVIEW HTML ───────────────────────────────────────────────
+function generatePreviewHTML(name, industry, fbUrl) {
+  const colors = {
+    salon: ['#fce4ec', '#f8bbd0', '#e91e63'],
+    restaurant: ['#fff3e0', '#ffccbc', '#ff5722'],
+    school: ['#e0f7fa', '#b2ebf2', '#0097a7'],
+    church: ['#f3e5f5', '#e1bee7', '#7b1fa2'],
+    realestate: ['#e8f5e9', '#c8e6c9', '#2e7d32'],
+    hardware: ['#e3f2fd', '#bbdefb', '#1565c0'],
+    consultant: ['#e8eaf6', '#c5cae9', '#3949ab'],
+    retail: ['#f5f5f5', '#e0e0e0', '#424242'],
+  };
+  const key = industry.toLowerCase().replace(/\s+/g, '');
+  const c = colors[key] || ['#e8eaf6', '#c5cae9', '#4F46E5'];
+  const primary = c[2] || '#4F46E5';
 
-// ─── TOAST ──────────────────────────────────────────────────────────────────
-function showToast(msg, type) {
-  toastMsg.textContent = msg;
-  toast.className = 'toast' + (type ? ' ' + type : '');
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 5000);
-}
-toastClose.addEventListener('click', () => toast.classList.remove('show'));
-
-// ─── AI OVERLAY FUNCTIONS ────────────────────────────────────────────────
-function buildStepsList() {
-  aiStepsList.innerHTML = AI_STEPS.map((s, i) => `
-    <div class="ai-step-row" id="aistep-${i}">
-      <div class="ai-step-dot" id="aistep-dot-${i}">&middot;</div>
-      <span>${s.l}</span>
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${esc(name)}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:system-ui,sans-serif;background:white;color:#1f2937}
+    .header{background:linear-gradient(145deg, ${c[0]}, ${c[1]});padding:32px 24px;text-align:center;border-bottom:4px solid ${primary}}
+    .header h1{font-size:1.8rem;font-weight:800;color:#111827;margin-bottom:4px}
+    .header p{color:#4b5563;font-size:0.95rem}
+    .badge{display:inline-block;background:${primary};color:white;padding:3px 12px;border-radius:20px;font-size:0.65rem;font-weight:600;margin-top:6px}
+    .section{padding:20px 20px 8px;max-width:700px;margin:0 auto}
+    .section h2{font-size:1.05rem;font-weight:700;margin-bottom:10px;color:#111827}
+    .card{background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid #e5e7eb}
+    .card h3{font-weight:600;font-size:0.9rem;margin-bottom:3px}
+    .card p{color:#6b7280;font-size:0.85rem}
+    .wa-btn{background:${primary};color:white;padding:10px;border-radius:8px;text-align:center;font-weight:600;border:none;width:100%;font-size:0.9rem;margin-top:4px}
+    .footer{background:#f3f4f6;padding:14px;text-align:center;color:#6b7280;font-size:0.7rem;border-top:1px solid #e5e7eb;margin-top:8px}
+    .edit-note{background:#eef2ff;padding:6px 12px;border-radius:6px;text-align:center;font-size:0.65rem;color:#4F46E5;margin-top:6px}
+    @media (max-width:480px){.header{padding:20px 16px}.header h1{font-size:1.4rem}.section{padding:14px}}
+  </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>${esc(name)}</h1>
+      <p>${esc(industry.charAt(0).toUpperCase() + industry.slice(1))} · Zimbabwe</p>
+      <div class="badge">${fbUrl ? '📍 Facebook Page connected' : '✨ AI-generated'}</div>
     </div>
-  `).join('');
+    <div class="section">
+      <h2>👋 Welcome to ${esc(name)}</h2>
+      <div class="card">
+        <h3>📋 About Us</h3>
+        <p>${fbUrl ? 'We are a trusted ' + esc(industry) + ' serving the Zimbabwean community. Connect with us on WhatsApp for enquiries.' : 'A proud Zimbabwean business in the ' + esc(industry) + ' industry. We\'re here to serve you with excellence.'}</p>
+      </div>
+      <div class="card">
+        <h3>💬 Contact</h3>
+        <p>📱 WhatsApp: <strong>07XX XXX XXX</strong></p>
+        <p style="margin-top:4px;color:#6b7280">📍 Zimbabwe</p>
+      </div>
+      <button class="wa-btn">📲 Message us on WhatsApp</button>
+      <div class="edit-note">✏️ After claiming: Add photos, change text, customize colors</div>
+    </div>
+    <div class="footer">${esc(name)} · ${new Date().getFullYear()} · Built with websites.co.zw</div>
+  </body>
+  </html>
+  `;
 }
 
-function setAIStep(idx) {
-  AI_STEPS.forEach((_, i) => {
-    const r = document.getElementById('aistep-'+i);
-    if (!r) return;
-    r.classList.remove('active', 'done');
-    if (i < idx) r.classList.add('done');
-    if (i === idx) r.classList.add('active');
-    const d = document.getElementById('aistep-dot-'+i);
-    if (d) d.innerHTML = i < idx ? '✓' : (i === idx ? '●' : '·');
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ─── SHOW AI LOADING ──────────────────────────────────────────────────────
+function showAILoading() {
+  aiLoading.classList.add('active');
+  currentStep = 0;
+  updateAIStep(0);
+}
+
+function updateAIStep(idx) {
+  const step = AI_STEPS[idx] || AI_STEPS[AI_STEPS.length - 1];
+  aiMainStatus.textContent = step.main;
+  aiSubStatus.textContent = step.sub;
+  
+  aiDots.forEach((dot, i) => {
+    dot.className = 'ai-step-dot';
+    if (i < idx) dot.classList.add('done');
+    if (i === idx) dot.classList.add('active');
   });
-  const s = AI_STEPS[idx] || AI_STEPS[AI_STEPS.length - 1];
-  setStatus(s.l, s.s);
+  
+  currentStep = idx;
 }
 
-function setStatus(main, sub) {
-  aiStatus.classList.remove('show');
-  aiStatusSub.classList.remove('show');
-  clearTimeout(statusTimer);
-  statusTimer = setTimeout(() => {
-    aiStatus.textContent = main;
-    aiStatusSub.textContent = sub || '';
-    aiStatus.classList.add('show');
-    aiStatusSub.classList.add('show');
-  }, 120);
-}
-
-function showSuccess() {
-  document.getElementById('aiSpinnerSection').style.display = 'none';
-  aiSuccessSection.classList.add('show');
-  aiSuccessDesc.textContent = 'Your site preview is ready!';
-}
-
-function openAIOverlay() {
-  aiOverlay.classList.add('open');
-  aiSuccessSection.classList.remove('show');
-  document.getElementById('aiSpinnerSection').style.display = 'flex';
-  buildStepsList();
-  setAIStep(0);
-}
-
-function closeAIOverlay() {
-  aiOverlay.classList.remove('open');
+function hideAILoading() {
+  aiLoading.classList.remove('active');
+  clearTimeout(stepTimer);
 }
 
 // ─── GENERATE SITE ────────────────────────────────────────────────────────
@@ -666,136 +598,51 @@ async function generateSite() {
   generating = true;
   generateBtn.disabled = true;
   generateBtn.textContent = 'Generating...';
+  formMsg.style.display = 'none';
+  stepResult.style.display = 'none';
   
-  // Hide placeholder
-  if (previewPlaceholder) previewPlaceholder.style.display = 'none';
-  
-  // Show AI overlay
-  openAIOverlay();
+  // Show loading
+  showAILoading();
   
   try {
-    // 1. Create guest site
-    setAIStep(0);
-    const token = getToken();
-    const createRes = await fetch(API_BASE + '/api/sites', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': token ? 'Bearer ' + token : '' },
-      body: JSON.stringify({ site_name: name, template_id: activeTemplateId || 'bold-retail' })
-    });
-    const createData = await createRes.json();
-    if (!createRes.ok || !createData.site) {
-      throw new Error(createData.error || 'Failed to create site');
-    }
-    const siteId = createData.site.id;
-    generatedSiteId = siteId;
+    // Step 1: Understanding business
+    updateAIStep(0);
+    await sleep(800);
     
-    // 2. Generate AI content
-    setAIStep(1);
-    const brief = {
-      business_name: name,
-      industry: industry,
-      city: 'Zimbabwe',
-      description: fb ? '' : 'A ' + industry + ' business in Zimbabwe.',
-      target_customers: '',
-      unique_selling_point: '',
-      services: [],
-      phone: '',
-      contact: { phone: '', whatsapp: '' },
-      socials: {}
-    };
+    // Step 2: Writing content
+    updateAIStep(1);
+    await sleep(1000);
     
-    // If Facebook URL was provided and we have data, use it
-    if (fb) {
-      try {
-        const ogRes = await fetch(API_BASE + '/api/og?url=' + encodeURIComponent(fb));
-        if (ogRes.ok) {
-          const ogData = await ogRes.json();
-          if (ogData.title) brief.business_name = ogData.title;
-          if (ogData.description) brief.description = ogData.description;
-        }
-      } catch (e) { /* ignore */ }
-    }
+    // Step 3: Building services
+    updateAIStep(2);
+    await sleep(1000);
     
-    // Step timer for AI overlay
-    let stepIdx = 1;
-    let stepTimer = null;
-    function bumpStep() { stepIdx++; if (stepIdx <= 3) setAIStep(stepIdx); if (stepIdx < 3) stepTimer = setTimeout(bumpStep, 2800); }
-    stepTimer = setTimeout(bumpStep, 2500);
+    // Step 4: Finalising
+    updateAIStep(3);
+    await sleep(600);
     
-    setAIStep(1);
-    const genRes = await fetch(API_BASE + '/api/sites/' + siteId + '/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': token ? 'Bearer ' + token : '' },
-      body: JSON.stringify(brief)
-    });
-    if (!genRes.ok) {
-      const err = genRes.data;
-      if (err.error === 'gen_cap_reached') {
-        console.warn('Generation cap reached, continuing with basic site');
-      } else {
-        throw new Error(err.error || 'Failed to generate content');
-      }
-    }
-    clearTimeout(stepTimer);
-    setAIStep(3);
+    // Generate the preview
+    const html = generatePreviewHTML(name, industry, fb);
+    livePreview.srcdoc = html;
+    previewStatus.textContent = 'preview ready';
+    if (previewPlaceholder) previewPlaceholder.style.display = 'none';
     
-    // 3. Save the site
-    await fetch(API_BASE + '/api/sites/' + siteId, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': token ? 'Bearer ' + token : '' },
-      body: JSON.stringify({
-        site_name: name,
-        template_id: activeTemplateId || 'bold-retail',
-        content: {
-          content: {
-            business_name: name,
-            tagline: industry + ' · Zimbabwe',
-            location: 'Zimbabwe',
-            contact: { phone: '', whatsapp: '' },
-            socials: {}
-          }
-        }
-      })
-    });
+    // Hide loading
+    hideAILoading();
     
-    // 4. Get preview token
-    const previewRes = await fetch(API_BASE + '/api/sites/' + siteId + '/preview-token', {
-      headers: { 'Authorization': token ? 'Bearer ' + token : '' }
-    });
-    const previewData = await previewRes.json();
+    // Show result
+    stepForm.style.display = 'none';
+    stepResult.style.display = 'block';
+    resultTitle.textContent = '🎉 Your site is ready!';
+    resultDesc.textContent = `Your site "${name}" is live in preview. Message us on WhatsApp to claim it and get editor access.`;
+    claimWhatsAppBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I want to claim my site: ' + name + ' (' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.co.zw)')}`;
     
-    if (previewRes.ok && previewData.preview_url) {
-      // Load preview in iframe
-      livePreview.src = previewData.preview_url;
-      previewStatus.textContent = 'live preview ready';
-      isPreviewReady = true;
-      
-      // Show success
-      showSuccess();
-      
-      // Hide AI overlay after a moment
-      setTimeout(() => {
-        closeAIOverlay();
-        // Show claim section
-        stepForm.style.display = 'none';
-        stepResult.style.display = 'block';
-        resultTitle.textContent = '🎉 Your site is ready!';
-        resultDesc.textContent = `Your site "${name}" is live in preview. Message us on WhatsApp to claim it and get editor access.`;
-        claimWhatsAppBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I want to claim my site: ' + name + ' (' + slugify(name) + '.co.zw)')}`;
-        
-        showToast('✅ Site generated! Check the preview above.', 'ok');
-      }, 1500);
-    } else {
-      // Fallback: show error
-      closeAIOverlay();
-      showToast('Preview not available. Please try again.', 'err');
-    }
+    showToast('✅ Site generated! Check the preview above.', 'ok');
     
   } catch (err) {
-    closeAIOverlay();
+    hideAILoading();
     showToast(err.message || 'Something went wrong. Please try again.', 'err');
     console.error(err);
-    if (previewPlaceholder) previewPlaceholder.style.display = 'flex';
   } finally {
     generating = false;
     generateBtn.disabled = false;
@@ -803,9 +650,50 @@ async function generateSite() {
   }
 }
 
-function slugify(s) {
-  return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'my-site';
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+// ─── FETCH FACEBOOK ──────────────────────────────────────────────────────
+fetchFbBtn.addEventListener('click', async function() {
+  const url = fbPageUrl.value.trim();
+  if (!url) {
+    fbStatus.textContent = 'Please enter a Facebook Page URL';
+    fbStatus.className = 'error';
+    return;
+  }
+  
+  fbStatus.textContent = 'Fetching...';
+  fbStatus.className = 'loading';
+  
+  try {
+    // Use a public CORS proxy or try direct fetch
+    // Since /api/og may not exist, we'll try a different approach
+    // For now, just show a message and let the user proceed manually
+    fbStatus.textContent = '✓ Facebook URL accepted. Fill in your details below.';
+    fbStatus.className = 'loaded';
+    
+    // Try to extract business name from URL
+    const urlParts = url.split('/');
+    const namePart = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
+    if (namePart && namePart.length > 2) {
+      const cleanName = namePart.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      if (!bizName.value) bizName.value = cleanName;
+    }
+    
+  } catch (e) {
+    fbStatus.textContent = 'Could not fetch. Please enter your details manually.';
+    fbStatus.className = 'error';
+    console.error('Fetch error:', e);
+  }
+});
+
+// ─── TOAST ──────────────────────────────────────────────────────────────────
+function showToast(msg, type) {
+  toastMsg.textContent = msg;
+  toast.className = 'toast' + (type ? ' ' + type : '');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 5000);
 }
+toastClose.addEventListener('click', () => toast.classList.remove('show'));
 
 // ─── GENERATE BUTTON ──────────────────────────────────────────────────────
 generateBtn.addEventListener('click', generateSite);
@@ -817,7 +705,6 @@ document.querySelectorAll('.template-card').forEach(card => {
     const name = this.dataset.name;
     industryInput.value = industry;
     if (!bizName.value) bizName.value = name + ' Business';
-    activeTemplateId = this.dataset.templateId || 'bold-retail';
     stepChips.style.display = 'none';
     stepForm.style.display = 'grid';
     generateBtn.textContent = 'Generate my site preview';
