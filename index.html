@@ -48,23 +48,28 @@ button{cursor:pointer;border:none;background:none}
 
 .bar{background:var(--card);border-bottom:1px solid var(--line);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 
-.hero{padding:120px 0 60px;text-align:center;background:linear-gradient(160deg,#f8fafc,#eef2f6)}
+.hero{padding:110px 0 40px;text-align:center;background:linear-gradient(160deg,#f8fafc,#eef2f6)}
 .hero h1{font-size:clamp(2.8rem,6.5vw,4.8rem);margin:20px auto 0;max-width:16ch}
 .hero h1 .g{color:var(--green)}
 .hero p{font-size:1.15rem;color:var(--ink2);max-width:48ch;margin:18px auto 0}
 
-.demo{max-width:960px;margin:40px auto 0;border-radius:18px;border:1px solid var(--line);background:var(--card);box-shadow:0 16px 48px -12px rgba(0,0,0,.12);overflow:hidden;text-align:left}
+.trust-bar{display:flex;justify-content:center;flex-wrap:wrap;gap:22px;margin:22px auto 0;font-size:.82rem;color:var(--ink2);font-weight:600}
+.trust-bar span{display:inline-flex;align-items:center;gap:6px}
+.trust-bar svg{flex-shrink:0;color:var(--green)}
+
+.demo{max-width:960px;margin:36px auto 0;border-radius:18px;border:1px solid var(--line);background:var(--card);box-shadow:0 16px 48px -12px rgba(0,0,0,.12);overflow:hidden;text-align:left}
 .demo-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
 .demo-bar .dot{width:10px;height:10px;border-radius:50%;background:#dde1e6}
 .demo-url{margin-left:10px;flex:1;background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:.78rem;color:var(--ink2);padding:5px 14px}
 .demo-url b{color:var(--green);font-weight:700}
 
-#livePreview{width:100%;height:380px;border:1px solid var(--line);border-radius:12px;background:#fff;transition:opacity .15s}
-@media(max-width:640px){#livePreview{height:280px}}
+#livePreview{width:100%;height:460px;border:1px solid var(--line);border-radius:12px;background:#fff;transition:opacity .15s}
+@media(max-width:640px){#livePreview{height:340px}}
 
 .live-badge{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.05em}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:live-pulse 1.6s ease-in-out infinite}
-@keyframes live-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.live-badge.updating{color:var(--ink3)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:live-pulse 1.2s ease-in-out infinite}
+@keyframes live-pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
 .chip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
 @media(max-width:640px){.chip-grid{grid-template-columns:repeat(2,1fr)}}
@@ -159,8 +164,23 @@ footer{padding:56px 0 40px}
 
 <section class="hero" id="start">
   <div class="wrap">
-    <h1>See your website <span class="g">as you type.</span></h1>
-    <p>Tell us about your business — watch the preview update live, right here.</p>
+    <h1>Your real website, <span class="g">rendered as you type.</span></h1>
+    <p>This isn't a mockup — it's the actual template your site will launch with, updating live with your name, industry and photo.</p>
+
+    <div class="trust-bar">
+      <span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Real templates, not a demo
+      </span>
+      <span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Free .co.zw domain included
+      </span>
+      <span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        No card needed to preview
+      </span>
+    </div>
 
     <div class="demo">
       <div class="demo-bar">
@@ -171,7 +191,7 @@ footer{padding:56px 0 40px}
       <div id="stepChips" class="demo-form">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <h3 style="font-weight:700;font-size:1.15rem">What kind of business?</h3>
-          <span style="font-size:.78rem;color:var(--ink3)">Tap one to preview</span>
+          <span style="font-size:.78rem;color:var(--ink3)">Tap one to preview your real template</span>
         </div>
         <div class="chip-grid" id="chipGrid"></div>
         <div style="text-align:center;margin-top:10px;font-size:.8rem;color:var(--ink3)">
@@ -214,18 +234,19 @@ footer{padding:56px 0 40px}
             <button id="generateBtn" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:1rem">
               Continue — claim via WhatsApp →
             </button>
+            <div style="font-size:.72rem;color:var(--ink3);text-align:center">Takes about 10 seconds. No password to remember.</div>
 
             <div id="formMsg" style="font-size:.8rem;padding:8px 12px;border-radius:8px;display:none"></div>
           </div>
 
           <div style="padding:16px;display:flex;flex-direction:column;background:var(--surface);border-left:1px solid var(--line)">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <span style="font-weight:600;font-size:.85rem">Live preview</span>
+              <span style="font-weight:600;font-size:.85rem">Live preview — your real template</span>
               <span class="live-badge" id="previewStatus"><span class="live-dot"></span>live</span>
             </div>
-            <iframe id="livePreview" srcdoc=""></iframe>
+            <iframe id="livePreview" src="about:blank"></iframe>
             <div style="font-size:.7rem;color:var(--ink3);text-align:center;margin-top:8px">
-              ✏️ After claiming: Add photos, edit text, customize colors
+              ✏️ After claiming: Add your own photos, edit every word, set your prices
             </div>
           </div>
         </div>
@@ -261,7 +282,7 @@ footer{padding:56px 0 40px}
   <div class="wrap">
     <h2 style="text-align:center;font-size:2rem;margin-bottom:40px">How it works</h2>
     <div class="grid-3">
-      <div class="step"><div class="no">1</div><h4>See your site instantly</h4><p>Type your business name — watch the preview update live as you go.</p></div>
+      <div class="step"><div class="no">1</div><h4>See your real site instantly</h4><p>Type your details — the preview is your actual template, live.</p></div>
       <div class="step"><div class="no">2</div><h4>Claim via WhatsApp</h4><p>Message us once. Your WhatsApp number becomes your login.</p></div>
       <div class="step"><div class="no">3</div><h4>Edit &amp; publish</h4><p>Add photos, change colors, then publish live on your free domain.</p></div>
     </div>
@@ -321,10 +342,13 @@ footer{padding:56px 0 40px}
 
 const WHATSAPP_NUMBER = '263719362321';
 
-// Endpoint that fetches a Facebook Page's og:title / og:image / og:description
-// server-side. Update if you deploy it on a different host or path.
-const OG_ENDPOINT = 'https://app.websites.co.zw/api/og';
+// Server-side endpoints — both already deployed and live.
+const OG_ENDPOINT      = 'https://app.websites.co.zw/api/og';
+// preview.websites.co.zw matches the existing *.websites.co.zw wildcard
+// route already bound to the render worker — no new CF route needed.
+const PREVIEW_ENDPOINT = 'https://preview.websites.co.zw/api/live-preview';
 
+// Chip labels map directly onto mapIndustryToTemplate() in the render worker.
 const INDUSTRIES = [
   { key:'salon', label:'Salons', em:'💈' },
   { key:'restaurant', label:'Restaurants', em:'🍲' },
@@ -332,8 +356,8 @@ const INDUSTRIES = [
   { key:'church', label:'Churches', em:'⛪' },
   { key:'realestate', label:'Real Estate', em:'🏠' },
   { key:'consultant', label:'Consultants', em:'💼' },
-  { key:'retail', label:'Retail', em:'🛍️' },
   { key:'hardware', label:'Hardware', em:'🔧' },
+  { key:'retail', label:'Retail', em:'🛍️' },
 ];
 
 // DOM refs
@@ -342,6 +366,7 @@ const stepChips = document.getElementById('stepChips');
 const stepForm = document.getElementById('stepForm');
 const stepResult = document.getElementById('stepResult');
 const livePreview = document.getElementById('livePreview');
+const previewStatus = document.getElementById('previewStatus');
 const domainSlug = document.getElementById('domainSlug');
 const bizName = document.getElementById('bizName');
 const industryInput = document.getElementById('industryInput');
@@ -415,19 +440,37 @@ function updateSlug() {
   domainSlug.textContent = slug;
 }
 
-// ── Live preview — updates as the person types, no button needed ───────────
-const debouncedRender = debounce(renderLivePreview, 180);
+// ── Live preview — a real render from the render worker's template system,
+// not a client-side mockup. Debounced so we don't hammer the endpoint on
+// every keystroke; each update is a full iframe navigation, so no CORS is
+// involved at all.
+const debouncedRender = debounce(renderLivePreview, 380);
 
 bizName.addEventListener('input', function() { updateSlug(); debouncedRender(); });
 industryInput.addEventListener('input', function() { updateSlug(); debouncedRender(); });
 
+function setPreviewStatus(text, updating) {
+  previewStatus.classList.toggle('updating', !!updating);
+  previewStatus.lastChild.textContent = text;
+}
+
 function renderLivePreview() {
   const name = bizName.value.trim() || 'Your Business';
   const industry = industryInput.value.trim() || 'business';
-  const fb = fbPageUrl.value.trim();
-  const ogImage = fetchedOg && fetchedOg.image ? fetchedOg.image : null;
-  livePreview.srcdoc = generatePreviewHTML(name, industry, fb, ogImage);
+  const image = fetchedOg && fetchedOg.image ? fetchedOg.image : '';
+
+  const params = new URLSearchParams({ name, industry });
+  if (image) params.set('image', image);
+
+  setPreviewStatus('updating…', true);
+  livePreview.src = PREVIEW_ENDPOINT + '?' + params.toString();
 }
+
+livePreview.addEventListener('load', function() {
+  if (livePreview.src && livePreview.src !== 'about:blank') {
+    setPreviewStatus('live', false);
+  }
+});
 
 // ── Facebook OG fetch ─────────────────────────────────────────────────────
 function setFbStatus(msg, tone) {
@@ -486,7 +529,7 @@ async function fetchFacebookInfo() {
 fetchFbBtn.addEventListener('click', fetchFacebookInfo);
 
 // If they edit the URL after a successful fetch, the cached data no longer
-// matches — drop it so the preview doesn't show a stale name/photo.
+// matches — drop it so the preview doesn't show a stale photo.
 fbPageUrl.addEventListener('input', function() {
   if (fetchedOg) {
     fetchedOg = null;
@@ -494,86 +537,6 @@ fbPageUrl.addEventListener('input', function() {
     renderLivePreview();
   }
 });
-
-// Generate preview HTML (mock, optionally seeded with real Facebook data)
-function generatePreviewHTML(name, industry, fbUrl, ogImage) {
-  const colors = {
-    salon: ['#fce4ec', '#f8bbd0', '#e91e63'],
-    restaurant: ['#fff3e0', '#ffccbc', '#ff5722'],
-    school: ['#e0f7fa', '#b2ebf2', '#0097a7'],
-    church: ['#f3e5f5', '#e1bee7', '#7b1fa2'],
-    realestate: ['#e8f5e9', '#c8e6c9', '#2e7d32'],
-    hardware: ['#e3f2fd', '#bbdefb', '#1565c0'],
-    consultant: ['#e8eaf6', '#c5cae9', '#3949ab'],
-    retail: ['#f5f5f5', '#e0e0e0', '#424242'],
-  };
-  const key = industry.toLowerCase().replace(/\s+/g, '');
-  const c = colors[key] || ['#e8eaf6', '#c5cae9', '#4F46E5'];
-  const primary = c[2] || '#4F46E5';
-
-  const headerStyle = ogImage
-    ? `background-image:linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.6)), url('${esc(ogImage)}');background-size:cover;background-position:center;`
-    : `background:linear-gradient(145deg, ${c[0]}, ${c[1]});`;
-  const titleColor = ogImage ? '#ffffff' : '#111827';
-  const subColor = ogImage ? 'rgba(255,255,255,.88)' : '#4b5563';
-  const badgeLabel = ogImage
-    ? '📸 Photo &amp; name from your Facebook Page'
-    : (fbUrl ? '📍 Facebook Page connected' : '✨ Preview');
-
-  return `
-  <!DOCTYPE html>
-  <html>
-  <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${esc(name)}</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:system-ui,sans-serif;background:white;color:#1f2937}
-    .header{${headerStyle}padding:32px 24px;text-align:center;border-bottom:4px solid ${primary}}
-    .header h1{font-size:1.8rem;font-weight:800;color:${titleColor};margin-bottom:4px}
-    .header p{color:${subColor};font-size:0.95rem}
-    .badge{display:inline-block;background:${primary};color:white;padding:3px 12px;border-radius:20px;font-size:0.65rem;font-weight:600;margin-top:6px}
-    .section{padding:20px 20px 8px;max-width:700px;margin:0 auto}
-    .section h2{font-size:1.05rem;font-weight:700;margin-bottom:10px;color:#111827}
-    .card{background:#f9fafb;border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid #e5e7eb}
-    .card h3{font-weight:600;font-size:0.9rem;margin-bottom:3px}
-    .card p{color:#6b7280;font-size:0.85rem}
-    .wa-btn{background:${primary};color:white;padding:10px;border-radius:8px;text-align:center;font-weight:600;border:none;width:100%;font-size:0.9rem;margin-top:4px;cursor:pointer}
-    .wa-btn:hover{opacity:0.9}
-    .footer{background:#f3f4f6;padding:14px;text-align:center;color:#6b7280;font-size:0.7rem;border-top:1px solid #e5e7eb;margin-top:8px}
-    .edit-note{background:#eef2ff;padding:6px 12px;border-radius:6px;text-align:center;font-size:0.65rem;color:#4F46E5;margin-top:6px}
-    @media (max-width:480px){.header{padding:20px 16px}.header h1{font-size:1.4rem}.section{padding:14px}}
-  </style>
-  </head>
-  <body>
-    <div class="header">
-      <h1>${esc(name)}</h1>
-      <p>${esc(industry.charAt(0).toUpperCase() + industry.slice(1))} · Zimbabwe</p>
-      <div class="badge">${badgeLabel}</div>
-    </div>
-    <div class="section">
-      <h2>👋 Welcome to ${esc(name)}</h2>
-      <div class="card">
-        <h3>📋 About Us</h3>
-        <p>${fbUrl ? 'We are a trusted ' + esc(industry) + ' serving the Zimbabwean community. Connect with us on WhatsApp for enquiries.' : 'A proud Zimbabwean business in the ' + esc(industry) + ' industry. We\'re here to serve you with excellence.'}</p>
-      </div>
-      <div class="card">
-        <h3>💬 Contact</h3>
-        <p>📱 WhatsApp: <strong>07XX XXX XXX</strong></p>
-        <p style="margin-top:4px;color:#6b7280">📍 Zimbabwe</p>
-      </div>
-      <button class="wa-btn">📲 Message us on WhatsApp</button>
-      <div class="edit-note">✏️ After claiming: Add photos, change text, customize colors</div>
-    </div>
-    <div class="footer">${esc(name)} · ${new Date().getFullYear()} · Built with websites.co.zw</div>
-  </body>
-  </html>
-  `;
-}
-
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
 
 // Toast
 function showToast(msg, type) {
@@ -587,9 +550,9 @@ toastClose.addEventListener('click', () => toast.classList.remove('show'));
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 // ── Continue → claim step ────────────────────────────────────────────────
-// The preview above is already live and real. This button's only job now is
-// to move to the WhatsApp claim step — the brief pause is just building the
-// prefilled WhatsApp message, nothing is being "generated".
+// The preview above is already the real thing. This button's only job is
+// to move to the WhatsApp claim step — the brief pause is just building
+// the prefilled WhatsApp message, nothing is being "generated".
 async function generateSite() {
   if (generating) return;
 
@@ -651,8 +614,8 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// Init — seed a demo example so the preview panel is never empty, then
-// render it immediately (this is the live preview, not a "generated" one).
+// Init — seed a demo example so the preview panel is never blank, then
+// render it immediately through the real template pipeline.
 setTimeout(() => {
   if (!bizName.value && !industryInput.value) {
     bizName.value = 'Tendai\'s Hardware';
@@ -664,6 +627,7 @@ setTimeout(() => {
 
 console.log('🚀 websites.co.zw — landing page ready!');
 console.log('📱 WhatsApp:', WHATSAPP_NUMBER);
+console.log('🔗 Preview endpoint:', PREVIEW_ENDPOINT);
 console.log('🔗 OG fetch endpoint:', OG_ENDPOINT);
 
 })();
