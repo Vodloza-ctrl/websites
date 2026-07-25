@@ -59,8 +59,12 @@ button{cursor:pointer;border:none;background:none}
 .demo-url{margin-left:10px;flex:1;background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:.78rem;color:var(--ink2);padding:5px 14px}
 .demo-url b{color:var(--green);font-weight:700}
 
-#livePreview{width:100%;height:380px;border:1px solid var(--line);border-radius:12px;background:#fff}
+#livePreview{width:100%;height:380px;border:1px solid var(--line);border-radius:12px;background:#fff;transition:opacity .15s}
 @media(max-width:640px){#livePreview{height:280px}}
+
+.live-badge{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.05em}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:live-pulse 1.6s ease-in-out infinite}
+@keyframes live-pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
 .chip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
 @media(max-width:640px){.chip-grid{grid-template-columns:repeat(2,1fr)}}
@@ -86,19 +90,6 @@ button{cursor:pointer;border:none;background:none}
 .path-option:hover{border-color:var(--ink)}
 .path-option .badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 12px;border-radius:20px;background:var(--ink);color:#fff}
 .path-option .badge.recommended{background:#25D366}
-
-.ai-loading{display:none;background:linear-gradient(135deg,#0d2818,#0f3d22);border-radius:12px;padding:16px 20px;color:#fff;margin-top:8px}
-.ai-loading.active{display:block}
-.ai-loading .ai-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.ai-loading .ai-spinner{width:18px;height:18px;border:2px solid rgba(74,222,128,.2);border-top-color:#4ade80;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-.ai-loading .ai-main{font-weight:600;font-size:.85rem;color:#4ade80}
-.ai-loading .ai-sub{font-size:.75rem;color:rgba(255,255,255,.5)}
-.ai-loading .ai-steps{display:flex;gap:12px;margin-top:8px}
-.ai-loading .ai-step-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:.3s}
-.ai-loading .ai-step-dot.done{background:#4ade80}
-.ai-loading .ai-step-dot.active{background:#4ade80;animation:pulse-dot 1s ease-in-out infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse-dot{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
 
 .toast{position:fixed;bottom:30px;right:30px;z-index:999;background:var(--ink);color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.3);transform:translateY(100px);opacity:0;transition:all .4s;max-width:420px}
 .toast.show{transform:translateY(0);opacity:1}
@@ -169,7 +160,7 @@ footer{padding:56px 0 40px}
 <section class="hero" id="start">
   <div class="wrap">
     <h1>See your website <span class="g">as you type.</span></h1>
-    <p>Tell us about your business — we'll generate a live preview instantly.</p>
+    <p>Tell us about your business — watch the preview update live, right here.</p>
 
     <div class="demo">
       <div class="demo-bar">
@@ -221,24 +212,8 @@ footer{padding:56px 0 40px}
             </div>
 
             <button id="generateBtn" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:1rem">
-              ✦ Generate my site preview
+              Continue — claim via WhatsApp →
             </button>
-
-            <div class="ai-loading" id="aiLoading">
-              <div class="ai-header">
-                <div class="ai-spinner"></div>
-                <div>
-                  <div class="ai-main" id="aiMainStatus">Understanding your business</div>
-                  <div class="ai-sub" id="aiSubStatus">Reading your inputs</div>
-                </div>
-              </div>
-              <div class="ai-steps">
-                <span class="ai-step-dot active" id="aiDot0"></span>
-                <span class="ai-step-dot" id="aiDot1"></span>
-                <span class="ai-step-dot" id="aiDot2"></span>
-                <span class="ai-step-dot" id="aiDot3"></span>
-              </div>
-            </div>
 
             <div id="formMsg" style="font-size:.8rem;padding:8px 12px;border-radius:8px;display:none"></div>
           </div>
@@ -246,7 +221,7 @@ footer{padding:56px 0 40px}
           <div style="padding:16px;display:flex;flex-direction:column;background:var(--surface);border-left:1px solid var(--line)">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
               <span style="font-weight:600;font-size:.85rem">Live preview</span>
-              <span style="font-size:.7rem;color:var(--ink3)" id="previewStatus">ready</span>
+              <span class="live-badge" id="previewStatus"><span class="live-dot"></span>live</span>
             </div>
             <iframe id="livePreview" srcdoc=""></iframe>
             <div style="font-size:.7rem;color:var(--ink3);text-align:center;margin-top:8px">
@@ -258,8 +233,8 @@ footer{padding:56px 0 40px}
 
       <div id="stepResult" style="display:none;padding:28px;text-align:center">
         <div style="font-size:3rem;margin-bottom:12px">🎉</div>
-        <h3 style="font-size:1.4rem" id="resultTitle">Your site is ready!</h3>
-        <p style="color:var(--ink2);margin:8px 0 16px" id="resultDesc">Message us on WhatsApp to claim your site.</p>
+        <h3 style="font-size:1.4rem" id="resultTitle">Like what you see?</h3>
+        <p style="color:var(--ink2);margin:8px 0 16px" id="resultDesc">Message us on WhatsApp to claim it — your WhatsApp number becomes your login.</p>
         <a id="claimWhatsAppBtn" class="btn btn-whatsapp" style="padding:14px 28px;display:inline-flex;align-items:center;gap:10px" href="#" target="_blank">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
           Claim via WhatsApp
@@ -286,7 +261,7 @@ footer{padding:56px 0 40px}
   <div class="wrap">
     <h2 style="text-align:center;font-size:2rem;margin-bottom:40px">How it works</h2>
     <div class="grid-3">
-      <div class="step"><div class="no">1</div><h4>See your site instantly</h4><p>Type your business name — watch the preview update in real-time.</p></div>
+      <div class="step"><div class="no">1</div><h4>See your site instantly</h4><p>Type your business name — watch the preview update live as you go.</p></div>
       <div class="step"><div class="no">2</div><h4>Claim via WhatsApp</h4><p>Message us once. Your WhatsApp number becomes your login.</p></div>
       <div class="step"><div class="no">3</div><h4>Edit &amp; publish</h4><p>Add photos, change colors, then publish live on your free domain.</p></div>
     </div>
@@ -347,8 +322,7 @@ footer{padding:56px 0 40px}
 const WHATSAPP_NUMBER = '263719362321';
 
 // Endpoint that fetches a Facebook Page's og:title / og:image / og:description
-// server-side (see fetchOGMetadata-worker-snippet.js). Update if you deploy
-// it on a different host or path.
+// server-side. Update if you deploy it on a different host or path.
 const OG_ENDPOINT = 'https://app.websites.co.zw/api/og';
 
 const INDUSTRIES = [
@@ -362,20 +336,12 @@ const INDUSTRIES = [
   { key:'hardware', label:'Hardware', em:'🔧' },
 ];
 
-const AI_STEPS = [
-  { main: "Understanding your business", sub: "Reading your inputs" },
-  { main: "Writing your about section", sub: "Crafting your story" },
-  { main: "Building your services", sub: "Creating your offerings" },
-  { main: "Finalising your site", sub: "Almost there..." }
-];
-
 // DOM refs
 const chipGrid = document.getElementById('chipGrid');
 const stepChips = document.getElementById('stepChips');
 const stepForm = document.getElementById('stepForm');
 const stepResult = document.getElementById('stepResult');
 const livePreview = document.getElementById('livePreview');
-const previewStatus = document.getElementById('previewStatus');
 const domainSlug = document.getElementById('domainSlug');
 const bizName = document.getElementById('bizName');
 const industryInput = document.getElementById('industryInput');
@@ -385,24 +351,25 @@ const fbStatus = document.getElementById('fbStatus');
 const generateBtn = document.getElementById('generateBtn');
 const backBtn = document.getElementById('backBtn');
 const skipChipsBtn = document.getElementById('skipChipsBtn');
-const formMsg = document.getElementById('formMsg');
 const claimWhatsAppBtn = document.getElementById('claimWhatsAppBtn');
 const toast = document.getElementById('toast');
 const toastMsg = document.getElementById('toastMsg');
 const toastClose = document.getElementById('toastClose');
 const waFab = document.getElementById('waFab');
 
-// AI loading
-const aiLoading = document.getElementById('aiLoading');
-const aiMainStatus = document.getElementById('aiMainStatus');
-const aiSubStatus = document.getElementById('aiSubStatus');
-const aiDots = [0,1,2,3].map(i => document.getElementById('aiDot'+i));
-
 let generating = false;
 
 // Holds whatever we managed to pull from Facebook. Null until a fetch
 // succeeds; cleared again if the person edits the URL afterwards.
 let fetchedOg = null; // { title, image, description }
+
+function debounce(fn, wait) {
+  let t;
+  return function (...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
 
 // Render chips
 chipGrid.innerHTML = INDUSTRIES.map(ind => `
@@ -423,6 +390,7 @@ chipGrid.addEventListener('click', function(e) {
   stepChips.style.display = 'none';
   stepForm.style.display = 'grid';
   updateSlug();
+  renderLivePreview();
 });
 
 // Skip chips
@@ -430,6 +398,7 @@ skipChipsBtn.addEventListener('click', function() {
   stepChips.style.display = 'none';
   stepForm.style.display = 'grid';
   bizName.focus();
+  renderLivePreview();
 });
 
 // Back
@@ -445,8 +414,20 @@ function updateSlug() {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'yourbusiness';
   domainSlug.textContent = slug;
 }
-bizName.addEventListener('input', updateSlug);
-industryInput.addEventListener('input', updateSlug);
+
+// ── Live preview — updates as the person types, no button needed ───────────
+const debouncedRender = debounce(renderLivePreview, 180);
+
+bizName.addEventListener('input', function() { updateSlug(); debouncedRender(); });
+industryInput.addEventListener('input', function() { updateSlug(); debouncedRender(); });
+
+function renderLivePreview() {
+  const name = bizName.value.trim() || 'Your Business';
+  const industry = industryInput.value.trim() || 'business';
+  const fb = fbPageUrl.value.trim();
+  const ogImage = fetchedOg && fetchedOg.image ? fetchedOg.image : null;
+  livePreview.srcdoc = generatePreviewHTML(name, industry, fb, ogImage);
+}
 
 // ── Facebook OG fetch ─────────────────────────────────────────────────────
 function setFbStatus(msg, tone) {
@@ -493,6 +474,7 @@ async function fetchFacebookInfo() {
     }
 
     setFbStatus("✓ Got " + (fetchedOg.image ? 'name & cover photo' : 'name') + " from Facebook.", 'ok');
+    renderLivePreview();
   } catch (err) {
     setFbStatus("Couldn't reach Facebook right now — you can still fill in the details below.", 'err');
   } finally {
@@ -509,6 +491,7 @@ fbPageUrl.addEventListener('input', function() {
   if (fetchedOg) {
     fetchedOg = null;
     setFbStatus('', null);
+    renderLivePreview();
   }
 });
 
@@ -535,7 +518,7 @@ function generatePreviewHTML(name, industry, fbUrl, ogImage) {
   const subColor = ogImage ? 'rgba(255,255,255,.88)' : '#4b5563';
   const badgeLabel = ogImage
     ? '📸 Photo &amp; name from your Facebook Page'
-    : (fbUrl ? '📍 Facebook Page connected' : '✨ AI-generated');
+    : (fbUrl ? '📍 Facebook Page connected' : '✨ Preview');
 
   return `
   <!DOCTYPE html>
@@ -592,32 +575,6 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// AI loading
-function showAILoading() {
-  aiLoading.classList.add('active');
-  aiDots.forEach((dot, i) => {
-    dot.className = 'ai-step-dot';
-    if (i === 0) dot.classList.add('active');
-  });
-  aiMainStatus.textContent = AI_STEPS[0].main;
-  aiSubStatus.textContent = AI_STEPS[0].sub;
-}
-
-function updateAIStep(idx) {
-  const step = AI_STEPS[idx] || AI_STEPS[AI_STEPS.length - 1];
-  aiMainStatus.textContent = step.main;
-  aiSubStatus.textContent = step.sub;
-  aiDots.forEach((dot, i) => {
-    dot.className = 'ai-step-dot';
-    if (i < idx) dot.classList.add('done');
-    if (i === idx) dot.classList.add('active');
-  });
-}
-
-function hideAILoading() {
-  aiLoading.classList.remove('active');
-}
-
 // Toast
 function showToast(msg, type) {
   toastMsg.textContent = msg;
@@ -627,63 +584,46 @@ function showToast(msg, type) {
 }
 toastClose.addEventListener('click', () => toast.classList.remove('show'));
 
-// Generate
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+// ── Continue → claim step ────────────────────────────────────────────────
+// The preview above is already live and real. This button's only job now is
+// to move to the WhatsApp claim step — the brief pause is just building the
+// prefilled WhatsApp message, nothing is being "generated".
 async function generateSite() {
   if (generating) return;
 
-  const name = bizName.value.trim() || 'Your Business';
-  const industry = industryInput.value.trim() || 'business';
-  const fb = fbPageUrl.value.trim();
+  const name = bizName.value.trim();
+  const industry = industryInput.value.trim();
 
-  if (!name || name === 'Your Business') {
+  if (!name) {
     showToast('Please enter your business name.', 'err');
+    bizName.focus();
     return;
   }
-  if (!industry || industry === 'business') {
+  if (!industry) {
     showToast('Please enter your industry.', 'err');
+    industryInput.focus();
     return;
   }
 
   generating = true;
   generateBtn.disabled = true;
-  generateBtn.textContent = 'Generating...';
-  stepResult.style.display = 'none';
-
-  showAILoading();
+  generateBtn.textContent = 'Preparing…';
 
   try {
-    await sleep(700);
-    updateAIStep(1);
-    await sleep(900);
-    updateAIStep(2);
-    await sleep(900);
-    updateAIStep(3);
-    await sleep(600);
-
-    const ogImage = fetchedOg && fetchedOg.image ? fetchedOg.image : null;
-    const html = generatePreviewHTML(name, industry, fb, ogImage);
-    livePreview.srcdoc = html;
-    previewStatus.textContent = 'preview ready';
-
-    hideAILoading();
+    await sleep(250);
 
     stepForm.style.display = 'none';
     stepResult.style.display = 'block';
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'mybusiness';
     claimWhatsAppBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I want to claim my site: ' + name + ' (' + slug + '.co.zw)')}`;
 
-    showToast('✅ Site generated! Check the preview.', 'ok');
-
-  } catch (err) {
-    hideAILoading();
-    showToast('Something went wrong. Please try again.', 'err');
-    console.error(err);
+    showToast('✅ Message us to claim it!', 'ok');
   } finally {
     generating = false;
     generateBtn.disabled = false;
-    generateBtn.textContent = '✦ Generate my site preview';
+    generateBtn.textContent = 'Continue — claim via WhatsApp →';
   }
 }
 
@@ -711,12 +651,14 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// Init
+// Init — seed a demo example so the preview panel is never empty, then
+// render it immediately (this is the live preview, not a "generated" one).
 setTimeout(() => {
   if (!bizName.value && !industryInput.value) {
     bizName.value = 'Tendai\'s Hardware';
     industryInput.value = 'hardware';
     updateSlug();
+    renderLivePreview();
   }
 }, 400);
 
