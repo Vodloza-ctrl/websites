@@ -36,8 +36,10 @@ button{cursor:pointer;border:none;background:none}
 .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.95rem;padding:12px 24px;border-radius:10px;border:2px solid transparent;transition:.2s}
 .btn-primary{background:var(--green);color:#fff;border-color:var(--green)}
 .btn-primary:hover{background:var(--green-dk)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
 .btn-ghost{background:transparent;color:var(--ink2);border-color:var(--line)}
 .btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
+.btn-ghost:disabled{opacity:.5;cursor:not-allowed}
 .btn-whatsapp{background:#25D366;color:#fff}
 .btn-whatsapp:hover{background:#1ebe5c}
 .btn-sm{padding:8px 16px;font-size:.8rem}
@@ -71,6 +73,12 @@ button{cursor:pointer;border:none;background:none}
 .demo-form label{font-size:.78rem;font-weight:700;color:var(--ink2)}
 .demo-form input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:.95rem;background:var(--card)}
 .demo-form input:focus{outline:none;border-color:var(--ink)}
+
+.fb-row{display:flex;gap:8px}
+.fb-row input{flex:1}
+.fb-status{font-size:.75rem;min-height:16px;color:var(--ink3)}
+.fb-status.ok{color:var(--green);font-weight:600}
+.fb-status.err{color:#b3261e}
 
 .paths-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:640px){.paths-wrap{grid-template-columns:1fr}}
@@ -205,7 +213,11 @@ footer{padding:56px 0 40px}
 
             <div class="field">
               <label for="fbPageUrl">Facebook Page URL <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
-              <input type="url" id="fbPageUrl" placeholder="https://facebook.com/yourpage">
+              <div class="fb-row">
+                <input type="url" id="fbPageUrl" placeholder="https://facebook.com/yourpage">
+                <button type="button" id="fetchFbBtn" class="btn btn-ghost btn-sm">Fetch info</button>
+              </div>
+              <div class="fb-status" id="fbStatus"></div>
             </div>
 
             <button id="generateBtn" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:1rem">
@@ -334,6 +346,11 @@ footer{padding:56px 0 40px}
 
 const WHATSAPP_NUMBER = '263719362321';
 
+// Endpoint that fetches a Facebook Page's og:title / og:image / og:description
+// server-side (see fetchOGMetadata-worker-snippet.js). Update if you deploy
+// it on a different host or path.
+const OG_ENDPOINT = 'https://app.websites.co.zw/api/og';
+
 const INDUSTRIES = [
   { key:'salon', label:'Salons', em:'💈' },
   { key:'restaurant', label:'Restaurants', em:'🍲' },
@@ -363,6 +380,8 @@ const domainSlug = document.getElementById('domainSlug');
 const bizName = document.getElementById('bizName');
 const industryInput = document.getElementById('industryInput');
 const fbPageUrl = document.getElementById('fbPageUrl');
+const fetchFbBtn = document.getElementById('fetchFbBtn');
+const fbStatus = document.getElementById('fbStatus');
 const generateBtn = document.getElementById('generateBtn');
 const backBtn = document.getElementById('backBtn');
 const skipChipsBtn = document.getElementById('skipChipsBtn');
@@ -380,6 +399,10 @@ const aiSubStatus = document.getElementById('aiSubStatus');
 const aiDots = [0,1,2,3].map(i => document.getElementById('aiDot'+i));
 
 let generating = false;
+
+// Holds whatever we managed to pull from Facebook. Null until a fetch
+// succeeds; cleared again if the person edits the URL afterwards.
+let fetchedOg = null; // { title, image, description }
 
 // Render chips
 chipGrid.innerHTML = INDUSTRIES.map(ind => `
@@ -425,8 +448,72 @@ function updateSlug() {
 bizName.addEventListener('input', updateSlug);
 industryInput.addEventListener('input', updateSlug);
 
-// Generate preview HTML (mock)
-function generatePreviewHTML(name, industry, fbUrl) {
+// ── Facebook OG fetch ─────────────────────────────────────────────────────
+function setFbStatus(msg, tone) {
+  fbStatus.textContent = msg;
+  fbStatus.className = 'fb-status' + (tone ? ' ' + tone : '');
+}
+
+function isFacebookUrl(raw) {
+  try {
+    const u = new URL(raw);
+    const host = u.hostname.replace(/^www\./, '').replace(/^m\./, '').replace(/^web\./, '');
+    return host === 'facebook.com';
+  } catch {
+    return false;
+  }
+}
+
+async function fetchFacebookInfo() {
+  const raw = fbPageUrl.value.trim();
+  if (!raw) { setFbStatus("Paste a Facebook Page URL first.", 'err'); return; }
+  if (!isFacebookUrl(raw)) { setFbStatus("Enter a facebook.com page link.", 'err'); return; }
+
+  fetchedOg = null;
+  fetchFbBtn.disabled = true;
+  fetchFbBtn.textContent = 'Checking…';
+  setFbStatus("Checking Facebook page…", null);
+
+  try {
+    const resp = await fetch(OG_ENDPOINT + '?url=' + encodeURIComponent(raw));
+    const data = await resp.json().catch(() => ({}));
+
+    if (!resp.ok || data.error) {
+      // Facebook blocking automated requests is expected behaviour, not a
+      // bug — fail quietly and let the person fill things in by hand.
+      setFbStatus("Couldn't read that page automatically — you can still fill in the details below.", 'err');
+      return;
+    }
+
+    fetchedOg = { title: data.title || '', image: data.image || '', description: data.description || '' };
+
+    if (fetchedOg.title && !bizName.value) {
+      bizName.value = fetchedOg.title;
+      updateSlug();
+    }
+
+    setFbStatus("✓ Got " + (fetchedOg.image ? 'name & cover photo' : 'name') + " from Facebook.", 'ok');
+  } catch (err) {
+    setFbStatus("Couldn't reach Facebook right now — you can still fill in the details below.", 'err');
+  } finally {
+    fetchFbBtn.disabled = false;
+    fetchFbBtn.textContent = 'Fetch info';
+  }
+}
+
+fetchFbBtn.addEventListener('click', fetchFacebookInfo);
+
+// If they edit the URL after a successful fetch, the cached data no longer
+// matches — drop it so the preview doesn't show a stale name/photo.
+fbPageUrl.addEventListener('input', function() {
+  if (fetchedOg) {
+    fetchedOg = null;
+    setFbStatus('', null);
+  }
+});
+
+// Generate preview HTML (mock, optionally seeded with real Facebook data)
+function generatePreviewHTML(name, industry, fbUrl, ogImage) {
   const colors = {
     salon: ['#fce4ec', '#f8bbd0', '#e91e63'],
     restaurant: ['#fff3e0', '#ffccbc', '#ff5722'],
@@ -441,6 +528,15 @@ function generatePreviewHTML(name, industry, fbUrl) {
   const c = colors[key] || ['#e8eaf6', '#c5cae9', '#4F46E5'];
   const primary = c[2] || '#4F46E5';
 
+  const headerStyle = ogImage
+    ? `background-image:linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.6)), url('${esc(ogImage)}');background-size:cover;background-position:center;`
+    : `background:linear-gradient(145deg, ${c[0]}, ${c[1]});`;
+  const titleColor = ogImage ? '#ffffff' : '#111827';
+  const subColor = ogImage ? 'rgba(255,255,255,.88)' : '#4b5563';
+  const badgeLabel = ogImage
+    ? '📸 Photo &amp; name from your Facebook Page'
+    : (fbUrl ? '📍 Facebook Page connected' : '✨ AI-generated');
+
   return `
   <!DOCTYPE html>
   <html>
@@ -449,9 +545,9 @@ function generatePreviewHTML(name, industry, fbUrl) {
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:system-ui,sans-serif;background:white;color:#1f2937}
-    .header{background:linear-gradient(145deg, ${c[0]}, ${c[1]});padding:32px 24px;text-align:center;border-bottom:4px solid ${primary}}
-    .header h1{font-size:1.8rem;font-weight:800;color:#111827;margin-bottom:4px}
-    .header p{color:#4b5563;font-size:0.95rem}
+    .header{${headerStyle}padding:32px 24px;text-align:center;border-bottom:4px solid ${primary}}
+    .header h1{font-size:1.8rem;font-weight:800;color:${titleColor};margin-bottom:4px}
+    .header p{color:${subColor};font-size:0.95rem}
     .badge{display:inline-block;background:${primary};color:white;padding:3px 12px;border-radius:20px;font-size:0.65rem;font-weight:600;margin-top:6px}
     .section{padding:20px 20px 8px;max-width:700px;margin:0 auto}
     .section h2{font-size:1.05rem;font-weight:700;margin-bottom:10px;color:#111827}
@@ -469,7 +565,7 @@ function generatePreviewHTML(name, industry, fbUrl) {
     <div class="header">
       <h1>${esc(name)}</h1>
       <p>${esc(industry.charAt(0).toUpperCase() + industry.slice(1))} · Zimbabwe</p>
-      <div class="badge">${fbUrl ? '📍 Facebook Page connected' : '✨ AI-generated'}</div>
+      <div class="badge">${badgeLabel}</div>
     </div>
     <div class="section">
       <h2>👋 Welcome to ${esc(name)}</h2>
@@ -536,11 +632,11 @@ function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 async function generateSite() {
   if (generating) return;
-  
+
   const name = bizName.value.trim() || 'Your Business';
   const industry = industryInput.value.trim() || 'business';
   const fb = fbPageUrl.value.trim();
-  
+
   if (!name || name === 'Your Business') {
     showToast('Please enter your business name.', 'err');
     return;
@@ -549,14 +645,14 @@ async function generateSite() {
     showToast('Please enter your industry.', 'err');
     return;
   }
-  
+
   generating = true;
   generateBtn.disabled = true;
   generateBtn.textContent = 'Generating...';
   stepResult.style.display = 'none';
-  
+
   showAILoading();
-  
+
   try {
     await sleep(700);
     updateAIStep(1);
@@ -565,20 +661,21 @@ async function generateSite() {
     await sleep(900);
     updateAIStep(3);
     await sleep(600);
-    
-    const html = generatePreviewHTML(name, industry, fb);
+
+    const ogImage = fetchedOg && fetchedOg.image ? fetchedOg.image : null;
+    const html = generatePreviewHTML(name, industry, fb, ogImage);
     livePreview.srcdoc = html;
     previewStatus.textContent = 'preview ready';
-    
+
     hideAILoading();
-    
+
     stepForm.style.display = 'none';
     stepResult.style.display = 'block';
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'mybusiness';
     claimWhatsAppBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I want to claim my site: ' + name + ' (' + slug + '.co.zw)')}`;
-    
+
     showToast('✅ Site generated! Check the preview.', 'ok');
-    
+
   } catch (err) {
     hideAILoading();
     showToast('Something went wrong. Please try again.', 'err');
@@ -607,7 +704,7 @@ document.getElementById('navCta').addEventListener('click', function(e) {
 
 // Keyboard shortcut
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && (document.activeElement === bizName || 
+  if (e.key === 'Enter' && (document.activeElement === bizName ||
       document.activeElement === industryInput)) {
     e.preventDefault();
     generateSite();
@@ -625,6 +722,7 @@ setTimeout(() => {
 
 console.log('🚀 websites.co.zw — landing page ready!');
 console.log('📱 WhatsApp:', WHATSAPP_NUMBER);
+console.log('🔗 OG fetch endpoint:', OG_ENDPOINT);
 
 })();
 </script>
