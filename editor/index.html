@@ -240,7 +240,7 @@ img{display:block;max-width:100%}
 .tpl-card{border:2px solid var(--line);border-radius:var(--r-sm);padding:11px;cursor:pointer;transition:.15s}
 .tpl-card:hover{border-color:var(--green);background:var(--green-bg)}
 .tpl-card.current{border-color:var(--green);background:var(--green-bg)}
-.tpl-card-icon{font-size:1.5rem;margin-bottom:5px}
+.tpl-card-icon{display:flex;align-items:center;justify-content:center;margin-bottom:5px;color:var(--ink2)}
 .tpl-card-name{font-size:13px;font-weight:700;margin-bottom:3px}
 .tpl-card-desc{font-size:11.5px;color:var(--ink3);line-height:1.4}
 .preview-actions{display:flex;gap:4px;align-items:center}
@@ -327,7 +327,7 @@ img{display:block;max-width:100%}
       <span class="btn-txt">Preview</span>
     </button>
     <button class="btn btn-green btn-sm" id="saveBtn" onclick="onSave()">Save</button>
-    <button class="btn btn-danger btn-sm" onclick="deleteCurrentSite()" title="Delete this site">🗑️<span class="btn-txt"> Delete</span></button>
+    <button class="btn btn-danger btn-sm" onclick="deleteCurrentSite()" title="Delete this site"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg><span class="btn-txt"> Delete</span></button>
   </div>
 </header>
 <div class="layout">
@@ -433,24 +433,28 @@ img{display:block;max-width:100%}
         <div class="panel-body">
           <div class="fld-group">
             <label class="fld-label">Logo <span class="fld-hint">— shown in the nav bar</span></label>
-            <div class="upload-zone" id="logoZone" onclick="triggerUpload('logo')"><input type="file" id="logoFile" accept="image/*" onchange="handleUpload('logo',this)"><span class="uz-icon">🏷️</span><div class="uz-label">Tap to upload your logo</div><div class="uz-sub">PNG or SVG with transparent background works best</div></div>
+            <div class="upload-zone" id="logoZone" onclick="triggerUpload('logo')"><input type="file" id="logoFile" accept="image/*" onchange="handleUpload('logo',this)"><span class="uz-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3v6.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83Z"/><circle cx="7.5" cy="7.5" r="1"/></svg></span><div class="uz-label">Tap to upload your logo</div><div class="uz-sub">PNG or SVG with transparent background works best</div></div>
             <div id="logoPreview" style="display:none" class="upload-preview"><img id="logoImg" src="" alt="Logo"><button class="upload-remove" onclick="removeImage('logo')">x</button></div>
           </div>
           <div class="fld-group">
             <label class="fld-label">Hero image <span class="fld-hint">— big background photo at the top</span></label>
-            <div class="upload-zone" id="heroZone" onclick="triggerUpload('hero')"><input type="file" id="heroFile" accept="image/*" onchange="handleUpload('hero',this)"><span class="uz-icon">🖼️</span><div class="uz-label">Tap to upload a hero photo</div><div class="uz-sub">Landscape, at least 1200x600px recommended</div></div>
+            <div class="upload-zone" id="heroZone" onclick="triggerUpload('hero')"><input type="file" id="heroFile" accept="image/*" onchange="handleUpload('hero',this)"><span class="uz-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></span><div class="uz-label">Tap to upload a hero photo</div><div class="uz-sub">Landscape, at least 1200x600px recommended</div></div>
             <div id="heroPreview" style="display:none" class="upload-preview"><img id="heroImg" src="" alt="Hero" style="max-height:180px"><button class="upload-remove" onclick="removeImage('hero')">x</button></div>
             <div class="upload-progress" id="heroProgress"><div class="upload-progress-bar" id="heroProgressBar"></div></div>
           </div>
         </div>
       </div>
-      <div class="panel">
+      <div class="panel" id="gallery-plain-panel">
         <div class="panel-head"><h2>Gallery photos</h2><span class="fld-hint" style="font-size:12px">Up to 8 photos</span></div>
         <div class="panel-body"><div class="img-grid" id="galleryGrid"></div></div>
       </div>
+      <div class="panel" id="gallery-rich-panel" style="display:none">
+        <div class="panel-head"><div><h2>Portfolio Gallery</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Mix photos and videos freely — each item can be its own video with its own URL, and captions become filterable categories on your site</div></div><button class="btn btn-green btn-sm" onclick="addGalleryItemV3()">+ Add</button></div>
+        <div class="panel-body"><div class="rep-list" id="gallery-rich-rep-list"><div class="empty-state" id="gallery-rich-rep-empty"><p>No gallery items yet. Add your first photo or video.</p></div></div></div>
+      </div>
 
       <div class="panel" style="margin-top:16px">
-        <div class="panel-head"><h2>🎬 Video section</h2><span class="tag" id="videoStatus">Not added</span></div>
+        <div class="panel-head"><h2><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="m2.7 10 18.6 0"/><path d="M6 3 3 10"/><path d="M11 3 8 10"/><path d="M16 3l-3 7"/><path d="M21 3l-3 7"/><rect x="2" y="10" width="20" height="10" rx="1.5"/></svg> Video section</h2><span class="tag" id="videoStatus">Not added</span></div>
         <div class="panel-body">
           <div class="fld-group">
             <label class="fld-label" for="f_video">Video URL <span class="fld-hint">— YouTube, Vimeo, or direct MP4/WebM</span></label>
@@ -463,7 +467,7 @@ img{display:block;max-width:100%}
               <label class="fld-label">Video thumbnail <span class="fld-hint">— shown before play</span></label>
               <div class="upload-zone" id="videoThumbZone" onclick="triggerUpload('videoThumb')">
                 <input type="file" id="videoThumbFile" accept="image/*" onchange="handleVideoThumbUpload(this)">
-                <span class="uz-icon">🖼️</span>
+                <span class="uz-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></span>
                 <div class="uz-label">Tap to upload a thumbnail</div>
                 <div class="uz-sub">Optional — if not set, hero image will be used</div>
               </div>
@@ -515,7 +519,7 @@ img{display:block;max-width:100%}
       </div>
 
       <div class="upsell">
-        <div class="upsell-ico">🎬</div>
+        <div class="upsell-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="m2.7 10 18.6 0"/><path d="M6 3 3 10"/><path d="M11 3 8 10"/><path d="M16 3l-3 7"/><path d="M21 3l-3 7"/><rect x="2" y="10" width="20" height="10" rx="1.5"/></svg></div>
         <div class="upsell-body">
           <strong>Video best practices</strong>
           <p>For best results, use a 16:9 aspect ratio video. YouTube and Vimeo embeds work great. For direct uploads, use MP4 with H.264 encoding.</p>
@@ -526,8 +530,9 @@ img{display:block;max-width:100%}
       <div class="panel">
         <div class="panel-head"><div><h2>Products &amp; Catalogue</h2><div style="font-size:12.5px;color:var(--ink3);margin-top:2px">Photos, prices, variants and stock status — no checkout needed</div></div><button class="btn btn-green btn-sm" onclick="addProduct()">+ Add</button></div>
         <div class="panel-body">
-          <div class="product-list" id="productList"><div class="empty-state" id="productEmpty"><span class="es-icon">🛍️</span><p>No products yet.<br>Add items with photos, prices, variants and stock status.</p></div></div>
-          <div id="productLimitMsg" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico">⭐</div><div class="upsell-body"><strong>Starter plan: 6 products included</strong><p>Upgrade to <b>Pro</b> for unlimited products plus an online store with cart and Paynow payments.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button></div></div></div>
+          <div class="product-list" id="productList"><div class="empty-state" id="productEmpty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span><p>No products yet.<br>Add items with photos, prices, variants and stock status.</p></div></div>
+          <div id="productLimitMsg" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div class="upsell-body"><strong>Starter plan: 6 products included</strong><p>Upgrade to <b>Pro</b> for unlimited products plus your <b>WhatsApp Store</b> — customers browse and add to cart on your site, and the order lands straight in your WhatsApp.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button></div></div></div>
+          <div id="whatsappStoreUpsell" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><div class="upsell-body"><strong>Turn this into a WhatsApp Store</strong><p>Customers browse your products, add to cart, and the order lands in your WhatsApp automatically — no separate app needed. Available on <b>Pro</b>.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button></div></div></div>
         </div>
       </div>
     </div>
@@ -539,11 +544,11 @@ img{display:block;max-width:100%}
           <div class="fld-group"><label class="fld-label" for="f_email">Email address</label><input class="fld-input" id="f_email" placeholder="hello@yourbusiness.co.zw" oninput="markDirty()"></div>
           <div class="fld-group"><label class="fld-label" for="f_address">Physical address <span class="fld-hint">optional</span></label><input class="fld-input" id="f_address" placeholder="15 Main Street, Bulawayo" oninput="markDirty()"></div>
           <div class="fld-group"><label class="fld-label">Business hours <span class="fld-hint">— set in the Hours tab</span></label><div style="background:var(--surface);border-radius:var(--r-sm);padding:9px 12px;font-size:13px;color:var(--ink3);border:1.5px solid var(--line)">Open the <strong>Hours</strong> tab on the left to set open &amp; close times per day. A live Open/Closed badge will show on your site.</div></div>
-          <div class="fld-group"><label class="fld-label" for="f_map_embed_url">Google Maps embed URL <span class="fld-hint">optional — shows a map on your site</span></label><input class="fld-input" id="f_map_embed_url" placeholder="Paste the URL from inside src=&quot;…&quot; in Google Maps embed code" oninput="markDirty()"><div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Google Maps → Share → Embed a map → copy the URL inside <code style="background:#f0f2f6;padding:1px 4px;border-radius:3px">src="..."</code></div></div>
+          <div class="fld-group"><label class="fld-label">Map / Directions</label><div style="background:var(--surface);border-radius:var(--r-sm);padding:9px 12px;font-size:13px;color:var(--ink3);border:1.5px solid var(--line)">A "Get Directions" button appears on your site automatically, using your Physical address and City/Area below — nothing to paste here.</div></div>
           <div class="fld-group"><label class="fld-label" for="f_location">City / Area</label><input class="fld-input" id="f_location" placeholder="Bulawayo" oninput="markDirty()"></div>
         </div>
       </div>
-      <div class="upsell"><div class="upsell-ico">📅</div><div class="upsell-body"><strong>Let customers book appointments online</strong><p>Add a booking form so clients can schedule directly from your site. Available on <b>Pro</b>.</p><button class="btn btn-sm" style="margin-top:8px;background:var(--gold-bg);color:var(--gold-dk);border:1.5px solid var(--gold)" onclick="switchTab('publish',null)">See Pro features →</button></div></div>
+      <div class="upsell" id="bookingTemplateUpsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="upsell-body"><strong>Let customers book appointments online</strong><p>Booking works on templates like Beauty Salon, Advisory Firm, Medical Clinic, Personal Portfolio, Lodge/Hotel, and Creative Studio. Switch templates to turn it on.</p><button class="btn btn-sm" style="margin-top:8px;background:var(--gold-bg);color:var(--gold-dk);border:1.5px solid var(--gold)" onclick="openTplModalV3()">Switch template →</button></div></div>
     </div>
     <div class="tab-section" id="tab-social">
       <div class="panel">
@@ -564,7 +569,7 @@ img{display:block;max-width:100%}
         <div class="panel-body">
           <div style="font-size:14px;color:var(--ink2);margin-bottom:18px;line-height:1.6">Your site will be live at <b id="pubUrl" style="color:var(--green)">yoursite.websites.co.zw</b>. Save your site first, then choose a plan below to publish.</div>
           <div class="panel" style="border:2px solid var(--green);box-shadow:none;margin-bottom:12px"><div class="panel-body"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:6px">Starter</div><div style="font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1">$30<span style="font-size:14px;font-weight:500;color:var(--ink3)">/year</span></div><div style="font-size:12.5px;color:var(--ink3);margin-top:4px">Your .co.zw subdomain included</div></div><button class="btn btn-green" onclick="onPublish()">Publish — $30/yr</button></div><div class="divider"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:var(--ink2)"><div>✓ yoursite.websites.co.zw</div><div>✓ 6 products in catalogue</div><div>✓ AI content generation</div><div>✓ 10 image uploads</div><div>✓ Mobile-ready site</div><div>✓ Free SSL certificate</div><div>✓ WhatsApp order button</div><div>✓ All 9 site templates</div></div></div></div>
-          <div class="panel" style="border:2px solid var(--pro);box-shadow:none;margin-bottom:0"><div class="panel-body"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pro);margin-bottom:6px">Pro ⭐</div><div style="font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1">$60<span style="font-size:14px;font-weight:500;color:var(--ink3)">/year</span></div><div style="font-size:12.5px;color:var(--ink3);margin-top:4px">Your own .com domain included</div></div><button class="btn btn-pro" onclick="onPublishPro()">Get Pro — $60/yr</button></div><div class="divider"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:var(--ink2)"><div>✓ Everything in Starter</div><div>✓ Your own .com domain</div><div>✓ Unlimited products</div><div>✓ Online store + cart</div><div>✓ Appointment bookings</div><div>✓ WhatsApp shop link</div><div>✓ Video hosting on R2</div><div>✓ Priority support</div></div></div></div>
+          <div class="panel" style="border:2px solid var(--pro);box-shadow:none;margin-bottom:0"><div class="panel-body"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pro);margin-bottom:6px">Pro <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div style="font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1">$60<span style="font-size:14px;font-weight:500;color:var(--ink3)">/year</span></div><div style="font-size:12.5px;color:var(--ink3);margin-top:4px">Your own .com domain included</div></div><button class="btn btn-pro" onclick="onPublishPro()">Get Pro — $60/yr</button></div><div class="divider"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;color:var(--ink2)"><div>✓ Everything in Starter</div><div>✓ Your own .com domain</div><div>✓ Unlimited products</div><div>✓ Online store + cart</div><div>✓ Appointment bookings</div><div>✓ WhatsApp shop link</div><div>✓ Video hosting on R2</div><div>✓ Priority support</div></div></div></div>
         </div>
       </div>
     </div>
@@ -575,23 +580,23 @@ img{display:block;max-width:100%}
       <div class="panel"><div class="panel-head"><h2>Site font</h2></div><div class="panel-body"><div class="fld-group"><label class="fld-label">Font style</label><div class="font-grid" id="fontGrid"></div></div></div></div>
       <div class="panel"><div class="panel-head"><div><h2>Page sections</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Choose which sections appear and in what order</div></div></div><div class="panel-body"><div style="font-size:12.5px;color:var(--ink3);margin-bottom:12px">Use ↑ ↓ to reorder. Toggle to show or hide each section.</div><div id="sectionsList" style="display:flex;flex-direction:column;gap:6px"></div></div></div>
     </div>
-    <div class="tab-section" id="tab-services"><div class="panel"><div class="panel-head"><div><h2 id="services-tab-title">Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="services-tab-sub">Each service becomes a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addService()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="services-rep-list"><div class="empty-state" id="services-rep-empty"><span class="es-icon">🛠️</span><p>No services yet. Add what you offer.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-menu"><div class="panel"><div class="panel-head"><div><h2>Menu Items</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Group by category — each becomes a tab on your site</div></div><button class="btn btn-green btn-sm" onclick="addMenuItem()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="menu-rep-list"><div class="empty-state" id="menu-rep-empty"><span class="es-icon">🍽️</span><p>No menu items yet.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-listings"><div class="panel"><div class="panel-head"><div><h2>Property Listings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each listing appears as a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addListing()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="listings-rep-list"><div class="empty-state" id="listings-rep-empty"><span class="es-icon">🏘️</span><p>No listings yet.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-rooms"><div class="panel"><div class="panel-head"><div><h2>Rooms &amp; Suites</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each room becomes its own card — the first room shown is featured on your site</div></div><button class="btn btn-green btn-sm" onclick="addRoom()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="rooms-rep-list"><div class="empty-state" id="rooms-rep-empty"><span class="es-icon">🛏️</span><p>No rooms yet. Add your first room type.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-services"><div class="panel"><div class="panel-head"><div><h2 id="services-tab-title">Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="services-tab-sub">Each service becomes a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addService()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="services-rep-list"><div class="empty-state" id="services-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="m15 12-8.5 8.5a1.5 1.5 0 0 1-2-2L13 10"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/></svg></span><p>No services yet. Add what you offer.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-menu"><div class="panel"><div class="panel-head"><div><h2>Menu Items</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Group by category — each becomes a tab on your site</div></div><button class="btn btn-green btn-sm" onclick="addMenuItem()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="menu-rep-list"><div class="empty-state" id="menu-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></span><p>No menu items yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-listings"><div class="panel"><div class="panel-head"><div><h2>Property Listings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each listing appears as a card on your site</div></div><button class="btn btn-green btn-sm" onclick="addListing()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="listings-rep-list"><div class="empty-state" id="listings-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></span><p>No listings yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-rooms"><div class="panel"><div class="panel-head"><div><h2>Rooms &amp; Suites</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each room becomes its own card — the first room shown is featured on your site</div></div><button class="btn btn-green btn-sm" onclick="addRoom()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="rooms-rep-list"><div class="empty-state" id="rooms-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 18h20"/></svg></span><p>No rooms yet. Add your first room type.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-bookings"><div class="panel"><div class="panel-head"><div><h2>Bookings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Guest requests and appointments</div></div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="openBlockTimeModal()">Block time off</button><button class="btn btn-green btn-sm" id="addBookingBtn" style="display:none" onclick="openManualBookingModal()">+ Add booking</button><button class="btn btn-ghost btn-sm" onclick="loadBookings(true)">↻ Refresh</button></div></div><div class="panel-body">
       <div id="bookingsPricingSection" style="display:none;margin-bottom:14px"></div>
-      <div id="bookingsProUpsell" style="display:none;margin-bottom:14px"><div class="upsell-pro upsell"><div class="upsell-ico">⭐</div><div class="upsell-body"><strong>Manual entry &amp; payment tracking — Pro only</strong><p>Log phone, walk-in, and email bookings directly, and track deposits and payments with one-tap "mark as paid". Available on Bookings <b>Pro</b> ($25/mo).</p></div></div></div>
+      <div id="bookingsProUpsell" style="display:none;margin-bottom:14px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div class="upsell-body"><strong>Manual entry &amp; payment tracking — Pro only</strong><p>Log phone, walk-in, and email bookings directly, and track deposits and payments with one-tap "mark as paid". Available on Bookings <b>Pro</b> ($25/mo).</p></div></div></div>
       <div class="booking-filters" id="booking-filters"></div>
-      <div class="booking-list" id="booking-list"><div class="empty-state" id="booking-empty"><span class="es-icon">📋</span><p>No bookings yet. Once a guest requests a room, it'll show up here.</p></div></div>
+      <div class="booking-list" id="booking-list"><div class="empty-state" id="booking-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg></span><p>No bookings yet. Once a guest requests a room, it'll show up here.</p></div></div>
     </div></div></div>
     <div class="tab-section" id="tab-amenities"><div class="panel"><div class="panel-head"><div><h2>Amenities</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Tap a common amenity to add it instantly, or add your own below</div></div></div><div class="panel-body">
       <div class="vpreset-section"><div class="vpreset-label">Quick add</div><div class="vpreset-row" id="amenity-preset-chips"></div></div>
       <div class="divider"></div>
-      <div class="rep-list" id="amenities-rep-list"><div class="empty-state" id="amenities-rep-empty"><span class="es-icon">✨</span><p>No amenities yet.</p></div></div>
+      <div class="rep-list" id="amenities-rep-list"><div class="empty-state" id="amenities-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg></span><p>No amenities yet.</p></div></div>
       <button type="button" class="rep-add" onclick="addAmenity()">+ Add custom amenity</button>
     </div></div></div>
-    <div class="tab-section" id="tab-conference"><div class="panel"><div class="panel-head"><div><h2>Conferencing &amp; Venues</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">For weddings, meetings and events hosted at your property</div></div><button class="btn btn-green btn-sm" onclick="addVenue()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="conference-rep-list"><div class="empty-state" id="conference-rep-empty"><span class="es-icon">🎪</span><p>No venues yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-conference"><div class="panel"><div class="panel-head"><div><h2>Conferencing &amp; Venues</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">For weddings, meetings and events hosted at your property</div></div><button class="btn btn-green btn-sm" onclick="addVenue()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="conference-rep-list"><div class="empty-state" id="conference-rep-empty"><span class="es-icon"><svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="9" cy="9" r="6.5"/><path d="M11.5 6.5 9.8 9.8 6.5 11.5l1.7-3.3 3.3-1.7z"/></svg></span><p>No venues yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-dining"><div class="panel"><div class="panel-head"><h2>Dining</h2></div><div class="panel-body">
       <div class="fld-group"><label class="fld-label" for="f_dining_name">Restaurant / dining name</label><input class="fld-input" id="f_dining_name" placeholder="e.g. The Boma Restaurant" oninput="updateDiningField('name',this.value)"></div>
       <div class="fld-group"><label class="fld-label" for="f_dining_desc">Description</label><textarea class="fld-textarea" id="f_dining_desc" placeholder="Tell guests about your dining experience…" oninput="updateDiningField('description',this.value)"></textarea></div>
@@ -601,18 +606,18 @@ img{display:block;max-width:100%}
       </div>
       <div class="divider"></div>
       <div class="fld-group"><label class="fld-label">Signature highlights <span class="fld-hint">optional — a few standout dishes</span></label>
-        <div class="rep-list" id="dining-highlights-list"><div class="empty-state" id="dining-highlights-empty"><span class="es-icon">🍽️</span><p>No highlights yet.</p></div></div>
+        <div class="rep-list" id="dining-highlights-list"><div class="empty-state" id="dining-highlights-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></span><p>No highlights yet.</p></div></div>
         <button type="button" class="rep-add" onclick="addDiningHighlight()">+ Add highlight</button>
       </div>
     </div></div></div>
-    <div class="tab-section" id="tab-experiences"><div class="panel"><div class="panel-head"><div><h2>Experiences &amp; Activities</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Safaris, game drives, tours — anything guests can book or join</div></div><button class="btn btn-green btn-sm" onclick="addExperience()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="experiences-rep-list"><div class="empty-state" id="experiences-rep-empty"><span class="es-icon">🌍</span><p>No experiences yet.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-packages"><div class="panel"><div class="panel-head"><div><h2>Packages &amp; Deals</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Bundled offers — e.g. honeymoon package, weekend getaway, all-inclusive stay</div></div><button class="btn btn-green btn-sm" onclick="addPackage()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="packages-rep-list"><div class="empty-state" id="packages-rep-empty"><span class="es-icon">🎁</span><p>No packages yet.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-team"><div class="panel"><div class="panel-head"><div><h2 id="team-tab-title">Team</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="team-tab-sub">Hover cards flip to show bio on desktop</div></div><button class="btn btn-green btn-sm" onclick="addTeamMember()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="team-rep-list"><div class="empty-state" id="team-rep-empty"><span class="es-icon">👤</span><p>No team members yet.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-booking-services"><div class="panel"><div class="panel-head"><div><h2>Bookable Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">What clients can actually book online — separate from the price list shown on your site</div></div><button class="btn btn-green btn-sm" onclick="addBookingService()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="booking-services-rep-list"><div class="empty-state" id="booking-services-rep-empty"><span class="es-icon">📅</span><p>No bookable services yet. Add one so clients can book real appointments online.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-experiences"><div class="panel"><div class="panel-head"><div><h2>Experiences &amp; Activities</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Safaris, game drives, tours — anything guests can book or join</div></div><button class="btn btn-green btn-sm" onclick="addExperience()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="experiences-rep-list"><div class="empty-state" id="experiences-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 0 0 20 15 15 0 0 0 0-20"/><path d="M2 12h20"/></svg></span><p>No experiences yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-packages"><div class="panel"><div class="panel-head"><div><h2>Packages &amp; Deals</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Bundled offers — e.g. honeymoon package, weekend getaway, all-inclusive stay</div></div><button class="btn btn-green btn-sm" onclick="addPackage()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="packages-rep-list"><div class="empty-state" id="packages-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9.5 3 12 8 12 8s2.5-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><p>No packages yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-team"><div class="panel"><div class="panel-head"><div><h2 id="team-tab-title">Team</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="team-tab-sub">Hover cards flip to show bio on desktop</div></div><button class="btn btn-green btn-sm" onclick="addTeamMember()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="team-rep-list"><div class="empty-state" id="team-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span><p>No team members yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-booking-services"><div class="panel"><div class="panel-head"><div><h2>Bookable Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">What clients can actually book online — separate from the price list shown on your site</div></div><button class="btn btn-green btn-sm" onclick="addBookingService()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="booking-services-rep-list"><div class="empty-state" id="booking-services-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><p>No bookable services yet. Add one so clients can book real appointments online.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-hours"><div class="panel"><div class="panel-head"><h2>Opening Hours</h2></div><div class="panel-body"><p style="font-size:12.5px;color:var(--ink3);margin-bottom:12px">A live Open/Closed badge shows on your site based on these times.</p><div class="hours-grid-wrap" id="hours-grid-wrap"><div class="hours-hdr">Day</div><div class="hours-hdr">Opens</div><div class="hours-hdr">Closes</div><div class="hours-hdr">Closed?</div></div></div></div></div>
-    <div class="tab-section" id="tab-stats"><div class="panel"><div class="panel-head"><div><h2>Stats / Numbers</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Numbers animate (count up) when visitors scroll to them</div></div><button class="btn btn-green btn-sm" onclick="addStat()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="stats-rep-list"><div class="empty-state" id="stats-rep-empty"><span class="es-icon">📊</span><p>Add key numbers — e.g. 500+ students, 15 years, 98% pass rate</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-events"><div class="panel"><div class="panel-head"><div><h2>Events / Schedule</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown as a timeline on your site</div></div><button class="btn btn-green btn-sm" onclick="addEvent()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="events-rep-list"><div class="empty-state" id="events-rep-empty"><span class="es-icon">📅</span><p>No events yet. Add term dates or announcements.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-testimonials"><div class="panel"><div class="panel-head"><div><h2>Testimonials</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown in an auto-scrolling carousel</div></div><button class="btn btn-green btn-sm" onclick="addTestimonial()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="testimonials-rep-list"><div class="empty-state" id="testimonials-rep-empty"><span class="es-icon">💬</span><p>No testimonials yet.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-stats"><div class="panel"><div class="panel-head"><div><h2>Stats / Numbers</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Numbers animate (count up) when visitors scroll to them</div></div><button class="btn btn-green btn-sm" onclick="addStat()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="stats-rep-list"><div class="empty-state" id="stats-rep-empty"><span class="es-icon"><svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M3 15V9M7 15V5M11 15V8M15 15V3"/></svg></span><p>Add key numbers — e.g. 500+ students, 15 years, 98% pass rate</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-events"><div class="panel"><div class="panel-head"><div><h2>Events / Schedule</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown as a timeline on your site</div></div><button class="btn btn-green btn-sm" onclick="addEvent()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="events-rep-list"><div class="empty-state" id="events-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><p>No events yet. Add term dates or announcements.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-testimonials"><div class="panel"><div class="panel-head"><div><h2>Testimonials</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown in an auto-scrolling carousel</div></div><button class="btn btn-green btn-sm" onclick="addTestimonial()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="testimonials-rep-list"><div class="empty-state" id="testimonials-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></span><p>No testimonials yet.</p></div></div></div></div></div>
   </main>
   <div class="preview-drawer" id="previewDrawer">
     <div class="preview-bar"><h3>Live preview</h3><span class="preview-url" id="previewUrlLabel">—</span><button class="btn btn-ghost btn-sm" onclick="refreshPreview()" title="Reload the preview">↺ Refresh</button><button class="btn btn-ghost btn-sm" onclick="togglePreview()" title="Close preview, back to editing">✕ Close</button></div>
@@ -702,14 +707,14 @@ img{display:block;max-width:100%}
 <div class="domain-modal-overlay" id="domainModal" onclick="closeDomainModalOutside(event)">
   <div class="domain-modal">
     <div class="domain-modal-head">
-      <h2>🌐 Choose your domain</h2>
+      <h2><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 0 0 20 15 15 0 0 0 0-20"/><path d="M2 12h20"/></svg> Choose your domain</h2>
       <button class="btn btn-ghost btn-sm" onclick="closeDomainModal()">✕ Close</button>
     </div>
     <div class="domain-modal-body" id="domainModalBody">
       <div class="domain-options" id="domainOptions">
         <!-- .com domain option -->
         <div class="domain-option" data-type="com" id="domainOptCom" onclick="selectDomainType('com')">
-          <h3>🌍 .com Domain — $12/year</h3>
+          <h3><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 0 0 20 15 15 0 0 0 0-20"/><path d="M2 12h20"/></svg> .com Domain — $12/year</h3>
           <p>Get a professional .com domain for your business. Search for availability now.</p>
           <div class="search-box">
             <input type="text" id="domainSearchInput" placeholder="Enter your business name..." onkeydown="if(event.key==='Enter') searchDomain()">
@@ -736,16 +741,16 @@ img{display:block;max-width:100%}
               <input type="text" id="cozwChoice3" placeholder="Third choice (optional)" oninput="updateCozwPreview()">
               <span class="tld-label">.co.zw</span>
             </div>
-            <p class="note">📋 Our team will check availability and register your top available choice within 1-2 business days.</p>
+            <p class="note"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg> Our team will check availability and register your top available choice within 1-2 business days.</p>
           </div>
         </div>
 
         <!-- Existing domain option -->
         <div class="domain-option" data-type="own" id="domainOptOwn" onclick="selectDomainType('own')">
-          <h3>🔗 I already have a domain</h3>
+          <h3><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> I already have a domain</h3>
           <p>Point your existing domain to websites.co.zw.</p>
           <input type="text" id="ownDomainInput" placeholder="e.g., mybusiness.com" oninput="updateOwnPreview()" style="width:100%;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:8px 12px;font-size:14px;margin-top:6px">
-          <p class="note">📋 We'll provide DNS instructions after payment.</p>
+          <p class="note"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg> We'll provide DNS instructions after payment.</p>
         </div>
       </div>
 
@@ -797,7 +802,7 @@ window.deleteCurrentSite = async function() {
   if (!siteId) { toast("No site to delete.", "err"); return; }
   var siteName = state.site ? state.site.site_name : "this site";
   var confirmed = confirm(
-    "🗑️ Delete \"" + siteName + "\" permanently?\n\n" +
+    "Delete \"" + siteName + "\" permanently?\n\n" +
     "This will remove your entire site, including:\n" +
     "• All content and pages\n" +
     "• All uploaded images\n" +
@@ -993,7 +998,7 @@ window.updateVideoPreview = function() {
     document.getElementById("topSiteName").textContent="No site selected";
     document.getElementById("saveBtn").style.display="none";
     document.getElementById("generateBtn").disabled=true;
-    document.getElementById("mainArea").innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:20px;text-align:center;padding:40px 20px"><div style="font-size:48px">🏗️</div><h2 style="font-family:var(--font-head);font-size:22px;color:var(--ink)">No site selected</h2><p style="color:var(--ink3);max-width:340px;line-height:1.5">Go to your dashboard to select an existing site, or create a new one.</p><a class="btn btn-green" href="'+DASH_URL+'">← Back to dashboard</a></div>';
+    document.getElementById("mainArea").innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:20px;text-align:center;padding:40px 20px"><div style="font-size:48px"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M2 20h20M4 20V10l8-6 8 6v10M9 20v-6h6v6"/></svg></div><h2 style="font-family:var(--font-head);font-size:22px;color:var(--ink)">No site selected</h2><p style="color:var(--ink3);max-width:340px;line-height:1.5">Go to your dashboard to select an existing site, or create a new one.</p><a class="btn btn-green" href="'+DASH_URL+'">← Back to dashboard</a></div>';
     return;
   }
   var r=await api("/api/sites/"+encodeURIComponent(siteId));
@@ -1031,7 +1036,7 @@ function populateForm(){
     set("f_services",Array.isArray(svcs)?svcs.map(function(s){return typeof s==="string"?s:(s.title||"");}).filter(Boolean).join("\n"):"");
   }else{set("f_name",c.business_name||state.site.site_name||"");set("f_tagline",c.tagline||"");set("f_city",c.location||"");}
   if(state.site.template_id)set("f_template",state.site.template_id);
-  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel"};
+  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","fashion-retail":"Fashion Retail Store","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel","medical-clinic":"Medical Clinic","personal-portfolio":"Personal Portfolio"};
   var tlabel=document.getElementById("currentTemplateLabel");
   if(tlabel)tlabel.textContent=templateNames[state.site.template_id]||state.site.template_id||"General Business";
   set("f_services_eyebrow",c.services_eyebrow||"");set("f_services_heading",c.services_heading||"");
@@ -1042,7 +1047,7 @@ function populateForm(){
   if(pcPanel)pcPanel.style.display=(state.site.template_id==="advisory-firm")?"":"none";
   set("f_phone",ct.phone||"");set("f_whatsapp",ct.whatsapp||"");
   set("f_email",ct.email||"");set("f_address",ct.address||"");
-  set("f_location",c.location||"");set("f_map_embed_url",c.map_embed_url||c.contact?.map_embed_url||"");
+  set("f_location",c.location||"");
   set("s_whatsapp",s.whatsapp||"");set("s_facebook",s.facebook||"");
   set("s_instagram",s.instagram||"");set("s_tiktok",s.tiktok||"");
   set("s_twitter",s.twitter||"");set("s_linkedin",s.linkedin||"");
@@ -1142,7 +1147,6 @@ function buildContent(brief){
       tagline:g("f_tagline"),
       location:g("f_location")||brief.city,
       contact:brief.contact,
-      map_embed_url:g("f_map_embed_url")||null,
       socials:brief.social,
       products:state.products,
       images:Object.assign({},state.images,{gallery:state.gallery}),
@@ -1190,8 +1194,11 @@ function renderProducts() {
   var list = document.getElementById("productList");
   var empty = document.getElementById("productEmpty");
   var limitMsg = document.getElementById("productLimitMsg");
+  var waUpsell = document.getElementById("whatsappStoreUpsell");
+  var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
   empty.style.display = state.products.length === 0 ? '' : 'none';
-  limitMsg.style.display = state.products.length >= STARTER_PRODUCT_LIMIT ? 'block' : 'none';
+  limitMsg.style.display = (!isPro && state.products.length >= STARTER_PRODUCT_LIMIT) ? 'block' : 'none';
+  if (waUpsell) waUpsell.style.display = (!isPro && state.products.length > 0 && state.products.length < STARTER_PRODUCT_LIMIT) ? 'block' : 'none';
   list.querySelectorAll('.product-card').forEach(function(c) { c.remove(); });
   state.products.forEach(function(p) {
     if (!Array.isArray(p.images)) p.images = p.image ? [p.image] : [];
@@ -1202,7 +1209,7 @@ function renderProducts() {
     card.dataset.pid = p.id;
     var thumbHtml = p.image
       ? '<img class="product-thumb" src="' + esc(p.image) + '" alt="">'
-      : '<div class="product-thumb-placeholder">📦</div>';
+      : '<div class="product-thumb-placeholder"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>';
     
     var uploadHtml = '';
     var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
@@ -1220,9 +1227,9 @@ function renderProducts() {
     });
     
     if (images.length < maxImages) {
-      uploadHtml += '<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden" onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'">📷<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleProductImageUpload(\'' + p.id + '\',this)"></label>';
+      uploadHtml += '<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden" onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleProductImageUpload(\'' + p.id + '\',this)"></label>';
     } else if (!isPro && images.length >= 1) {
-      uploadHtml += '<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add more images — upgrade to Pro</div>';
+      uploadHtml += '<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> Add more images — upgrade to Pro</div>';
     }
     
     uploadHtml += '</div></div>';
@@ -1341,8 +1348,8 @@ window.uploadToR2=uploadToR2;
 
 function toast(msg,type){var wrap=document.getElementById("toastWrap"),t=document.createElement("div");t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);requestAnimationFrame(function(){t.classList.add("show");});setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);}
 
-function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","grocery-fmcg":"market-fresh","grocery":"market-fresh","hardware-store":"utility-slate","hardware":"utility-slate","hospitality-inn":"navy-gold"};return m[t]||"clean-white";}
-function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","hardware-store":"display-mono","hospitality-inn":"playfair-jakarta"};return m[t]||"grotesk-serif";}
+function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","fashion-retail":"fashion","grocery-fmcg":"market-fresh","grocery":"market-fresh","hardware-store":"utility-slate","hardware":"utility-slate","hospitality-inn":"navy-gold","medical-clinic":"medical-teal","personal-portfolio":"deep-teal"};return m[t]||"clean-white";}
+function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","hardware-store":"display-mono","hospitality-inn":"playfair-jakarta","medical-clinic":"grotesk-serif","personal-portfolio":"grotesk-serif"};return m[t]||"grotesk-serif";}
 var PALETTES_UI=[{key:"black-white-gold",name:"Dark Gold",bg:"#0c0c0c",surface:"#161616",accent:"#c8a24a",dark:"#0c0c0c"},{key:"midnight-purple",name:"Midnight Purple",bg:"#0d0a14",surface:"#17121f",accent:"#a855f7",dark:"#0d0a14"},{key:"deep-teal",name:"Deep Teal",bg:"#061a1a",surface:"#0d2828",accent:"#14b8a6",dark:"#061a1a"},{key:"sky-blue",name:"Sky Blue",bg:"#0f1b2d",surface:"#16263d",accent:"#3da5e0",dark:"#0f1b2d"},{key:"elite-sports",name:"Sports Green",bg:"#0a0a0a",surface:"#151515",accent:"#16a34a",dark:"#0a0a0a"},{key:"rose-noir",name:"Rose Noir",bg:"#0e0b0d",surface:"#1a1318",accent:"#e8a0b0",dark:"#0e0b0d"},{key:"clean-white",name:"Clean White",bg:"#ffffff",surface:"#f6f6f4",accent:"#1a1a1a",dark:"#141414"},{key:"warm-terracotta",name:"Terracotta",bg:"#fdf6f0",surface:"#fff",accent:"#c0440e",dark:"#3a1606"},{key:"ember-cream",name:"Ember Cream",bg:"#FBF4E9",surface:"#fff",accent:"#D2541F",dark:"#3a1708"},{key:"blush-plum",name:"Blush Plum",bg:"#ffffff",surface:"#F7ECEC",accent:"#B08D57",dark:"#2d1620"},{key:"soft-pink",name:"Soft Pink",bg:"#fff9fb",surface:"#fdeef3",accent:"#e91e8c",dark:"#3a0f24"},{key:"navy-gold",name:"Navy Gold",bg:"#ffffff",surface:"#EAF1F9",accent:"#C99A2E",dark:"#0a2540"},{key:"slate-gold",name:"Slate Gold",bg:"#ffffff",surface:"#F4F6FA",accent:"#C08A2D",dark:"#20262f"},{key:"medical-teal",name:"Medical Teal",bg:"#f4fbfb",surface:"#e8f6f6",accent:"#0891b2",dark:"#063a3f"},{key:"forest-cream",name:"Forest Cream",bg:"#F6F1E7",surface:"#fff",accent:"#B0852F",dark:"#1f3320"},{key:"market-fresh",name:"Market Fresh",bg:"#ffffff",surface:"#f4faf5",accent:"#1e8c3a",dark:"#0f3d1a"},{key:"bright-orange",name:"Bright Orange",bg:"#ffffff",surface:"#fff8f3",accent:"#ea580c",dark:"#2b1400"},{key:"utility-slate",name:"Utility Slate",bg:"#f7f8fa",surface:"#ffffff",accent:"#1a56db",dark:"#0f1729"}];
 var FONTS_UI=[{key:"clean-sans",name:"Clean Sans",preview:"Modern & Clear",style:"font-family:'Space Grotesk',sans-serif"},{key:"grotesk-serif",name:"Grotesk Serif",preview:"Editorial Mix",style:"font-family:'Fraunces',serif"},{key:"playfair-jakarta",name:"Playfair",preview:"Classic & Elegant",style:"font-family:'Playfair Display',serif"},{key:"garamond-jost",name:"Garamond Jost",preview:"Refined & Light",style:"font-family:'Cormorant Garamond',serif"},{key:"sports-sans",name:"Sports Sans",preview:"Bold & Condensed",style:"font-family:'Barlow Condensed',sans-serif;font-weight:700"},{key:"display-mono",name:"Display Mono",preview:"Technical & Clean",style:"font-family:'DM Mono',monospace"}];
 
@@ -1393,7 +1400,10 @@ var ALL_SECS_V3 = {
   "boutique-fashion": [{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"contact",label:"Contact"}],
   "grocery-fmcg": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
   "hardware-store": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products / Catalogue"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
-  "hospitality-inn": [{key:"hero",label:"Hero banner"},{key:"rooms",label:"Rooms"},{key:"about",label:"About us"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"packages",label:"Packages"},{key:"dining",label:"Dining"},{key:"experiences",label:"Experiences"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}]
+  "hospitality-inn": [{key:"hero",label:"Hero banner"},{key:"rooms",label:"Rooms"},{key:"about",label:"About us"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"packages",label:"Packages"},{key:"dining",label:"Dining"},{key:"experiences",label:"Experiences"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
+  "medical-clinic": [{key:"hero",label:"Hero banner"},{key:"services",label:"Services"},{key:"team",label:"Practitioners"},{key:"insurance",label:"Insurance / Medical Aid"},{key:"testimonials",label:"Patient reviews"},{key:"gallery",label:"Facility photos"},{key:"contact",label:"Contact"}],
+  "personal-portfolio": [{key:"hero",label:"Hero banner"},{key:"about",label:"About"},{key:"experience",label:"Experience"},{key:"awards",label:"Awards"},{key:"services",label:"What I offer"},{key:"products",label:"Shop"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
+  "creative-studio": [{key:"hero",label:"Hero banner"},{key:"gallery",label:"Portfolio gallery"},{key:"about",label:"About"},{key:"rooms",label:"Packages"},{key:"booking-services",label:"Sessions"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}]
 };
 var REQUIRED_V3=["hero","contact"];
 
@@ -1413,18 +1423,42 @@ document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key
 (function(){
 "use strict";
 var siteId=new URLSearchParams(location.search).get("site");
+// Same hand-crafted Lucide-style icon set as the new-site wizard, reused
+// here so template icons look identical across both places instead of
+// two different eras of icon choices.
+var TPL_ICO = {
+  general:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+  food:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
+  beauty:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 8.5 20 20"/><path d="M15.5 8.5 4 20"/><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M8.12 8.12 12 12"/></svg>',
+  education:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg>',
+  church:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M10 4h4"/><path d="M12 22V10.5a2.5 2.5 0 0 1 5 0V22"/><path d="M7 22V10.5A2.5 2.5 0 0 0 2 10.5V22"/><path d="M2 22h20"/><path d="M9 22v-4a3 3 0 0 1 6 0v4"/></svg>',
+  professional:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  property:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>',
+  fashion:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 14.5 16 10l1-6-3-1-2 2-2-2-3 1 1 6-4.4 4.5a1 1 0 0 0 0 1.4l2.1 2a1 1 0 0 0 1.4 0L9 16v6h6v-6l1.9 1.9a1 1 0 0 0 1.4 0l2.1-2a1 1 0 0 0 0-1.4Z"/></svg>',
+  store:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7 4 3h16l2 4"/><path d="M2 7v13a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7"/><path d="M2 7h20"/><path d="M9 21v-6a2 2 0 0 1 4 0v6"/></svg>',
+  grocery:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m5 11 4-7"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.6-7.4"/><path d="M4.5 15.5h15"/><path d="M12 11v5"/></svg>',
+  hardware:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-8.5 8.5a1.5 1.5 0 0 1-2-2L13 10"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/></svg>',
+  hospitality:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 18h20"/></svg>',
+  medical:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  personal:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>',
+  creative:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg>',
+};
 var TEMPLATES_V3=[
-  {id:"bold-retail",icon:"🏢",name:"General Business",desc:"Any SME — split hero, service cards, team"},
-  {id:"grill-house",icon:"🍖",name:"Restaurant & Food",desc:"Full-bleed hero, menu tabs, live hours"},
-  {id:"beauty-salon",icon:"💅",name:"Beauty & Wellness",desc:"Price list, before/after slider"},
-  {id:"school-institution",icon:"🎓",name:"School & Academy",desc:"Stats bar, programmes, term dates"},
-  {id:"church",icon:"⛪",name:"Church / Ministry",desc:"Sermon highlights, events, community focus"},
-  {id:"advisory-firm",icon:"⚖️",name:"Consultant & Legal",desc:"Minimal hero, accordion services"},
-  {id:"property-estate",icon:"🏘️",name:"Real Estate",desc:"Listings as hero, filter tabs, agent cards"},
-  {id:"boutique-fashion",icon:"👗",name:"Fashion & Boutique",desc:"Dark editorial, masonry grid"},
-  {id:"grocery-fmcg",icon:"🛒",name:"Grocery & Spaza",desc:"Category nav, stock badges, WhatsApp cart"},
-  {id:"hardware-store",icon:"🔧",name:"Hardware & Retail",desc:"Dense catalogue, quote builder"},
-  {id:"hospitality-inn",icon:"🏨",name:"Lodge / B&B / Hotel",desc:"Room cards, WhatsApp booking, availability badges, gallery, reviews"}
+  {id:"bold-retail",icon:TPL_ICO.general,name:"General Business",desc:"Any SME — split hero, service cards, team"},
+  {id:"grill-house",icon:TPL_ICO.food,name:"Restaurant & Food",desc:"Full-bleed hero, menu tabs, live hours"},
+  {id:"beauty-salon",icon:TPL_ICO.beauty,name:"Beauty & Wellness",desc:"Price list, before/after slider"},
+  {id:"school-institution",icon:TPL_ICO.education,name:"School & Academy",desc:"Stats bar, programmes, term dates"},
+  {id:"church",icon:TPL_ICO.church,name:"Church / Ministry",desc:"Sermon highlights, events, community focus"},
+  {id:"advisory-firm",icon:TPL_ICO.professional,name:"Consultant & Legal",desc:"Minimal hero, accordion services"},
+  {id:"property-estate",icon:TPL_ICO.property,name:"Real Estate",desc:"Listings as hero, filter tabs, agent cards"},
+  {id:"boutique-fashion",icon:TPL_ICO.fashion,name:"Fashion & Boutique",desc:"Dark editorial, masonry grid"},
+  {id:"fashion-retail",icon:TPL_ICO.store,name:"Fashion Retail Store",desc:"Multi-brand catalogue, filterable grid"},
+  {id:"grocery-fmcg",icon:TPL_ICO.grocery,name:"Grocery & Spaza",desc:"Category nav, stock badges, WhatsApp cart"},
+  {id:"hardware-store",icon:TPL_ICO.hardware,name:"Hardware & Retail",desc:"Dense catalogue, quote builder"},
+  {id:"hospitality-inn",icon:TPL_ICO.hospitality,name:"Lodge / B&B / Hotel",desc:"Room cards, WhatsApp booking, availability badges, gallery, reviews"},
+  {id:"medical-clinic",icon:TPL_ICO.medical,name:"Medical Clinic",desc:"Practitioners, appointment booking, insurance accepted"},
+  {id:"personal-portfolio",icon:TPL_ICO.personal,name:"Personal Portfolio",desc:"CV, awards, speaking bookings, shop your own merch"},
+  {id:"creative-studio",icon:TPL_ICO.creative,name:"Creative Studio",desc:"Photography & film — masonry gallery, full-day and session booking"}
 ];
 var TPL_CFG={
   "bold-retail":{services:"Services",menu:0,listings:0,hours:0,stats:0,events:0,team:1,teamLbl:"Team",servicesLbl:"Services"},
@@ -1435,11 +1469,15 @@ var TPL_CFG={
   "advisory-firm":{services:"Practice Areas",menu:0,listings:0,hours:0,stats:1,events:0,team:1,teamLbl:"Our People",servicesLbl:"Practice Areas",bookingServices:1,pageCopy:1},
   "property-estate":{services:0,menu:0,listings:1,hours:0,stats:0,events:0,team:1,teamLbl:"Agents",servicesLbl:"Services"},
   "boutique-fashion":{services:0,menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
+  "fashion-retail":{services:0,menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
   "grocery-fmcg":{services:0,menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
   "hardware-store":{services:"Our Services",menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Our Services"},
-  "hospitality-inn":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,packages:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"}
+  "hospitality-inn":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,packages:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"},
+  "medical-clinic":{services:"Services",menu:0,listings:0,hours:0,stats:0,events:0,team:1,teamLbl:"Practitioners",servicesLbl:"Services",bookingServices:1},
+  "personal-portfolio":{services:"What I Offer",menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"What I Offer",bookingServices:1},
+  "creative-studio":{services:0,menu:0,listings:0,rooms:1,hours:0,stats:0,events:0,team:1,teamLbl:"Team",bookingServices:1}
 };
-var v3state={services:[],menu:[],listings:[],team:[],stats:[],events:[],testimonials:[],hours:{},rooms:[],amenities:[],conference:[],experiences:[],packages:[],dining:{},bookingServices:[],previewDevice:"desktop"};
+var v3state={services:[],menu:[],listings:[],team:[],stats:[],events:[],testimonials:[],hours:{},rooms:[],amenities:[],conference:[],experiences:[],packages:[],dining:{},bookingServices:[],richGallery:[],previewDevice:"desktop"};
 
 window.__mergeV3IntoState = function() {
   if (window.state && window.state.content) {
@@ -1458,6 +1496,14 @@ window.__mergeV3IntoState = function() {
     inner.experiences = v3state.experiences;
     inner.packages = v3state.packages;
     inner.booking_services = v3state.bookingServices;
+    // Rich gallery (creative-studio) — saves to the top-level `gallery`
+    // field, which render-worker already checks FIRST before falling back
+    // to images.gallery (the plain string array every other template
+    // uses). Stays empty/untouched for every other template, so this is
+    // safe to merge unconditionally.
+    if (Array.isArray(v3state.richGallery) && v3state.richGallery.length) {
+      inner.gallery = v3state.richGallery;
+    }
     var dn = v3state.dining || {};
     var hasDining = !!(dn.name || dn.description || (Array.isArray(dn.highlights) && dn.highlights.length) || dn.image);
     inner.dining = hasDining ? dn : null;
@@ -1482,7 +1528,7 @@ async function bookingsApi(path, opts) {
 
 window.__syncRoomsToBookingsWorker = async function(siteId) {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
-  if (tpl !== "hospitality-inn") return;
+  if (INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl) === -1) return;
   if (!Array.isArray(v3state.rooms)) return;
   var deleted = v3state._deletedRoomResourceIds || [];
   for (var d = 0; d < deleted.length; d++) {
@@ -1515,7 +1561,12 @@ window.__syncRoomsToBookingsWorker = async function(siteId) {
   if (assignedNewIds) { await persistSyncedContent(siteId); }
 };
 
-var SLOT_BOOKING_TEMPLATE_IDS = ["beauty-salon", "advisory-firm"];
+var SLOT_BOOKING_TEMPLATE_IDS = ["beauty-salon", "advisory-firm", "medical-clinic", "personal-portfolio"];
+// Templates using date-range (day-level) booking via the rooms/resources
+// machinery — creative-studio's full-day packages deliberately reuse this
+// exact mechanism rather than a parallel one. See the render-worker
+// comment on the same decision for why.
+var INTERVAL_BOOKING_TEMPLATE_IDS = ["hospitality-inn", "creative-studio"];
 function isSlotBookingTemplate(tpl) {
   return SLOT_BOOKING_TEMPLATE_IDS.indexOf(tpl) > -1;
 }
@@ -1683,16 +1734,16 @@ function renderBookingsPricing() {
 
 window.loadBookings = async function(force) {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
-  if (tpl !== "hospitality-inn" && !isSlotBookingTemplate(tpl)) return;
+  if (INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl) === -1 && !isSlotBookingTemplate(tpl)) return;
   if (!siteId) return;
   if (bookingsState.loaded && !force) { renderBookingsList(); return; }
   var listEl = document.getElementById("booking-list");
-  if (listEl) listEl.innerHTML = '<div class="empty-state"><span class="es-icon">⏳</span><p>Loading bookings…</p></div>';
+  if (listEl) listEl.innerHTML = '<div class="empty-state"><span class="es-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M5 22h14M5 2h14M17 22v-4.17a2 2 0 0 0-.59-1.41L12 12l-4.41 4.42A2 2 0 0 0 7 17.83V22M7 2v4.17a2 2 0 0 0 .59 1.41L12 12l4.41-4.42A2 2 0 0 0 17 6.17V2"/></svg></span><p>Loading bookings…</p></div>';
   var r = await bookingsApi("/bookings?site_id=" + encodeURIComponent(siteId));
   bookingsState.loaded = true;
   if (!r.ok) {
     bookingsState.list = [];
-    if (listEl) listEl.innerHTML = '<div class="empty-state"><span class="es-icon">⚠️</span><p>Couldn\'t load bookings — tap Refresh to try again.</p></div>';
+    if (listEl) listEl.innerHTML = '<div class="empty-state"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span><p>Couldn\'t load bookings — tap Refresh to try again.</p></div>';
     return;
   }
   bookingsState.list = (r.data && r.data.bookings) || [];
@@ -1745,7 +1796,7 @@ function renderBookingsList() {
     var emptyEl = document.createElement("div");
     emptyEl.className = "empty-state";
     emptyEl.id = "booking-empty";
-    emptyEl.innerHTML = '<span class="es-icon">📋</span><p>' + (bookingsState.list.length ? "No bookings match this filter." : "No bookings yet. Once a guest requests a room, it'll show up here.") + "</p>";
+    emptyEl.innerHTML = '<span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg></span><p>' + (bookingsState.list.length ? "No bookings match this filter." : "No bookings yet. Once a guest requests a room, it'll show up here.") + "</p>";
     listEl.appendChild(emptyEl);
     return;
   }
@@ -1880,13 +1931,14 @@ window.submitManualBooking = async function() {
 
 window.openBlockTimeModal = function() {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
-  var isInterval = tpl === "hospitality-inn";
+  var isInterval = INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl) > -1;
   var isSlot = isSlotBookingTemplate(tpl);
   if (!isInterval && !isSlot) { toast("Bookings isn't set up for this template yet", "err"); return; }
+  var resourceNoun = tpl === "creative-studio" ? "packages" : (isInterval ? "rooms" : "stylists");
   var resourceList = isInterval ? (v3state.rooms || []) : (v3state.team || []);
   var synced = resourceList.filter(function(r) { return !!r.resource_id; });
   var sel = document.getElementById("bt_resource_id");
-  sel.innerHTML = '<option value="">All ' + (isInterval ? "rooms" : "stylists") + '</option>' + synced.map(function(r) { return '<option value="' + escV3(r.resource_id) + '">' + escV3(r.name) + '</option>'; }).join("");
+  sel.innerHTML = '<option value="">All ' + resourceNoun + '</option>' + synced.map(function(r) { return '<option value="' + escV3(r.resource_id) + '">' + escV3(r.name) + '</option>'; }).join("");
   document.getElementById("bt_interval_fields").style.display = isInterval ? "" : "none";
   document.getElementById("bt_slot_fields").style.display = isSlot ? "" : "none";
   set("bt_start_date", ""); set("bt_end_date", "");
@@ -1913,7 +1965,7 @@ window.toggleBlockTimeMode = function() {
 
 window.submitBlockTime = async function() {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
-  var isInterval = tpl === "hospitality-inn";
+  var isInterval = INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl) > -1;
   var resourceId = g("bt_resource_id") || null;
   var reason = g("bt_reason") || "Blocked";
   var btn = document.getElementById("btSubmitBtn");
@@ -1995,7 +2047,7 @@ function injectV3Nav(){
   var sidebar=document.querySelector(".sidebar");if(!sidebar||document.getElementById("v3-nav-injected"))return;
   var publishItem=sidebar.querySelector('[data-tab="publish"]');var insertBefore=publishItem||null;
   var tplChip=document.createElement("div");tplChip.className="nav-tpl-chip";tplChip.id="v3-nav-injected";
-  tplChip.innerHTML='<span id="v3-tpl-icon" style="font-size:1.1rem">🏢</span><span id="v3-tpl-name" style="flex:1;font-weight:600">General Business</span><span style="font-size:11.5px;color:var(--ink3)">Change</span>';
+  tplChip.innerHTML='<span id="v3-tpl-icon" style="display:inline-flex;color:var(--ink2)">'+TPL_ICO.general+'</span><span id="v3-tpl-name" style="flex:1;font-weight:600">General Business</span><span style="font-size:11.5px;color:var(--ink3)">Change</span>';
   tplChip.onclick=openTplModalV3;
   var tplLabel=document.createElement("div");tplLabel.className="nav-section";tplLabel.textContent="Template";
   var extraNavs=[
@@ -2041,11 +2093,36 @@ window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team
 function applyTemplateConfigV3(tpl){
   var cfg=TPL_CFG[tpl]||TPL_CFG["bold-retail"];var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};
   var iconEl=document.getElementById("v3-tpl-icon");var nameEl=document.getElementById("v3-tpl-name");
-  if(iconEl)iconEl.textContent=tmeta.icon||"🏢";if(nameEl)nameEl.textContent=tmeta.name||tpl;
+  if(iconEl)iconEl.innerHTML=tmeta.icon||TPL_ICO.general;if(nameEl)nameEl.textContent=tmeta.name||tpl;
   var ctLabel=document.getElementById("currentTemplateLabel");if(ctLabel)ctLabel.textContent=tmeta.name||tpl;
   showNavItem("nav-v3-services",!!cfg.services);showNavItem("nav-v3-menu",!!cfg.menu);showNavItem("nav-v3-listings",!!cfg.listings);showNavItem("nav-v3-team",!!cfg.team);showNavItem("nav-v3-hours",!!cfg.hours);showNavItem("nav-v3-stats",!!cfg.stats);showNavItem("nav-v3-events",!!cfg.events);showNavItem("nav-v3-testis",true);
   showNavItem("nav-v3-rooms",!!cfg.rooms);showNavItem("nav-v3-bookings",!!cfg.rooms||isSlotBookingTemplate(tpl));showNavItem("nav-v3-amenities",!!cfg.amenities);showNavItem("nav-v3-conference",!!cfg.conference);showNavItem("nav-v3-dining",!!cfg.dining);showNavItem("nav-v3-experiences",!!cfg.experiences);showNavItem("nav-v3-packages",!!cfg.packages);
   showNavItem("nav-v3-booking-services",!!cfg.bookingServices);
+  // creative-studio reuses the Rooms panel/tab/sync machinery wholesale for
+  // its full-day packages — this is the one place that needs to relabel it
+  // rather than have a parallel "Packages" system built from scratch.
+  var isCreativeStudio = tpl === "creative-studio";
+  var roomsLabelText = isCreativeStudio ? "Packages" : "Rooms";
+  ["nav-v3-rooms","dock-v3-rooms"].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return;
+    var span=el.querySelector("span"); if(span) span.textContent=roomsLabelText;
+  });
+  var roomsHeading=document.querySelector("#tab-rooms h2");
+  if(roomsHeading) roomsHeading.textContent=isCreativeStudio?"Packages":"Rooms & Suites";
+  var roomsSub=document.querySelector("#tab-rooms .panel-head > div > div");
+  if(roomsSub) roomsSub.textContent=isCreativeStudio
+    ?"Each package becomes its own card — set a full-day rate and let clients check availability and book"
+    :"Each room becomes its own card — the first room shown is featured on your site";
+  var roomsEmptyText=document.querySelector("#rooms-rep-empty p");
+  if(roomsEmptyText) roomsEmptyText.textContent=isCreativeStudio?"No packages yet. Add your first full-day package.":"No rooms yet. Add your first room type.";
+  var mbRoomLabel=document.querySelector('label[for="mb_resource_id"]');
+  if(mbRoomLabel) mbRoomLabel.textContent=isCreativeStudio?"Package":"Room";
+  var plainGalPanel=document.getElementById("gallery-plain-panel");
+  var richGalPanel=document.getElementById("gallery-rich-panel");
+  if(plainGalPanel) plainGalPanel.style.display=isCreativeStudio?"none":"";
+  if(richGalPanel) richGalPanel.style.display=isCreativeStudio?"":"none";
+  var bookingUpsell=document.getElementById("bookingTemplateUpsell");
+  if(bookingUpsell) bookingUpsell.style.display=(INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl)>-1||isSlotBookingTemplate(tpl))?"none":"";
   var pcPanel=document.getElementById("pageCopyPanel");
   if(pcPanel)pcPanel.style.display=cfg.pageCopy?"":"none";
   if(cfg.services){var st=document.getElementById("services-tab-title");var nl=document.getElementById("nav-v3-services");if(st)st.textContent=cfg.servicesLbl||"Services";if(nl){var sp=nl.querySelector("span");if(sp)sp.textContent=cfg.servicesLbl||"Services";}}
@@ -2070,8 +2147,8 @@ function fldV3(label,cls,val,ph,oninput,extra){return'<div class="fld-group"><la
 function taV3(label,cls,val,ph,oninput,rows){return'<div class="fld-group"><label class="fld-label">'+label+'</label><textarea class="fld-textarea '+cls+'" placeholder="'+escV3(ph||'')+'" rows="'+(rows||2)+'" oninput="'+oninput+'">'+escV3(val||'')+'</textarea></div>';}
 function row2V3(a,b){return'<div class="two">'+a+b+'</div>';}
 function repUploadZoneHtml(zoneId,existingUrl,handlerCall){
-  if(existingUrl){ return'<div class="rep-upload-zone" id="'+zoneId+'"><img class="rep-upload-thumb" src="'+escV3(existingUrl)+'" alt="photo"><label class="rep-upload-action">📷 Change<input type="file" accept="image/*" onchange="'+handlerCall+'"></label></div>'; }
-  return'<div class="rep-upload-zone" id="'+zoneId+'"><label class="rep-upload-action">📷 Upload photo<input type="file" accept="image/*" onchange="'+handlerCall+'"></label></div>';
+  if(existingUrl){ return'<div class="rep-upload-zone" id="'+zoneId+'"><img class="rep-upload-thumb" src="'+escV3(existingUrl)+'" alt="photo"><label class="rep-upload-action"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg> Change<input type="file" accept="image/*" onchange="'+handlerCall+'"></label></div>'; }
+  return'<div class="rep-upload-zone" id="'+zoneId+'"><label class="rep-upload-action"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg> Upload photo<input type="file" accept="image/*" onchange="'+handlerCall+'"></label></div>';
 }
 function tuneBtn(btnId,onclickCall){return'<button type="button" id="'+btnId+'" onclick="'+onclickCall+'" style="margin-top:5px;font-size:11.5px;font-weight:600;color:var(--green-dk);background:var(--green-bg);border:none;border-radius:6px;padding:4px 9px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">✦ Tune</button>';}
 
@@ -2082,12 +2159,12 @@ function repPhotosHtml(section, idx, item) {
   var photos = Array.isArray(item.photos) ? item.photos : (item.photo ? [item.photo] : []);
   var html = '<div class="fld-group"><label class="fld-label">Photos ' + (isPro ? '<span class="fld-hint">— up to ' + max + ', Pro plan</span>' : '<span class="fld-hint">— 1 photo on Starter</span>') + '</label><div id="rep-photos-' + section + '-' + idx + '" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">';
   photos.forEach(function(url, pi) { html += repPhotoThumb(section, idx, pi, url); });
-  if (photos.length < max) { html += repPhotoAddZone(section, idx); } else if (!isPro && photos.length >= 1) { html += '<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add more photos — upgrade to Pro</div>'; }
+  if (photos.length < max) { html += repPhotoAddZone(section, idx); } else if (!isPro && photos.length >= 1) { html += '<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> Add more photos — upgrade to Pro</div>'; }
   html += '</div></div>';
   return html;
 }
 function repPhotoThumb(section, idx, pi, url) { return '<div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex-shrink:0"><img src="' + escV3(url) + '" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="removeRepPhoto(\'' + section + '\',' + idx + ',' + pi + ')" style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(13,15,20,.7);color:#fff;border:none;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</button></div>'; }
-function repPhotoAddZone(section, idx) { return '<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden" onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'">📷<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleRepPhotoUpload(\'' + section + '\',' + idx + ',this)"></label>'; }
+function repPhotoAddZone(section, idx) { return '<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden" onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleRepPhotoUpload(\'' + section + '\',' + idx + ',this)"></label>'; }
 window.handleRepPhotoUpload = async function(section, idx, input) {
   var file = input.files[0]; if (!file) return;
   var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
@@ -2131,6 +2208,58 @@ function renderRoomRowV3(r,idx){ var statusOpts=ROOM_STATUS_OPTS.map(function(o)
 window.addRoom=function(){v3state.rooms.push({id:'rm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),resource_id:null,name:"",tag:"",price:"",status:"available",capacity:"",description:"",features:[],photo:"",photos:[]});renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty");window.markDirty();};
 window.removeRoomV3=function(idx){ var room = v3state.rooms[idx]; if (room && room.resource_id) { if (!Array.isArray(v3state._deletedRoomResourceIds)) v3state._deletedRoomResourceIds = []; v3state._deletedRoomResourceIds.push(room.resource_id); } v3state.rooms.splice(idx,1);renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty");window.markDirty(); };
 window.updateRoomV3=function(idx,key,val){if(v3state.rooms[idx]){v3state.rooms[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#rooms-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Room";}}};
+
+// ── Rich gallery (creative-studio) — multiple gallery items, each its own
+// photo or video, with caption/category. This is what actually answers
+// "we need more than one video" — every item can independently be a
+// video with its own URL, not just a single showcase-video slot.
+window.handleGalleryItemUpload = async function(idx, input) {
+  var file = input.files[0]; if (!file) return;
+  var item = v3state.richGallery[idx]; if (!item) return;
+  var zone = document.getElementById("gal-photo-zone-" + idx);
+  if (zone) zone.textContent = "Uploading…";
+  var url = await window.uploadToR2(file, "gallery");
+  if (!url) { toast("Upload failed — try again", "err"); if (zone) zone.textContent = "Upload"; return; }
+  item.thumbnail = url; item.url = url; window.markDirty();
+  renderRepListV3("gallery-rich-rep-list", v3state.richGallery, renderGalleryItemV3, "gallery-rich-rep-empty");
+  toast("Photo uploaded ✓", "ok");
+};
+window.addGalleryItemV3 = function() {
+  var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
+  var max = isPro ? 40 : 12;
+  if (v3state.richGallery.length >= max) { toast(isPro ? "Maximum " + max + " gallery items" : "12 gallery items on Starter — upgrade to Pro for up to 40", "err"); if (!isPro) switchTab('publish', null); return; }
+  v3state.richGallery.push({id:'gal_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),thumbnail:"",url:"",caption:"",category:"",type:"",video_url:""});
+  renderRepListV3("gallery-rich-rep-list", v3state.richGallery, renderGalleryItemV3, "gallery-rich-rep-empty");
+  window.markDirty();
+};
+window.removeGalleryItemV3 = function(idx) {
+  v3state.richGallery.splice(idx, 1);
+  renderRepListV3("gallery-rich-rep-list", v3state.richGallery, renderGalleryItemV3, "gallery-rich-rep-empty");
+  window.markDirty();
+};
+window.updateGalleryItemV3 = function(idx, key, val) {
+  if (v3state.richGallery[idx]) { v3state.richGallery[idx][key] = val; window.markDirty(); }
+  if (key === "caption") { var items = document.querySelectorAll("#gallery-rich-rep-list .rep-item"); if (items[idx]) { var t = items[idx].querySelector(".rep-item-title"); if (t) t.textContent = val || (v3state.richGallery[idx].type === "video" ? "Video" : "Photo"); } }
+};
+window.toggleGalleryItemVideoV3 = function(idx, isVideo) {
+  if (v3state.richGallery[idx]) { v3state.richGallery[idx].type = isVideo ? "video" : ""; window.markDirty(); }
+  renderRepListV3("gallery-rich-rep-list", v3state.richGallery, renderGalleryItemV3, "gallery-rich-rep-empty");
+};
+function renderGalleryItemV3(item, idx) {
+  var thumbHtml = item.thumbnail
+    ? '<div style="position:relative;width:72px;height:72px;flex-shrink:0"><img src="' + esc(item.thumbnail) + '" style="width:100%;height:100%;object-fit:cover;border-radius:8px"><button type="button" onclick="updateGalleryItemV3(' + idx + ",'thumbnail','');updateGalleryItemV3(" + idx + ",'url','')\" style=\"position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid var(--line);font-size:11px;line-height:1;cursor:pointer\">×</button></div>"
+    : '<label id="gal-photo-zone-' + idx + '" style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden;text-align:center" onmouseenter="this.style.borderColor=\'var(--green)\'" onmouseleave="this.style.borderColor=\'\'">Upload<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleGalleryItemUpload(' + idx + ',this)"></label>';
+  var isVideo = item.type === "video";
+  var body = '<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">' + thumbHtml + '<div style="flex:1">'
+    + fldV3("Caption <span class='fld-hint'>optional</span>", "", item.caption, "e.g. Sarah &amp; Tino's wedding", "updateGalleryItemV3(" + idx + ",'caption',this.value)")
+    + '</div></div>'
+    + row2V3(
+        fldV3("Category <span class='fld-hint'>optional</span>", "", item.category, "e.g. Weddings, Portraits, Events", "updateGalleryItemV3(" + idx + ",'category',this.value)"),
+        '<div class="fld-group"><label class="fld-label">Media type</label><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);padding:9px 0;cursor:pointer"><input type="checkbox" ' + (isVideo ? "checked" : "") + ' onchange="toggleGalleryItemVideoV3(' + idx + ',this.checked)"> This is a video</label></div>'
+      )
+    + (isVideo ? fldV3("Video URL", "", item.video_url, "Direct .mp4 link, or a hosted video URL", "updateGalleryItemV3(" + idx + ",'video_url',this.value)") : "");
+  return makeRepItemV3(item.caption || (isVideo ? "Video" : "Photo"), body, "removeGalleryItemV3(" + idx + ")");
+}
 window.updateRoomFeaturesV3=function(idx,val){if(v3state.rooms[idx]){v3state.rooms[idx].features=val.split("\n").map(function(s){return s.trim();}).filter(Boolean);window.markDirty();}};
 
 function venueFeaturesText(v){return Array.isArray(v.features)?v.features.join("\n"):(v.features||"");}
@@ -2191,14 +2320,14 @@ window.addBookingService = function(){ v3state.bookingServices.push({ id: 'svc_'
 window.removeBookingServiceV3 = function(idx){ var svc = v3state.bookingServices[idx]; if (svc && svc.service_id) { if (!Array.isArray(v3state._deletedServiceIds)) v3state._deletedServiceIds = []; v3state._deletedServiceIds.push(svc.service_id); } v3state.bookingServices.splice(idx, 1); renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty"); window.markDirty(); };
 window.updateBookingServiceV3 = function(idx, key, val){ if (v3state.bookingServices[idx]) { v3state.bookingServices[idx][key] = val; window.markDirty(); } if (key === "name") { var items = document.querySelectorAll("#booking-services-rep-list .rep-item"); if (items[idx]) { var t = items[idx].querySelector(".rep-item-title"); if (t) t.textContent = val || "Service"; } } };
 
-function listingPhotosHtml(photos,idx,isPro){ var html='<div class="fld-group"><label class="fld-label">Photos '+(isPro?'<span class="fld-hint">— up to 5, Pro plan</span>':'<span class="fld-hint">— 1 photo on Starter</span>')+'</label><div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">'; (photos||[]).forEach(function(url,pi){html+=listingPhotoThumb(url,idx,pi);}); var count=(photos||[]).length; if(count===0){html+=listingPhotoAddZone(idx);} else if(count<5){if(isPro){html+=listingPhotoAddZone(idx);}else if(count<1){html+=listingPhotoAddZone(idx);}else{html+='<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add up to 5 photos per listing — upgrade to Pro</div>';}} html+='</div></div>'; return html; }
+function listingPhotosHtml(photos,idx,isPro){ var html='<div class="fld-group"><label class="fld-label">Photos '+(isPro?'<span class="fld-hint">— up to 5, Pro plan</span>':'<span class="fld-hint">— 1 photo on Starter</span>')+'</label><div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">'; (photos||[]).forEach(function(url,pi){html+=listingPhotoThumb(url,idx,pi);}); var count=(photos||[]).length; if(count===0){html+=listingPhotoAddZone(idx);} else if(count<5){if(isPro){html+=listingPhotoAddZone(idx);}else if(count<1){html+=listingPhotoAddZone(idx);}else{html+='<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> Add up to 5 photos per listing — upgrade to Pro</div>';}} html+='</div></div>'; return html; }
 function listingPhotoThumb(url,idx,pi){return'<div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex-shrink:0"><img src="'+escV3(url)+'" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="removeListingPhoto('+idx+','+pi+')" style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(13,15,20,.7);color:#fff;border:none;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</button></div>';}
-function listingPhotoAddZone(idx){return'<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden;transition:border-color .15s,background .15s" onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'">📷<input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleListingPhotoUpload('+idx+',this)"></label>';}
+function listingPhotoAddZone(idx){return'<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden;transition:border-color .15s,background .15s" onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleListingPhotoUpload('+idx+',this)"></label>';}
 function renderListingRowV3(l,idx){ var isPro=(window.state&&window.state.site&&window.state.site.plan==='pro'); var photos=Array.isArray(l.photos)?l.photos:(l.photo?[l.photo]:[]); var typeOpts='<option value="For Sale"'+(l.type==="For Sale"?" selected":"")+'>For Sale</option><option value="To Rent"'+(l.type==="To Rent"?" selected":"")+'>To Rent</option><option value="Land"'+(l.type==="Land"?" selected":"")+'>Land</option>'; var statusOpts='<option value="available"'+((!l.status||l.status==="available")?" selected":"")+'>Available</option><option value="sold"'+(l.status==="sold"?" selected":"")+'>Sold</option><option value="let"'+(l.status==="let"?" selected":"")+'>Let</option>'; var descTaId='ldesc-'+idx;var descBtnId='ldesc-tune-'+idx; var body=row2V3(fldV3("Address / Title","",l.name||l.title||l.address,"e.g. 3-bed in Suburbs","updateListingV3("+idx+",'name',this.value)"),'<div class="fld-group"><label class="fld-label">Type</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'type\',this.value)">'+typeOpts+'</select></div>')+row2V3(fldV3("Price","",l.price,"USD 85,000","updateListingV3("+idx+",'price',this.value)"),'<div class="fld-group"><label class="fld-label">Status</label><select class="listing-type-sel" onchange="updateListingV3('+idx+',\'status\',this.value)">'+statusOpts+'</select></div>')+'<div class="two"><div class="two">'+fldV3("Beds","",l.beds,"3","updateListingV3("+idx+",'beds',this.value)",' type="number" style="width:72px"')+fldV3("Baths","",l.bathrooms,"2","updateListingV3("+idx+",'bathrooms',this.value)",' type="number" style="width:72px"')+'</div>'+fldV3("Size","",l.size,"450m²","updateListingV3("+idx+",'size',this.value)")+'</div>'+'<div class="fld-group"><label class="fld-label">Description <span class="fld-hint">optional</span></label><textarea class="fld-textarea" id="'+descTaId+'" rows="2" placeholder="2-3 sentence property description…" oninput="updateListingV3('+idx+',\'description\',this.value)">'+escV3(l.description||l.body||'')+'</textarea>'+tuneBtn(descBtnId,"onTuneListing("+idx+",'description')")+'</div>'+fldV3("Agent WhatsApp <span class='fld-hint'>optional</span>","",l.agent_phone||"","0772 000 000","updateListingV3("+idx+",'agent_phone',this.value)")+listingPhotosHtml(photos,idx,isPro); return makeRepItemV3(l.name||l.address||"Listing",body,"removeListingV3("+idx+")"); }
 window.addListing=function(){v3state.listings.push({name:"",type:"For Sale",price:"",status:"available",beds:"",bathrooms:"",size:"",description:"",agent_phone:"",photo:"",photos:[]});renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");window.markDirty();};
 window.removeListingV3=function(idx){v3state.listings.splice(idx,1);renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");window.markDirty();};
 window.updateListingV3=function(idx,key,val){if(v3state.listings[idx]){v3state.listings[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#listings-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Listing";}}};
-window.handleListingPhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var isPro=(window.state&&window.state.site&&window.state.site.plan==='pro');var listing=v3state.listings[idx];if(!listing)return;if(!Array.isArray(listing.photos))listing.photos=listing.photo?[listing.photo]:[];if(!isPro&&listing.photos.length>=1){toast("1 photo per listing on Starter — upgrade to Pro for up to 5","err");switchTab('publish',null);return;}if(isPro&&listing.photos.length>=5){toast("Maximum 5 photos per listing","err");return;}var container=document.getElementById("listing-photos-"+idx);if(container){var spinner=document.createElement("div");spinner.id="listing-uploading-"+idx;spinner.style.cssText="width:72px;height:72px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3);flex-shrink:0";spinner.textContent="Uploading…";container.insertBefore(spinner,container.lastChild);}var url=await window.uploadToR2(file,"listings");var sp=document.getElementById("listing-uploading-"+idx);if(sp)sp.remove();if(!url){toast("Upload failed — try again","err");return;}listing.photos.push(url);listing.photo=listing.photos[0];window.markDirty();var photosDiv=document.getElementById("listing-photos-"+idx);if(photosDiv){photosDiv.outerHTML='<div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">'+listing.photos.map(function(u,pi){return listingPhotoThumb(u,idx,pi);}).join('')+(listing.photos.length<(isPro?5:1)?listingPhotoAddZone(idx):(!isPro&&listing.photos.length>=1?'<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)">⭐ Add up to 5 photos per listing — upgrade to Pro</div>':''))+'</div>';}toast("Photo uploaded ✓","ok");};
+window.handleListingPhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var isPro=(window.state&&window.state.site&&window.state.site.plan==='pro');var listing=v3state.listings[idx];if(!listing)return;if(!Array.isArray(listing.photos))listing.photos=listing.photo?[listing.photo]:[];if(!isPro&&listing.photos.length>=1){toast("1 photo per listing on Starter — upgrade to Pro for up to 5","err");switchTab('publish',null);return;}if(isPro&&listing.photos.length>=5){toast("Maximum 5 photos per listing","err");return;}var container=document.getElementById("listing-photos-"+idx);if(container){var spinner=document.createElement("div");spinner.id="listing-uploading-"+idx;spinner.style.cssText="width:72px;height:72px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3);flex-shrink:0";spinner.textContent="Uploading…";container.insertBefore(spinner,container.lastChild);}var url=await window.uploadToR2(file,"listings");var sp=document.getElementById("listing-uploading-"+idx);if(sp)sp.remove();if(!url){toast("Upload failed — try again","err");return;}listing.photos.push(url);listing.photo=listing.photos[0];window.markDirty();var photosDiv=document.getElementById("listing-photos-"+idx);if(photosDiv){photosDiv.outerHTML='<div id="listing-photos-'+idx+'" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">'+listing.photos.map(function(u,pi){return listingPhotoThumb(u,idx,pi);}).join('')+(listing.photos.length<(isPro?5:1)?listingPhotoAddZone(idx):(!isPro&&listing.photos.length>=1?'<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> Add up to 5 photos per listing — upgrade to Pro</div>':''))+'</div>';}toast("Photo uploaded ✓","ok");};
 window.removeListingPhoto=function(idx,pi){var listing=v3state.listings[idx];if(!listing)return;if(!Array.isArray(listing.photos))listing.photos=[];listing.photos.splice(pi,1);listing.photo=listing.photos[0]||"";window.markDirty();renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty");};
 window.onTuneListing=async function(idx,field){var taId='ldesc-'+idx;var btnId='ldesc-tune-'+idx;var ta=document.getElementById(taId);var btn=document.getElementById(btnId);if(!ta||!ta.value.trim()){toast("Add a description first","err");return;}if(btn){btn.disabled=true;btn.textContent="Tuning…";}var improved=await tuneText("listing_description",ta.value);if(btn){btn.disabled=false;btn.textContent="✦ Tune";}if(!improved)return;ta.value=improved;updateListingV3(idx,field,improved);toast("Description tuned ✓","ok");};
 
@@ -2218,11 +2347,11 @@ window.addTestimonial=function(){v3state.testimonials.push({text:"",name:"",role
 window.removeTestiV3=function(idx){v3state.testimonials.splice(idx,1);renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty");window.markDirty();};
 window.updateTestiV3=function(idx,key,val){if(v3state.testimonials[idx]){v3state.testimonials[idx][key]=val;window.markDirty();}if(key==="name"){var items=document.querySelectorAll("#testimonials-rep-list .rep-item");if(items[idx]){var t=items[idx].querySelector(".rep-item-title");if(t)t.textContent=val||"Review";}}};
 
-function upgradePreviewDrawer(){ var bar=document.querySelector(".preview-bar");if(!bar||document.getElementById("preview-dev-btns"))return; var devBtns=document.createElement("div");devBtns.className="preview-device-btns";devBtns.id="preview-dev-btns"; devBtns.innerHTML='<button class="preview-device-btn active" id="dev-desktop" title="Desktop" onclick="setPreviewDevice(\'desktop\')">🖥</button><button class="preview-device-btn" id="dev-tablet" title="Tablet" onclick="setPreviewDevice(\'tablet\')">📱</button><button class="preview-device-btn" id="dev-mobile" title="Mobile" onclick="setPreviewDevice(\'mobile\')">📲</button>'; var newTabBtn=document.createElement("button");newTabBtn.className="btn btn-ghost btn-sm";newTabBtn.title="Open in new tab";newTabBtn.textContent="↗";newTabBtn.onclick=openPreviewInNewTab; var closeBtn=bar.querySelector(".btn-ghost:last-child");bar.insertBefore(devBtns,closeBtn);bar.insertBefore(newTabBtn,closeBtn); var frameWrap=document.querySelector(".preview-frame-wrap");if(!frameWrap)return; var frame=document.getElementById("previewFrame");var loading=document.getElementById("previewLoading");if(!frame)return; var outer=document.createElement("div");outer.id="preview-frame-outer";outer.className="preview-frame-outer dv-desktop"; frameWrap.innerHTML="";frameWrap.appendChild(outer);outer.appendChild(loading||document.createElement("div"));outer.appendChild(frame); }
+function upgradePreviewDrawer(){ var bar=document.querySelector(".preview-bar");if(!bar||document.getElementById("preview-dev-btns"))return; var devBtns=document.createElement("div");devBtns.className="preview-device-btns";devBtns.id="preview-dev-btns"; devBtns.innerHTML='<button class="preview-device-btn active" id="dev-desktop" title="Desktop" onclick="setPreviewDevice(\'desktop\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button><button class="preview-device-btn" id="dev-tablet" title="Tablet" onclick="setPreviewDevice(\'tablet\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></button><button class="preview-device-btn" id="dev-mobile" title="Mobile" onclick="setPreviewDevice(\'mobile\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></button>'; var newTabBtn=document.createElement("button");newTabBtn.className="btn btn-ghost btn-sm";newTabBtn.title="Open in new tab";newTabBtn.textContent="↗";newTabBtn.onclick=openPreviewInNewTab; var closeBtn=bar.querySelector(".btn-ghost:last-child");bar.insertBefore(devBtns,closeBtn);bar.insertBefore(newTabBtn,closeBtn); var frameWrap=document.querySelector(".preview-frame-wrap");if(!frameWrap)return; var frame=document.getElementById("previewFrame");var loading=document.getElementById("previewLoading");if(!frame)return; var outer=document.createElement("div");outer.id="preview-frame-outer";outer.className="preview-frame-outer dv-desktop"; frameWrap.innerHTML="";frameWrap.appendChild(outer);outer.appendChild(loading||document.createElement("div"));outer.appendChild(frame); }
 window.setPreviewDevice=function(d){v3state.previewDevice=d;var outer=document.getElementById("preview-frame-outer");if(outer)outer.className="preview-frame-outer dv-"+d;["desktop","tablet","mobile"].forEach(function(x){var btn=document.getElementById("dev-"+x);if(btn)btn.classList.toggle("active",x===d);});};
 function openPreviewInNewTab(){var frame=document.getElementById("previewFrame");if(frame&&frame.src&&frame.src!==window.location.href)window.open(frame.src,"_blank");}
 
-function loadV3DataFromSite(){ var raw=window.state&&window.state.content;if(!raw)return;var inner=raw.content||{}; var tplId=(window.state.site&&window.state.site.template_id)||g("f_template")||""; if(Array.isArray(inner.services))v3state.services=inner.services.map(function(s){return Object.assign({photo:"",category:"",description:"",body:""},s);}); if(Array.isArray(inner.menu))v3state.menu=inner.menu; if(Array.isArray(inner.listings))v3state.listings=inner.listings.map(function(l){if(!Array.isArray(l.photos))l.photos=l.photo?[l.photo]:[];return l;}); if(Array.isArray(inner.team))v3state.team=inner.team; if(Array.isArray(inner.stats))v3state.stats=inner.stats; if(Array.isArray(inner.events))v3state.events=inner.events; if(Array.isArray(inner.testimonials))v3state.testimonials=inner.testimonials; if(inner.hours&&typeof inner.hours==="object")v3state.hours=inner.hours; function ensureRoomId(r) { if (!r.id) r.id = 'rm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6); if (!Array.isArray(r.photos)) r.photos = r.photo ? [r.photo] : []; return r; } if(Array.isArray(inner.rooms)&&inner.rooms.length){ v3state.rooms=inner.rooms.map(ensureRoomId); }else if(tplId==="hospitality-inn"&&Array.isArray(inner.services)&&inner.services.length){ v3state.rooms=inner.services.map(function(s){return ensureRoomId(Object.assign({},s));}); } if(Array.isArray(inner.amenities))v3state.amenities=inner.amenities; if(Array.isArray(inner.conference))v3state.conference=inner.conference.map(function(v){if(!Array.isArray(v.photos))v.photos=v.photo?[v.photo]:[];return v;}); if(Array.isArray(inner.experiences))v3state.experiences=inner.experiences; if(Array.isArray(inner.packages))v3state.packages=inner.packages; if(inner.dining&&typeof inner.dining==="object")v3state.dining=inner.dining; function ensureServiceLocalId(s) { if (!s.id) s.id = 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6); return s; } if (Array.isArray(inner.booking_services)) { v3state.bookingServices = inner.booking_services.map(ensureServiceLocalId); } renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty"); renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty"); renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty"); renderRepListV3("team-rep-list",v3state.team,renderTeamRowV3,"team-rep-empty"); renderRepListV3("stats-rep-list",v3state.stats,renderStatRowV3,"stats-rep-empty"); renderRepListV3("events-rep-list",v3state.events,renderEventRowV3,"events-rep-empty"); renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty"); renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty"); renderRepListV3("conference-rep-list",v3state.conference,renderVenueRowV3,"conference-rep-empty"); renderRepListV3("experiences-rep-list",v3state.experiences,renderExperienceRowV3,"experiences-rep-empty"); renderRepListV3("packages-rep-list",v3state.packages,renderPackageRowV3,"packages-rep-empty"); renderRepListV3("amenities-rep-list",v3state.amenities,renderAmenityRowV3,"amenities-rep-empty"); renderRepListV3("booking-services-rep-list",v3state.bookingServices,renderBookingServiceRowV3,"booking-services-rep-empty"); renderAmenityPresetChips(); renderDiningPanel(); renderHoursGrid(); }
+function loadV3DataFromSite(){ var raw=window.state&&window.state.content;if(!raw)return;var inner=raw.content||{}; var tplId=(window.state.site&&window.state.site.template_id)||g("f_template")||""; if(Array.isArray(inner.services))v3state.services=inner.services.map(function(s){return Object.assign({photo:"",category:"",description:"",body:""},s);}); if(Array.isArray(inner.menu))v3state.menu=inner.menu; if(Array.isArray(inner.listings))v3state.listings=inner.listings.map(function(l){if(!Array.isArray(l.photos))l.photos=l.photo?[l.photo]:[];return l;}); if(Array.isArray(inner.team))v3state.team=inner.team; if(Array.isArray(inner.stats))v3state.stats=inner.stats; if(Array.isArray(inner.events))v3state.events=inner.events; if(Array.isArray(inner.testimonials))v3state.testimonials=inner.testimonials; if(inner.hours&&typeof inner.hours==="object")v3state.hours=inner.hours; function ensureRoomId(r) { if (!r.id) r.id = 'rm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6); if (!Array.isArray(r.photos)) r.photos = r.photo ? [r.photo] : []; return r; } if(Array.isArray(inner.rooms)&&inner.rooms.length){ v3state.rooms=inner.rooms.map(ensureRoomId); }else if(tplId==="hospitality-inn"&&Array.isArray(inner.services)&&inner.services.length){ v3state.rooms=inner.services.map(function(s){return ensureRoomId(Object.assign({},s));}); } if(Array.isArray(inner.amenities))v3state.amenities=inner.amenities; function ensureGalleryItemId(it){if(typeof it==="string")it={thumbnail:it,url:it,caption:"",category:"",type:"",video_url:""};if(!it.id)it.id="gal_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);if(!it.thumbnail)it.thumbnail=it.url||it.photo||"";return it;} if(Array.isArray(inner.gallery)&&inner.gallery.length){v3state.richGallery=inner.gallery.map(ensureGalleryItemId);}else if(tplId==="creative-studio"&&inner.images&&Array.isArray(inner.images.gallery)&&inner.images.gallery.length){v3state.richGallery=inner.images.gallery.map(ensureGalleryItemId);}else{v3state.richGallery=[];} if(Array.isArray(inner.conference))v3state.conference=inner.conference.map(function(v){if(!Array.isArray(v.photos))v.photos=v.photo?[v.photo]:[];return v;}); if(Array.isArray(inner.experiences))v3state.experiences=inner.experiences; if(Array.isArray(inner.packages))v3state.packages=inner.packages; if(inner.dining&&typeof inner.dining==="object")v3state.dining=inner.dining; function ensureServiceLocalId(s) { if (!s.id) s.id = 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6); return s; } if (Array.isArray(inner.booking_services)) { v3state.bookingServices = inner.booking_services.map(ensureServiceLocalId); } renderRepListV3("services-rep-list",v3state.services,renderServiceItemV3,"services-rep-empty"); renderRepListV3("menu-rep-list",v3state.menu,renderMenuRowV3,"menu-rep-empty"); renderRepListV3("listings-rep-list",v3state.listings,renderListingRowV3,"listings-rep-empty"); renderRepListV3("team-rep-list",v3state.team,renderTeamRowV3,"team-rep-empty"); renderRepListV3("stats-rep-list",v3state.stats,renderStatRowV3,"stats-rep-empty"); renderRepListV3("events-rep-list",v3state.events,renderEventRowV3,"events-rep-empty"); renderRepListV3("testimonials-rep-list",v3state.testimonials,renderTestiRowV3,"testimonials-rep-empty"); renderRepListV3("rooms-rep-list",v3state.rooms,renderRoomRowV3,"rooms-rep-empty"); renderRepListV3("conference-rep-list",v3state.conference,renderVenueRowV3,"conference-rep-empty"); renderRepListV3("experiences-rep-list",v3state.experiences,renderExperienceRowV3,"experiences-rep-empty"); renderRepListV3("packages-rep-list",v3state.packages,renderPackageRowV3,"packages-rep-empty"); renderRepListV3("amenities-rep-list",v3state.amenities,renderAmenityRowV3,"amenities-rep-empty"); renderRepListV3("booking-services-rep-list",v3state.bookingServices,renderBookingServiceRowV3,"booking-services-rep-empty"); renderRepListV3("gallery-rich-rep-list",v3state.richGallery,renderGalleryItemV3,"gallery-rich-rep-empty"); renderAmenityPresetChips(); renderDiningPanel(); renderHoursGrid(); }
 
 function bootV3(){ injectV3Nav();upgradePreviewDrawer(); var attempts=0; var poll=setInterval(function(){attempts++;if(window.state&&window.state.site){clearInterval(poll);var tpl=(window.state.site&&window.state.site.template_id)||g("f_template")||"bold-retail";applyTemplateConfigV3(tpl);loadV3DataFromSite();var sel=document.getElementById("f_template");if(sel){sel.addEventListener("change",function(){applyTemplateConfigV3(this.value);});}}if(attempts>50)clearInterval(poll);},100); }
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",bootV3);}else{bootV3();}
@@ -2346,7 +2475,7 @@ window.updateDomainSummary = function() {
       if (costEl) costEl.textContent = '$' + domainState.selectedDomain.cost + '/year';
     } else if (domainState.selectedDomain.type === 'cozw') {
       var choices = domainState.selectedDomain.choices || [];
-      var display = choices.length > 0 ? choices[0] + '.co.zw' + (choices.length > 1 ? ' (+' + (choices.length - 1) + ' more)' : '');
+      var display = choices.length > 0 ? (choices[0] + '.co.zw' + (choices.length > 1 ? ' (+' + (choices.length - 1) + ' more)' : '')) : '';
       if (nameEl) nameEl.textContent = display || 'Choices submitted';
       if (costEl) costEl.textContent = '$' + domainState.selectedDomain.cost + '/year';
     } else if (domainState.selectedDomain.type === 'own') {
@@ -2419,7 +2548,7 @@ window.searchDomain = async function() {
         (s.available ? 'onclick="selectComDomain(\'' + s.domain + '\',' + s.price + ')"' : '') +
         ' style="' + (isSelected ? 'border-color:var(--green);background:var(--green-bg)' : '') + '">' +
         '<span class="name">' + s.domain + ' ' + (isSelected ? '<span class="selected-check">✓</span>' : '') + '</span>' +
-        (s.available ? '<span class="price">$' + s.price + '/year</span>' : '<span class="taken-label">❌ Taken</span>') +
+        (s.available ? '<span class="price">$' + s.price + '/year</span>' : '<span class="taken-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg> Taken</span>') +
         '</div>';
     }).join('');
 
