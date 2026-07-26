@@ -1,0 +1,77 @@
+{
+  "templateId": "personal-portfolio",
+  "selfContainedNav": true,
+  "defaultPalette": "deep-teal",
+  "defaultPrimaryColor": "#061a1a",
+  "defaultTypeLabel": "Portfolio",
+  "showOpenBadge": false,
+  "showHoursGrid": false,
+  "navCtaLabel": "Get in Touch",
+  "navLinks": [
+    "#about:About",
+    "#experience:Experience",
+    "#awards:Awards",
+    "#shop:Shop",
+    "#contact:Contact"
+  ],
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&display=swap",
+  "typeLabels": {
+    "personal-portfolio": "Portfolio",
+    "professional": "Professional",
+    "speaker": "Speaker & Consultant"
+  },
+  "lists": [
+    {
+      "key": "experience",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"pp-exp-row\"><div class=\"pp-exp-date\">{{item.date_range}}</div><div class=\"pp-exp-body\"><div class=\"pp-exp-role\">{{item.role}}</div><div class=\"pp-exp-org\">{{item.organization}}</div>{{#if item.description}}<p class=\"pp-exp-desc\">{{item.description}}</p>{{/if}}</div></div>"
+    },
+    {
+      "key": "awards",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"pp-award\">{{#if item.photo}}<img class=\"pp-award-photo\" src=\"{{item.photo}}\" alt=\"{{item.title}}\">{{else}}<div class=\"pp-award-icon\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"8\" r=\"6\"/><path d=\"M15.5 13.5 17 22l-5-3-5 3 1.5-8.5\"/></svg></div>{{/if}}<div class=\"pp-award-body\"><div class=\"pp-award-title\">{{item.title}}</div><div class=\"pp-award-meta\">{{item.issuer}}{{#if item.year}} &middot; {{item.year}}{{/if}}</div>{{#if item.description}}<p class=\"pp-award-desc\">{{item.description}}</p>{{/if}}</div></div>"
+    },
+    {
+      "key": "credentials",
+      "emptyHtml": "",
+      "itemTemplate": "<li class=\"pp-cred\">{{item.text}}</li>"
+    },
+    {
+      "key": "brands",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"pp-brand\">{{#if item.logo}}<img src=\"{{item.logo}}\" alt=\"{{item.name}}\" loading=\"lazy\">{{else}}<span>{{item.name}}</span>{{/if}}</div>"
+    },
+    {
+      "key": "services",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"pp-svc\"><div class=\"pp-svc-name\">{{item.name}}</div>{{#if item.description}}<p class=\"pp-svc-desc\">{{item.description}}</p>{{/if}}{{#if item.price}}<div class=\"pp-svc-price\">{{item.price}}</div>{{/if}}</div>"
+    },
+    {
+      "key": "testimonials",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"pp-testi\"><p class=\"pp-testi-text\">\"{{item.text}}\"</p><div class=\"pp-testi-name\">{{item.name}}</div>{{#if item.role}}<div class=\"pp-testi-role\">{{item.role}}</div>{{/if}}</div>"
+    },
+    {
+      "key": "gallery",
+      "emptyHtml": "",
+      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\" loading=\"lazy\">"
+    }
+  ],
+  "conditionals": [
+    { "flag": "logo_url",              "type": "computed",      "token": "logo_url" },
+    { "flag": "hero_image_url",        "type": "computed",      "token": "hero_image_url" },
+    { "flag": "has_experience",        "type": "list_present",  "field": "experience" },
+    { "flag": "has_awards",            "type": "list_present",  "field": "awards" },
+    { "flag": "has_credentials",       "type": "list_present",  "field": "credentials" },
+    { "flag": "has_brands",            "type": "list_present",  "field": "brands" },
+    { "flag": "has_services",          "type": "list_present",  "field": "services" },
+    { "flag": "has_products",          "type": "list_present",  "field": "products" },
+    { "flag": "has_testimonials",      "type": "list_present",  "field": "testimonials" },
+    { "flag": "has_gallery",           "type": "list_present",  "field": "gallery" },
+    { "flag": "has_bookable_services", "type": "computed",      "token": "has_bookable_services" },
+    { "flag": "has_linkedin",          "type": "computed",      "token": "has_linkedin" },
+    { "flag": "phone",                 "type": "field_present", "field": "phone" },
+    { "flag": "email",                 "type": "field_present", "field": "email" },
+    { "flag": "location",              "type": "field_present", "field": "location" }
+  ]
+}
