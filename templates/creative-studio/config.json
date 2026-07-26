@@ -54,6 +54,7 @@
     { "flag": "has_packages",          "type": "computed",      "token": "has_packages" },
     { "flag": "has_bookable_services", "type": "computed",      "token": "has_bookable_services" },
     { "flag": "has_instagram",         "type": "computed",      "token": "has_instagram" },
+    { "flag": "has_hours",             "type": "computed",      "token": "open_badge_html" },
     { "flag": "phone",                 "type": "field_present", "field": "phone" },
     { "flag": "email",                 "type": "field_present", "field": "email" },
     { "flag": "location",              "type": "field_present", "field": "location" }
