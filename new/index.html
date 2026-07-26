@@ -64,7 +64,8 @@ a{color:inherit;text-decoration:none}
   gap:6px;text-align:center;position:relative;-webkit-tap-highlight-color:transparent}
 .ind-card:active{transform:scale(.96)}
 .ind-card.sel{border-color:var(--green);background:var(--green-bg)}
-.ind-card .ic{font-size:26px;line-height:1}
+.ind-card .ic{display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+.ind-card.sel .ic{color:var(--green-dk)}
 .ind-card .il{font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.25}
 .ind-card .ck{position:absolute;top:6px;right:6px;width:17px;height:17px;
   border-radius:50%;background:var(--green);color:#fff;display:none;
@@ -115,7 +116,7 @@ a{color:inherit;text-decoration:none}
 .sel-bar{display:flex;align-items:center;gap:10px;background:var(--card);
   border:1.5px solid var(--green-mid);border-radius:var(--r-sm);
   padding:10px 14px;margin-bottom:18px}
-.sel-bar-icon{font-size:20px;flex-shrink:0}
+.sel-bar-icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--green-dk)}
 .sel-bar-text{font-size:13.5px;font-weight:600;color:var(--ink);flex:1;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sel-bar-change{font-size:12px;font-weight:700;color:var(--green);cursor:pointer;
@@ -309,31 +310,61 @@ if(!tok()){location.replace(DASH);}
 var p=new URLSearchParams(location.search);
 var isSwitching=p.get("switch")==="1",fromSiteId=p.get("from")||p.get("site")||"";
 var st={industry:null,template:null,name:"",phone:"",city:"Bulawayo",description:"",services:"",usp:"",customers:""};
+// ── Icon set — same hand-crafted Lucide-style SVGs used on the landing
+// page, reused here so the whole funnel (landing page → wizard → editor)
+// looks like one consistent product instead of three different eras of
+// icon choices. All 24x24 viewBox, stroke-based, no fills — safe to size
+// with plain width/height since nothing here relies on font-size.
+var ICO = {
+  food:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
+  beauty:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 8.5 20 20"/><path d="M15.5 8.5 4 20"/><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M8.12 8.12 12 12"/></svg>',
+  education:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/></svg>',
+  professional:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  property:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>',
+  fashion:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 14.5 16 10l1-6-3-1-2 2-2-2-3 1 1 6-4.4 4.5a1 1 0 0 0 0 1.4l2.1 2a1 1 0 0 0 1.4 0L9 16v6h6v-6l1.9 1.9a1 1 0 0 0 1.4 0l2.1-2a1 1 0 0 0 0-1.4Z"/></svg>',
+  store:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7 4 3h16l2 4"/><path d="M2 7v13a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7"/><path d="M2 7h20"/><path d="M9 21v-6a2 2 0 0 1 4 0v6"/></svg>',
+  grocery:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m5 11 4-7"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.6-7.4"/><path d="M4.5 15.5h15"/><path d="M12 11v5"/></svg>',
+  hardware:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-8.5 8.5a1.5 1.5 0 0 1-2-2L13 10"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/></svg>',
+  hospitality:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 18h20"/></svg>',
+  church:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M10 4h4"/><path d="M12 22V10.5a2.5 2.5 0 0 1 5 0V22"/><path d="M7 22V10.5A2.5 2.5 0 0 0 2 10.5V22"/><path d="M2 22h20"/><path d="M9 22v-4a3 3 0 0 1 6 0v4"/></svg>',
+  general:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+  medical:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  personal:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>',
+  creative:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg>',
+};
+
 var INDS=[
-  {id:"food",ic:"&#127869;&#65039;",lb:"Food & Dining"},
-  {id:"beauty",ic:"&#128133;",lb:"Beauty & Wellness"},
-  {id:"education",ic:"&#127891;",lb:"School & Sport"},
-  {id:"professional",ic:"&#128188;",lb:"Professional Services"},
-  {id:"property",ic:"&#127960;&#65039;",lb:"Property"},
-  {id:"fashion",ic:"&#128087;",lb:"Fashion & Boutique"},
-  {id:"grocery",ic:"&#128722;",lb:"Grocery & Retail"},
-  {id:"hardware",ic:"&#128295;",lb:"Hardware & Trade"},
-  {id:"hospitality",ic:"&#127976;",lb:"Lodge / B&B / Hotel"},
-  {id:"church",ic:"&#128736;",lb:"Church / Ministry"},
-  {id:"general",ic:"&#127962;",lb:"General Business"},
+  {id:"food",ic:ICO.food,lb:"Food & Dining"},
+  {id:"beauty",ic:ICO.beauty,lb:"Beauty & Wellness"},
+  {id:"education",ic:ICO.education,lb:"School & Sport"},
+  {id:"professional",ic:ICO.professional,lb:"Professional Services"},
+  {id:"property",ic:ICO.property,lb:"Property"},
+  {id:"fashion",ic:ICO.fashion,lb:"Fashion & Boutique"},
+  {id:"grocery",ic:ICO.grocery,lb:"Grocery & Retail"},
+  {id:"hardware",ic:ICO.hardware,lb:"Hardware & Trade"},
+  {id:"hospitality",ic:ICO.hospitality,lb:"Lodge / B&B / Hotel"},
+  {id:"church",ic:ICO.church,lb:"Church / Ministry"},
+  {id:"medical",ic:ICO.medical,lb:"Medical & Health"},
+  {id:"personal",ic:ICO.personal,lb:"Personal & Professional"},
+  {id:"creative",ic:ICO.creative,lb:"Photography & Film"},
+  {id:"general",ic:ICO.general,lb:"General Business"},
 ];
 var TPLS=[
-  {id:"grill-house",ic:"&#127830;",nm:"Grill House",ds:"Menu tabs, live hours",bg:"linear-gradient(160deg,#1a0800,#7a2e00)",ct:"#ff6b35",inds:["food"],rec:["food"]},
-  {id:"beauty-salon",ic:"&#128133;",nm:"Beauty Salon",ds:"Price list, before/after slider",bg:"linear-gradient(160deg,#3d0030,#8b005d)",ct:"#e8b4d0",inds:["beauty"],rec:["beauty"]},
-  {id:"school-institution",ic:"&#127891;",nm:"School & Academy",ds:"Stats bar, programmes, events",bg:"linear-gradient(160deg,#0a1628,#1a3a6b)",ct:"#c99a2e",inds:["education"],rec:["education"]},
-  {id:"advisory-firm",ic:"&#9878;&#65039;",nm:"Advisory Firm",ds:"Minimal hero, accordion services",bg:"linear-gradient(160deg,#0d1f33,#1a3a5c)",ct:"#c9a84c",inds:["professional","general"],rec:["professional"]},
-  {id:"property-estate",ic:"&#127960;&#65039;",nm:"Property Estate",ds:"Listings first, sold ticker",bg:"linear-gradient(160deg,#0a1f0a,#1a4a1a)",ct:"#4ade80",inds:["property"],rec:["property"]},
-  {id:"boutique-fashion",ic:"&#128087;",nm:"Boutique Fashion",ds:"Dark editorial, masonry grid",bg:"linear-gradient(160deg,#1a0010,#3d0025)",ct:"#e8c9a0",inds:["fashion"],rec:["fashion"]},
-  {id:"grocery-fmcg",ic:"&#128722;",nm:"Grocery & Spaza",ds:"Category nav, stock badges",bg:"linear-gradient(160deg,#0a2a0a,#1a5a1a)",ct:"#4ade80",inds:["grocery"],rec:["grocery"]},
-  {id:"hardware-store",ic:"&#128295;",nm:"Hardware & Retail",ds:"Dense catalogue, quote builder",bg:"linear-gradient(160deg,#0d1a2e,#1a3366)",ct:"#60a5fa",inds:["hardware","grocery","general"],rec:["hardware"]},
-  {id:"bold-retail",ic:"&#127962;",nm:"General Business",ds:"Split hero, service cards, team",bg:"linear-gradient(160deg,#1a1a2e,#16213e)",ct:"#e94560",inds:["food","beauty","education","professional","property","fashion","grocery","hardware","hospitality","general"],rec:["general"]},
-  {id:"hospitality-inn",ic:"&#127976;",nm:"Lodge / B&B / Hotel",ds:"Room cards, WhatsApp booking, availability badges",bg:"linear-gradient(160deg,#0a1f1a,#1a4a3a)",ct:"#c8a24a",inds:["hospitality"],rec:["hospitality"]},
-  {id:"church",ic:"&#128736;",nm:"Church / Ministry",ds:"Sermon highlights, events, community focus",bg:"linear-gradient(160deg,#1a0a2e,#3d1a5c)",ct:"#c8a24a",inds:["church"],rec:["church"]},
+  {id:"grill-house",ic:ICO.food,nm:"Grill House",ds:"Menu tabs, live hours",bg:"linear-gradient(160deg,#1a0800,#7a2e00)",ct:"#ff6b35",inds:["food"],rec:["food"]},
+  {id:"beauty-salon",ic:ICO.beauty,nm:"Beauty Salon",ds:"Price list, before/after slider",bg:"linear-gradient(160deg,#3d0030,#8b005d)",ct:"#e8b4d0",inds:["beauty"],rec:["beauty"]},
+  {id:"school-institution",ic:ICO.education,nm:"School & Academy",ds:"Stats bar, programmes, events",bg:"linear-gradient(160deg,#0a1628,#1a3a6b)",ct:"#c99a2e",inds:["education"],rec:["education"]},
+  {id:"advisory-firm",ic:ICO.professional,nm:"Advisory Firm",ds:"Minimal hero, accordion services",bg:"linear-gradient(160deg,#0d1f33,#1a3a5c)",ct:"#c9a84c",inds:["professional","general"],rec:["professional"]},
+  {id:"property-estate",ic:ICO.property,nm:"Property Estate",ds:"Listings first, sold ticker",bg:"linear-gradient(160deg,#0a1f0a,#1a4a1a)",ct:"#4ade80",inds:["property"],rec:["property"]},
+  {id:"boutique-fashion",ic:ICO.fashion,nm:"Boutique Fashion",ds:"Dark editorial, masonry grid",bg:"linear-gradient(160deg,#1a0010,#3d0025)",ct:"#e8c9a0",inds:["fashion"],rec:["fashion"]},
+  {id:"fashion-retail",ic:ICO.store,nm:"Fashion Retail Store",ds:"Multi-brand catalogue, filterable grid",bg:"linear-gradient(160deg,#14110c,#3d3225)",ct:"#d9c49a",inds:["fashion"],rec:[]},
+  {id:"grocery-fmcg",ic:ICO.grocery,nm:"Grocery & Spaza",ds:"Category nav, stock badges",bg:"linear-gradient(160deg,#0a2a0a,#1a5a1a)",ct:"#4ade80",inds:["grocery"],rec:["grocery"]},
+  {id:"hardware-store",ic:ICO.hardware,nm:"Hardware & Retail",ds:"Dense catalogue, quote builder",bg:"linear-gradient(160deg,#0d1a2e,#1a3366)",ct:"#60a5fa",inds:["hardware","grocery","general"],rec:["hardware"]},
+  {id:"bold-retail",ic:ICO.general,nm:"General Business",ds:"Split hero, service cards, team",bg:"linear-gradient(160deg,#1a1a2e,#16213e)",ct:"#e94560",inds:["food","beauty","education","professional","property","fashion","grocery","hardware","hospitality","medical","general"],rec:["general"]},
+  {id:"hospitality-inn",ic:ICO.hospitality,nm:"Lodge / B&B / Hotel",ds:"Room cards, WhatsApp booking, availability badges",bg:"linear-gradient(160deg,#0a1f1a,#1a4a3a)",ct:"#c8a24a",inds:["hospitality"],rec:["hospitality"]},
+  {id:"church",ic:ICO.church,nm:"Church / Ministry",ds:"Sermon highlights, events, community focus",bg:"linear-gradient(160deg,#1a0a2e,#3d1a5c)",ct:"#c8a24a",inds:["church"],rec:["church"]},
+  {id:"medical-clinic",ic:ICO.medical,nm:"Medical Clinic",ds:"Practitioners, appointment booking, insurance accepted",bg:"linear-gradient(160deg,#02181a,#0e4f57)",ct:"#5fd4c4",inds:["medical","professional"],rec:["medical"]},
+  {id:"personal-portfolio",ic:ICO.personal,nm:"Personal Portfolio",ds:"CV, awards, speaking bookings, shop your own merch",bg:"linear-gradient(160deg,#04191a,#0c4a4a)",ct:"#5fd4c4",inds:["personal","professional"],rec:["personal"]},
+  {id:"creative-studio",ic:ICO.creative,nm:"Creative Studio",ds:"Photography & film — masonry gallery, full-day and session booking",bg:"linear-gradient(160deg,#0a0908,#332a17)",ct:"#c9a961",inds:["creative"],rec:["creative"]},
 ];
 var CITIES=["Bulawayo","Harare","Gweru","Mutare","Masvingo","Kwekwe","Kadoma","Vic Falls"];
 // Per-industry example text, shown as placeholders on the optional "tell the
