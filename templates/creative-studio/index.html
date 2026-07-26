@@ -340,8 +340,9 @@ footer{padding:36px 32px;border-top:1px solid var(--line);color:var(--muted);fon
       {{#if has_instagram}}<a href="{{instagram_url}}" class="cs-ig-btn" target="_blank" rel="noopener">Follow on Instagram</a>{{/if}}
     </div>
     <div class="contact-meta">
-      {{#if location}}📍 {{location}} &middot; <a href="{{directions_href}}" target="_blank" rel="noopener">Get Directions</a>{{/if}}
+      {{#if location}}{{location}} &middot; <a href="{{directions_href}}" target="_blank" rel="noopener">Get Directions</a>{{/if}}
       {{#if email}}<br>{{email}}{{/if}}
+      {{#if has_hours}}<div style="margin-top:14px">{{open_badge_html}}</div><div style="max-width:260px;margin:12px auto 0;text-align:left;font-size:.84rem;color:var(--muted)">{{hours_grid_html}}</div>{{/if}}
     </div>
   </div>
 </section>
