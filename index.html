@@ -9,141 +9,157 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--green:#15924B;--green-dk:#0f6e39;--green-bg:#e8f5ee;--gold:#a87d1a;--ink:#0d0f14;--ink2:#3d4251;--ink3:#6b7180;--surface:#f0f2f6;--card:#ffffff;--line:#e2e5eb;--r:16px;--r-sm:10px;--font-head:"Space Grotesk",system-ui,sans-serif;--font-body:"Hanken Grotesk",system-ui,sans-serif}
+:root{
+  --green:#15924B;--green-dk:#0f6e39;--green-bg:#e8f5ee;
+  --ink:#0c0e13;--ink2:#3d4251;--ink3:#767c8c;
+  --surface:#f4f5f8;--card:#ffffff;--line:#e4e7ee;
+  --r-lg:20px;--r:14px;--r-sm:9px;
+  --font-head:"Space Grotesk",system-ui,sans-serif;--font-body:"Hanken Grotesk",system-ui,sans-serif;
+  --shadow:0 20px 60px -20px rgba(15,20,35,.18);
+}
 html{scroll-behavior:smooth}
 body{font-family:var(--font-body);background:var(--surface);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
-h1,h2,h3{font-family:var(--font-head);font-weight:800;letter-spacing:-.025em}
-input,button,select{font:inherit}
+h1,h2,h3{font-family:var(--font-head);font-weight:800;letter-spacing:-.03em}
+input,button{font:inherit}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;border:none;background:none}
+svg{display:block}
 
-.zim-flag{display:inline-flex;height:8px;width:84px;border-radius:3px;overflow:hidden}
+.zim-flag{display:inline-flex;height:8px;width:80px;border-radius:3px;overflow:hidden}
 .zim-flag span{flex:1}
-.zim-flag span:nth-child(1){background:#15924B}
-.zim-flag span:nth-child(2){background:#F4C20D}
-.zim-flag span:nth-child(3){background:#E23B2E}
+.zim-flag span:nth-child(1),.zim-flag span:nth-child(7){background:#15924B}
+.zim-flag span:nth-child(2),.zim-flag span:nth-child(5){background:#F4C20D}
+.zim-flag span:nth-child(3),.zim-flag span:nth-child(6){background:#E23B2E}
 .zim-flag span:nth-child(4){background:#0a0a0f}
-.zim-flag span:nth-child(5){background:#F4C20D}
-.zim-flag span:nth-child(6){background:#E23B2E}
-.zim-flag span:nth-child(7){background:#15924B}
 
-.brand-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 1px}
-.brand-dot.green{background:#15924B}
-.brand-dot.yellow{background:#F4C20D}
-.brand-dot.red{background:#E23B2E}
-.brand-dot.black{background:#0a0a0f}
-
-.btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.95rem;padding:12px 24px;border-radius:10px;border:2px solid transparent;transition:.2s}
-.btn-primary{background:var(--green);color:#fff;border-color:var(--green)}
-.btn-primary:hover{background:var(--green-dk)}
-.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:.94rem;padding:13px 22px;border-radius:11px;border:2px solid transparent;transition:.18s}
+.btn-primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn-primary:hover{background:#22262f}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed}
 .btn-ghost{background:transparent;color:var(--ink2);border-color:var(--line)}
 .btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
-.btn-sm{padding:8px 16px;font-size:.8rem}
+.btn-whatsapp{background:#25D366;color:#fff}
+.btn-whatsapp:hover{background:#1fbd5a}
+.btn-sm{padding:9px 16px;font-size:.82rem;border-radius:9px}
+.btn svg{flex-shrink:0}
 
-.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
 
-.bar{background:var(--card);border-bottom:1px solid var(--line);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.bar{background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.brand{font-family:var(--font-head);font-weight:800;font-size:18px;display:flex;align-items:center;gap:8px}
+.brand .g{color:var(--green)}
 
-.hero{padding:110px 0 40px;text-align:center;background:linear-gradient(160deg,#f8fafc,#eef2f6)}
-.hero h1{font-size:clamp(2.8rem,6.5vw,4.8rem);margin:20px auto 0;max-width:16ch}
+.hero{padding:76px 0 0;text-align:center}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;color:var(--green-dk);background:var(--green-bg);border:1px solid #cdead9;padding:6px 14px 6px 10px;border-radius:999px}
+.eyebrow .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:live-pulse 1.4s ease-in-out infinite}
+.hero h1{font-size:clamp(2.4rem,5.4vw,3.9rem);margin:22px auto 0;max-width:18ch;line-height:1.06}
 .hero h1 .g{color:var(--green)}
-.hero p{font-size:1.15rem;color:var(--ink2);max-width:48ch;margin:18px auto 0}
+.hero p{font-size:1.1rem;color:var(--ink2);max-width:46ch;margin:18px auto 0}
 
-.trust-bar{display:flex;justify-content:center;flex-wrap:wrap;gap:22px;margin:22px auto 0;font-size:.82rem;color:var(--ink2);font-weight:600}
-.trust-bar span{display:inline-flex;align-items:center;gap:6px}
-.trust-bar svg{flex-shrink:0;color:var(--green)}
+/* ── Builder — single unified screen, no gating step ─────────────────────── */
+.builder{max-width:1080px;margin:38px auto 0;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);overflow:hidden;text-align:left}
+.builder-grid{display:grid;grid-template-columns:1fr 1.05fr}
+@media(max-width:860px){.builder-grid{grid-template-columns:1fr}}
 
-.demo{max-width:960px;margin:36px auto 0;border-radius:18px;border:1px solid var(--line);background:var(--card);box-shadow:0 16px 48px -12px rgba(0,0,0,.12);overflow:hidden;text-align:left}
-.demo-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
-.demo-bar .dot{width:10px;height:10px;border-radius:50%;background:#dde1e6}
-.demo-url{margin-left:10px;flex:1;background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:.78rem;color:var(--ink2);padding:5px 14px}
-.demo-url b{color:var(--green);font-weight:700}
+.builder-controls{padding:32px 30px;display:flex;flex-direction:column;gap:22px}
+.field label{display:block;font-size:.78rem;font-weight:700;color:var(--ink2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.field input{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:1.02rem;background:var(--surface);color:var(--ink);transition:.15s}
+.field input:focus{outline:none;border-color:var(--ink);background:#fff}
 
-#livePreview{width:100%;height:460px;border:1px solid var(--line);border-radius:12px;background:#fff;transition:opacity .15s}
-@media(max-width:640px){#livePreview{height:340px}}
+.pill-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:420px){.pill-grid{grid-template-columns:repeat(2,1fr)}}
+.pill{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);cursor:pointer;transition:.15s;text-align:center}
+.pill:hover{border-color:var(--ink3)}
+.pill svg{color:var(--ink2);transition:.15s}
+.pill span{font-size:.72rem;font-weight:700;color:var(--ink2);line-height:1.2}
+.pill.active{border-color:var(--green);background:var(--green-bg)}
+.pill.active svg,.pill.active span{color:var(--green-dk)}
 
+.cta-zone{display:flex;flex-direction:column;gap:10px}
+.microcopy{font-size:.76rem;color:var(--ink3);text-align:center}
+
+.claim-panel{text-align:center;padding:4px 0 0}
+.claim-panel .icon-circle{width:52px;height:52px;border-radius:50%;background:var(--green-bg);color:var(--green-dk);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.claim-panel h3{font-size:1.2rem;margin-bottom:6px}
+.claim-panel p{color:var(--ink2);font-size:.92rem;margin-bottom:16px}
+
+.preview-pane{padding:18px;display:flex;flex-direction:column;background:var(--surface);border-left:1px solid var(--line)}
+@media(max-width:860px){.preview-pane{border-left:none;border-top:1px solid var(--line)}}
+.preview-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.preview-hdr b{font-size:.86rem;font-weight:700}
 .live-badge{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.05em}
 .live-badge.updating{color:var(--ink3)}
 .live-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:live-pulse 1.2s ease-in-out infinite}
 @keyframes live-pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.preview-frame-wrap{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#fff;flex:1}
+#livePreview{width:100%;height:480px;border:0;display:block}
+@media(max-width:640px){#livePreview{height:360px}}
+.preview-cap{font-size:.72rem;color:var(--ink3);text-align:center;margin-top:10px}
 
-.chip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
-@media(max-width:640px){.chip-grid{grid-template-columns:repeat(2,1fr)}}
-.demo-chip{padding:14px 10px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);transition:.2s;text-align:center;font-weight:600;font-size:.85rem;cursor:pointer}
-.demo-chip:hover{border-color:var(--ink);transform:translateY(-2px);background:var(--surface)}
-.demo-chip.active{border-color:var(--green);background:var(--green-bg)}
-.demo-chip .em{font-size:1.6rem}
+/* ── Trust bar ────────────────────────────────────────────────────────── */
+.trust-bar{display:flex;justify-content:center;flex-wrap:wrap;gap:26px;margin:26px auto 0;padding-bottom:8px}
+.trust-bar span{display:inline-flex;align-items:center;gap:7px;font-size:.85rem;color:var(--ink2);font-weight:600}
+.trust-bar svg{color:var(--green);flex-shrink:0}
 
-.demo-form{padding:28px;display:flex;flex-direction:column;gap:14px}
-.demo-form .field{display:flex;flex-direction:column;gap:4px}
-.demo-form label{font-size:.78rem;font-weight:700;color:var(--ink2)}
-.demo-form input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:.95rem;background:var(--card)}
-.demo-form input:focus{outline:none;border-color:var(--ink)}
+/* ── Feature strip ────────────────────────────────────────────────────── */
+.feature-strip{padding:70px 0}
+.feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;max-width:960px;margin:0 auto}
+@media(max-width:860px){.feature-grid{grid-template-columns:repeat(2,1fr)}}
+.feature{text-align:left}
+.feature .icon-box{width:40px;height:40px;border-radius:11px;background:var(--green-bg);color:var(--green-dk);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.feature h3{font-size:1rem;font-weight:700;margin-bottom:5px;font-family:var(--font-body)}
+.feature p{font-size:.88rem;color:var(--ink2)}
 
-.notice{font-size:.78rem;color:var(--ink2);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;line-height:1.5}
-
-.toast{position:fixed;bottom:30px;right:30px;z-index:999;background:var(--ink);color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.3);transform:translateY(100px);opacity:0;transition:all .4s;max-width:420px}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ok{background:var(--green)}
-.toast.err{background:var(--red)}
-.toast .close{background:none;border:none;color:rgba(255,255,255,.5);font-size:1.2rem;cursor:pointer}
-
-.wa-fab{position:fixed;bottom:30px;left:30px;z-index:99;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.35);transition:all .3s}
-.wa-fab:hover{transform:scale(1.08)}
-.wa-fab svg{width:28px;height:28px;fill:currentColor}
-@media(max-width:640px){.wa-fab{width:48px;height:48px;bottom:20px;left:20px}.wa-fab svg{width:22px;height:22px}}
-
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
-@media(max-width:900px){.grid-3{grid-template-columns:repeat(2,1fr)}} @media(max-width:640px){.grid-3{grid-template-columns:1fr}}
-.step .no{font-weight:800;font-size:1.1rem;width:42px;height:42px;border-radius:12px;background:var(--surface);display:grid;place-items:center;margin-bottom:14px;color:var(--green)}
-.step h4{font-size:1.1rem;margin-bottom:4px}
+/* ── How it works ─────────────────────────────────────────────────────── */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+@media(max-width:860px){.grid-3{grid-template-columns:1fr}}
+.step{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px}
+.step .icon-box{width:44px;height:44px;border-radius:12px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.step h4{font-size:1.05rem;margin-bottom:5px;font-family:var(--font-body);font-weight:700}
 .step p{font-size:.9rem;color:var(--ink2)}
 
-.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+/* ── Pricing ──────────────────────────────────────────────────────────── */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
 @media(max-width:900px){.price-grid{grid-template-columns:1fr 1fr}} @media(max-width:640px){.price-grid{grid-template-columns:1fr}}
 .price-card{border:1px solid var(--line);border-radius:var(--r);padding:28px 24px;background:var(--card)}
 .price-card.popular{border:2px solid var(--ink);position:relative}
 .price-card .pop-tag{position:absolute;top:-10px;left:20px;background:var(--ink);color:#fff;font-size:.65rem;font-weight:700;padding:2px 16px;border-radius:20px}
-.price-card .price{font-size:2.4rem;font-weight:800;margin:12px 0 4px}
-.price-card .price span{font-size:.9rem;font-weight:500;color:var(--ink3)}
-.price-card ul{list-style:none;margin:16px 0 20px;display:flex;flex-direction:column;gap:8px;font-size:.9rem;color:var(--ink2)}
-.price-card ul li{display:flex;align-items:center;gap:8px}
+.price-card .price{font-size:2.3rem;font-weight:800;margin:12px 0 4px}
+.price-card .price span{font-size:.88rem;font-weight:500;color:var(--ink3)}
+.price-card ul{list-style:none;margin:16px 0 20px;display:flex;flex-direction:column;gap:9px;font-size:.88rem;color:var(--ink2)}
+.price-card ul li{display:flex;align-items:center;gap:9px}
+.price-card ul li svg{color:var(--green);flex-shrink:0}
 
-.cta{background:var(--ink);color:#fff;border-radius:26px;margin:0 28px;padding:72px 0;text-align:center}
-.cta .fb{display:inline-flex;height:6px;width:84px;border-radius:3px;overflow:hidden;margin-bottom:20px}
-.cta .fb span{flex:1}
-.cta .fb span:nth-child(1){background:var(--green)}
-.cta .fb span:nth-child(2){background:#F4C20D}
-.cta .fb span:nth-child(3){background:#E23B2E}
-.cta .fb span:nth-child(4){background:#0a0a0f}
-.cta .fb span:nth-child(5){background:#F4C20D}
-.cta .fb span:nth-child(6){background:#E23B2E}
-.cta .fb span:nth-child(7){background:var(--green)}
-.cta h2{color:#fff;font-size:clamp(2.2rem,4.5vw,3.2rem)}
-.cta p{color:rgba(255,255,255,.7);font-size:1.1rem;margin:14px auto 0;max-width:44ch}
+/* ── CTA band ─────────────────────────────────────────────────────────── */
+.cta{background:var(--ink);color:#fff;border-radius:var(--r-lg);margin:0 24px;padding:70px 0;text-align:center}
+.cta h2{color:#fff;font-size:clamp(2rem,4.2vw,3rem)}
+.cta p{color:rgba(255,255,255,.68);font-size:1.05rem;margin:14px auto 0;max-width:44ch}
 
 footer{padding:56px 0 40px}
 .foot{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;padding-bottom:36px;border-bottom:1px solid var(--line)}
-.foot p{font-size:.92rem;color:var(--ink2);margin-top:12px;max-width:30ch}
-.foot h5{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-bottom:14px}
-.foot a{display:block;font-size:.92rem;color:var(--ink2);margin-bottom:10px}
+.foot p{font-size:.9rem;color:var(--ink2);margin-top:12px;max-width:30ch}
+.foot h5{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-bottom:14px}
+.foot a{display:block;font-size:.9rem;color:var(--ink2);margin-bottom:10px}
 .foot a:hover{color:var(--ink)}
-.foot-bot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;flex-wrap:wrap;gap:12px;font-size:.86rem;color:var(--ink3)}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;flex-wrap:wrap;gap:12px;font-size:.84rem;color:var(--ink3)}
 @media(max-width:980px){.foot{grid-template-columns:1fr 1fr}} @media(max-width:620px){.foot{grid-template-columns:1fr}}
+
+.toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--ink);color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.3);transform:translateY(100px);opacity:0;transition:all .35s;max-width:400px;display:flex;align-items:center;gap:10px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--green)}
+.toast.err{background:#c0392b}
+.toast .close{background:none;border:none;color:rgba(255,255,255,.6);font-size:1.1rem;cursor:pointer;margin-left:auto}
+
+.wa-fab{position:fixed;bottom:26px;left:26px;z-index:99;background:#25D366;color:#fff;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.4);transition:.2s}
+.wa-fab:hover{transform:scale(1.08)}
+@media(max-width:640px){.wa-fab{width:46px;height:46px;bottom:18px;left:18px}}
 </style>
 </head>
 <body>
 
 <header class="bar">
-  <div style="font-family:var(--font-head);font-weight:800;font-size:17px;display:flex;align-items:center;gap:6px">
-    webs<span style="display:inline-flex;flex-direction:column;gap:1px;margin:0 2px">
-      <span class="brand-dot green"></span><span class="brand-dot yellow"></span><span class="brand-dot red"></span><span class="brand-dot black"></span>
-    </span>tes
-    <span style="color:var(--green)">.co.zw</span>
-    <span class="zim-flag" style="margin-left:6px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
-  </div>
-  <div style="display:flex;align-items:center;gap:12px">
+  <div class="brand">webs<span class="g">·</span>tes<span class="g">.co.zw</span></div>
+  <div style="display:flex;align-items:center;gap:10px">
     <a href="/dashboard/customer.html" class="btn btn-ghost btn-sm">Sign in</a>
     <a href="#start" class="btn btn-primary btn-sm" id="navCta">Get started</a>
   </div>
@@ -151,127 +167,86 @@ footer{padding:56px 0 40px}
 
 <section class="hero" id="start">
   <div class="wrap">
-    <h1>See your name on a <span class="g">real website, instantly.</span></h1>
-    <p>Pick your industry, type your business name — see it live on one of our real templates. Claim it via WhatsApp to make everything else yours too.</p>
+    <span class="eyebrow"><span class="pulse"></span>Live in seconds — not a mockup</span>
+    <h1>See your name on a <span class="g">real website, right now.</span></h1>
+    <p>Type your business name. Pick your industry. Watch a real, live example update instantly with your name on it.</p>
 
-    <div class="trust-bar">
-      <span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Real templates, not a demo
-      </span>
-      <span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Free .co.zw domain included
-      </span>
-      <span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        No card needed to preview
-      </span>
-    </div>
+    <div class="builder" id="builder">
+      <div class="builder-grid">
+        <div class="builder-controls">
 
-    <div class="demo">
-      <div class="demo-bar">
-        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        <div class="demo-url" id="demoUrl">🔒 <b id="domainSlug">yourbusiness</b>.co.zw</div>
-      </div>
-
-      <div id="stepChips" class="demo-form">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <h3 style="font-weight:700;font-size:1.15rem">What kind of business?</h3>
-        </div>
-        <div class="chip-grid" id="chipGrid"></div>
-      </div>
-
-      <div id="stepForm" style="display:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
-          <div class="demo-form" style="padding:20px 24px">
-            <button type="button" class="btn btn-ghost btn-sm" id="backBtn" style="align-self:flex-start;padding:4px 10px;font-size:.78rem">‹ Back — change industry</button>
-
+          <div id="controlsView">
             <div class="field">
               <label for="bizName">Your business name</label>
-              <input type="text" id="bizName" placeholder="e.g. Tendai's Hardware" autofocus>
+              <input type="text" id="bizName" placeholder="e.g. Tendai's Hardware" autofocus autocomplete="off">
             </div>
 
-            <div class="notice">
-              This preview uses a real example site for <b id="industryLabel">this industry</b> — the photos, products and details you see belong to that example. After you claim your site on WhatsApp, you'll replace everything with your own.
+            <div class="field" style="margin-top:22px">
+              <label>Your industry</label>
+              <div class="pill-grid" id="pillGrid"></div>
             </div>
 
-            <button id="generateBtn" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:1rem">
-              Continue — claim via WhatsApp →
-            </button>
-            <div style="font-size:.72rem;color:var(--ink3);text-align:center">Takes about 10 seconds. No password to remember.</div>
-
-            <div id="formMsg" style="font-size:.8rem;padding:8px 12px;border-radius:8px;display:none"></div>
+            <div class="cta-zone" style="margin-top:24px">
+              <button id="generateBtn" class="btn btn-primary" style="width:100%;padding:15px">
+                Continue — claim via WhatsApp →
+              </button>
+              <div class="microcopy">Takes about 10 seconds. No password to remember.</div>
+            </div>
           </div>
 
-          <div style="padding:16px;display:flex;flex-direction:column;background:var(--surface);border-left:1px solid var(--line)">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <span style="font-weight:600;font-size:.85rem">Live preview</span>
-              <span class="live-badge" id="previewStatus"><span class="live-dot"></span>live</span>
-            </div>
+          <div id="claimView" class="claim-panel" style="display:none">
+            <div class="icon-circle" id="claimIcon"></div>
+            <h3>Like what you see?</h3>
+            <p>Message us on WhatsApp to claim it — your WhatsApp number becomes your login. Everything except your name here belongs to a real example site; you'll swap in your own after claiming.</p>
+            <a id="claimWhatsAppBtn" class="btn btn-whatsapp" style="padding:14px 24px;width:100%" href="#" target="_blank"></a>
+            <button id="claimBackBtn" class="btn btn-ghost btn-sm" style="margin-top:12px">‹ Back to editing</button>
+          </div>
+
+        </div>
+
+        <div class="preview-pane">
+          <div class="preview-hdr">
+            <b>Live preview</b>
+            <span class="live-badge" id="previewStatus"><span class="live-dot"></span>live</span>
+          </div>
+          <div class="preview-frame-wrap">
             <iframe id="livePreview" src="about:blank"></iframe>
-            <div style="font-size:.7rem;color:var(--ink3);text-align:center;margin-top:8px">
-              ✏️ After claiming: swap in your own photos, prices and words
-            </div>
           </div>
+          <div class="preview-cap">Real photos, menu items and details — from a real example. Only the name is yours until you claim it.</div>
         </div>
       </div>
-
-      <div id="stepResult" style="display:none;padding:28px;text-align:center">
-        <div style="font-size:3rem;margin-bottom:12px">🎉</div>
-        <h3 style="font-size:1.4rem" id="resultTitle">Like what you see?</h3>
-        <p style="color:var(--ink2);margin:8px 0 16px" id="resultDesc">Message us on WhatsApp to claim it — your WhatsApp number becomes your login.</p>
-        <a id="claimWhatsAppBtn" class="btn btn-whatsapp" style="padding:14px 28px;display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff" href="#" target="_blank">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-          Claim via WhatsApp
-        </a>
-        <div style="margin-top:12px;font-size:.78rem;color:var(--ink3)">Your WhatsApp number becomes your login.</div>
-      </div>
     </div>
+
+    <div class="trust-bar" id="trustBar"></div>
   </div>
 </section>
 
-<!-- Features, Templates, Pricing sections (abbreviated) -->
-<section style="background:var(--card);border-top:1px solid var(--line);padding:60px 0">
+<section class="feature-strip">
   <div class="wrap">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:900px;margin:0 auto">
-      <div><h3 style="font-size:1.1rem">⚡ Live in minutes</h3><p style="font-size:.9rem;color:var(--ink2)">Choose a template, swap in your content, publish instantly.</p></div>
-      <div><h3 style="font-size:1.1rem">🌍 Free .co.zw domain</h3><p style="font-size:.9rem;color:var(--ink2)">Your own address included — or add a .com for $50/yr.</p></div>
-      <div><h3 style="font-size:1.1rem">✏️ Edit it yourself</h3><p style="font-size:.9rem;color:var(--ink2)">Change text, colours, images and logo anytime.</p></div>
-      <div><h3 style="font-size:1.1rem">💬 WhatsApp ready</h3><p style="font-size:.9rem;color:var(--ink2)">Every site ships with WhatsApp enquiries.</p></div>
-    </div>
+    <div class="feature-grid" id="featureGrid"></div>
   </div>
 </section>
 
-<section style="padding:60px 0">
+<section style="padding:20px 0 70px">
   <div class="wrap">
-    <h2 style="text-align:center;font-size:2rem;margin-bottom:40px">How it works</h2>
-    <div class="grid-3">
-      <div class="step"><div class="no">1</div><h4>See your name on a real site</h4><p>Pick your industry and type your name — the preview is live instantly.</p></div>
-      <div class="step"><div class="no">2</div><h4>Claim via WhatsApp</h4><p>Message us once. Your WhatsApp number becomes your login.</p></div>
-      <div class="step"><div class="no">3</div><h4>Make it yours</h4><p>Swap in your own photos, prices and words, then publish on your free domain.</p></div>
-    </div>
+    <h2 style="text-align:center;font-size:2rem">How it works</h2>
+    <div class="grid-3" id="stepsGrid"></div>
   </div>
 </section>
 
-<section style="background:var(--card);border-top:1px solid var(--line);padding:60px 0">
+<section style="background:var(--card);border-top:1px solid var(--line);padding:70px 0">
   <div class="wrap">
     <h2 style="text-align:center;font-size:2rem;margin-bottom:12px">Simple pricing</h2>
-    <p style="text-align:center;color:var(--ink2);margin-bottom:40px">Start with a free domain. Upgrade only when you're ready.</p>
-    <div class="price-grid" style="max-width:900px;margin:0 auto">
-      <div class="price-card"><h3>Website</h3><div class="price">$30 <span>/yr</span></div><ul><li>✓ Free .co.zw domain</li><li>✓ WhatsApp integration</li><li>✓ Self-edit</li></ul><a href="#start" class="btn btn-ghost" style="width:100%;justify-content:center">Start</a></div>
-      <div class="price-card popular"><span class="pop-tag">Popular</span><h3>Website + .com</h3><div class="price">$50 <span>/yr</span></div><ul><li>✓ Everything in Website</li><li>✓ Your own .com</li><li>✓ Priority support</li></ul><a href="#start" class="btn btn-primary" style="width:100%;justify-content:center">Get .com</a></div>
-      <div class="price-card"><h3>Online Store</h3><div class="price">$30 <span>/mo</span></div><ul><li>✓ Products &amp; payments</li><li>✓ EcoCash &amp; cards</li><li>✓ WhatsApp store</li></ul><a href="#start" class="btn btn-ghost" style="width:100%;justify-content:center">Add store</a></div>
-    </div>
+    <p style="text-align:center;color:var(--ink2);margin-bottom:0">Start with a free domain. Upgrade only when you're ready.</p>
+    <div class="price-grid" id="priceGrid"></div>
   </div>
 </section>
 
 <section class="cta">
   <div class="wrap">
-    <span class="fb"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
     <h2>Your business deserves to be found.</h2>
     <p>Join the businesses getting online with websites — affordable, simple, and proudly Zimbabwean.</p>
-    <a class="btn btn-primary" href="#start" style="background:#fff;color:var(--ink)">Build my site — from $30/yr</a>
+    <a class="btn btn-primary" href="#start" style="background:#fff;color:var(--ink);margin-top:20px">Build my site — from $30/yr</a>
   </div>
 </section>
 
@@ -279,9 +254,7 @@ footer{padding:56px 0 40px}
   <div class="wrap">
     <div class="foot">
       <div>
-        <div style="font-weight:900;font-size:1.3rem;display:flex;align-items:center;gap:4px">
-          webs<span style="display:inline-flex;flex-direction:column;gap:1px;margin:0 2px"><span class="brand-dot green"></span><span class="brand-dot yellow"></span><span class="brand-dot red"></span><span class="brand-dot black"></span></span>tes
-        </div>
+        <div class="brand">webs<span class="g">·</span>tes<span class="g">.co.zw</span></div>
         <p>The fast, affordable way for Zimbabwean businesses to get online.</p>
         <span class="zim-flag" style="margin-top:14px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
       </div>
@@ -289,17 +262,13 @@ footer{padding:56px 0 40px}
       <div><h5>Business</h5><a href="#">Salon</a><a href="#">Restaurant</a><a href="#">School</a></div>
       <div><h5>Company</h5><a href="#">About</a><a href="#">Support</a><a href="#">Contact</a></div>
     </div>
-    <div class="foot-bot"><span>© 2026 websites · where Zimbabwe builds online</span><span style="font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)">Made in Zimbabwe 🇿🇼</span></div>
+    <div class="foot-bot"><span>© 2026 websites · where Zimbabwe builds online</span><span style="font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)">Made in Zimbabwe</span></div>
   </div>
 </footer>
 
-<!-- Toast -->
 <div class="toast" id="toast"><span id="toastMsg">Message</span><button class="close" id="toastClose">✕</button></div>
 
-<!-- WhatsApp FAB -->
-<button class="wa-fab" id="waFab" aria-label="Chat on WhatsApp">
-  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-</button>
+<button class="wa-fab" id="waFab" aria-label="Chat on WhatsApp"></button>
 
 <script>
 (function(){
@@ -308,39 +277,80 @@ footer{padding:56px 0 40px}
 const WHATSAPP_NUMBER = '263719362321';
 const PREVIEW_ENDPOINT = 'https://preview.websites.co.zw/api/live-preview';
 
-// Chip key = template_id, matching DEMO_SITE_MAP keys in the render worker.
+// ── Icon set (Lucide-style: 24x24, stroke, round caps — no emoji anywhere) ─
+const ICONS = {
+  scissors: '<path d="M8.5 8.5 20 20"/><path d="M15.5 8.5 4 20"/><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><path d="M8.12 8.12 12 12"/>',
+  utensils: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  graduationCap: '<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 10v6"/>',
+  church: '<path d="M12 2v4"/><path d="M10 4h4"/><path d="M12 22V10.5a2.5 2.5 0 0 1 5 0V22"/><path d="M7 22V10.5A2.5 2.5 0 0 0 2 10.5V22"/><path d="M2 22h20"/><path d="M9 22v-4a3 3 0 0 1 6 0v4"/>',
+  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',
+  briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  hammer: '<path d="m15 12-8.5 8.5a1.5 1.5 0 0 1-2-2L13 10"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/>',
+  basket: '<path d="m5 11 4-7"/><path d="m19 11-4-7"/><path d="M2 11h20"/><path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.6-7.4"/><path d="M4.5 15.5h15"/><path d="M12 11v5"/>',
+  shirt: '<path d="M20.4 14.5 16 10l1-6-3-1-2 2-2-2-3 1 1 6-4.4 4.5a1 1 0 0 0 0 1.4l2.1 2a1 1 0 0 0 1.4 0L9 16v6h6v-6l1.9 1.9a1 1 0 0 0 1.4 0l2.1-2a1 1 0 0 0 0-1.4Z"/>',
+  store: '<path d="M2 7 4 3h16l2 4"/><path d="M2 7v13a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7"/><path d="M2 7h20"/><path d="M9 21v-6a2 2 0 0 1 4 0v6"/>',
+  bed: '<path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 18h20"/>',
+  building: '<rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 0 0 20 15 15 0 0 0 0-20"/><path d="M2 12h20"/>',
+  pencil: '<path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+  message: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/>',
+  cursor: '<path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8L4 4.4l2.8 2.9"/><path d="m21.2 15.2-4.4-4.4 6.6-1.6-14-6.9 3.6 14 1.9-6.5Z"/><path d="m13 13 6 6"/>',
+  rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2Z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+  whatsapp: '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>',
+};
+
+function icon(name, size, strokeW, filled) {
+  const inner = ICONS[name] || '';
+  if (filled) return `<svg width="${size||18}" height="${size||18}" viewBox="0 0 24 24" fill="currentColor" stroke="none">${inner}</svg>`;
+  return `<svg width="${size||18}" height="${size||18}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeW||1.75}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+}
+
+// ── All 12 real templates — every one you have a live demo for ────────────
 const INDUSTRIES = [
-  { key:'beauty-salon',       label:'Salons',       em:'💈' },
-  { key:'grill-house',        label:'Restaurants',  em:'🍲' },
-  { key:'school-institution', label:'Schools',      em:'🏫' },
-  { key:'church',             label:'Churches',     em:'⛪' },
-  { key:'property-estate',    label:'Real Estate',  em:'🏠' },
-  { key:'advisory-firm',      label:'Consultants',  em:'💼' },
-  { key:'hardware-store',     label:'Hardware',     em:'🔧' },
-  { key:'bold-retail',        label:'Retail',       em:'🛍️' },
+  { key:'beauty-salon',       label:'Salon / Spa',       ic:'scissors' },
+  { key:'grill-house',        label:'Restaurant',        ic:'utensils' },
+  { key:'school-institution', label:'School',            ic:'graduationCap' },
+  { key:'church',             label:'Church',            ic:'church' },
+  { key:'property-estate',    label:'Real Estate',       ic:'home' },
+  { key:'advisory-firm',      label:'Consulting',        ic:'briefcase' },
+  { key:'hardware-store',     label:'Hardware',          ic:'hammer' },
+  { key:'grocery-fmcg',       label:'Grocery',           ic:'basket' },
+  { key:'boutique-fashion',   label:'Fashion Boutique',  ic:'shirt' },
+  { key:'fashion-retail',     label:'Fashion Store',     ic:'store' },
+  { key:'hospitality-inn',    label:'Lodge / Hotel',     ic:'bed' },
+  { key:'bold-retail',        label:'General / Other',   ic:'building' },
 ];
 
-// DOM refs
-const chipGrid = document.getElementById('chipGrid');
-const stepChips = document.getElementById('stepChips');
-const stepForm = document.getElementById('stepForm');
-const stepResult = document.getElementById('stepResult');
-const livePreview = document.getElementById('livePreview');
-const previewStatus = document.getElementById('previewStatus');
-const domainSlug = document.getElementById('domainSlug');
-const bizName = document.getElementById('bizName');
-const industryLabel = document.getElementById('industryLabel');
-const backBtn = document.getElementById('backBtn');
-const generateBtn = document.getElementById('generateBtn');
-const claimWhatsAppBtn = document.getElementById('claimWhatsAppBtn');
-const toast = document.getElementById('toast');
-const toastMsg = document.getElementById('toastMsg');
-const toastClose = document.getElementById('toastClose');
-const waFab = document.getElementById('waFab');
+// Default shown the instant the page loads — a real, complete, published
+// demo. Change this constant if you'd rather lead with a different one.
+const DEFAULT_TEMPLATE = 'beauty-salon';
 
+const DOM = {
+  pillGrid: document.getElementById('pillGrid'),
+  bizName: document.getElementById('bizName'),
+  livePreview: document.getElementById('livePreview'),
+  previewStatus: document.getElementById('previewStatus'),
+  controlsView: document.getElementById('controlsView'),
+  claimView: document.getElementById('claimView'),
+  claimIcon: document.getElementById('claimIcon'),
+  generateBtn: document.getElementById('generateBtn'),
+  claimBackBtn: document.getElementById('claimBackBtn'),
+  claimWhatsAppBtn: document.getElementById('claimWhatsAppBtn'),
+  toast: document.getElementById('toast'),
+  toastMsg: document.getElementById('toastMsg'),
+  toastClose: document.getElementById('toastClose'),
+  waFab: document.getElementById('waFab'),
+  trustBar: document.getElementById('trustBar'),
+  featureGrid: document.getElementById('featureGrid'),
+  stepsGrid: document.getElementById('stepsGrid'),
+  priceGrid: document.getElementById('priceGrid'),
+};
+
+let selectedTemplate = DEFAULT_TEMPLATE;
 let generating = false;
-let selectedTemplate = '';
-let selectedLabel = '';
 
 function debounce(fn, wait) {
   let t;
@@ -350,105 +360,106 @@ function debounce(fn, wait) {
   };
 }
 
-// Render chips
-chipGrid.innerHTML = INDUSTRIES.map(ind => `
-  <button type="button" class="demo-chip" data-key="${ind.key}" data-label="${ind.label}">
-    <span class="em">${ind.em}</span>
-    <span class="lb">${ind.label}</span>
+// ── Render pills ────────────────────────────────────────────────────────
+DOM.pillGrid.innerHTML = INDUSTRIES.map(ind => `
+  <button type="button" class="pill${ind.key === DEFAULT_TEMPLATE ? ' active' : ''}" data-key="${ind.key}">
+    ${icon(ind.ic, 20, 1.6)}
+    <span>${ind.label}</span>
   </button>
 `).join('');
 
-chipGrid.addEventListener('click', function(e) {
-  const chip = e.target.closest('.demo-chip');
-  if (!chip) return;
-  selectedTemplate = chip.dataset.key;
-  selectedLabel = chip.dataset.label;
-  industryLabel.textContent = selectedLabel.toLowerCase();
-  stepChips.style.display = 'none';
-  stepForm.style.display = 'grid';
-  bizName.focus();
+DOM.pillGrid.addEventListener('click', function(e) {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  selectedTemplate = pill.dataset.key;
+  DOM.pillGrid.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === pill));
   renderLivePreview();
 });
 
-backBtn.addEventListener('click', function() {
-  stepForm.style.display = 'none';
-  stepChips.style.display = 'block';
-  stepResult.style.display = 'none';
-});
-
-function updateSlug() {
-  const name = bizName.value.trim() || 'Your Business';
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'yourbusiness';
-  domainSlug.textContent = slug;
-}
-
-const debouncedRender = debounce(renderLivePreview, 380);
-bizName.addEventListener('input', function() { updateSlug(); debouncedRender(); });
+// ── Live preview ────────────────────────────────────────────────────────
+const debouncedRender = debounce(renderLivePreview, 350);
+DOM.bizName.addEventListener('input', debouncedRender);
 
 function setPreviewStatus(text, updating) {
-  previewStatus.classList.toggle('updating', !!updating);
-  previewStatus.lastChild.textContent = text;
+  DOM.previewStatus.classList.toggle('updating', !!updating);
+  DOM.previewStatus.lastChild.textContent = text;
 }
 
 function renderLivePreview() {
-  if (!selectedTemplate) return;
-  const name = bizName.value.trim() || 'Your Business';
+  const name = DOM.bizName.value.trim() || 'Your Business';
   const params = new URLSearchParams({ name, template: selectedTemplate });
   setPreviewStatus('updating…', true);
-  livePreview.src = PREVIEW_ENDPOINT + '?' + params.toString();
+  DOM.livePreview.src = PREVIEW_ENDPOINT + '?' + params.toString();
 }
 
-livePreview.addEventListener('load', function() {
-  if (livePreview.src && livePreview.src !== 'about:blank') {
+DOM.livePreview.addEventListener('load', function() {
+  if (DOM.livePreview.src && DOM.livePreview.src !== 'about:blank') {
     setPreviewStatus('live', false);
   }
 });
 
-// Toast
+// Straight to the preview — render immediately on load, no gate, no click required.
+renderLivePreview();
+
+// ── Toast ───────────────────────────────────────────────────────────────
 function showToast(msg, type) {
-  toastMsg.textContent = msg;
-  toast.className = 'toast' + (type ? ' ' + type : '');
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 5000);
+  DOM.toastMsg.textContent = msg;
+  DOM.toast.className = 'toast' + (type ? ' ' + type : '');
+  DOM.toast.classList.add('show');
+  setTimeout(() => DOM.toast.classList.remove('show'), 5000);
 }
-toastClose.addEventListener('click', () => toast.classList.remove('show'));
+DOM.toastClose.addEventListener('click', () => DOM.toast.classList.remove('show'));
 
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+// ── Claim flow ──────────────────────────────────────────────────────────
+DOM.claimIcon.innerHTML = icon('rocket', 24, 1.8);
+DOM.claimWhatsAppBtn.innerHTML = icon('whatsapp', 19, 0, true) + '<span style="margin-left:8px">Claim via WhatsApp</span>';
+
 async function generateSite() {
   if (generating) return;
-  const name = bizName.value.trim();
+  const name = DOM.bizName.value.trim();
 
   if (!name) {
     showToast('Please enter your business name.', 'err');
-    bizName.focus();
+    DOM.bizName.focus();
     return;
   }
 
   generating = true;
-  generateBtn.disabled = true;
-  generateBtn.textContent = 'Preparing…';
+  DOM.generateBtn.disabled = true;
+  DOM.generateBtn.textContent = 'Preparing…';
 
   try {
     await sleep(250);
-
-    stepForm.style.display = 'none';
-    stepResult.style.display = 'block';
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'mybusiness';
-    claimWhatsAppBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I want to claim my site: ' + name + ' (' + slug + '.co.zw)')}`;
-
-    showToast('✅ Message us to claim it!', 'ok');
+    DOM.claimWhatsAppBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I want to claim my site: ' + name + ' (' + slug + '.co.zw)')}`;
+    DOM.controlsView.style.display = 'none';
+    DOM.claimView.style.display = 'block';
   } finally {
     generating = false;
-    generateBtn.disabled = false;
-    generateBtn.textContent = 'Continue — claim via WhatsApp →';
+    DOM.generateBtn.disabled = false;
+    DOM.generateBtn.textContent = 'Continue — claim via WhatsApp →';
   }
 }
 
-generateBtn.addEventListener('click', generateSite);
+DOM.generateBtn.addEventListener('click', generateSite);
+DOM.claimBackBtn.addEventListener('click', function() {
+  DOM.claimView.style.display = 'none';
+  DOM.controlsView.style.display = 'block';
+});
 
-waFab.addEventListener('click', function() {
-  const name = bizName.value.trim() || 'My Business';
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.activeElement === DOM.bizName) {
+    e.preventDefault();
+    generateSite();
+  }
+});
+
+// ── WhatsApp FAB ────────────────────────────────────────────────────────
+DOM.waFab.innerHTML = icon('whatsapp', 26, 0, true);
+DOM.waFab.addEventListener('click', function() {
+  const name = DOM.bizName.value.trim() || 'My Business';
   const msg = encodeURIComponent(`Hi! I'm interested in building a site for ${name} on websites.co.zw`);
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
 });
@@ -456,18 +467,72 @@ waFab.addEventListener('click', function() {
 document.getElementById('navCta').addEventListener('click', function(e) {
   e.preventDefault();
   document.getElementById('start').scrollIntoView({ behavior: 'smooth' });
+  DOM.bizName.focus();
 });
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && document.activeElement === bizName) {
-    e.preventDefault();
-    generateSite();
-  }
-});
+// ── Trust bar ───────────────────────────────────────────────────────────
+DOM.trustBar.innerHTML = [
+  ['check', 'Real templates, not a demo mockup'],
+  ['check', 'Free .co.zw domain included'],
+  ['check', 'No card needed to preview'],
+].map(([ic, label]) => `<span>${icon(ic, 15, 2.5)}${label}</span>`).join('');
+
+// ── Feature strip ───────────────────────────────────────────────────────
+DOM.featureGrid.innerHTML = [
+  ['zap', 'Live in minutes', 'Choose a template, swap in your content, publish instantly.'],
+  ['globe', 'Free .co.zw domain', 'Your own address included — or add a .com for $50/yr.'],
+  ['pencil', 'Edit it yourself', 'Change text, colours, images and logo anytime.'],
+  ['message', 'WhatsApp ready', 'Every site ships with WhatsApp enquiries.'],
+].map(([ic, title, body]) => `
+  <div class="feature">
+    <div class="icon-box">${icon(ic, 20, 1.75)}</div>
+    <h3>${title}</h3>
+    <p>${body}</p>
+  </div>
+`).join('');
+
+// ── Steps ───────────────────────────────────────────────────────────────
+DOM.stepsGrid.innerHTML = [
+  ['cursor', 'See your name on a real site', 'Type your name, pick your industry — the preview is live instantly.'],
+  ['whatsapp', 'Claim via WhatsApp', 'Message us once. Your WhatsApp number becomes your login.'],
+  ['rocket', 'Make it yours', 'Swap in your own photos, prices and words, then publish on your free domain.'],
+].map(([ic, title, body]) => `
+  <div class="step">
+    <div class="icon-box">${icon(ic, 20, 1.8, ic === 'whatsapp')}</div>
+    <h4>${title}</h4>
+    <p>${body}</p>
+  </div>
+`).join('');
+
+// ── Pricing ─────────────────────────────────────────────────────────────
+function priceList(items) {
+  return items.map(t => `<li>${icon('check', 15, 2.5)}${t}</li>`).join('');
+}
+DOM.priceGrid.innerHTML = `
+  <div class="price-card">
+    <h3>Website</h3>
+    <div class="price">$30 <span>/yr</span></div>
+    <ul>${priceList(['Free .co.zw domain', 'WhatsApp integration', 'Self-edit'])}</ul>
+    <a href="#start" class="btn btn-ghost" style="width:100%">Start</a>
+  </div>
+  <div class="price-card popular">
+    <span class="pop-tag">Popular</span>
+    <h3>Website + .com</h3>
+    <div class="price">$50 <span>/yr</span></div>
+    <ul>${priceList(['Everything in Website', 'Your own .com', 'Priority support'])}</ul>
+    <a href="#start" class="btn btn-primary" style="width:100%">Get .com</a>
+  </div>
+  <div class="price-card">
+    <h3>Online Store</h3>
+    <div class="price">$30 <span>/mo</span></div>
+    <ul>${priceList(['Products & payments', 'EcoCash & cards', 'WhatsApp store'])}</ul>
+    <a href="#start" class="btn btn-ghost" style="width:100%">Add store</a>
+  </div>
+`;
 
 console.log('🚀 websites.co.zw — landing page ready!');
-console.log('📱 WhatsApp:', WHATSAPP_NUMBER);
 console.log('🔗 Preview endpoint:', PREVIEW_ENDPOINT);
+console.log('🎨 Default template:', DEFAULT_TEMPLATE);
 
 })();
 </script>
