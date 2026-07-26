@@ -435,7 +435,7 @@
       grid.appendChild(el(
         '<div class="empty">'+
           '<h2>Build your first website</h2>'+
-          '<p>Choose a template, add your details, generate with AI, then publish for $30/year.</p>'+
+          '<p>Choose a template, add your details, generate with AI, then publish.</p>'+
           '<button class="btn btn-gold" onclick="createNewSite()">Choose a template \u2192</button>'+
         '</div>'
       ));
@@ -525,7 +525,7 @@
     var subEl = document.getElementById("subcount");
     if(subEl){ var pub=sites.filter(function(s){return s.status==="published"||s.status==="grace";}).length; subEl.textContent = sites.length + " site" + (sites.length===1?"":"s") + " · " + pub + " live"; }
     if(sites.length===0){
-      if(grid) grid.appendChild(el('<div class="empty"><h2>Build your first website</h2><p>Choose a template, add your details, generate with AI, then publish for $30/year.</p><button class="btn btn-gold" onclick="createNewSite()">Choose a template →</button></div>'));
+      if(grid) grid.appendChild(el('<div class="empty"><h2>Build your first website</h2><p>Choose a template, add your details, generate with AI, then publish.</p><button class="btn btn-gold" onclick="createNewSite()">Choose a template →</button></div>'));
       return;
     }
     sites = tagDemoSites(sites);
@@ -555,14 +555,11 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
   PUBLISH / DOMAIN WISH / EMAIL ROUTING MODAL
 
-  CHANGE: the plan-pick and domain-wish steps (1 & 2) stay here — that's real
-  product logic (Starter vs Pro, ZISPA vs registrar) checkout.html doesn't
-  duplicate. Step 2's "Continue to payment" now saves the domain wish and
-  redirects to checkout.html instead of calling /publish inline — checkout.html
-  is the one place that talks to the auth Worker's publish/renew endpoints and
-  (critically) actually polls for confirmed payment instead of trusting the
-  return URL. This modal still owns the post-payment email-forwarding step,
-  which checkout.html hands back to via ?paid=1&site=<id>.
+  v2 CHANGE — domains are bundled into plan pricing, never sold or priced
+  separately. No per-domain $ shown anywhere. Domain-collection step is
+  gated by plan: Starter ($30) only ever offers the free .co.zw wishlist;
+  the bundle plan ($50) offers BOTH a free .com (checked live against the
+  Cloudflare Registrar) and a free .co.zw wishlist, since both are included.
 ════════════════════════════════════════════════════════════════════════ -->
 <div id="pub-overlay" style="display:none;position:fixed;inset:0;background:rgba(13,15,20,.55);z-index:200;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18);max-height:92vh;display:flex;flex-direction:column">
@@ -580,7 +577,10 @@
   var API      = "https://app.websites.co.zw/api";
   var CHECKOUT = "https://www.websites.co.zw/checkout/";
 
-  var PLAN_PRICES = { starter: 30, pro: 60 };
+  // Bundle pricing — domains are NEVER priced or sold separately.
+  // Starter: free .co.zw (3-choice wishlist, admin-registered).
+  // Bundle:  free .com (auto-checked) AND free .co.zw (3-choice wishlist).
+  var PLAN_PRICES = { starter: 30, pro: 50 };
 
   var pubSiteId   = null;
   var pubSiteName = null;
@@ -622,7 +622,7 @@
         '<div style="border:2px solid #15924B;border-radius:12px;padding:14px">'+
           '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#15924B;margin-bottom:4px">Starter</div>'+
           '<div style="font-family:Space Grotesk,sans-serif;font-size:24px;font-weight:800">$'+PLAN_PRICES.starter+'<span style="font-size:12px;font-weight:400;color:#868a96">/yr</span></div>'+
-          '<div style="font-size:12px;color:#868a96;margin:4px 0 10px">yoursite.websites.co.zw</div>'+
+          '<div style="font-size:12px;color:#868a96;margin:4px 0 10px">Free .co.zw domain included</div>'+
           '<div style="font-size:12px;color:#4a4d59;display:flex;flex-direction:column;gap:3px;margin-bottom:12px">'+
             '<span>✓ AI content generation</span>'+
             '<span>✓ Products &amp; gallery</span>'+
@@ -634,11 +634,12 @@
         '<div style="border:2px solid #7c3aed;border-radius:12px;padding:14px">'+
           '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;margin-bottom:4px">Pro ⭐</div>'+
           '<div style="font-family:Space Grotesk,sans-serif;font-size:24px;font-weight:800">$'+PLAN_PRICES.pro+'<span style="font-size:12px;font-weight:400;color:#868a96">/yr</span></div>'+
-          '<div style="font-size:12px;color:#868a96;margin:4px 0 10px">Your own .com domain</div>'+
+          '<div style="font-size:12px;color:#868a96;margin:4px 0 10px">Free .com + .co.zw included</div>'+
           '<div style="font-size:12px;color:#4a4d59;display:flex;flex-direction:column;gap:3px;margin-bottom:12px">'+
             '<span>✓ Everything in Starter</span>'+
-            '<span>✓ Custom .com domain</span>'+
+            '<span>✓ Free .com AND .co.zw domain</span>'+
             '<span>✓ Up to 10 email forwards</span>'+
+            '<span>✓ 4 free industry templates</span>'+
             '<span>✓ Priority support</span>'+
           '</div>'+
           '<button style="width:100%;justify-content:center;background:#f3eeff;color:#7c3aed;border:none;font-family:inherit;font-weight:600;font-size:14px;padding:10px 16px;border-radius:var(--r-sm,9px);cursor:pointer;display:inline-flex;align-items:center" onclick="_selectPlan(\'pro\')">Choose Pro — $'+PLAN_PRICES.pro+'/yr</button>'+
@@ -653,21 +654,31 @@
     renderStep2_Domain();
   };
 
+  // Domain-collection step, gated by plan. No pricing shown anywhere here —
+  // domains are bundled into the plan the person already chose.
   function renderStep2_Domain() {
-    var tld  = pubPlan === "pro" ? ".com" : ".co.zw";
-    var reg  = pubPlan === "pro" ? "an international registrar" : "ZISPA";
+    var isPro = pubPlan === "pro";
+    var comSection = isPro ?
+      '<div style="margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid #e3e5ea">'+
+        '<div style="font-size:13px;font-weight:700;color:#1a1b22;margin-bottom:4px">🌐 Your .com domain (included free)</div>'+
+        '<p style="font-size:12.5px;color:#868a96;margin:0 0 10px;line-height:1.5">Enter the name you\'d like. We\'ll check availability and register it automatically once payment is confirmed.</p>'+
+        _domainField("dw_com","","e.g. elitesports",".com")+
+      '</div>' : '';
+    var cozwLabel = isPro ? "Your .co.zw domain (included free)" : "Your .co.zw domain (included free)";
     setBody(
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">'+
         '<button onclick="_backToPlan()" style="background:none;border:1px solid #e3e5ea;border-radius:6px;padding:4px 10px;font-size:12px;color:#868a96;cursor:pointer;font-family:inherit">← Back</button>'+
-        '<span style="font-size:14px;font-weight:600;color:#1a1b22">Choose your domain name</span>'+
+        '<span style="font-size:14px;font-weight:600;color:#1a1b22">Choose your domain</span>'+
       '</div>'+
-      '<p style="font-size:13px;color:#4a4d59;margin:0 0 16px;line-height:1.6">'+
-        'Enter up to <strong>3 name preferences</strong> in order. We\'ll check availability with '+reg+' and register your best available choice within <strong>1–2 business days</strong>.'+
+      comSection+
+      '<div style="font-size:13px;font-weight:700;color:#1a1b22;margin-bottom:4px">🇿🇼 '+cozwLabel+'</div>'+
+      '<p style="font-size:12.5px;color:#868a96;margin:0 0 12px;line-height:1.5">'+
+        'Enter up to <strong>3 name preferences</strong> in order. Our team checks availability and registers your best available choice within <strong>1–2 business days</strong>.'+
       '</p>'+
-      _domainField("dw_c1","1st choice (required)","e.g. elitesports",tld)+
-      _domainField("dw_c2","2nd choice (optional)","alternative name",tld)+
-      _domainField("dw_c3","3rd choice (optional)","fallback name",tld)+
-      '<p style="font-size:12px;color:#868a96;margin:8px 0 16px">Letters, numbers and hyphens only. We add <strong>'+tld+'</strong> for you.</p>'+
+      _domainField("dw_c1","1st choice (required)","e.g. elitesports",".co.zw")+
+      _domainField("dw_c2","2nd choice (optional)","alternative name",".co.zw")+
+      _domainField("dw_c3","3rd choice (optional)","fallback name",".co.zw")+
+      '<p style="font-size:12px;color:#868a96;margin:8px 0 16px">Letters, numbers and hyphens only.</p>'+
       '<div style="display:flex;gap:10px">'+
         '<button onclick="_backToPlan()" style="flex:1;padding:11px;border:1px solid #e3e5ea;border-radius:9px;background:#fff;font-size:14px;font-weight:600;color:#4a4d59;cursor:pointer;font-family:inherit">← Back</button>'+
         '<button onclick="_saveDomainAndGoToCheckout()" class="btn btn-gold" style="flex:2;justify-content:center">Continue to payment →</button>'+
@@ -677,7 +688,7 @@
 
   function _domainField(id, label, placeholder, tld) {
     return '<div style="margin-bottom:10px">'+
-      '<label style="font-size:12px;font-weight:600;color:#4a4d59;display:block;margin-bottom:5px">'+label+'</label>'+
+      (label ? '<label style="font-size:12px;font-weight:600;color:#4a4d59;display:block;margin-bottom:5px">'+label+'</label>' : '')+
       '<div style="display:flex;align-items:stretch;border:1px solid #e3e5ea;border-radius:9px;overflow:hidden;background:#fff">'+
         '<input id="'+id+'" type="text" placeholder="'+placeholder+'"'+
           ' style="flex:1;border:none;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;min-width:0"'+
@@ -689,15 +700,18 @@
 
   window._backToPlan = function() { renderStep1_Plan(); };
 
-  // Save the domain wish (non-fatal if it fails), then hand off to checkout.html.
-  // checkout.html is what actually calls the auth Worker's /publish or /renew,
-  // sends the browser to Paynow, and polls for real confirmation on return.
+  // Save the domain wish(es) (non-fatal if it fails), then hand off to
+  // checkout.html, which is what actually calls /publish or /renew, sends
+  // the browser to Paynow, and polls for real confirmation on return.
   window._saveDomainAndGoToCheckout = async function() {
+    var isPro = pubPlan === "pro";
+    var comName = isPro ? ((document.getElementById("dw_com")||{}).value || "").trim() : "";
     var c1 = (document.getElementById("dw_c1")||{}).value || "";
     var c2 = (document.getElementById("dw_c2")||{}).value || "";
     var c3 = (document.getElementById("dw_c3")||{}).value || "";
     c1 = c1.trim(); c2 = c2.trim(); c3 = c3.trim();
-    if (!c1) { alert("Please enter at least one domain name preference."); return; }
+    if (!c1) { alert("Please enter at least one .co.zw name preference."); return; }
+    if (isPro && !comName) { alert("Please enter your preferred .com name."); return; }
 
     setBody('<div style="text-align:center;padding:30px 20px"><div style="font-size:28px;margin-bottom:12px">⏳</div><p style="color:#4a4d59;font-size:14px">Saving your domain preferences…</p></div>');
 
@@ -705,10 +719,18 @@
     var headers = { "Content-Type": "application/json", "Authorization": "Bearer " + (token || "") };
 
     try {
+      // Always save the free .co.zw wishlist.
       await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/domain-wish", {
         method: "POST", headers: headers,
-        body: JSON.stringify({ choice_1: c1, choice_2: c2 || null, choice_3: c3 || null })
+        body: JSON.stringify({ choice_1: c1, choice_2: c2 || null, choice_3: c3 || null, tld: ".co.zw" })
       });
+      // Bundle plan also gets a free .com — save that preference separately.
+      if (isPro && comName) {
+        await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/domain-wish", {
+          method: "POST", headers: headers,
+          body: JSON.stringify({ choice_1: comName, tld: ".com" })
+        });
+      }
     } catch(e) { /* non-fatal — checkout can still proceed */ }
 
     _goToCheckout();
