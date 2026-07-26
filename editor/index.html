@@ -588,7 +588,7 @@ img{display:block;max-width:100%}
       <div id="bookingsPricingSection" style="display:none;margin-bottom:14px"></div>
       <div id="bookingsProUpsell" style="display:none;margin-bottom:14px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div class="upsell-body"><strong>Manual entry &amp; payment tracking — Pro only</strong><p>Log phone, walk-in, and email bookings directly, and track deposits and payments with one-tap "mark as paid". Available on Bookings <b>Pro</b> ($25/mo).</p></div></div></div>
       <div class="booking-filters" id="booking-filters"></div>
-      <div class="booking-list" id="booking-list"><div class="empty-state" id="booking-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg></span><p>No bookings yet. Once a guest requests a room, it'll show up here.</p></div></div>
+      <div class="booking-list" id="booking-list"><div class="empty-state" id="booking-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg></span><p id="booking-empty-text">No bookings yet. Once someone makes a request, it'll show up here.</p></div></div>
     </div></div></div>
     <div class="tab-section" id="tab-amenities"><div class="panel"><div class="panel-head"><div><h2>Amenities</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Tap a common amenity to add it instantly, or add your own below</div></div></div><div class="panel-body">
       <div class="vpreset-section"><div class="vpreset-label">Quick add</div><div class="vpreset-row" id="amenity-preset-chips"></div></div>
@@ -615,7 +615,7 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-team"><div class="panel"><div class="panel-head"><div><h2 id="team-tab-title">Team</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="team-tab-sub">Hover cards flip to show bio on desktop</div></div><button class="btn btn-green btn-sm" onclick="addTeamMember()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="team-rep-list"><div class="empty-state" id="team-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span><p>No team members yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-booking-services"><div class="panel"><div class="panel-head"><div><h2>Bookable Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">What clients can actually book online — separate from the price list shown on your site</div></div><button class="btn btn-green btn-sm" onclick="addBookingService()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="booking-services-rep-list"><div class="empty-state" id="booking-services-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><p>No bookable services yet. Add one so clients can book real appointments online.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-hours"><div class="panel"><div class="panel-head"><h2>Opening Hours</h2></div><div class="panel-body"><p style="font-size:12.5px;color:var(--ink3);margin-bottom:12px">A live Open/Closed badge shows on your site based on these times.</p><div class="hours-grid-wrap" id="hours-grid-wrap"><div class="hours-hdr">Day</div><div class="hours-hdr">Opens</div><div class="hours-hdr">Closes</div><div class="hours-hdr">Closed?</div></div></div></div></div>
-    <div class="tab-section" id="tab-stats"><div class="panel"><div class="panel-head"><div><h2>Stats / Numbers</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Numbers animate (count up) when visitors scroll to them</div></div><button class="btn btn-green btn-sm" onclick="addStat()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="stats-rep-list"><div class="empty-state" id="stats-rep-empty"><span class="es-icon"><svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M3 15V9M7 15V5M11 15V8M15 15V3"/></svg></span><p>Add key numbers — e.g. 500+ students, 15 years, 98% pass rate</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-stats"><div class="panel"><div class="panel-head"><div><h2>Stats / Numbers</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Numbers animate (count up) when visitors scroll to them</div></div><button class="btn btn-green btn-sm" onclick="addStat()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="stats-rep-list"><div class="empty-state" id="stats-rep-empty"><span class="es-icon"><svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M3 15V9M7 15V5M11 15V8M15 15V3"/></svg></span><p>Add key numbers — e.g. 500+ clients served, 15 years in business, 98% satisfaction</p></div></div></div></div></div>
     <div class="tab-section" id="tab-events"><div class="panel"><div class="panel-head"><div><h2>Events / Schedule</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown as a timeline on your site</div></div><button class="btn btn-green btn-sm" onclick="addEvent()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="events-rep-list"><div class="empty-state" id="events-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><p>No events yet. Add term dates or announcements.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-testimonials"><div class="panel"><div class="panel-head"><div><h2>Testimonials</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown in an auto-scrolling carousel</div></div><button class="btn btn-green btn-sm" onclick="addTestimonial()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="testimonials-rep-list"><div class="empty-state" id="testimonials-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></span><p>No testimonials yet.</p></div></div></div></div></div>
   </main>
@@ -645,7 +645,7 @@ img{display:block;max-width:100%}
         <div class="fld-group"><label class="fld-label">Check-in</label><input class="fld-input" type="date" id="mb_start_date"></div>
         <div class="fld-group"><label class="fld-label">Check-out</label><input class="fld-input" type="date" id="mb_end_date"></div>
       </div>
-      <div class="fld-group"><label class="fld-label">Guest name</label><input class="fld-input" id="mb_customer_name" placeholder="e.g. Tendai Moyo"></div>
+      <div class="fld-group"><label class="fld-label">Customer name</label><input class="fld-input" id="mb_customer_name" placeholder="e.g. Tendai Moyo"></div>
       <div class="two">
         <div class="fld-group"><label class="fld-label">Phone <span class="fld-hint">optional</span></label><input class="fld-input" id="mb_customer_phone" placeholder="0772 000 000"></div>
         <div class="fld-group"><label class="fld-label">Email <span class="fld-hint">optional</span></label><input class="fld-input" id="mb_customer_email" placeholder="guest@email.com"></div>
@@ -672,7 +672,7 @@ img{display:block;max-width:100%}
         </div>
       </div>
 
-      <!-- Slot fields (stylists/consultants) -->
+      <!-- Slot fields (team-member-based bookings: salon, clinic, consulting, etc.) -->
       <div id="bt_slot_fields" style="display:none">
         <div class="fld-group">
           <label class="fld-label">Block type</label>
@@ -1401,9 +1401,9 @@ var ALL_SECS_V3 = {
   "grocery-fmcg": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
   "hardware-store": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products / Catalogue"},{key:"services",label:"Services"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"contact",label:"Contact"}],
   "hospitality-inn": [{key:"hero",label:"Hero banner"},{key:"rooms",label:"Rooms"},{key:"about",label:"About us"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"packages",label:"Packages"},{key:"dining",label:"Dining"},{key:"experiences",label:"Experiences"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Reviews"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
-  "medical-clinic": [{key:"hero",label:"Hero banner"},{key:"services",label:"Services"},{key:"team",label:"Practitioners"},{key:"insurance",label:"Insurance / Medical Aid"},{key:"testimonials",label:"Patient reviews"},{key:"gallery",label:"Facility photos"},{key:"contact",label:"Contact"}],
-  "personal-portfolio": [{key:"hero",label:"Hero banner"},{key:"about",label:"About"},{key:"experience",label:"Experience"},{key:"awards",label:"Awards"},{key:"services",label:"What I offer"},{key:"products",label:"Shop"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
-  "creative-studio": [{key:"hero",label:"Hero banner"},{key:"gallery",label:"Portfolio gallery"},{key:"about",label:"About"},{key:"rooms",label:"Packages"},{key:"booking-services",label:"Sessions"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}]
+  "medical-clinic": [{key:"hero",label:"Hero banner"},{key:"services",label:"Services"},{key:"team",label:"Practitioners"},{key:"insurance",label:"Insurance / Medical Aid"},{key:"testimonials",label:"Patient reviews"},{key:"gallery",label:"Facility photos"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
+  "personal-portfolio": [{key:"hero",label:"Hero banner"},{key:"about",label:"About"},{key:"experience",label:"Experience"},{key:"awards",label:"Awards"},{key:"services",label:"What I offer"},{key:"products",label:"Shop"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"hours",label:"Availability"},{key:"contact",label:"Contact"}],
+  "creative-studio": [{key:"hero",label:"Hero banner"},{key:"gallery",label:"Portfolio gallery"},{key:"about",label:"About"},{key:"rooms",label:"Packages"},{key:"booking-services",label:"Sessions"},{key:"testimonials",label:"Testimonials"},{key:"hours",label:"Studio hours"},{key:"contact",label:"Contact"}]
 };
 var REQUIRED_V3=["hero","contact"];
 
@@ -1461,21 +1461,21 @@ var TEMPLATES_V3=[
   {id:"creative-studio",icon:TPL_ICO.creative,name:"Creative Studio",desc:"Photography & film — masonry gallery, full-day and session booking"}
 ];
 var TPL_CFG={
-  "bold-retail":{services:"Services",menu:0,listings:0,hours:0,stats:0,events:0,team:1,teamLbl:"Team",servicesLbl:"Services"},
+  "bold-retail":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Team",servicesLbl:"Services"},
   "grill-house":{services:0,menu:1,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Services"},
   "beauty-salon":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Stylists",servicesLbl:"Services & Pricing",bookingServices:1},
-  "school-institution":{services:"Programmes",menu:0,listings:0,hours:0,stats:1,events:1,team:1,teamLbl:"Staff",servicesLbl:"Programmes"},
+  "school-institution":{services:"Programmes",menu:0,listings:0,hours:1,stats:1,events:1,team:1,teamLbl:"Staff",servicesLbl:"Programmes"},
   "church":{services:"Ministries",menu:0,listings:0,hours:1,stats:0,events:1,team:1,teamLbl:"Leadership",servicesLbl:"Ministries",pageCopy:0},
-  "advisory-firm":{services:"Practice Areas",menu:0,listings:0,hours:0,stats:1,events:0,team:1,teamLbl:"Our People",servicesLbl:"Practice Areas",bookingServices:1,pageCopy:1},
-  "property-estate":{services:0,menu:0,listings:1,hours:0,stats:0,events:0,team:1,teamLbl:"Agents",servicesLbl:"Services"},
-  "boutique-fashion":{services:0,menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
-  "fashion-retail":{services:0,menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
+  "advisory-firm":{services:"Practice Areas",menu:0,listings:0,hours:1,stats:1,events:0,team:1,teamLbl:"Our People",servicesLbl:"Practice Areas",bookingServices:1,pageCopy:1},
+  "property-estate":{services:0,menu:0,listings:1,hours:1,stats:0,events:0,team:1,teamLbl:"Agents",servicesLbl:"Services"},
+  "boutique-fashion":{services:0,menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
+  "fashion-retail":{services:0,menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
   "grocery-fmcg":{services:0,menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
-  "hardware-store":{services:"Our Services",menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Our Services"},
+  "hardware-store":{services:"Our Services",menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Our Services"},
   "hospitality-inn":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,packages:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"},
-  "medical-clinic":{services:"Services",menu:0,listings:0,hours:0,stats:0,events:0,team:1,teamLbl:"Practitioners",servicesLbl:"Services",bookingServices:1},
-  "personal-portfolio":{services:"What I Offer",menu:0,listings:0,hours:0,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"What I Offer",bookingServices:1},
-  "creative-studio":{services:0,menu:0,listings:0,rooms:1,hours:0,stats:0,events:0,team:1,teamLbl:"Team",bookingServices:1}
+  "medical-clinic":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Practitioners",servicesLbl:"Services",bookingServices:1},
+  "personal-portfolio":{services:"What I Offer",menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"What I Offer",bookingServices:1},
+  "creative-studio":{services:0,menu:0,listings:0,rooms:1,hours:1,stats:0,events:0,team:1,teamLbl:"Team",bookingServices:1}
 };
 var v3state={services:[],menu:[],listings:[],team:[],stats:[],events:[],testimonials:[],hours:{},rooms:[],amenities:[],conference:[],experiences:[],packages:[],dining:{},bookingServices:[],richGallery:[],previewDevice:"desktop"};
 
@@ -1567,6 +1567,12 @@ var SLOT_BOOKING_TEMPLATE_IDS = ["beauty-salon", "advisory-firm", "medical-clini
 // exact mechanism rather than a parallel one. See the render-worker
 // comment on the same decision for why.
 var INTERVAL_BOOKING_TEMPLATE_IDS = ["hospitality-inn", "creative-studio"];
+function bookingsEmptyText(tpl) {
+  if (tpl === "hospitality-inn") return "No bookings yet. Once a guest requests a room, it'll show up here.";
+  if (tpl === "creative-studio") return "No bookings yet. Once someone requests a package, it'll show up here.";
+  if (isSlotBookingTemplate(tpl)) return "No bookings yet. Once someone requests an appointment, it'll show up here.";
+  return "No bookings yet. Once someone makes a request, it'll show up here.";
+}
 function isSlotBookingTemplate(tpl) {
   return SLOT_BOOKING_TEMPLATE_IDS.indexOf(tpl) > -1;
 }
@@ -1796,7 +1802,7 @@ function renderBookingsList() {
     var emptyEl = document.createElement("div");
     emptyEl.className = "empty-state";
     emptyEl.id = "booking-empty";
-    emptyEl.innerHTML = '<span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg></span><p>' + (bookingsState.list.length ? "No bookings match this filter." : "No bookings yet. Once a guest requests a room, it'll show up here.") + "</p>";
+    emptyEl.innerHTML = '<span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg></span><p>' + (bookingsState.list.length ? "No bookings match this filter." : bookingsEmptyText((window.state && window.state.site && window.state.site.template_id) || "")) + "</p>";
     listEl.appendChild(emptyEl);
     return;
   }
@@ -1822,7 +1828,7 @@ function renderBookingItem(b) {
   var waLink = phoneDigits ? ("https://wa.me/" + (phoneDigits.indexOf("263") === 0 ? phoneDigits : "263" + phoneDigits.replace(/^0/, ""))) : "";
   var sourceLabels = { web: "Website", whatsapp: "WhatsApp", phone: "Phone", walk_in: "Walk-in", email: "Email", other: "Other", owner: "Owner" };
   var sourceLabel = sourceLabels[b.source] || b.source;
-  var titleLine = isBlock ? escV3(b.block_reason || "Blocked") : escV3(b.customer_name || "Guest");
+  var titleLine = isBlock ? escV3(b.block_reason || "Blocked") : escV3(b.customer_name || "Customer");
   var metaLine = isBlock ? '<span style="color:var(--ink3)">No bookings can be made during this time</span>' : (b.customer_phone ? ('<span>' + escV3(b.customer_phone) + '</span>' + (waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener">Message on WhatsApp</a>' : '')) : '<span>No phone provided</span>');
   var actionsHtml = "";
   if (isBlock) {
@@ -1905,7 +1911,7 @@ window.submitManualBooking = async function() {
   if (!resourceId) { toast("Choose a room", "err"); return; }
   if (!startDate || !endDate) { toast("Choose check-in and check-out dates", "err"); return; }
   if (startDate >= endDate) { toast("Check-out must be after check-in", "err"); return; }
-  if (!customerName) { toast("Guest name is required", "err"); return; }
+  if (!customerName) { toast("Customer name is required", "err"); return; }
   var btn = document.getElementById("mbSubmitBtn");
   btn.disabled = true; btn.textContent = "Adding…";
   var r = await bookingsApi("/bookings/manual", {
@@ -1934,7 +1940,7 @@ window.openBlockTimeModal = function() {
   var isInterval = INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl) > -1;
   var isSlot = isSlotBookingTemplate(tpl);
   if (!isInterval && !isSlot) { toast("Bookings isn't set up for this template yet", "err"); return; }
-  var resourceNoun = tpl === "creative-studio" ? "packages" : (isInterval ? "rooms" : "stylists");
+  var resourceNoun = tpl === "creative-studio" ? "packages" : (isInterval ? "rooms" : "team members");
   var resourceList = isInterval ? (v3state.rooms || []) : (v3state.team || []);
   var synced = resourceList.filter(function(r) { return !!r.resource_id; });
   var sel = document.getElementById("bt_resource_id");
@@ -2123,6 +2129,8 @@ function applyTemplateConfigV3(tpl){
   if(richGalPanel) richGalPanel.style.display=isCreativeStudio?"":"none";
   var bookingUpsell=document.getElementById("bookingTemplateUpsell");
   if(bookingUpsell) bookingUpsell.style.display=(INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl)>-1||isSlotBookingTemplate(tpl))?"none":"";
+  var bookingEmptyText=document.getElementById("booking-empty-text");
+  if(bookingEmptyText) bookingEmptyText.textContent=bookingsEmptyText(tpl);
   var pcPanel=document.getElementById("pageCopyPanel");
   if(pcPanel)pcPanel.style.display=cfg.pageCopy?"":"none";
   if(cfg.services){var st=document.getElementById("services-tab-title");var nl=document.getElementById("nav-v3-services");if(st)st.textContent=cfg.servicesLbl||"Services";if(nl){var sp=nl.querySelector("span");if(sp)sp.textContent=cfg.servicesLbl||"Services";}}
@@ -2313,9 +2321,9 @@ window.updateTeamV3=function(idx,key,val){if(v3state.team[idx]){v3state.team[idx
 window.handleTeamPhotoUpload=async function(idx,input){var file=input.files[0];if(!file)return;var zoneId="team-photo-zone-"+idx;var zone=document.getElementById(zoneId);if(zone)zone.innerHTML='<div class="rep-upload-action" style="justify-content:center;color:var(--ink3);padding:10px">Uploading…</div>';var url=await window.uploadToR2(file,"team");if(!url){toast("Upload failed — try again","err");var z=document.getElementById(zoneId);if(z)z.outerHTML=repUploadZoneHtml(zoneId,"","handleTeamPhotoUpload("+idx+",this)");return;}v3state.team[idx].photo=url;window.markDirty();var freshZone=document.getElementById(zoneId);if(freshZone)freshZone.outerHTML=repUploadZoneHtml(zoneId,url,"handleTeamPhotoUpload("+idx+",this)");toast("Photo uploaded ✓","ok");};
 window.onTuneTeamBio=async function(idx){var taId='team-bio-'+idx;var btnId='team-bio-tune-'+idx;var ta=document.getElementById(taId);var btn=document.getElementById(btnId);if(!ta||!ta.value.trim()){toast("Add a bio first","err");return;}if(btn){btn.disabled=true;btn.textContent="Tuning…";}var improved=await tuneText("person_bio",ta.value);if(btn){btn.disabled=false;btn.textContent="✦ Tune";}if(!improved)return;ta.value=improved;updateTeamV3(idx,"bio",improved);toast("Bio tuned ✓","ok");};
 
-function bookingServiceStaffModeOptions(mode){ return '<option value="choose"'+(mode!=="any"?" selected":"")+'>Guest picks a stylist</option><option value="any"'+(mode==="any"?" selected":"")+'>Any available stylist</option>'; }
-function bookingServiceResourceOptions(selectedId){ var opts = '<option value="">Shared (any qualifying stylist)</option>'; (v3state.team||[]).forEach(function(m){ if(!m.resource_id) return; opts += '<option value="'+escV3(m.resource_id)+'"'+(selectedId===m.resource_id?" selected":"")+'>'+escV3(m.name||"Unnamed")+'</option>'; }); return opts; }
-function renderBookingServiceRowV3(s, idx){ var staffModeOpts = bookingServiceStaffModeOptions(s.staff_mode); var resourceOpts = bookingServiceResourceOptions(s.resource_id || ""); var hasStylists = (v3state.team||[]).some(function(m){ return !!m.resource_id; }); var body = row2V3( fldV3("Service name","",s.name,"e.g. Haircut","updateBookingServiceV3("+idx+",'name',this.value)"), fldV3("Duration (minutes)","",s.duration_min,"30","updateBookingServiceV3("+idx+",'duration_min',this.value)",' type="number" min="5" step="5"') ) + row2V3( fldV3("Price <span class=\"fld-hint\">optional</span>","",s.price,"$15","updateBookingServiceV3("+idx+",'price',this.value)"), '<div class="fld-group"><label class="fld-label">Staff assignment</label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'staff_mode',this.value)\">"+staffModeOpts+'</select></div>' ) + '<div class="fld-group"><label class="fld-label">Belongs to <span class="fld-hint">optional — locks this service to one specific stylist</span></label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'resource_id',this.value)\">"+resourceOpts+'</select>' + (hasStylists ? '' : '<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Add stylists in the Team tab and save once — they\'ll appear here to assign specific services to.</div>') + '</div>'; return makeRepItemV3(s.name || "Service", body, "removeBookingServiceV3("+idx+")"); }
+function bookingServiceStaffModeOptions(mode){ return '<option value="choose"'+(mode!=="any"?" selected":"")+'>Customer picks a team member</option><option value="any"'+(mode==="any"?" selected":"")+'>Any available team member</option>'; }
+function bookingServiceResourceOptions(selectedId){ var opts = '<option value="">Shared (any available team member)</option>'; (v3state.team||[]).forEach(function(m){ if(!m.resource_id) return; opts += '<option value="'+escV3(m.resource_id)+'"'+(selectedId===m.resource_id?" selected":"")+'>'+escV3(m.name||"Unnamed")+'</option>'; }); return opts; }
+function renderBookingServiceRowV3(s, idx){ var staffModeOpts = bookingServiceStaffModeOptions(s.staff_mode); var resourceOpts = bookingServiceResourceOptions(s.resource_id || ""); var hasStylists = (v3state.team||[]).some(function(m){ return !!m.resource_id; }); var body = row2V3( fldV3("Service name","",s.name,"e.g. Consultation","updateBookingServiceV3("+idx+",'name',this.value)"), fldV3("Duration (minutes)","",s.duration_min,"30","updateBookingServiceV3("+idx+",'duration_min',this.value)",' type="number" min="5" step="5"') ) + row2V3( fldV3("Price <span class=\"fld-hint\">optional</span>","",s.price,"$15","updateBookingServiceV3("+idx+",'price',this.value)"), '<div class="fld-group"><label class="fld-label">Staff assignment</label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'staff_mode',this.value)\">"+staffModeOpts+'</select></div>' ) + '<div class="fld-group"><label class="fld-label">Belongs to <span class="fld-hint">optional — locks this service to one specific team member</span></label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'resource_id',this.value)\">"+resourceOpts+'</select>' + (hasStylists ? '' : '<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Add team members in the Team tab and save once — they\'ll appear here to assign specific services to.</div>') + '</div>'; return makeRepItemV3(s.name || "Service", body, "removeBookingServiceV3("+idx+")"); }
 window.addBookingService = function(){ v3state.bookingServices.push({ id: 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), service_id: null, name: "", duration_min: 30, price: "", staff_mode: "choose", resource_id: "", }); renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty"); window.markDirty(); };
 window.removeBookingServiceV3 = function(idx){ var svc = v3state.bookingServices[idx]; if (svc && svc.service_id) { if (!Array.isArray(v3state._deletedServiceIds)) v3state._deletedServiceIds = []; v3state._deletedServiceIds.push(svc.service_id); } v3state.bookingServices.splice(idx, 1); renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty"); window.markDirty(); };
 window.updateBookingServiceV3 = function(idx, key, val){ if (v3state.bookingServices[idx]) { v3state.bookingServices[idx][key] = val; window.markDirty(); } if (key === "name") { var items = document.querySelectorAll("#booking-services-rep-list .rep-item"); if (items[idx]) { var t = items[idx].querySelector(".rep-item-title"); if (t) t.textContent = val || "Service"; } } };
