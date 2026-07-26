@@ -13,7 +13,7 @@
 html{scroll-behavior:smooth}
 body{font-family:var(--font-body);background:var(--surface);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
 h1,h2,h3{font-family:var(--font-head);font-weight:800;letter-spacing:-.025em}
-input,button{font:inherit}
+input,button,select{font:inherit}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;border:none;background:none}
 
@@ -39,9 +39,6 @@ button{cursor:pointer;border:none;background:none}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed}
 .btn-ghost{background:transparent;color:var(--ink2);border-color:var(--line)}
 .btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
-.btn-ghost:disabled{opacity:.5;cursor:not-allowed}
-.btn-whatsapp{background:#25D366;color:#fff}
-.btn-whatsapp:hover{background:#1ebe5c}
 .btn-sm{padding:8px 16px;font-size:.8rem}
 
 .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
@@ -75,6 +72,7 @@ button{cursor:pointer;border:none;background:none}
 @media(max-width:640px){.chip-grid{grid-template-columns:repeat(2,1fr)}}
 .demo-chip{padding:14px 10px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);transition:.2s;text-align:center;font-weight:600;font-size:.85rem;cursor:pointer}
 .demo-chip:hover{border-color:var(--ink);transform:translateY(-2px);background:var(--surface)}
+.demo-chip.active{border-color:var(--green);background:var(--green-bg)}
 .demo-chip .em{font-size:1.6rem}
 
 .demo-form{padding:28px;display:flex;flex-direction:column;gap:14px}
@@ -83,18 +81,7 @@ button{cursor:pointer;border:none;background:none}
 .demo-form input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:.95rem;background:var(--card)}
 .demo-form input:focus{outline:none;border-color:var(--ink)}
 
-.fb-row{display:flex;gap:8px}
-.fb-row input{flex:1}
-.fb-status{font-size:.75rem;min-height:16px;color:var(--ink3)}
-.fb-status.ok{color:var(--green);font-weight:600}
-.fb-status.err{color:#b3261e}
-
-.paths-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:640px){.paths-wrap{grid-template-columns:1fr}}
-.path-option{border:2px solid var(--line);border-radius:14px;padding:16px 18px;transition:.3s;cursor:pointer;background:var(--card)}
-.path-option:hover{border-color:var(--ink)}
-.path-option .badge{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 12px;border-radius:20px;background:var(--ink);color:#fff}
-.path-option .badge.recommended{background:#25D366}
+.notice{font-size:.78rem;color:var(--ink2);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;line-height:1.5}
 
 .toast{position:fixed;bottom:30px;right:30px;z-index:999;background:var(--ink);color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.3);transform:translateY(100px);opacity:0;transition:all .4s;max-width:420px}
 .toast.show{transform:translateY(0);opacity:1}
@@ -164,8 +151,8 @@ footer{padding:56px 0 40px}
 
 <section class="hero" id="start">
   <div class="wrap">
-    <h1>Your real website, <span class="g">rendered as you type.</span></h1>
-    <p>This isn't a mockup — it's the actual template your site will launch with, updating live with your name, industry and photo.</p>
+    <h1>See your name on a <span class="g">real website, instantly.</span></h1>
+    <p>Pick your industry, type your business name — see it live on one of our real templates. Claim it via WhatsApp to make everything else yours too.</p>
 
     <div class="trust-bar">
       <span>
@@ -191,44 +178,22 @@ footer{padding:56px 0 40px}
       <div id="stepChips" class="demo-form">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
           <h3 style="font-weight:700;font-size:1.15rem">What kind of business?</h3>
-          <span style="font-size:.78rem;color:var(--ink3)">Tap one to preview your real template</span>
         </div>
         <div class="chip-grid" id="chipGrid"></div>
-        <div style="text-align:center;margin-top:10px;font-size:.8rem;color:var(--ink3)">
-          <span>or</span>
-          <button type="button" id="skipChipsBtn" style="color:var(--green);font-weight:600;text-decoration:underline;cursor:pointer">skip &amp; type your details</button>
-        </div>
       </div>
 
       <div id="stepForm" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
           <div class="demo-form" style="padding:20px 24px">
-            <button type="button" class="btn btn-ghost btn-sm" id="backBtn" style="align-self:flex-start;padding:4px 10px;font-size:.78rem">‹ Back</button>
-
-            <div class="paths-wrap">
-              <div class="path-option" id="manualPath" style="border-color:var(--ink)">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                  <span style="font-size:1.1rem">🏷️</span>
-                  <span style="font-weight:600;font-size:.85rem">Business name</span>
-                </div>
-                <input type="text" id="bizName" placeholder="e.g. Tendai's Hardware" style="font-size:.85rem;padding:10px 12px">
-              </div>
-              <div class="path-option" id="industryPath" style="border-color:var(--ink)">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                  <span style="font-size:1.1rem">🏢</span>
-                  <span style="font-weight:600;font-size:.85rem">Industry</span>
-                </div>
-                <input type="text" id="industryInput" placeholder="e.g. salon, school" style="font-size:.85rem;padding:10px 12px">
-              </div>
-            </div>
+            <button type="button" class="btn btn-ghost btn-sm" id="backBtn" style="align-self:flex-start;padding:4px 10px;font-size:.78rem">‹ Back — change industry</button>
 
             <div class="field">
-              <label for="fbPageUrl">Facebook Page URL <span style="font-weight:400;color:var(--ink3)">(optional)</span></label>
-              <div class="fb-row">
-                <input type="url" id="fbPageUrl" placeholder="https://facebook.com/yourpage">
-                <button type="button" id="fetchFbBtn" class="btn btn-ghost btn-sm">Fetch info</button>
-              </div>
-              <div class="fb-status" id="fbStatus"></div>
+              <label for="bizName">Your business name</label>
+              <input type="text" id="bizName" placeholder="e.g. Tendai's Hardware" autofocus>
+            </div>
+
+            <div class="notice">
+              This preview uses a real example site for <b id="industryLabel">this industry</b> — the photos, products and details you see belong to that example. After you claim your site on WhatsApp, you'll replace everything with your own.
             </div>
 
             <button id="generateBtn" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:1rem">
@@ -241,12 +206,12 @@ footer{padding:56px 0 40px}
 
           <div style="padding:16px;display:flex;flex-direction:column;background:var(--surface);border-left:1px solid var(--line)">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <span style="font-weight:600;font-size:.85rem">Live preview — your real template</span>
+              <span style="font-weight:600;font-size:.85rem">Live preview</span>
               <span class="live-badge" id="previewStatus"><span class="live-dot"></span>live</span>
             </div>
             <iframe id="livePreview" src="about:blank"></iframe>
             <div style="font-size:.7rem;color:var(--ink3);text-align:center;margin-top:8px">
-              ✏️ After claiming: Add your own photos, edit every word, set your prices
+              ✏️ After claiming: swap in your own photos, prices and words
             </div>
           </div>
         </div>
@@ -256,7 +221,7 @@ footer{padding:56px 0 40px}
         <div style="font-size:3rem;margin-bottom:12px">🎉</div>
         <h3 style="font-size:1.4rem" id="resultTitle">Like what you see?</h3>
         <p style="color:var(--ink2);margin:8px 0 16px" id="resultDesc">Message us on WhatsApp to claim it — your WhatsApp number becomes your login.</p>
-        <a id="claimWhatsAppBtn" class="btn btn-whatsapp" style="padding:14px 28px;display:inline-flex;align-items:center;gap:10px" href="#" target="_blank">
+        <a id="claimWhatsAppBtn" class="btn btn-whatsapp" style="padding:14px 28px;display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff" href="#" target="_blank">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
           Claim via WhatsApp
         </a>
@@ -282,9 +247,9 @@ footer{padding:56px 0 40px}
   <div class="wrap">
     <h2 style="text-align:center;font-size:2rem;margin-bottom:40px">How it works</h2>
     <div class="grid-3">
-      <div class="step"><div class="no">1</div><h4>See your real site instantly</h4><p>Type your details — the preview is your actual template, live.</p></div>
+      <div class="step"><div class="no">1</div><h4>See your name on a real site</h4><p>Pick your industry and type your name — the preview is live instantly.</p></div>
       <div class="step"><div class="no">2</div><h4>Claim via WhatsApp</h4><p>Message us once. Your WhatsApp number becomes your login.</p></div>
-      <div class="step"><div class="no">3</div><h4>Edit &amp; publish</h4><p>Add photos, change colors, then publish live on your free domain.</p></div>
+      <div class="step"><div class="no">3</div><h4>Make it yours</h4><p>Swap in your own photos, prices and words, then publish on your free domain.</p></div>
     </div>
   </div>
 </section>
@@ -341,23 +306,18 @@ footer{padding:56px 0 40px}
 "use strict";
 
 const WHATSAPP_NUMBER = '263719362321';
-
-// Server-side endpoints — both already deployed and live.
-const OG_ENDPOINT      = 'https://app.websites.co.zw/api/og';
-// preview.websites.co.zw matches the existing *.websites.co.zw wildcard
-// route already bound to the render worker — no new CF route needed.
 const PREVIEW_ENDPOINT = 'https://preview.websites.co.zw/api/live-preview';
 
-// Chip labels map directly onto mapIndustryToTemplate() in the render worker.
+// Chip key = template_id, matching DEMO_SITE_MAP keys in the render worker.
 const INDUSTRIES = [
-  { key:'salon', label:'Salons', em:'💈' },
-  { key:'restaurant', label:'Restaurants', em:'🍲' },
-  { key:'school', label:'Schools', em:'🏫' },
-  { key:'church', label:'Churches', em:'⛪' },
-  { key:'realestate', label:'Real Estate', em:'🏠' },
-  { key:'consultant', label:'Consultants', em:'💼' },
-  { key:'hardware', label:'Hardware', em:'🔧' },
-  { key:'retail', label:'Retail', em:'🛍️' },
+  { key:'beauty-salon',       label:'Salons',       em:'💈' },
+  { key:'grill-house',        label:'Restaurants',  em:'🍲' },
+  { key:'school-institution', label:'Schools',      em:'🏫' },
+  { key:'church',             label:'Churches',     em:'⛪' },
+  { key:'property-estate',    label:'Real Estate',  em:'🏠' },
+  { key:'advisory-firm',      label:'Consultants',  em:'💼' },
+  { key:'hardware-store',     label:'Hardware',     em:'🔧' },
+  { key:'bold-retail',        label:'Retail',       em:'🛍️' },
 ];
 
 // DOM refs
@@ -369,13 +329,9 @@ const livePreview = document.getElementById('livePreview');
 const previewStatus = document.getElementById('previewStatus');
 const domainSlug = document.getElementById('domainSlug');
 const bizName = document.getElementById('bizName');
-const industryInput = document.getElementById('industryInput');
-const fbPageUrl = document.getElementById('fbPageUrl');
-const fetchFbBtn = document.getElementById('fetchFbBtn');
-const fbStatus = document.getElementById('fbStatus');
-const generateBtn = document.getElementById('generateBtn');
+const industryLabel = document.getElementById('industryLabel');
 const backBtn = document.getElementById('backBtn');
-const skipChipsBtn = document.getElementById('skipChipsBtn');
+const generateBtn = document.getElementById('generateBtn');
 const claimWhatsAppBtn = document.getElementById('claimWhatsAppBtn');
 const toast = document.getElementById('toast');
 const toastMsg = document.getElementById('toastMsg');
@@ -383,10 +339,8 @@ const toastClose = document.getElementById('toastClose');
 const waFab = document.getElementById('waFab');
 
 let generating = false;
-
-// Holds whatever we managed to pull from Facebook. Null until a fetch
-// succeeds; cleared again if the person edits the URL afterwards.
-let fetchedOg = null; // { title, image, description }
+let selectedTemplate = '';
+let selectedLabel = '';
 
 function debounce(fn, wait) {
   let t;
@@ -398,56 +352,38 @@ function debounce(fn, wait) {
 
 // Render chips
 chipGrid.innerHTML = INDUSTRIES.map(ind => `
-  <button type="button" class="demo-chip" data-key="${ind.key}">
+  <button type="button" class="demo-chip" data-key="${ind.key}" data-label="${ind.label}">
     <span class="em">${ind.em}</span>
     <span class="lb">${ind.label}</span>
   </button>
 `).join('');
 
-// Chip click
 chipGrid.addEventListener('click', function(e) {
   const chip = e.target.closest('.demo-chip');
   if (!chip) return;
-  const ind = INDUSTRIES.find(i => i.key === chip.dataset.key);
-  if (!ind) return;
-  if (!bizName.value) bizName.value = ind.label + ' Business';
-  industryInput.value = ind.label;
-  stepChips.style.display = 'none';
-  stepForm.style.display = 'grid';
-  updateSlug();
-  renderLivePreview();
-});
-
-// Skip chips
-skipChipsBtn.addEventListener('click', function() {
+  selectedTemplate = chip.dataset.key;
+  selectedLabel = chip.dataset.label;
+  industryLabel.textContent = selectedLabel.toLowerCase();
   stepChips.style.display = 'none';
   stepForm.style.display = 'grid';
   bizName.focus();
   renderLivePreview();
 });
 
-// Back
 backBtn.addEventListener('click', function() {
   stepForm.style.display = 'none';
   stepChips.style.display = 'block';
   stepResult.style.display = 'none';
 });
 
-// Update slug
 function updateSlug() {
   const name = bizName.value.trim() || 'Your Business';
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'yourbusiness';
   domainSlug.textContent = slug;
 }
 
-// ── Live preview — a real render from the render worker's template system,
-// not a client-side mockup. Debounced so we don't hammer the endpoint on
-// every keystroke; each update is a full iframe navigation, so no CORS is
-// involved at all.
 const debouncedRender = debounce(renderLivePreview, 380);
-
 bizName.addEventListener('input', function() { updateSlug(); debouncedRender(); });
-industryInput.addEventListener('input', function() { updateSlug(); debouncedRender(); });
 
 function setPreviewStatus(text, updating) {
   previewStatus.classList.toggle('updating', !!updating);
@@ -455,13 +391,9 @@ function setPreviewStatus(text, updating) {
 }
 
 function renderLivePreview() {
+  if (!selectedTemplate) return;
   const name = bizName.value.trim() || 'Your Business';
-  const industry = industryInput.value.trim() || 'business';
-  const image = fetchedOg && fetchedOg.image ? fetchedOg.image : '';
-
-  const params = new URLSearchParams({ name, industry });
-  if (image) params.set('image', image);
-
+  const params = new URLSearchParams({ name, template: selectedTemplate });
   setPreviewStatus('updating…', true);
   livePreview.src = PREVIEW_ENDPOINT + '?' + params.toString();
 }
@@ -469,72 +401,6 @@ function renderLivePreview() {
 livePreview.addEventListener('load', function() {
   if (livePreview.src && livePreview.src !== 'about:blank') {
     setPreviewStatus('live', false);
-  }
-});
-
-// ── Facebook OG fetch ─────────────────────────────────────────────────────
-function setFbStatus(msg, tone) {
-  fbStatus.textContent = msg;
-  fbStatus.className = 'fb-status' + (tone ? ' ' + tone : '');
-}
-
-function isFacebookUrl(raw) {
-  try {
-    const u = new URL(raw);
-    const host = u.hostname.replace(/^www\./, '').replace(/^m\./, '').replace(/^web\./, '');
-    return host === 'facebook.com';
-  } catch {
-    return false;
-  }
-}
-
-async function fetchFacebookInfo() {
-  const raw = fbPageUrl.value.trim();
-  if (!raw) { setFbStatus("Paste a Facebook Page URL first.", 'err'); return; }
-  if (!isFacebookUrl(raw)) { setFbStatus("Enter a facebook.com page link.", 'err'); return; }
-
-  fetchedOg = null;
-  fetchFbBtn.disabled = true;
-  fetchFbBtn.textContent = 'Checking…';
-  setFbStatus("Checking Facebook page…", null);
-
-  try {
-    const resp = await fetch(OG_ENDPOINT + '?url=' + encodeURIComponent(raw));
-    const data = await resp.json().catch(() => ({}));
-
-    if (!resp.ok || data.error) {
-      // Facebook blocking automated requests is expected behaviour, not a
-      // bug — fail quietly and let the person fill things in by hand.
-      setFbStatus("Couldn't read that page automatically — you can still fill in the details below.", 'err');
-      return;
-    }
-
-    fetchedOg = { title: data.title || '', image: data.image || '', description: data.description || '' };
-
-    if (fetchedOg.title && !bizName.value) {
-      bizName.value = fetchedOg.title;
-      updateSlug();
-    }
-
-    setFbStatus("✓ Got " + (fetchedOg.image ? 'name & cover photo' : 'name') + " from Facebook.", 'ok');
-    renderLivePreview();
-  } catch (err) {
-    setFbStatus("Couldn't reach Facebook right now — you can still fill in the details below.", 'err');
-  } finally {
-    fetchFbBtn.disabled = false;
-    fetchFbBtn.textContent = 'Fetch info';
-  }
-}
-
-fetchFbBtn.addEventListener('click', fetchFacebookInfo);
-
-// If they edit the URL after a successful fetch, the cached data no longer
-// matches — drop it so the preview doesn't show a stale photo.
-fbPageUrl.addEventListener('input', function() {
-  if (fetchedOg) {
-    fetchedOg = null;
-    setFbStatus('', null);
-    renderLivePreview();
   }
 });
 
@@ -549,24 +415,13 @@ toastClose.addEventListener('click', () => toast.classList.remove('show'));
 
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-// ── Continue → claim step ────────────────────────────────────────────────
-// The preview above is already the real thing. This button's only job is
-// to move to the WhatsApp claim step — the brief pause is just building
-// the prefilled WhatsApp message, nothing is being "generated".
 async function generateSite() {
   if (generating) return;
-
   const name = bizName.value.trim();
-  const industry = industryInput.value.trim();
 
   if (!name) {
     showToast('Please enter your business name.', 'err');
     bizName.focus();
-    return;
-  }
-  if (!industry) {
-    showToast('Please enter your industry.', 'err');
-    industryInput.focus();
     return;
   }
 
@@ -592,43 +447,27 @@ async function generateSite() {
 
 generateBtn.addEventListener('click', generateSite);
 
-// WhatsApp FAB
 waFab.addEventListener('click', function() {
   const name = bizName.value.trim() || 'My Business';
   const msg = encodeURIComponent(`Hi! I'm interested in building a site for ${name} on websites.co.zw`);
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, '_blank');
 });
 
-// Nav CTA
 document.getElementById('navCta').addEventListener('click', function(e) {
   e.preventDefault();
   document.getElementById('start').scrollIntoView({ behavior: 'smooth' });
 });
 
-// Keyboard shortcut
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && (document.activeElement === bizName ||
-      document.activeElement === industryInput)) {
+  if (e.key === 'Enter' && document.activeElement === bizName) {
     e.preventDefault();
     generateSite();
   }
 });
 
-// Init — seed a demo example so the preview panel is never blank, then
-// render it immediately through the real template pipeline.
-setTimeout(() => {
-  if (!bizName.value && !industryInput.value) {
-    bizName.value = 'Tendai\'s Hardware';
-    industryInput.value = 'hardware';
-    updateSlug();
-    renderLivePreview();
-  }
-}, 400);
-
 console.log('🚀 websites.co.zw — landing page ready!');
 console.log('📱 WhatsApp:', WHATSAPP_NUMBER);
 console.log('🔗 Preview endpoint:', PREVIEW_ENDPOINT);
-console.log('🔗 OG fetch endpoint:', OG_ENDPOINT);
 
 })();
 </script>
