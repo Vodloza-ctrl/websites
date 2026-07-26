@@ -281,7 +281,9 @@ if (!token) {
   location.replace(DASH + "?next=" + encodeURIComponent(location.href));
 }
 
-var USD_PRICE = { starter: 30, pro: 60 };
+// Bundle pricing — mirrors PLAN_PRICES in customer.html. Domains are never
+// priced or sold separately; they're included free inside these totals.
+var USD_PRICE = { starter: 30, pro: 50 };
 // ZiG disabled until a live RBZ rate is wired in — USD only for now.
 var currency  = "USD";
 var site      = null;
@@ -330,6 +332,9 @@ function renderCheckout() {
     : site.id + ".websites.co.zw";
 
   var purposeLabel = purpose === "renewal" ? "Annual renewal" : "Annual subscription";
+  var domainLine = plan === "pro"
+    ? "Free .com + .co.zw domain included"
+    : "Free .co.zw domain included";
 
   app.innerHTML = "";
   var card = make(
@@ -340,15 +345,15 @@ function renderCheckout() {
       '</div>' +
       '<div class="card-body">' +
 
-        // Receipt
+        // Receipt — no per-domain pricing, ever. Domain is a plan feature, not a line item.
         '<div class="receipt">' +
           '<div class="receipt-row">' +
             '<div class="receipt-key"><strong>' + esc(planLabel) + ' Plan</strong>' + esc(purposeLabel) + '</div>' +
             '<div class="receipt-val" id="amountDisplay">$' + usdAmount + ' USD</div>' +
           '</div>' +
           '<div class="receipt-row">' +
-            '<div class="receipt-key"><strong>Your address</strong>.co.zw subdomain included</div>' +
-            '<div class="receipt-val">' + esc(siteUrl) + '</div>' +
+            '<div class="receipt-key"><strong>Your domain</strong>' + esc(domainLine) + '</div>' +
+            '<div class="receipt-val">Included</div>' +
           '</div>' +
           '<div class="receipt-row total">' +
             '<div class="receipt-key">Total due today</div>' +
@@ -359,7 +364,7 @@ function renderCheckout() {
         // Includes
         '<div class="includes">' +
           inc("12 months online") +
-          inc("Free .co.zw subdomain") +
+          inc(domainLine) +
           inc("AI content generation (5 uses)") +
           inc("Unlimited edits & saves") +
           inc("Mobile-optimised site") +
