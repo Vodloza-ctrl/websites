@@ -442,6 +442,19 @@
       return;
     }
     sites.forEach(function(s){ grid.appendChild(siteCard(s)); });
+
+    // editor.html's Publish tab redirects here with ?openPublish=<site_id>
+    // instead of running its own (previously price-exposed, plan-buggy)
+    // checkout — this is what actually opens the modal for that site once
+    // the cards above exist to read status/name off of.
+    var openId = new URLSearchParams(location.search).get("openPublish");
+    if (openId) {
+      history.replaceState({}, "", location.pathname);
+      var target = sites.find(function(s){ return s.id === openId; });
+      if (target && typeof window.startPublish === "function") {
+        window.startPublish(target.id, target.site_name || target.id, target.status);
+      }
+    }
   }
 
   function displayName(){ return (state.owner && (state.owner.name || state.owner.phone)) || "Your account"; }
