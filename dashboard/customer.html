@@ -722,12 +722,31 @@
       _domainField("dw_c2","2nd choice (optional)","alternative name",".co.zw","_checkCozwChoice(2)","dw_c2_status")+
       _domainField("dw_c3","3rd choice (optional)","fallback name",".co.zw","_checkCozwChoice(3)","dw_c3_status")+
       '<p style="font-size:12px;color:#868a96;margin:8px 0 16px">Letters, numbers and hyphens only.</p>'+
+      '<div style="margin:4px 0 18px;padding-top:16px;border-top:1px solid #e3e5ea">'+
+        '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:#1a1b22">'+
+          '<input type="checkbox" id="dw_own_toggle" onchange="_toggleOwnDomain(this.checked)" style="width:16px;height:16px;accent-color:#a87d1a;flex-shrink:0">'+
+          '🔗 I already own a domain and want to use it instead'+
+        '</label>'+
+        '<div id="dw_own_section" style="display:none;margin-top:10px">'+
+          '<p style="font-size:12px;color:#868a96;margin:0 0 8px;line-height:1.5">Enter the domain you already own. We\'ll connect it to your site once payment is confirmed and send you the DNS records to add at your registrar — the free domain choices above are skipped.</p>'+
+          '<input id="dw_own_domain" type="text" placeholder="e.g. mybusiness.com" style="width:100%;border:1px solid #e3e5ea;border-radius:9px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9.-]/g,\'\')">'+
+        '</div>'+
+      '</div>'+
       '<div style="display:flex;gap:10px">'+
         '<button onclick="_backToPlan()" style="flex:1;padding:11px;border:1px solid #e3e5ea;border-radius:9px;background:#fff;font-size:14px;font-weight:600;color:#4a4d59;cursor:pointer;font-family:inherit">← Back</button>'+
         '<button onclick="_saveDomainAndGoToCheckout()" class="btn btn-gold" style="flex:2;justify-content:center">Continue to payment →</button>'+
       '</div>'
     );
   }
+
+  window._toggleOwnDomain = function(checked) {
+    var section = document.getElementById("dw_own_section");
+    if (section) section.style.display = checked ? "" : "none";
+    if (checked) {
+      var ownInput = document.getElementById("dw_own_domain");
+      if (ownInput) ownInput.focus();
+    }
+  };
 
   // checkAction/statusId are optional — when present, a "Check" button and
   // a result area render alongside the field.
@@ -846,6 +865,39 @@
   // checkout.html, which is what actually calls /publish or /renew, sends
   // the browser to Paynow, and polls for real confirmation on return.
   window._saveDomainAndGoToCheckout = async function() {
+    var usingOwn = !!(document.getElementById("dw_own_toggle")||{}).checked;
+    var ownDomain = ((document.getElementById("dw_own_domain")||{}).value || "").trim();
+
+    if (usingOwn) {
+      if (!ownDomain || ownDomain.indexOf(".") === -1) {
+        alert("Please enter a valid domain you already own, e.g. mybusiness.com");
+        return;
+      }
+
+      setBody('<div style="text-align:center;padding:30px 20px"><div style="font-size:28px;margin-bottom:12px">⏳</div><p style="color:#4a4d59;font-size:14px">Saving your domain…</p></div>');
+
+      var ownToken = localStorage.getItem("wcz_token");
+      var ownHeaders = { "Content-Type": "application/json", "Authorization": "Bearer " + (ownToken || "") };
+      try {
+        var ownResp = await fetch(API + "/sites/" + encodeURIComponent(pubSiteId) + "/own-domain", {
+          method: "POST", headers: ownHeaders,
+          body: JSON.stringify({ domain: ownDomain })
+        });
+        var ownData = await ownResp.json().catch(function(){ return {}; });
+        if (!ownResp.ok) {
+          alert((ownData && ownData.message) || "Couldn't save that domain — check the format and try again.");
+          renderStep2_Domain();
+          return;
+        }
+      } catch (e) {
+        // Non-fatal — checkout can still proceed; worst case the domain
+        // needs re-entering, which is better than blocking payment entirely.
+      }
+
+      _goToCheckout();
+      return;
+    }
+
     var isPro = pubPlan === "pro";
     var comName = isPro ? ((document.getElementById("dw_com")||{}).value || "").trim() : "";
     var c1 = (document.getElementById("dw_c1")||{}).value || "";
