@@ -128,6 +128,20 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 12.5px; font-weight: 600; color: var(--ink2);
   letter-spacing: .02em; margin-bottom: 8px;
 }
+.phone-input {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--card);
+  margin-bottom: 6px;
+  transition: border-color .15s;
+}
+.phone-input:focus { outline: none; border-color: var(--gold); }
+.phone-input::placeholder { color: var(--muted); }
 .seg {
   display: flex; border: 1px solid var(--line);
   border-radius: var(--r-sm); overflow: hidden; margin-bottom: 6px;
@@ -269,6 +283,7 @@ button { font-family: inherit; cursor: pointer; }
 var APP        = "https://app.websites.co.zw";
 var DASH       = APP + "/dashboard/";
 var API_DASH   = APP + "/api";  // auth Worker — owns auth, ownership checks, and now delegates payments too
+var AUTH_BASE  = APP + "/auth";
 
 var params  = new URLSearchParams(location.search);
 var siteId  = params.get("site") || "";
@@ -292,6 +307,11 @@ var PAYMENTS_PUBLIC_BASE = "https://api.websites.co.zw";
 var pricingData = { usd: USD_PRICE, zig: null };
 var currency = "USD"; // toggled by the Pay-with buttons once ZiG is available
 var site      = null;
+// Prefilled from /auth/me when available — sign-in is phone/WhatsApp-based
+// so email in particular is often missing on first checkout; both stay
+// editable regardless of whether they were prefilled.
+var knownPhone = "";
+var knownEmail = "";
 
 var app = document.getElementById("app");
 
@@ -304,6 +324,16 @@ async function fetchPricing() {
   } catch (e) { /* non-fatal — USD-only checkout still works */ }
 }
 
+async function fetchKnownContact() {
+  try {
+    var r = await apiFetch(AUTH_BASE + "/me");
+    if (r.data && r.data.authenticated && r.data.owner) {
+      knownPhone = r.data.owner.phone || "";
+      knownEmail = r.data.owner.email || "";
+    }
+  } catch (e) { /* non-fatal — fields just start blank */ }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────
 (async function init() {
   // Returning from Paynow with a reference → show polling screen
@@ -311,13 +341,14 @@ async function fetchPricing() {
 
   if (!siteId) return showError("No site specified. <a href='" + DASH + "'>Go to dashboard →</a>");
 
-  // Load site + live pricing in parallel — pricing fetch is best-effort and
-  // never blocks checkout if it fails.
+  // Load site + live pricing + known contact info in parallel — pricing
+  // and contact-prefill are both best-effort and never block checkout.
   var r;
   try {
     var results = await Promise.all([
       apiFetch(API_DASH + "/sites/" + siteId),
       fetchPricing(),
+      fetchKnownContact(),
     ]);
     r = results[0];
   } catch (e) {
@@ -402,6 +433,17 @@ function renderCheckout() {
         '</div>' +
         '<div class="currency-note">' + (zigAvailable ? "ZiG price updates automatically with the daily rate." : "ZiG payments are coming soon — paying in USD for now.") + '</div>' +
 
+        // EcoCash phone number — Paynow pushes an approval prompt straight
+        // to this number instead of redirecting the browser to a hosted page.
+        '<div class="field-label" style="margin-top:14px">EcoCash phone number</div>' +
+        '<input type="tel" id="payerPhone" class="phone-input" placeholder="e.g. 0772 123 456" autocomplete="tel" value="' + esc(knownPhone) + '" />' +
+
+        // Email — Paynow's Express Checkout requires a real email for the
+        // receipt; sign-in here doesn't always collect one.
+        '<div class="field-label">Email for your receipt</div>' +
+        '<input type="email" id="payerEmail" class="phone-input" placeholder="you@example.com" autocomplete="email" value="' + esc(knownEmail) + '" />' +
+        '<div class="currency-note">We\'ll send an EcoCash approval prompt to your phone, and your Paynow receipt to this email.</div>' +
+
         // Error box
         '<div class="msg" id="errMsg"></div>' +
 
@@ -441,10 +483,34 @@ function inc(text) {
 // delegates the actual Paynow call to the payments Worker. We never talk to
 // api.websites.co.zw directly from the browser for the payment itself —
 // only /pricing (a public, read-only endpoint) is fetched directly.
+//
+// This is now the EcoCash phone-push flow (same pattern ZVAKHO's payments
+// worker uses): Paynow sends an approval prompt straight to the phone
+// number below — there's no hosted payment page to redirect to, so once
+// the worker accepts the request we go straight to the "check your phone"
+// polling screen instead of navigating away.
 window.startPayment = async function () {
   var btn = document.getElementById("payBtn");
   var err = document.getElementById("errMsg");
   if (err) { err.className = "msg"; err.innerHTML = ""; }
+
+  var phoneInput = document.getElementById("payerPhone");
+  var phone = phoneInput ? phoneInput.value.trim() : "";
+  var phoneDigits = phone.replace(/\D/g, "");
+  if (phoneDigits.length < 9) {
+    showFormError("Enter the phone number you'll approve the EcoCash prompt on.");
+    if (phoneInput) phoneInput.focus();
+    return;
+  }
+
+  var emailInput = document.getElementById("payerEmail");
+  var email = emailInput ? emailInput.value.trim() : "";
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showFormError("Enter a valid email for your Paynow receipt.");
+    if (emailInput) emailInput.focus();
+    return;
+  }
+
   btn.classList.add("loading");
   btn.disabled = true;
 
@@ -453,7 +519,7 @@ window.startPayment = async function () {
   // The server derives the actual amount from plan + currency itself
   // (see payments-worker.js zigAmountFor) — we never send a client-computed
   // amount, for either USD or ZiG.
-  var body     = { plan: plan, currency: currency };
+  var body     = { plan: plan, currency: currency, phone: phone, email: email };
 
   var r;
   try {
@@ -468,12 +534,20 @@ window.startPayment = async function () {
     return;
   }
 
-  if (!r.data.payment_url) {
-    var detail = (r.data.detail && r.data.detail.error) || r.data.error || "Payment could not be initiated.";
-    showFormError(detail === "currency_unavailable"
+  if (!r.data.poll_url || !r.data.reference) {
+    // r.data.detail now carries the actual Paynow-side error (auth-worker
+    // no longer wraps it an extra level deep), so this shows the real
+    // reason instead of just the literal string "paynow_error".
+    var detail = r.data.detail || r.data.error || "Payment could not be initiated.";
+    if (typeof detail === "object") detail = detail.error || detail.detail || JSON.stringify(detail);
+    showFormError(r.data.error === "currency_unavailable"
       ? (currency === "ZIG" ? "ZiG payments aren't available right now. Please try again shortly or switch to USD." : "USD payments aren't available right now. Please try again shortly.")
-      : detail === "zig_rate_not_configured"
+      : r.data.error === "zig_rate_not_configured"
       ? "ZiG isn't set up yet — please pay in USD for now."
+      : r.data.error === "missing_phone"
+      ? "Enter the phone number you'll approve the EcoCash prompt on."
+      : r.data.error === "missing_or_invalid_email"
+      ? "Enter a valid email for your Paynow receipt."
       : "Couldn't start payment: " + detail + ". Try again.");
     btn.classList.remove("loading"); btn.disabled = false;
     return;
@@ -481,20 +555,26 @@ window.startPayment = async function () {
 
   sessionStorage.setItem("wcz_pay_ref", r.data.reference);
 
-  // Go to Paynow — Paynow will redirect back to this page with ?ref=<reference>
-  location.href = r.data.payment_url;
+  // No redirect — go straight to the phone-push polling screen.
+  startPolling(r.data.reference, {
+    heading: "Check your phone",
+    sub: "We've sent an EcoCash approval prompt to " + esc(phone) + ".<br>Approve it, then wait a moment here.",
+  });
 };
 
-// ── Polling screen (returned from Paynow) ──────────────────────────────────
-function startPolling(reference) {
-  document.getElementById("barLabel").textContent = "Confirming payment…";
+// ── Polling screen (phone-push, or returning from Paynow's ?ref=) ──────────
+function startPolling(reference, opts) {
+  opts = opts || {};
+  var heading = opts.heading || "Confirming your payment…";
+  var sub     = opts.sub || "This usually takes under 30 seconds.<br>Don't close this tab.";
+  document.getElementById("barLabel").textContent = heading;
   app.innerHTML = "";
   var card = make(
     '<div class="card">' +
       '<div class="polling-card">' +
         '<div class="polling-spinner"></div>' +
-        '<h2>Confirming your payment…</h2>' +
-        '<p>This usually takes under 30 seconds.<br>Don\'t close this tab.</p>' +
+        '<h2>' + heading + '</h2>' +
+        '<p>' + sub + '</p>' +
         '<button class="btn-ghost" id="manualCheck" style="display:none" onclick="pollNow(\'' + esc(reference) + '\')">Check again</button>' +
       '</div>' +
     '</div>'
@@ -502,7 +582,7 @@ function startPolling(reference) {
   app.appendChild(card);
 
   var attempts = 0;
-  var maxAttempts = 12;
+  var maxAttempts = 20; // phone-push approval can take longer than the old redirect flow
   var interval = setInterval(async function () {
     attempts++;
     var result = await pollStatus(reference);
@@ -520,7 +600,7 @@ function startPolling(reference) {
       if (btn) {
         btn.style.display = "inline-flex";
         var p = btn.previousElementSibling;
-        if (p) p.textContent = "Taking longer than expected. Click below to check again.";
+        if (p) p.innerHTML = "Taking longer than expected. If you haven't approved the prompt on your phone yet, do that now, then click below.";
       }
     }
   }, 3000);
