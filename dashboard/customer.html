@@ -769,7 +769,11 @@
       });
       var data = await r.json();
       if (btn) { btn.disabled = false; btn.textContent = "Check"; }
-      if (!data.ok) { resultEl.innerHTML = '<span style="color:#c0392b">Couldn\'t check right now — try again.</span>'; return; }
+      if (!data.ok) {
+        var comErrDetail = data.detail || data.error || "unknown error";
+        resultEl.innerHTML = '<span style="color:#c0392b">Couldn\'t check right now: '+esc(String(comErrDetail))+'</span>';
+        return;
+      }
       var suggestions = data.suggestions || [];
       var main = suggestions[0];
       var alts = suggestions.filter(function(s){ return s.alternative; });
@@ -819,7 +823,11 @@
         body: JSON.stringify({ query: q, tld: "cozw" })
       });
       var data = await r.json();
-      if (!data.ok) { statusEl.innerHTML = '<span style="color:#c0392b">Couldn\'t check right now.</span>'; return; }
+      if (!data.ok) {
+        var cozwErrDetail = data.detail || data.error || "unknown error";
+        statusEl.innerHTML = '<span style="color:#c0392b">Couldn\'t check right now: '+esc(String(cozwErrDetail))+'</span>';
+        return;
+      }
       if (data.checked === false) {
         statusEl.innerHTML = '<span style="color:#868a96">'+esc(data.message || "Couldn't check right now.")+'</span>';
       } else if (data.likely_taken) {
