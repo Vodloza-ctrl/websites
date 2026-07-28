@@ -696,16 +696,18 @@
   };
 
   // Domain-collection step, gated by plan. No pricing shown anywhere here —
-  // domains are bundled into the plan the person already chose.
+  // domains are bundled into the plan the person already chose. Both
+  // sections now let the person check availability before submitting,
+  // instead of finding out later a name was never available.
   function renderStep2_Domain() {
     var isPro = pubPlan === "pro";
     var comSection = isPro ?
       '<div style="margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid #e3e5ea">'+
         '<div style="font-size:13px;font-weight:700;color:#1a1b22;margin-bottom:4px">🌐 Your .com domain (included free)</div>'+
-        '<p style="font-size:12.5px;color:#868a96;margin:0 0 10px;line-height:1.5">Enter the name you\'d like. We\'ll check availability and register it automatically once payment is confirmed.</p>'+
-        _domainField("dw_com","","e.g. elitesports",".com")+
+        '<p style="font-size:12.5px;color:#868a96;margin:0 0 10px;line-height:1.5">Type a name and tap Check — this is a real, live availability check against the registrar. It\'ll register automatically once payment is confirmed.</p>'+
+        _domainField("dw_com","","e.g. elitesports",".com","_checkComDomain(this)","dw_com_result")+
       '</div>' : '';
-    var cozwLabel = isPro ? "Your .co.zw domain (included free)" : "Your .co.zw domain (included free)";
+    var cozwLabel = "Your .co.zw domain (included free)";
     setBody(
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">'+
         '<button onclick="_backToPlan()" style="background:none;border:1px solid #e3e5ea;border-radius:6px;padding:4px 10px;font-size:12px;color:#868a96;cursor:pointer;font-family:inherit">← Back</button>'+
@@ -714,11 +716,11 @@
       comSection+
       '<div style="font-size:13px;font-weight:700;color:#1a1b22;margin-bottom:4px">🇿🇼 '+cozwLabel+'</div>'+
       '<p style="font-size:12.5px;color:#868a96;margin:0 0 12px;line-height:1.5">'+
-        'Enter up to <strong>3 name preferences</strong> in order. Our team checks availability and registers your best available choice within <strong>1–2 business days</strong>.'+
+        'Enter up to <strong>3 name preferences</strong> in order. Tap Check for a quick signal on each — .co.zw has no public availability API, so this is a strong hint, not a guarantee. Our team confirms and registers your best available choice within <strong>1–2 business days</strong>.'+
       '</p>'+
-      _domainField("dw_c1","1st choice (required)","e.g. elitesports",".co.zw")+
-      _domainField("dw_c2","2nd choice (optional)","alternative name",".co.zw")+
-      _domainField("dw_c3","3rd choice (optional)","fallback name",".co.zw")+
+      _domainField("dw_c1","1st choice (required)","e.g. elitesports",".co.zw","_checkCozwChoice(1)","dw_c1_status")+
+      _domainField("dw_c2","2nd choice (optional)","alternative name",".co.zw","_checkCozwChoice(2)","dw_c2_status")+
+      _domainField("dw_c3","3rd choice (optional)","fallback name",".co.zw","_checkCozwChoice(3)","dw_c3_status")+
       '<p style="font-size:12px;color:#868a96;margin:8px 0 16px">Letters, numbers and hyphens only.</p>'+
       '<div style="display:flex;gap:10px">'+
         '<button onclick="_backToPlan()" style="flex:1;padding:11px;border:1px solid #e3e5ea;border-radius:9px;background:#fff;font-size:14px;font-weight:600;color:#4a4d59;cursor:pointer;font-family:inherit">← Back</button>'+
@@ -727,17 +729,108 @@
     );
   }
 
-  function _domainField(id, label, placeholder, tld) {
+  // checkAction/statusId are optional — when present, a "Check" button and
+  // a result area render alongside the field.
+  function _domainField(id, label, placeholder, tld, checkAction, statusId) {
+    var checkBtn = checkAction
+      ? '<button type="button" onclick="'+checkAction+'" style="padding:0 14px;border:1px solid #e3e5ea;border-radius:9px;background:#fff;font-size:12.5px;font-weight:600;color:#1a1b22;cursor:pointer;white-space:nowrap;margin-left:8px">Check</button>'
+      : '';
+    var clearOnInput = statusId ? " document.getElementById('"+statusId+"').innerHTML='';" : "";
     return '<div style="margin-bottom:10px">'+
       (label ? '<label style="font-size:12px;font-weight:600;color:#4a4d59;display:block;margin-bottom:5px">'+label+'</label>' : '')+
-      '<div style="display:flex;align-items:stretch;border:1px solid #e3e5ea;border-radius:9px;overflow:hidden;background:#fff">'+
-        '<input id="'+id+'" type="text" placeholder="'+placeholder+'"'+
-          ' style="flex:1;border:none;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;min-width:0"'+
-          ' oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,\'\').slice(0,63)">'+
-        '<span style="background:#f3f4f6;padding:11px 14px;font-size:13px;font-weight:600;color:#868a96;border-left:1px solid #e3e5ea;white-space:nowrap;flex-shrink:0">'+tld+'</span>'+
+      '<div style="display:flex;align-items:stretch">'+
+        '<div style="flex:1;display:flex;align-items:stretch;border:1px solid #e3e5ea;border-radius:9px;overflow:hidden;background:#fff">'+
+          '<input id="'+id+'" type="text" placeholder="'+placeholder+'"'+
+            ' style="flex:1;border:none;padding:11px 12px;font-size:14px;font-family:inherit;outline:none;min-width:0"'+
+            ' oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,\'\').slice(0,63);'+clearOnInput+'">'+
+          '<span style="background:#f3f4f6;padding:11px 14px;font-size:13px;font-weight:600;color:#868a96;border-left:1px solid #e3e5ea;white-space:nowrap;flex-shrink:0">'+tld+'</span>'+
+        '</div>'+
+        checkBtn+
       '</div>'+
+      (statusId ? '<div id="'+statusId+'" style="font-size:12px;margin-top:5px;min-height:15px;line-height:1.5"></div>' : '')+
     '</div>';
   }
+
+  // Real, live .com availability check via the Cloudflare Registrar API —
+  // shows available/taken plus clickable alternatives if taken.
+  window._checkComDomain = async function(btn) {
+    var input = document.getElementById("dw_com");
+    var resultEl = document.getElementById("dw_com_result");
+    var q = (input.value || "").trim();
+    if (!q) { resultEl.innerHTML = '<span style="color:#c0392b">Enter a name first.</span>'; return; }
+    if (btn) { btn.disabled = true; btn.textContent = "Checking…"; }
+    resultEl.innerHTML = '<span style="color:#868a96">Checking availability…</span>';
+    try {
+      var token = localStorage.getItem("wcz_token");
+      var r = await fetch(API + "/domain/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + (token || "") },
+        body: JSON.stringify({ query: q, tld: "com" })
+      });
+      var data = await r.json();
+      if (btn) { btn.disabled = false; btn.textContent = "Check"; }
+      if (!data.ok) { resultEl.innerHTML = '<span style="color:#c0392b">Couldn\'t check right now — try again.</span>'; return; }
+      var suggestions = data.suggestions || [];
+      var main = suggestions[0];
+      var alts = suggestions.filter(function(s){ return s.alternative; });
+      var html = "";
+      if (main && main.available) {
+        html = '<span style="color:#15924B;font-weight:600">✅ '+esc(main.domain)+' is available!</span>';
+      } else if (main) {
+        html = '<span style="color:#c0392b;font-weight:600">✕ '+esc(main.domain)+' is already taken.</span>';
+        if (alts.length) {
+          html += '<div style="margin-top:6px;color:#4a4d59">Available alternatives — tap to use one:</div>';
+          html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">' +
+            alts.map(function(a){
+              var name = a.domain.replace(/\.com$/, '');
+              return '<button type="button" onclick="_selectComSuggestion(\''+name.replace(/'/g,"\\'")+'\')" '+
+                'style="padding:5px 10px;border:1px solid #15924B;border-radius:20px;background:#e3f2ea;color:#0f6e39;font-size:12px;font-weight:600;cursor:pointer">'+esc(a.domain)+'</button>';
+            }).join('') +
+          '</div>';
+        }
+      }
+      resultEl.innerHTML = html;
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = "Check"; }
+      resultEl.innerHTML = '<span style="color:#c0392b">Network error — try again.</span>';
+    }
+  };
+
+  window._selectComSuggestion = function(name) {
+    var input = document.getElementById("dw_com");
+    if (input) input.value = name;
+    var resultEl = document.getElementById("dw_com_result");
+    if (resultEl) resultEl.innerHTML = '<span style="color:#15924B;font-weight:600">✅ '+esc(name)+'.com selected — available!</span>';
+  };
+
+  // Best-effort .co.zw check — a DNS heuristic, not an authoritative
+  // registrar answer, and the copy always says so.
+  window._checkCozwChoice = async function(n) {
+    var input = document.getElementById("dw_c" + n);
+    var statusEl = document.getElementById("dw_c" + n + "_status");
+    var q = (input.value || "").trim();
+    if (!q) { statusEl.innerHTML = '<span style="color:#c0392b">Enter a name first.</span>'; return; }
+    statusEl.innerHTML = '<span style="color:#868a96">Checking…</span>';
+    try {
+      var token = localStorage.getItem("wcz_token");
+      var r = await fetch(API + "/domain/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + (token || "") },
+        body: JSON.stringify({ query: q, tld: "cozw" })
+      });
+      var data = await r.json();
+      if (!data.ok) { statusEl.innerHTML = '<span style="color:#c0392b">Couldn\'t check right now.</span>'; return; }
+      if (data.checked === false) {
+        statusEl.innerHTML = '<span style="color:#868a96">'+esc(data.message || "Couldn't check right now.")+'</span>';
+      } else if (data.likely_taken) {
+        statusEl.innerHTML = '<span style="color:#c0392b">⚠ Likely already registered — try another name.</span>';
+      } else {
+        statusEl.innerHTML = '<span style="color:#15924B">✓ Looks available — unconfirmed, we verify during registration.</span>';
+      }
+    } catch (e) {
+      statusEl.innerHTML = '<span style="color:#c0392b">Network error.</span>';
+    }
+  };
 
   window._backToPlan = function() { renderStep1_Plan(); };
 
