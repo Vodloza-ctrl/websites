@@ -48,6 +48,7 @@
     { "flag": "has_stats",        "type": "list_present", "field": "stats" },
     { "flag": "has_team",         "type": "list_present", "field": "team" },
     { "flag": "has_testimonials", "type": "list_present", "field": "testimonials" },
+    { "flag": "has_bookable_services", "type": "computed", "token": "has_bookable_services" },
     { "flag": "phone",            "type": "field_present","field": "phone" },
     { "flag": "location",         "type": "field_present","field": "location" },
     { "flag": "email",            "type": "field_present","field": "email" }
