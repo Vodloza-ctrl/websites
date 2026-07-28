@@ -177,6 +177,34 @@
     return null;
   }
   function previewUrl(s){ return APP+"/preview/"+(s.draft_subdomain||s.id); }
+
+  // The dashboard used to link straight to APP+"/preview/<slug>" — a
+  // cookie-gated path route that isn't actually authenticating correctly
+  // (bounces to the marketing homepage instead of the site). The
+  // token-based route editor.html's live preview already uses IS working
+  // — https://<slug>.websites.co.zw/?preview_token=<token> — so route
+  // through the same GET /api/sites/:id/preview-token endpoint instead of
+  // guessing at the path-based URL client-side.
+  //
+  // Opens a blank tab synchronously (before the await) so the browser
+  // still counts it as a direct result of the click and doesn't block it
+  // as a popup; the tab's location is set once the token comes back.
+  window.openPreview = async function(siteId){
+    var win = window.open("", "_blank");
+    try {
+      var r = await api(API+"/sites/"+encodeURIComponent(siteId)+"/preview-token", { method:"GET" });
+      if (!r.ok || !r.data || !r.data.preview_url) {
+        if (win) { win.close(); }
+        alert("Couldn't open the preview. Save the site at least once first, then try again.");
+        return;
+      }
+      if (win) win.location.href = r.data.preview_url;
+      else location.href = r.data.preview_url; // popup blocked — fall back to same-tab
+    } catch(e) {
+      if (win) win.close();
+      alert("Network error loading the preview. Try again.");
+    }
+  };
   function editorUrl(s) { return PAGES+"/editor/?site="+s.id; }
   function switchTemplateUrl(s){ return NEW+"?switch=1&site="+encodeURIComponent(s.id); }
 
@@ -496,7 +524,7 @@
 
     // ── Actions with Delete button ────────────────────────────────────────
     var actions =
-      '<a class="btn btn-ghost" href="'+esc(previewUrl(s))+'" target="_blank" rel="noopener">Preview</a>'+
+      '<button class="btn btn-ghost" onclick="openPreview(\''+esc(s.id)+'\')">Preview</button>'+
       '<a class="btn btn-ghost" href="'+esc(editorUrl(s))+'">Edit</a>'+
       '<a class="btn btn-quiet" href="'+esc(switchTemplateUrl(s))+'" title="Switch template">&#x229E;</a>';
 
