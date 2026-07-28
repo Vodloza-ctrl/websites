@@ -586,6 +586,7 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-rooms"><div class="panel"><div class="panel-head"><div><h2>Rooms &amp; Suites</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each room becomes its own card — the first room shown is featured on your site</div></div><button class="btn btn-green btn-sm" onclick="addRoom()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="rooms-rep-list"><div class="empty-state" id="rooms-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 18h20"/></svg></span><p>No rooms yet. Add your first room type.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-bookings"><div class="panel"><div class="panel-head"><div><h2>Bookings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Guest requests and appointments</div></div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="openBlockTimeModal()">Block time off</button><button class="btn btn-green btn-sm" id="addBookingBtn" style="display:none" onclick="openManualBookingModal()">+ Add booking</button><button class="btn btn-ghost btn-sm" onclick="loadBookings(true)">↻ Refresh</button></div></div><div class="panel-body">
       <div id="bookingsPricingSection" style="display:none;margin-bottom:14px"></div>
+      <div id="connectPaynowSection" style="display:none;margin-bottom:14px"></div>
       <div id="bookingsProUpsell" style="display:none;margin-bottom:14px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div class="upsell-body"><strong>Manual entry &amp; payment tracking — Pro only</strong><p>Log phone, walk-in, and email bookings directly, and track deposits and payments with one-tap "mark as paid". Available on Bookings <b>Pro</b> ($25/mo).</p></div></div></div>
       <div class="booking-filters" id="booking-filters"></div>
       <div class="booking-list" id="booking-list"><div class="empty-state" id="booking-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg></span><p id="booking-empty-text">No bookings yet. Once someone makes a request, it'll show up here.</p></div></div>
@@ -1631,6 +1632,13 @@ window.__syncServicesToBookingsWorker = async function(siteId) {
       price: svc.price ? Number(svc.price) : null,
       staff_mode: svc.staff_mode === "any" ? "any" : "choose",
       resource_id: svc.resource_id || "",
+      // v1.17 — deposit/full-payment commitment, mirrors booking_services
+      // columns on bookings-worker. Sending "none" explicitly (not omitting
+      // the key) so switching a service back to "none" actually clears it
+      // server-side rather than leaving a stale deposit config in place.
+      commitment_level: svc.commitment_level || "none",
+      deposit_amount: svc.deposit_amount !== "" && svc.deposit_amount != null ? Number(svc.deposit_amount) : null,
+      deposit_percent: svc.deposit_percent !== "" && svc.deposit_percent != null ? Number(svc.deposit_percent) : null,
     };
     var needsCreate = !svc.service_id;
     if (svc.service_id) {
@@ -1709,7 +1717,110 @@ async function fetchBookingsTier() {
   if (addBtn) addBtn.style.display = isPro ? "inline-flex" : "none";
   if (upsell) upsell.style.display = "none";
   renderBookingsPricing();
+  renderConnectPaynowSection();
 }
+
+// v1.17 — owner Paynow connection for booking deposits. Talks to
+// payments-worker (NOT bookings.websites.co.zw, which is what bookingsApi()
+// is scoped to) — merchant credential storage is payments-worker's
+// exclusive responsibility. Mirrors bookingsApi()'s own
+// fetch-with-Bearer-token pattern.
+var PAYMENTS_API_BASE = "https://api.websites.co.zw";
+
+async function paymentsApi(path, opts) {
+  var token = (typeof getToken === "function") ? getToken() : (localStorage.getItem("wcz_token") || "");
+  var headers = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = "Bearer " + token;
+  try {
+    var r = await fetch(PAYMENTS_API_BASE + path, Object.assign({ headers: headers }, opts || {}));
+    var data = {}; try { data = await r.json(); } catch (e) {}
+    return { ok: r.ok, status: r.status, data: data };
+  } catch (e) {
+    return { ok: false, status: 0, data: {} };
+  }
+}
+
+async function renderConnectPaynowSection() {
+  var wrap = document.getElementById("connectPaynowSection");
+  if (!wrap) return;
+  // Deposits are Pro-only — no point showing a Paynow-connect box to a
+  // Basic-tier (or no-addon) owner who can't use it yet.
+  if (bookingsState.tier !== "pro") { wrap.style.display = "none"; return; }
+  wrap.style.display = "block";
+  wrap.innerHTML = '<div class="panel"><div class="panel-body" style="font-size:13px;color:var(--ink3)">Checking Paynow connection…</div></div>';
+
+  var r = await paymentsApi("/merchant-credentials/status?site_id=" + encodeURIComponent(siteId));
+  var data = r.ok ? r.data : { connected: false };
+
+  if (!data.connected) { wrap.innerHTML = connectPaynowFormHtml(); return; }
+
+  if (data.status === "verified") {
+    wrap.innerHTML =
+      '<div class="panel" style="border:1.5px solid var(--green);box-shadow:none">' +
+        '<div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">' +
+          '<div><div style="font-size:13.5px;font-weight:700;color:var(--green)">✅ Paynow connected</div>' +
+          '<div style="font-size:12px;color:var(--ink3);margin-top:2px">Deposit and full-payment bookings pay straight into your own Paynow account.</div></div>' +
+          '<button class="btn btn-ghost btn-sm" onclick="disconnectPaynow()">Disconnect</button>' +
+        '</div></div>';
+    return;
+  }
+
+  if (data.status === "pending") {
+    wrap.innerHTML =
+      '<div class="panel" style="border:1.5px solid var(--gold);box-shadow:none">' +
+        '<div class="panel-body">' +
+          '<div style="font-size:13.5px;font-weight:700;color:var(--gold-dk)">⏳ Almost there</div>' +
+          '<div style="font-size:12px;color:var(--ink3);margin-top:2px">Approve the small test prompt sent to your phone to finish connecting.</div>' +
+          '<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="renderConnectPaynowSection()">I approved it — check again</button>' +
+        '</div></div>';
+    return;
+  }
+
+  // 'failed' or 'revoked' — show the form again with a note explaining why.
+  wrap.innerHTML =
+    '<div class="upsell" style="border-color:var(--red);background:#fdecea;margin-bottom:10px"><div class="upsell-body"><strong style="color:var(--red)">Connection failed</strong><p>Double-check your Integration ID/Key and try again.</p></div></div>' +
+    connectPaynowFormHtml();
+}
+
+function connectPaynowFormHtml() {
+  return (
+    '<div class="panel">' +
+      '<div class="panel-head"><h2>Connect Paynow for deposits</h2></div>' +
+      '<div class="panel-body">' +
+        '<p style="font-size:12.5px;color:var(--ink3);margin-bottom:14px;line-height:1.5">To charge deposits or full payment on a service, connect your own Paynow account. Money goes straight to you — websites.co.zw never touches it.</p>' +
+        '<div class="fld-group"><label class="fld-label">Paynow Integration ID</label><input class="fld-input" id="pn_integration_id" autocomplete="off"></div>' +
+        '<div class="fld-group"><label class="fld-label">Paynow Integration Key</label><input class="fld-input" type="password" id="pn_integration_key" autocomplete="off"></div>' +
+        '<div class="fld-group"><label class="fld-label">Your EcoCash number <span class="fld-hint">— for a small test payment</span></label><input class="fld-input" id="pn_test_phone" placeholder="077xxxxxxx"></div>' +
+        '<button class="btn btn-green" id="pnConnectBtn" onclick="connectPaynow()">Connect Paynow account</button>' +
+        '<div id="pnConnectMsg" style="font-size:12.5px;margin-top:8px;display:none"></div>' +
+      '</div></div>'
+  );
+}
+
+window.connectPaynow = async function() {
+  var integrationId = ((document.getElementById("pn_integration_id") || {}).value || "").trim();
+  var integrationKey = ((document.getElementById("pn_integration_key") || {}).value || "").trim();
+  var phone = ((document.getElementById("pn_test_phone") || {}).value || "").trim();
+  var msgEl = document.getElementById("pnConnectMsg");
+  function showMsg(text, ok) { if (!msgEl) return; msgEl.style.display = "block"; msgEl.style.color = ok ? "var(--green)" : "var(--red)"; msgEl.textContent = text; }
+  if (!integrationId || !integrationKey || !phone) { showMsg("Fill in all fields.", false); return; }
+  var btn = document.getElementById("pnConnectBtn");
+  if (btn) { btn.disabled = true; btn.textContent = "Connecting…"; }
+  var r = await paymentsApi("/merchant-credentials/connect", {
+    method: "POST",
+    body: JSON.stringify({ site_id: siteId, integration_id: integrationId, integration_key: integrationKey, phone: phone })
+  });
+  if (btn) { btn.disabled = false; btn.textContent = "Connect Paynow account"; }
+  if (!r.ok) { showMsg((r.data && (r.data.message || r.data.error)) || "Couldn't connect — try again.", false); return; }
+  if (!r.data.verified) showMsg(r.data.message || "Connected — approve the test prompt on your phone, then check again.", true);
+  await renderConnectPaynowSection();
+};
+
+window.disconnectPaynow = async function() {
+  if (!confirm("Disconnect your Paynow account? Deposit and full-payment bookings will stop working until you reconnect.")) return;
+  await paymentsApi("/merchant-credentials/disconnect", { method: "POST", body: JSON.stringify({ site_id: siteId }) });
+  await renderConnectPaynowSection();
+};
 
 function renderBookingsPricing() {
   var savedEmail = ((window.state && window.state.content && window.state.content.content && window.state.content.content.contact) || {}).email;
@@ -2323,8 +2434,77 @@ window.onTuneTeamBio=async function(idx){var taId='team-bio-'+idx;var btnId='tea
 
 function bookingServiceStaffModeOptions(mode){ return '<option value="choose"'+(mode!=="any"?" selected":"")+'>Customer picks a team member</option><option value="any"'+(mode==="any"?" selected":"")+'>Any available team member</option>'; }
 function bookingServiceResourceOptions(selectedId){ var opts = '<option value="">Shared (any available team member)</option>'; (v3state.team||[]).forEach(function(m){ if(!m.resource_id) return; opts += '<option value="'+escV3(m.resource_id)+'"'+(selectedId===m.resource_id?" selected":"")+'>'+escV3(m.name||"Unnamed")+'</option>'; }); return opts; }
-function renderBookingServiceRowV3(s, idx){ var staffModeOpts = bookingServiceStaffModeOptions(s.staff_mode); var resourceOpts = bookingServiceResourceOptions(s.resource_id || ""); var hasStylists = (v3state.team||[]).some(function(m){ return !!m.resource_id; }); var body = row2V3( fldV3("Service name","",s.name,"e.g. Consultation","updateBookingServiceV3("+idx+",'name',this.value)"), fldV3("Duration (minutes)","",s.duration_min,"30","updateBookingServiceV3("+idx+",'duration_min',this.value)",' type="number" min="5" step="5"') ) + row2V3( fldV3("Price <span class=\"fld-hint\">optional</span>","",s.price,"$15","updateBookingServiceV3("+idx+",'price',this.value)"), '<div class="fld-group"><label class="fld-label">Staff assignment</label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'staff_mode',this.value)\">"+staffModeOpts+'</select></div>' ) + '<div class="fld-group"><label class="fld-label">Belongs to <span class="fld-hint">optional — locks this service to one specific team member</span></label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'resource_id',this.value)\">"+resourceOpts+'</select>' + (hasStylists ? '' : '<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Add team members in the Team tab and save once — they\'ll appear here to assign specific services to.</div>') + '</div>'; return makeRepItemV3(s.name || "Service", body, "removeBookingServiceV3("+idx+")"); }
-window.addBookingService = function(){ v3state.bookingServices.push({ id: 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), service_id: null, name: "", duration_min: 30, price: "", staff_mode: "choose", resource_id: "", }); renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty"); window.markDirty(); };
+
+// v1.17 companion — mirrors the commitment_level/deposit_amount/deposit_percent
+// columns added to booking_services on websites-bookings-worker.js. 'none' is
+// the default and matches every service created before this patch (the
+// column defaults to 'none' server-side too, so old rows need no backfill).
+function bookingServiceCommitmentOptions(level){
+  return '<option value="none"'+((!level||level==="none")?" selected":"")+'>No payment required</option>'+
+         '<option value="deposit"'+(level==="deposit"?" selected":"")+'>Deposit required</option>'+
+         '<option value="full"'+(level==="full"?" selected":"")+'>Full payment upfront</option>';
+}
+
+function renderBookingServiceRowV3(s, idx){
+  var staffModeOpts = bookingServiceStaffModeOptions(s.staff_mode);
+  var resourceOpts = bookingServiceResourceOptions(s.resource_id || "");
+  var hasStylists = (v3state.team||[]).some(function(m){ return !!m.resource_id; });
+  var body = row2V3(
+    fldV3("Service name","",s.name,"e.g. Consultation","updateBookingServiceV3("+idx+",'name',this.value)"),
+    fldV3("Duration (minutes)","",s.duration_min,"30","updateBookingServiceV3("+idx+",'duration_min',this.value)",' type="number" min="5" step="5"')
+  ) + row2V3(
+    fldV3("Price <span class=\"fld-hint\">optional</span>","",s.price,"$15","updateBookingServiceV3("+idx+",'price',this.value)"),
+    '<div class="fld-group"><label class="fld-label">Staff assignment</label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'staff_mode',this.value)\">"+staffModeOpts+'</select></div>'
+  ) + '<div class="fld-group"><label class="fld-label">Belongs to <span class="fld-hint">optional — locks this service to one specific team member</span></label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'resource_id',this.value)\">"+resourceOpts+'</select>'
+    + (hasStylists ? '' : '<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Add team members in the Team tab and save once — they\'ll appear here to assign specific services to.</div>')
+    + '</div>';
+
+  // Payment-to-book block. Owner sees this select regardless of Pro/Paynow
+  // status so the option is discoverable; the actual charge attempt at
+  // booking time is what enforces the Paynow-connected + Pro requirement
+  // (bookings-worker's requireBookingsAddon("pro") + ownerPaynowConnected()).
+  var commitmentOpts = bookingServiceCommitmentOptions(s.commitment_level);
+  var commitmentBlock = '<div class="fld-group"><label class="fld-label">Payment to book <span class="fld-hint">— Pro feature, requires Paynow connected in the Bookings tab</span></label>'
+    + '<select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'commitment_level',this.value);refreshBookingServiceRowV3("+idx+")\">"+commitmentOpts+'</select></div>';
+
+  if (s.commitment_level === "deposit") {
+    commitmentBlock += row2V3(
+      fldV3("Deposit amount ($) <span class=\"fld-hint\">optional</span>","",s.deposit_amount,"e.g. 10","updateBookingServiceV3("+idx+",'deposit_amount',this.value)",' type="number" min="0" step="0.01"'),
+      fldV3("...or deposit % of price <span class=\"fld-hint\">optional</span>","",s.deposit_percent,"e.g. 30","updateBookingServiceV3("+idx+",'deposit_percent',this.value)",' type="number" min="0" max="100" step="1"')
+    );
+    commitmentBlock += '<div style="font-size:11.5px;color:var(--ink3);margin-top:-6px;margin-bottom:10px">Set one or the other — a fixed dollar amount, or a percentage of the price above. If both are set, the fixed amount wins.</div>';
+  } else if (s.commitment_level === "full") {
+    commitmentBlock += '<div style="font-size:11.5px;color:var(--ink3);margin-top:-6px;margin-bottom:10px">The full price above is charged when the customer books — make sure a price is set.</div>';
+  }
+
+  body += commitmentBlock;
+  return makeRepItemV3(s.name || "Service", body, "removeBookingServiceV3("+idx+")");
+}
+
+// Re-renders just one row after the commitment_level select changes, so the
+// conditional deposit fields appear/disappear without collapsing every
+// other open row (renderRepListV3 would rebuild the whole list and lose
+// everyone's open/closed state).
+window.refreshBookingServiceRowV3 = function(idx){
+  var items = document.querySelectorAll("#booking-services-rep-list .rep-item");
+  var svc = v3state.bookingServices[idx];
+  if (!svc || !items[idx]) return;
+  var wasOpen = items[idx].classList.contains("open");
+  var newEl = renderBookingServiceRowV3(svc, idx);
+  if (wasOpen) newEl.classList.add("open");
+  items[idx].replaceWith(newEl);
+};
+
+window.addBookingService = function(){
+  v3state.bookingServices.push({
+    id: 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    service_id: null, name: "", duration_min: 30, price: "",
+    staff_mode: "choose", resource_id: "",
+    commitment_level: "none", deposit_amount: "", deposit_percent: "",
+  });
+  renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty");
+  window.markDirty();
+};
 window.removeBookingServiceV3 = function(idx){ var svc = v3state.bookingServices[idx]; if (svc && svc.service_id) { if (!Array.isArray(v3state._deletedServiceIds)) v3state._deletedServiceIds = []; v3state._deletedServiceIds.push(svc.service_id); } v3state.bookingServices.splice(idx, 1); renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty"); window.markDirty(); };
 window.updateBookingServiceV3 = function(idx, key, val){ if (v3state.bookingServices[idx]) { v3state.bookingServices[idx][key] = val; window.markDirty(); } if (key === "name") { var items = document.querySelectorAll("#booking-services-rep-list .rep-item"); if (items[idx]) { var t = items[idx].querySelector(".rep-item-title"); if (t) t.textContent = val || "Service"; } } };
 
