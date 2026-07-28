@@ -2738,13 +2738,23 @@ window.onPublishPro = function() {
 };
 
 function goToDashboardPublish() {
+  // Self-contained on purpose: this script tag is a separate top-level
+  // <script> from the main editor script, so it does NOT share that
+  // script's `var DASH_URL` / `var siteId` — those are scoped inside that
+  // other script's IIFE closure. Referencing them here threw a
+  // ReferenceError on every click, which is why Publish/Get Pro silently
+  // did nothing. Deriving both values locally fixes it for good.
+  var DASHBOARD_URL = "https://www.websites.co.zw/dashboard/customer.html";
+  var currentSiteId = new URLSearchParams(location.search).get("site");
+  if (!currentSiteId) { domainToast("No site selected.", "err"); return; }
+
   if (window.state && window.state.dirty && typeof onSave === "function") {
     onSave().then(function() {
-      location.href = DASH_URL + "?openPublish=" + encodeURIComponent(siteId);
+      location.href = DASHBOARD_URL + "?openPublish=" + encodeURIComponent(currentSiteId);
     });
     return;
   }
-  location.href = DASH_URL + "?openPublish=" + encodeURIComponent(siteId);
+  location.href = DASHBOARD_URL + "?openPublish=" + encodeURIComponent(currentSiteId);
 }
 
 console.log('Publish now redirects to the dashboard publish flow.');
