@@ -909,10 +909,21 @@ window.onSave = async function() {
     if (typeof window.__syncTeamToBookingsWorker === "function") {
       try { await window.__syncTeamToBookingsWorker(siteId); } catch (e) {}
     }
+    var serviceSyncErrors = [];
     if (typeof window.__syncServicesToBookingsWorker === "function") {
-      try { await window.__syncServicesToBookingsWorker(siteId); } catch (e) {}
+      try { serviceSyncErrors = await window.__syncServicesToBookingsWorker(siteId) || []; } catch (e) { serviceSyncErrors = ["Could not save bookable services -- please try again"]; }
     }
-    toast("Saved ✓", "ok");
+    if (serviceSyncErrors.length) {
+      // Site content itself still saved fine (that's a separate call) --
+      // this only reflects specific bookable-service rows that bookings-
+      // worker rejected (e.g. a validation error like a missing price for
+      // a full-payment service). Previously these failed completely
+      // silently -- the editor said "Saved" while quietly discarding the
+      // change, which is worse than an ugly error message.
+      toast("Saved, but couldn't update: " + serviceSyncErrors.join("; "), "err");
+    } else {
+      toast("Saved ✓", "ok");
+    }
     refreshPreview();
   } catch(e) { toast("Network error", "err"); }
   finally { if (btn) { btn.disabled = false; btn.textContent = "Save"; } }
@@ -1623,13 +1634,28 @@ window.__syncServicesToBookingsWorker = async function(siteId) {
   }
   v3state._deletedServiceIds = [];
   var assignedNewIds = false;
+  var syncErrors = [];
+  // Strips anything that isn't a digit or a decimal point before parsing --
+  // a price field is free text (people naturally type "$40", "40.00",
+  // "$ 40" etc.), and Number() on a string containing a currency symbol
+  // returns NaN, which then serializes to null in the request body. That
+  // silently breaks anything that actually NEEDS a numeric price
+  // server-side (full-payment bookings, percent-based deposits) even
+  // though the field visually looked filled in.
+  function parseMoney(val) {
+    if (val == null || val === "") return null;
+    var cleaned = String(val).replace(/[^0-9.]/g, "");
+    if (!cleaned) return null;
+    var n = Number(cleaned);
+    return isNaN(n) ? null : n;
+  }
   for (var i = 0; i < v3state.bookingServices.length; i++) {
     var svc = v3state.bookingServices[i];
     if (!svc.name || !svc.duration_min) continue;
     var payload = {
       name: svc.name,
       duration_min: parseInt(svc.duration_min, 10),
-      price: svc.price ? Number(svc.price) : null,
+      price: parseMoney(svc.price),
       staff_mode: svc.staff_mode === "any" ? "any" : "choose",
       resource_id: svc.resource_id || "",
       // v1.17 — deposit/full-payment commitment, mirrors booking_services
@@ -1637,7 +1663,7 @@ window.__syncServicesToBookingsWorker = async function(siteId) {
       // the key) so switching a service back to "none" actually clears it
       // server-side rather than leaving a stale deposit config in place.
       commitment_level: svc.commitment_level || "none",
-      deposit_amount: svc.deposit_amount !== "" && svc.deposit_amount != null ? Number(svc.deposit_amount) : null,
+      deposit_amount: parseMoney(svc.deposit_amount),
       deposit_percent: svc.deposit_percent !== "" && svc.deposit_percent != null ? Number(svc.deposit_percent) : null,
     };
     var needsCreate = !svc.service_id;
@@ -1646,7 +1672,22 @@ window.__syncServicesToBookingsWorker = async function(siteId) {
         method: "PUT",
         body: JSON.stringify(payload)
       });
-      if (!putResult.ok) { svc.service_id = null; needsCreate = true; }
+      if (!putResult.ok) {
+        // Only treat this as "the service_id is stale, create a fresh one"
+        // when the server genuinely doesn't recognize that ID (404). Any
+        // other failure (400 validation error, 402 addon lapsed, 500, etc.)
+        // must NOT silently fall through to creating a duplicate row under
+        // a new ID -- that's what produced the orphaned duplicate service
+        // seen earlier. Surface the real error instead.
+        if (putResult.status === 404) {
+          svc.service_id = null;
+          needsCreate = true;
+        } else {
+          var msg = (putResult.data && (putResult.data.message || putResult.data.error)) || ("save failed (" + putResult.status + ")");
+          syncErrors.push(svc.name + ": " + msg);
+          continue;
+        }
+      }
     }
     if (needsCreate) {
       var createPayload = Object.assign({ site_id: siteId }, payload);
@@ -1658,10 +1699,14 @@ window.__syncServicesToBookingsWorker = async function(siteId) {
       if (r.ok && r.data && r.data.service && r.data.service.id) {
         svc.service_id = r.data.service.id;
         assignedNewIds = true;
+      } else if (!r.ok) {
+        var createMsg = (r.data && (r.data.message || r.data.error)) || ("save failed (" + r.status + ")");
+        syncErrors.push(svc.name + ": " + createMsg);
       }
     }
   }
   if (assignedNewIds) { await persistSyncedContent(siteId); }
+  return syncErrors;
 };
 
 async function persistSyncedContent(siteId) {
