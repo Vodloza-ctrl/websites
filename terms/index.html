@@ -32,6 +32,7 @@ ul,ol{margin:8px 0 14px 24px;display:flex;flex-direction:column;gap:6px}
 li{color:var(--ink);font-size:.97rem;line-height:1.65}
 .def-term{font-weight:600;color:var(--ink)}
 .highlight{background:#e8f5ee;border-left:3px solid var(--green);padding:14px 16px;border-radius:0 8px 8px 0;margin:16px 0;font-size:.94rem;color:#0f6e39}
+.callout-todo{background:#fff4e5;border-left:3px solid #d98a1f;padding:14px 16px;border-radius:0 8px 8px 0;margin:16px 0;font-size:.9rem;color:#8a5a12}
 .accept-box{background:var(--card);border:2px solid var(--green);border-radius:12px;padding:24px;margin:40px 0;display:flex;align-items:flex-start;gap:14px}
 .accept-box input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex-shrink:0;accent-color:var(--green);cursor:pointer}
 .accept-box label{font-size:.95rem;font-weight:600;color:var(--ink);cursor:pointer;line-height:1.5}
@@ -51,8 +52,8 @@ li{color:var(--ink);font-size:.97rem;line-height:1.65}
   <div class="doc-header">
     <h1>Terms of Service &amp; Acceptable Use Policy</h1>
     <div class="doc-meta">
-      <span>📅 Effective: 14 June 2026</span>
-      <span>📄 Version 1.0</span>
+      <span>📅 Effective: 29 July 2026</span>
+      <span>📄 Version 1.1</span>
       <span>🏢 Ya-Sibo Media (Private) Limited</span>
     </div>
   </div>
@@ -64,15 +65,16 @@ li{color:var(--ink);font-size:.97rem;line-height:1.65}
       <li><a href="#s2">Eligibility and Account Registration</a></li>
       <li><a href="#s3">Description of Services</a></li>
       <li><a href="#s4">Subscriptions, Fees, and Payment</a></li>
-      <li><a href="#s5">Acceptable Use Policy</a></li>
-      <li><a href="#s6">Content Moderation and Takedowns</a></li>
-      <li><a href="#s7">Intellectual Property</a></li>
-      <li><a href="#s8">Privacy and Data Protection</a></li>
-      <li><a href="#s9">Disclaimers and Limitation of Liability</a></li>
-      <li><a href="#s10">Termination</a></li>
-      <li><a href="#s11">Governing Law and Dispute Resolution</a></li>
-      <li><a href="#s12">Changes to These Terms</a></li>
-      <li><a href="#s13">Contact Information</a></li>
+      <li><a href="#s5">Owner Payment Accounts (Bookings Deposits)</a></li>
+      <li><a href="#s6">Acceptable Use Policy</a></li>
+      <li><a href="#s7">Content Moderation and Takedowns</a></li>
+      <li><a href="#s8">Intellectual Property</a></li>
+      <li><a href="#s9">Privacy and Data Protection</a></li>
+      <li><a href="#s10">Disclaimers and Limitation of Liability</a></li>
+      <li><a href="#s11">Termination</a></li>
+      <li><a href="#s12">Governing Law and Dispute Resolution</a></li>
+      <li><a href="#s13">Changes to These Terms</a></li>
+      <li><a href="#s14">Contact Information</a></li>
     </ol>
   </div>
 
@@ -84,6 +86,7 @@ li{color:var(--ink);font-size:.97rem;line-height:1.65}
   <p><span class="def-term">Site</span> — A website created using the Platform and hosted on a websites.co.zw subdomain or custom domain.</p>
   <p><span class="def-term">Content</span> — All text, images, logos, videos, data, and other material that a Customer uploads or publishes through the Platform.</p>
   <p><span class="def-term">Subscription</span> — A paid plan (Starter or Pro) that enables a Customer to publish and maintain a Site.</p>
+  <p><span class="def-term">Payment Credentials</span> — A Customer's own Paynow Integration ID and Integration Key, provided by the Customer to enable direct collection of booking deposits or payments into the Customer's own Paynow account.</p>
   <p><span class="def-term">POTRAZ</span> — The Postal and Telecommunications Regulatory Authority of Zimbabwe.</p>
   <p><span class="def-term">CDPA</span> — Zimbabwe's Cyber and Data Protection Act (Chapter 12:07), enacted 2021.</p>
 
@@ -94,8 +97,8 @@ li{color:var(--ink);font-size:.97rem;line-height:1.65}
   <p>You agree to provide accurate, current, and complete information when registering and to keep it up to date. The Company may suspend or terminate accounts where information is false, misleading, or incomplete.</p>
   <h3>2.3 One Account Per Business</h3>
   <p>Each account is intended for use by a single business or individual. Accounts may not be shared, sold, or transferred without written consent from the Company.</p>
-  <h3>2.4 One Active Site Per Account</h3>
-  <p>The Starter and Pro plans each entitle you to one (1) active Site per account. Contact us to enquire about multi-site arrangements.</p>
+  <h3>2.4 Multiple Sites Per Account</h3>
+  <p>Your account may be used to create and publish more than one Site, each subject to its own applicable Subscription fee. Entitlements, payment benefits, and add-ons purchased for one Site do not extend to any other Site on your account.</p>
 
   <h2 id="s3">3. Description of Services</h2>
   <p>The Platform provides:</p>
@@ -103,6 +106,7 @@ li{color:var(--ink);font-size:.97rem;line-height:1.65}
     <li>Website creation tools including AI-assisted copy generation, template selection, image uploads, and a live preview editor.</li>
     <li>Hosting of your Site on a websites.co.zw subdomain upon payment of the applicable Subscription fee.</li>
     <li>Optional Pro plan features including custom domain support and priority support.</li>
+    <li>Optional add-on features, including a Bookings add-on for scheduling appointments, rooms, or services, which may include deposit or full-payment collection as described in Section 5.</li>
     <li>Secure storage of Site content in Cloudflare's global infrastructure.</li>
   </ul>
   <div class="highlight">AI-generated content is a starting point, not professional advice. You are responsible for reviewing and approving all content before publishing.</div>
@@ -114,14 +118,44 @@ li{color:var(--ink);font-size:.97rem;line-height:1.65}
     <li><strong>Pro Plan:</strong> USD $60.00 per year — includes everything in Starter plus custom domain support, unlimited products, and priority support.</li>
   </ul>
   <h3>4.2 Payment Processing</h3>
-  <p>Payments are processed through Paynow. By making a payment, you also agree to Paynow's terms. The Company does not store card details or financial credentials.</p>
+  <p>Subscription and add-on payments made to the Company are processed through Paynow. By making a payment, you also agree to Paynow's terms. The Company does not store card details or financial credentials in connection with these payments.</p>
   <h3>4.3 Grace Period and Suspension</h3>
   <p>If your subscription expires, your Site enters a 14-day grace period during which it remains visible. After the grace period, your Site is suspended. Your content is retained for 60 days after suspension, after which it may be permanently deleted.</p>
   <h3>4.4 Refunds</h3>
   <p>Subscription fees are non-refundable except where required by applicable Zimbabwe consumer protection law.</p>
 
-  <h2 id="s5">5. Acceptable Use Policy</h2>
-  <h3>5.1 Prohibited Content</h3>
+  <h2 id="s5">5. Owner Payment Accounts (Bookings Deposits)</h2>
+  <h3>5.1 What This Covers</h3>
+  <p>If you activate deposit or full-payment collection for a bookable service (the "Bookings Pro" payment feature), you will be asked to connect your own Paynow merchant account by providing your Payment Credentials.</p>
+  <h3>5.2 Where the Money Goes</h3>
+  <p>Deposits and full payments collected through this feature are paid directly into your own connected Paynow account. The Company is not a party to these transactions, does not hold, custody, or have access to these funds at any point, and does not process refunds, chargebacks, or disputes on your behalf. Any dispute about a payment collected this way is between you and your customer, and separately between you and Paynow under Paynow's own terms of service.</p>
+  <h3>5.3 How Your Credentials Are Stored</h3>
+  <p>Your Payment Credentials are encrypted before storage using industry-standard encryption (AES-256), and the encryption key is held separately from the database in which the encrypted credentials are stored. Your Payment Credentials are never displayed back to you, any other user, or any Company staff member after initial entry, and are never transmitted to any third party other than Paynow itself, solely to process a payment you have configured.</p>
+  <h3>5.4 Your Responsibilities</h3>
+  <p>You are responsible for:</p>
+  <ul>
+    <li>The accuracy of the Payment Credentials you provide;</li>
+    <li>Ensuring your Paynow account is in good standing and able to receive payments;</li>
+    <li>All fees charged by Paynow on transactions processed through your account;</li>
+    <li>Setting deposit or payment amounts that are accurate and lawful for the services you offer;</li>
+    <li>Responding to and resolving any dispute, refund request, or chargeback raised by a customer regarding a payment you collected.</li>
+  </ul>
+  <h3>5.5 Currency</h3>
+  <p>You are responsible for correctly identifying, at the time you connect your account, whether your Paynow integration is registered for USD or ZiG (Zimbabwe Gold). The Company relies on your selection and does not independently verify it. A mismatch between the currency you select and the currency your Paynow account actually processes may result in a failed or rejected transaction, for which the Company is not responsible.</p>
+  <h3>5.6 Revocation and Disconnection</h3>
+  <p>You may disconnect your Payment Credentials from your dashboard at any time. Disconnecting immediately stops any new deposit or full-payment collection for your bookable services; it does not affect payments already collected before disconnection. Upon disconnection, your stored encrypted credentials are marked as revoked.</p>
+  <div class="callout-todo">Product/legal decision pending: whether revoked credentials are deleted outright or retained in revoked state for a defined period. State the chosen policy here once decided.</div>
+  <h3>5.7 Limitation of Liability</h3>
+  <p>To the fullest extent permitted by law, the Company is not liable for:</p>
+  <ul>
+    <li>Any loss arising from a compromise of your Paynow account credentials that did not originate from a failure of the Company's own systems;</li>
+    <li>Any dispute, chargeback, refund, or fraud claim arising from a transaction processed through your connected Paynow account;</li>
+    <li>Any loss arising from an incorrect currency selection, incorrect deposit amount, or any other configuration error made by you.</li>
+  </ul>
+  <div class="callout-todo">Legal review needed: confirm with counsel whether the Company's role in facilitating the Payment Credentials connection and firing the charge request on the owner's behalf creates any regulatory obligation under Zimbabwe's Consumer Protection Act or applicable payment-services regulation, beyond what is drafted above.</div>
+
+  <h2 id="s6">6. Acceptable Use Policy</h2>
+  <h3>6.1 Prohibited Content</h3>
   <p>You must not use the Platform to create, host, or promote Content that:</p>
   <ul>
     <li>Is illegal under the laws of Zimbabwe, including the Criminal Law (Codification and Reform) Act, the Cyber and Data Protection Act 2021, and the Public Order and Security Act.</li>
@@ -139,41 +173,41 @@ li{color:var(--ink);font-size:.97rem;line-height:1.65}
     <li>Promotes political disinformation or content designed to undermine Zimbabwe's electoral processes or constitutional order.</li>
     <li>Violates any directive issued by POTRAZ or any other Zimbabwean regulatory authority.</li>
   </ul>
-  <h3>5.2 Your Responsibility for Content</h3>
+  <h3>6.2 Your Responsibility for Content</h3>
   <p>You are solely responsible for all Content published on your Site. The Company acts as a hosting provider and mere conduit under the CDPA and reserves the right to remove Content and suspend Sites that violate these Terms or applicable law.</p>
 
-  <h2 id="s6">6. Content Moderation and Takedowns</h2>
-  <h3>6.1 Reporting Violations</h3>
+  <h2 id="s7">7. Content Moderation and Takedowns</h2>
+  <h3>7.1 Reporting Violations</h3>
   <p>Any person may report Content believed to be illegal or in violation of these Terms by emailing <a href="mailto:legal@websites.co.zw">legal@websites.co.zw</a> or using the Report link on any published Site.</p>
-  <h3>6.2 Company Response</h3>
+  <h3>7.2 Company Response</h3>
   <p>Upon receiving a valid report, the Company will acknowledge within 24 hours, review within 48 hours, and if a violation is confirmed, suspend the Site and notify the Customer with reasons and the right to respond within 5 business days.</p>
-  <h3>6.3 Immediate Suspension</h3>
+  <h3>7.3 Immediate Suspension</h3>
   <p>The Company reserves the right to suspend a Site immediately and without prior notice where the Content poses an imminent risk of harm, or where directed by a competent Zimbabwean authority including the Zimbabwe Republic Police, POTRAZ, or a court of competent jurisdiction.</p>
-  <h3>6.4 Cooperation with Authorities</h3>
+  <h3>7.4 Cooperation with Authorities</h3>
   <p>The Company will cooperate fully with lawful requests from Zimbabwean law enforcement and regulatory authorities, including disclosing Customer account information where required by valid legal process.</p>
 
-  <h2 id="s7">7. Intellectual Property</h2>
-  <h3>7.1 Your Content</h3>
+  <h2 id="s8">8. Intellectual Property</h2>
+  <h3>8.1 Your Content</h3>
   <p>You retain full ownership of all original Content you upload. By publishing through the Platform, you grant the Company a non-exclusive, royalty-free licence to host and display that Content solely for the purpose of operating your Site.</p>
-  <h3>7.2 Platform Intellectual Property</h3>
+  <h3>8.2 Platform Intellectual Property</h3>
   <p>All software, templates, designs, algorithms, and branding associated with websites.co.zw are the exclusive property of Ya-Sibo Media (Private) Limited.</p>
 
-  <h2 id="s8">8. Privacy and Data Protection</h2>
-  <p>The Company collects your phone number for authentication, your business information as entered in the editor, and payment confirmation records. We process personal data in accordance with Zimbabwe's Cyber and Data Protection Act 2021. You have the right to request access to, correction of, or deletion of your personal data by contacting <a href="mailto:legal@websites.co.zw">legal@websites.co.zw</a>.</p>
+  <h2 id="s9">9. Privacy and Data Protection</h2>
+  <p>The Company collects your phone number for authentication, your business information as entered in the editor, payment confirmation records, and, where you activate the feature described in Section 5, your encrypted Payment Credentials. We process personal data in accordance with Zimbabwe's Cyber and Data Protection Act 2021. You have the right to request access to, correction of, or deletion of your personal data by contacting <a href="mailto:legal@websites.co.zw">legal@websites.co.zw</a>.</p>
 
-  <h2 id="s9">9. Disclaimers and Limitation of Liability</h2>
-  <p>The Platform is provided on an <em>as-is</em> and <em>as-available</em> basis. The Company's total liability for any claim shall not exceed the subscription fees you paid in the 12 months preceding the claim. The Company shall not be liable for indirect, consequential, or punitive damages including loss of business, loss of data, or loss of revenue.</p>
+  <h2 id="s10">10. Disclaimers and Limitation of Liability</h2>
+  <p>The Platform is provided on an <em>as-is</em> and <em>as-available</em> basis. The Company's total liability for any claim shall not exceed the subscription fees you paid in the 12 months preceding the claim. The Company shall not be liable for indirect, consequential, or punitive damages including loss of business, loss of data, or loss of revenue. Section 5.7 sets out additional, specific limitations applicable to Owner Payment Accounts.</p>
 
-  <h2 id="s10">10. Termination</h2>
+  <h2 id="s11">11. Termination</h2>
   <p>You may close your account at any time by contacting <a href="mailto:support@websites.co.zw">support@websites.co.zw</a>. The Company may terminate or suspend your account immediately if you breach these Terms, fail to pay subscription fees, or use the Platform in a manner that exposes the Company to legal liability. Upon termination, your content may be permanently deleted after 60 days.</p>
 
-  <h2 id="s11">11. Governing Law and Dispute Resolution</h2>
+  <h2 id="s12">12. Governing Law and Dispute Resolution</h2>
   <p>These Terms are governed by the laws of the Republic of Zimbabwe. Any dispute shall first be referred to mediation. If mediation fails within 30 days, the dispute shall be submitted to the exclusive jurisdiction of the courts of Zimbabwe sitting in Bulawayo.</p>
 
-  <h2 id="s12">12. Changes to These Terms</h2>
+  <h2 id="s13">13. Changes to These Terms</h2>
   <p>The Company may update these Terms from time to time. We will notify registered Customers of material changes via WhatsApp or email at least 14 days before the changes take effect. Continued use of the Platform after the effective date constitutes acceptance of the revised Terms.</p>
 
-  <h2 id="s13">13. Contact Information</h2>
+  <h2 id="s14">14. Contact Information</h2>
   <div class="contact-grid">
     <span class="k">Company</span><span class="v">Ya-Sibo Media (Private) Limited</span>
     <span class="k">Trading as</span><span class="v">websites.co.zw</span>
@@ -192,7 +226,7 @@ li{color:var(--ink);font-size:.97rem;line-height:1.65}
 
   <div class="footer-note">
     <p>© 2026 Ya-Sibo Media (Private) Limited · <a href="/">websites.co.zw</a> · Bulawayo, Zimbabwe</p>
-    <p style="margin-top:4px">Effective 14 June 2026 · Version 1.0</p>
+    <p style="margin-top:4px">Effective 29 July 2026 · Version 1.1</p>
   </div>
 </div>
 </body>
