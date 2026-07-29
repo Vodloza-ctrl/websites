@@ -1755,10 +1755,11 @@ async function renderConnectPaynowSection() {
   if (!data.connected) { wrap.innerHTML = connectPaynowFormHtml(); return; }
 
   if (data.status === "verified") {
+    var currencyLabel = data.currency === "ZIG" ? "ZiG" : "USD";
     wrap.innerHTML =
       '<div class="panel" style="border:1.5px solid var(--green);box-shadow:none">' +
         '<div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">' +
-          '<div><div style="font-size:13.5px;font-weight:700;color:var(--green)">✅ Paynow connected</div>' +
+          '<div><div style="font-size:13.5px;font-weight:700;color:var(--green)">✅ Paynow connected — ' + currencyLabel + '</div>' +
           '<div style="font-size:12px;color:var(--ink3);margin-top:2px">Deposit and full-payment bookings pay straight into your own Paynow account.</div></div>' +
           '<button class="btn btn-ghost btn-sm" onclick="disconnectPaynow()">Disconnect</button>' +
         '</div></div>';
@@ -1788,6 +1789,9 @@ function connectPaynowFormHtml() {
       '<div class="panel-head"><h2>Connect Paynow for deposits</h2></div>' +
       '<div class="panel-body">' +
         '<p style="font-size:12.5px;color:var(--ink3);margin-bottom:14px;line-height:1.5">To charge deposits or full payment on a service, connect your own Paynow account. Money goes straight to you — websites.co.zw never touches it.</p>' +
+        '<div class="fld-group"><label class="fld-label">Which currency is this account in? <span class="fld-hint">— Paynow accounts are locked to one currency</span></label>' +
+          '<select class="fld-select" id="pn_currency"><option value="USD">USD</option><option value="ZIG">ZiG</option></select>' +
+        '</div>' +
         '<div class="fld-group"><label class="fld-label">Paynow Integration ID</label><input class="fld-input" id="pn_integration_id" autocomplete="off"></div>' +
         '<div class="fld-group"><label class="fld-label">Paynow Integration Key</label><input class="fld-input" type="password" id="pn_integration_key" autocomplete="off"></div>' +
         '<div class="fld-group"><label class="fld-label">Your EcoCash number <span class="fld-hint">— for a small test payment</span></label><input class="fld-input" id="pn_test_phone" placeholder="077xxxxxxx"></div>' +
@@ -1801,6 +1805,7 @@ window.connectPaynow = async function() {
   var integrationId = ((document.getElementById("pn_integration_id") || {}).value || "").trim();
   var integrationKey = ((document.getElementById("pn_integration_key") || {}).value || "").trim();
   var phone = ((document.getElementById("pn_test_phone") || {}).value || "").trim();
+  var currency = ((document.getElementById("pn_currency") || {}).value || "USD") === "ZIG" ? "ZIG" : "USD";
   var msgEl = document.getElementById("pnConnectMsg");
   function showMsg(text, ok) { if (!msgEl) return; msgEl.style.display = "block"; msgEl.style.color = ok ? "var(--green)" : "var(--red)"; msgEl.textContent = text; }
   if (!integrationId || !integrationKey || !phone) { showMsg("Fill in all fields.", false); return; }
@@ -1808,7 +1813,7 @@ window.connectPaynow = async function() {
   if (btn) { btn.disabled = true; btn.textContent = "Connecting…"; }
   var r = await paymentsApi("/merchant-credentials/connect", {
     method: "POST",
-    body: JSON.stringify({ site_id: siteId, integration_id: integrationId, integration_key: integrationKey, phone: phone })
+    body: JSON.stringify({ site_id: siteId, integration_id: integrationId, integration_key: integrationKey, phone: phone, currency: currency })
   });
   if (btn) { btn.disabled = false; btn.textContent = "Connect Paynow account"; }
   if (!r.ok) { showMsg((r.data && (r.data.message || r.data.error)) || "Couldn't connect — try again.", false); return; }
