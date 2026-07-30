@@ -562,6 +562,7 @@ img{display:block;max-width:100%}
           </div>
           <span class="tag" id="emailRouteCount">— used</span>
         </div>
+        <div id="emailOwnDomainNote" style="display:none;background:var(--gold-bg);border-bottom:1px solid var(--line);padding:11px 18px;font-size:12.5px;color:var(--gold-dk);line-height:1.5"></div>
         <div class="panel-body">
           <div class="fld-group">
             <label class="fld-label">New address</label>
@@ -2411,6 +2412,25 @@ async function loadEmailRoutesTab() {
   var listEl = document.getElementById("emailRoutesList");
   var countEl = document.getElementById("emailRouteCount");
   var suffixEl = document.getElementById("emailDomainSuffix");
+  var noteEl = document.getElementById("emailOwnDomainNote");
+
+  // If this site has a custom domain connected but it hasn't gone through
+  // full Cloudflare zone migration (nameservers moved here — a plain CNAME
+  // isn't enough for Email Routing, which needs to own the zone's MX
+  // records), explain that up front instead of silently using the shared
+  // websites.co.zw domain with no context. Ask your platform admin —
+  // that's a one-time step per domain.
+  var site = window.state && window.state.site;
+  if (noteEl) {
+    if (site && site.custom_domain && site.zone_status !== 'active') {
+      noteEl.style.display = "block";
+      noteEl.innerHTML = "📧 Your site is connected at <strong>" + escV3(site.custom_domain) + "</strong>, but email addresses on that domain need a one-time upgrade first (moving it fully onto Cloudflare) — ask your platform admin to set this up. Until then, addresses use the shared <strong>@websites.co.zw</strong> domain below.";
+    } else {
+      noteEl.style.display = "none";
+      noteEl.innerHTML = "";
+    }
+  }
+
   // Default before the API responds — most sites are still on the shared
   // zone. Overwritten below with the real value, which for a migrated
   // own-zone tenant will be their own domain instead.
