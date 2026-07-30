@@ -1280,8 +1280,8 @@ window.onGenerate=async function(){
    see websites-products-worker.js's header comment for the full reasoning. */
 
 async function loadProducts() {
-  if (!window.state || !window.state.site || !window.state.site.id) return;
-  var r = await productsApi('/products?site_id=' + encodeURIComponent(window.state.site.id));
+  if (!siteId) return;
+  var r = await productsApi('/products?site_id=' + encodeURIComponent(siteId));
   if (!r.ok) { toast('Could not load products right now', 'err'); return; }
   state.productsV2 = Array.isArray(r.data.products) ? r.data.products : [];
   renderProducts();
@@ -1397,7 +1397,7 @@ window.addProduct = async function() {
   }
   var r = await productsApi('/products', {
     method: 'POST',
-    body: JSON.stringify({ site_id: window.state.site.id, name: '', description: '', base_price: 0, product_type: 'physical' }),
+    body: JSON.stringify({ site_id: siteId, name: '', description: '', base_price: 0, product_type: 'physical' }),
   });
   if (!r.ok) { toast('Could not create product', 'err'); return; }
   await loadProducts();
@@ -1851,9 +1851,9 @@ function spShow(step) {
 }
 
 async function loadMerchantStatus() {
-  if (!window.state || !window.state.site || !window.state.site.id) return;
+  if (!siteId) { console.warn('loadMerchantStatus: no siteId in URL — panel will stay on Checking connection'); return; }
   spShow('spLoading');
-  var r = await paymentsApi('/merchant-credentials/status?site_id=' + encodeURIComponent(window.state.site.id));
+  var r = await paymentsApi('/merchant-credentials/status?site_id=' + encodeURIComponent(siteId));
   if (!r.ok) {
     // Can't reach payments-worker right now — default to the connect form
     // rather than leaving a permanent "Checking connection..." spinner.
@@ -1890,7 +1890,7 @@ function showReconnectForm() {
 }
 
 async function submitConnectMerchant() {
-  if (!window.state || !window.state.site || !window.state.site.id) return;
+  if (!siteId) return;
   var integrationId = (document.getElementById('spIntegrationId') || {}).value || '';
   var integrationKey = (document.getElementById('spIntegrationKey') || {}).value || '';
   var currency = (document.getElementById('spCurrency') || {}).value || 'USD';
@@ -1924,7 +1924,7 @@ async function submitConnectMerchant() {
   var r = await paymentsApi('/merchant-credentials/connect', {
     method: 'POST',
     body: JSON.stringify({
-      site_id: window.state.site.id,
+      site_id: siteId,
       integration_id: integrationId,
       integration_key: integrationKey,
       currency: currency,
@@ -1952,11 +1952,11 @@ async function submitConnectMerchant() {
 }
 
 async function disconnectMerchant() {
-  if (!window.state || !window.state.site || !window.state.site.id) return;
+  if (!siteId) return;
   if (!confirm('Disconnect Paynow from this store? Customers will no longer be able to pay online until you reconnect.')) return;
   await paymentsApi('/merchant-credentials/disconnect', {
     method: 'POST',
-    body: JSON.stringify({ site_id: window.state.site.id }),
+    body: JSON.stringify({ site_id: siteId }),
   });
   toast('Paynow disconnected', 'ok');
   loadMerchantStatus();
