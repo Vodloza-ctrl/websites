@@ -860,7 +860,7 @@ img{display:block;max-width:100%}
 var API_BASE="https://app.websites.co.zw";
 var DASH_URL="https://www.websites.co.zw/dashboard/customer.html";
 var siteId=new URLSearchParams(location.search).get("site");
-var state={site:null,content:null,dirty:false,products:[],images:{},gallery:[],previewOpen:false};
+var state={site:null,content:null,dirty:false,products:[],productsV2:[],images:{},gallery:[],previewOpen:false};
 window.state=state;
 var STARTER_PRODUCT_LIMIT=6;
 var STARTER_IMAGE_LIMIT=10;
@@ -1094,7 +1094,7 @@ window.updateVideoPreview = function() {
   state.images=(inner.images&&typeof inner.images==="object")?inner.images:{};
   state.gallery=Array.isArray(inner.images&&inner.images.gallery)?inner.images.gallery:[];
   if (raw.favicon) { window._storedFavicon = raw.favicon; }
-  populateForm();renderProducts();renderGallery();renderImagePreviews();updateBudget(null);initDesignTab();loadMerchantStatus();
+  populateForm();renderGallery();renderImagePreviews();updateBudget(null);initDesignTab();loadMerchantStatus();loadProducts();
   document.getElementById("topSiteName").textContent=state.site.site_name||"Your site";
   document.getElementById("pubUrl").textContent=(state.site.draft_subdomain||"yoursite")+".websites.co.zw";
   var badge=document.getElementById("statusBadge");
@@ -1272,140 +1272,344 @@ window.onGenerate=async function(){
   finally{btn.classList.remove("loading");btn.disabled=false;}
 };
 
+/* ── Products & Catalogue (live API-backed — see websites-products-worker) ──
+   Unlike most editor fields, product edits are NOT batched into the main
+   Save button. Stock changes continuously from real customer purchases
+   independent of the owner's editor session, so every product/variant
+   write here is immediate and scoped to exactly the field being changed —
+   see websites-products-worker.js's header comment for the full reasoning. */
+
+async function loadProducts() {
+  if (!window.state || !window.state.site || !window.state.site.id) return;
+  var r = await productsApi('/products?site_id=' + encodeURIComponent(window.state.site.id));
+  if (!r.ok) { toast('Could not load products right now', 'err'); return; }
+  state.productsV2 = Array.isArray(r.data.products) ? r.data.products : [];
+  renderProducts();
+}
+
 function renderProducts() {
   var list = document.getElementById("productList");
   var empty = document.getElementById("productEmpty");
   var limitMsg = document.getElementById("productLimitMsg");
   var waUpsell = document.getElementById("whatsappStoreUpsell");
   var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
-  empty.style.display = state.products.length === 0 ? '' : 'none';
-  limitMsg.style.display = (!isPro && state.products.length >= STARTER_PRODUCT_LIMIT) ? 'block' : 'none';
-  if (waUpsell) waUpsell.style.display = (state.products.length > 0) ? 'block' : 'none';
+  var products = state.productsV2 || [];
+  empty.style.display = products.length === 0 ? '' : 'none';
+  limitMsg.style.display = (!isPro && products.length >= STARTER_PRODUCT_LIMIT) ? 'block' : 'none';
+  if (waUpsell) waUpsell.style.display = (products.length > 0) ? 'block' : 'none';
   list.querySelectorAll('.product-card').forEach(function(c) { c.remove(); });
-  state.products.forEach(function(p) {
-    if (!Array.isArray(p.images)) p.images = p.image ? [p.image] : [];
-    if (!Array.isArray(p.colors)) p.colors = [];
-    if (!Array.isArray(p.variants)) p.variants = [];
+
+  products.forEach(function(p) {
     var card = document.createElement("div");
     card.className = "product-card";
     card.dataset.pid = p.id;
-    var thumbHtml = p.image
-      ? '<img class="product-thumb" src="' + esc(p.image) + '" alt="">'
+
+    var thumbHtml = p.image_url
+      ? '<img class="product-thumb" src="' + esc(p.image_url) + '" alt="">'
       : '<div class="product-thumb-placeholder"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>';
-    
-    var uploadHtml = '';
-    var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
-    var maxImages = isPro ? 5 : 1;
-    var images = Array.isArray(p.images) ? p.images : (p.image ? [p.image] : []);
-    
-    uploadHtml = '<div class="fld-group"><label class="fld-label">Product images <span class="fld-hint">— ' + (isPro ? 'up to ' + maxImages + ', Pro plan' : '1 image on Starter') + '</span></label>';
-    uploadHtml += '<div id="prod-images-' + p.id + '" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">';
-    
-    images.forEach(function(url, pi) {
-      uploadHtml += '<div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex-shrink:0">';
-      uploadHtml += '<img src="' + esc(url) + '" style="width:100%;height:100%;object-fit:cover">';
-      uploadHtml += '<button type="button" onclick="removeProductImage(\'' + p.id + '\',' + pi + ')" style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(13,15,20,.7);color:#fff;border:none;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</button>';
-      uploadHtml += '</div>';
-    });
-    
-    if (images.length < maxImages) {
-      uploadHtml += '<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden" onmouseenter="this.style.borderColor=\'var(--green)\';this.style.background=\'var(--green-bg)\'" onmouseleave="this.style.borderColor=\'\';this.style.background=\'\'"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleProductImageUpload(\'' + p.id + '\',this)"></label>';
-    } else if (!isPro && images.length >= 1) {
-      uploadHtml += '<div style="border:1.5px dashed var(--pro);border-radius:var(--r-sm);padding:10px 12px;background:var(--pro-bg);font-size:12px;color:var(--pro);font-weight:600;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="switchTab(\'publish\',null)"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg> Add more images — upgrade to Pro</div>';
+
+    var priceDisplay = '$' + Number(p.base_price || 0).toFixed(2) + (p.currency === 'ZIG' ? ' USD' : '');
+
+    var imgUploadHtml = '<div class="fld-group"><label class="fld-label">Product image</label>'
+      + '<div style="display:flex;gap:8px;align-items:flex-start">'
+      + (p.image_url
+          ? '<div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex-shrink:0"><img src="' + esc(p.image_url) + '" style="width:100%;height:100%;object-fit:cover"><button type="button" onclick="removeProductImageV2(\'' + p.id + '\')" style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(13,15,20,.7);color:#fff;border:none;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1">×</button></div>'
+          : '<label style="width:72px;height:72px;border-radius:8px;border:2px dashed var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;color:var(--ink3);flex-shrink:0;position:relative;overflow:hidden"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg><input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="handleProductImageUploadV2(\'' + p.id + '\',this)"></label>')
+      + '</div></div>';
+
+    var typeToggleHtml = '<div class="fld-group"><label class="fld-label">Type</label>'
+      + '<select class="fld-select" onchange="updateProductV2(\'' + p.id + '\',\'product_type\',this.value)">'
+      + '<option value="physical"' + (p.product_type !== 'digital' ? ' selected' : '') + '>Physical — shipped/collected</option>'
+      + '<option value="digital"' + (p.product_type === 'digital' ? ' selected' : '') + '>Digital — instant download</option>'
+      + '</select></div>';
+
+    var digitalUploadHtml = '';
+    if (p.product_type === 'digital') {
+      digitalUploadHtml = '<div class="fld-group"><label class="fld-label">Digital file <span class="fld-hint">delivered automatically after payment — only works with Store Payments</span></label>'
+        + (p.digital_asset_key
+            ? '<div style="font-size:12.5px;color:var(--green);font-weight:600">✓ File uploaded — <label style="cursor:pointer;text-decoration:underline;font-weight:400;color:var(--ink2)">replace<input type="file" style="display:none" onchange="handleDigitalAssetUpload(\'' + p.id + '\',this)"></label></div>'
+            : '<label class="btn btn-ghost btn-sm" style="display:inline-flex;cursor:pointer">Upload file<input type="file" style="display:none" onchange="handleDigitalAssetUpload(\'' + p.id + '\',this)"></label>')
+        + '</div>';
     }
-    
-    uploadHtml += '</div></div>';
-    
+
+    var stockHtml = '';
+    if (!p.has_variants) {
+      stockHtml = '<div class="fld-group"><label class="fld-label">Stock <span class="fld-hint">leave blank to not track stock</span></label><input class="fld-input" type="number" min="0" value="' + (p.stock === null || p.stock === undefined ? '' : esc(String(p.stock))) + '" placeholder="Not tracked" onchange="updateProductStockV2(\'' + p.id + '\',this.value)" style="max-width:120px"></div>';
+    }
+
+    var variantsSummary = p.has_variants
+      ? '<div style="font-size:12px;color:var(--ink2);margin-top:4px">' + (p.variant_options || []).map(function(o){return o.option_name;}).join(' × ') + ' — ' + (p.variants || []).length + ' option' + ((p.variants||[]).length===1?'':'s') + '</div>'
+      : '';
+
     card.innerHTML =
       '<div class="product-card-head" onclick="this.parentElement.classList.toggle(\'open\')" style="cursor:pointer">'
       + thumbHtml
       + '<div class="product-name">' + (p.name || '<em style="color:var(--ink3)">Tap to edit</em>') + '</div>'
-      + '<div class="product-price">' + (p.price || '') + '</div>'
+      + '<div class="product-price">' + priceDisplay + '</div>'
       + '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;opacity:.4"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       + '</div>'
       + '<div class="product-card-body">'
       + '<div class="two">'
-      + '<div class="fld-group"><label class="fld-label">Item name</label><input class="fld-input" placeholder="e.g. Home Jersey" value="' + esc(p.name || '') + '" oninput="updateProduct(\'' + p.id + '\',\'name\',this.value)"></div>'
-      + '<div class="fld-group"><label class="fld-label">Price</label><input class="fld-input" placeholder="$20" value="' + esc(p.price || '') + '" oninput="updateProduct(\'' + p.id + '\',\'price\',this.value)"></div>'
+      + '<div class="fld-group"><label class="fld-label">Item name</label><input class="fld-input" placeholder="e.g. Home Jersey" value="' + esc(p.name || '') + '" onchange="updateProductV2(\'' + p.id + '\',\'name\',this.value)"></div>'
+      + '<div class="fld-group"><label class="fld-label">Price (USD)</label><input class="fld-input" type="number" step="0.01" min="0" placeholder="20.00" value="' + esc(String(p.base_price || '')) + '" onchange="updateProductV2(\'' + p.id + '\',\'base_price\',this.value)"></div>'
       + '</div>'
-      + '<div class="fld-group"><label class="fld-label">Description</label><textarea class="fld-textarea" rows="2" placeholder="Brief description…" oninput="updateProduct(\'' + p.id + '\',\'description\',this.value)">' + esc(p.description || '') + '</textarea></div>'
-      + uploadHtml
-      + '<div style="margin-top:12px"><button type="button" class="product-del" onclick="removeProduct(\'' + p.id + '\')">Remove item</button></div>'
+      + '<div class="fld-group"><label class="fld-label">Description</label><textarea class="fld-textarea" rows="2" placeholder="Brief description…" onchange="updateProductV2(\'' + p.id + '\',\'description\',this.value)">' + esc(p.description || '') + '</textarea></div>'
+      + imgUploadHtml
+      + typeToggleHtml
+      + digitalUploadHtml
+      + stockHtml
+      + '<div class="fld-group"><button type="button" class="btn btn-ghost btn-sm" onclick="openVariantBuilder(\'' + p.id + '\')">Manage options (Size, Colour…)</button>' + variantsSummary + '</div>'
+      + '<div id="variantBuilder-' + p.id + '" style="display:none;margin-top:10px"></div>'
+      + '<div style="margin-top:12px"><button type="button" class="product-del" onclick="removeProductV2(\'' + p.id + '\')">Remove item</button></div>'
       + '</div>';
     list.insertBefore(card, empty);
   });
 }
 
-window.handleProductImageUpload = async function(productId, input) {
+window.handleProductImageUploadV2 = async function(productId, input) {
   var file = input.files[0];
   if (!file) return;
-  
-  var product = state.products.find(function(p) { return p.id === productId; });
-  if (!product) return;
-  
-  var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
-  var maxImages = isPro ? 5 : 1;
-  
-  if (!Array.isArray(product.images)) product.images = product.image ? [product.image] : [];
-  
-  if (product.images.length >= maxImages) {
-    toast(isPro ? "Maximum " + maxImages + " images per product" : "1 image per product on Starter — upgrade to Pro for more", "err");
-    if (!isPro) switchTab('publish', null);
-    return;
-  }
-  
-  var container = document.getElementById('prod-images-' + productId);
-  if (container) {
-    var spinner = document.createElement('div');
-    spinner.id = 'prod-uploading-' + productId;
-    spinner.style.cssText = 'width:72px;height:72px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3);flex-shrink:0';
-    spinner.textContent = 'Uploading…';
-    container.insertBefore(spinner, container.lastChild);
-  }
-  
   var url = await window.uploadToR2(file, 'product-' + productId);
-  
-  var sp = document.getElementById('prod-uploading-' + productId);
-  if (sp) sp.remove();
-  
-  if (!url) {
-    toast('Upload failed — try again', 'err');
-    return;
-  }
-  
-  product.images.push(url);
-  product.image = product.images[0];
-  window.markDirty();
+  if (!url) { toast('Upload failed — try again', 'err'); return; }
+  var r = await productsApi('/products/' + encodeURIComponent(productId), { method: 'PUT', body: JSON.stringify({ image_url: url }) });
+  if (!r.ok) { toast('Could not save image', 'err'); return; }
+  var p = (state.productsV2 || []).find(function(x){ return x.id === productId; });
+  if (p) p.image_url = url;
   renderProducts();
   toast('Image uploaded ✓', 'ok');
 };
 
-window.removeProductImage = function(productId, index) {
-  var product = state.products.find(function(p) { return p.id === productId; });
-  if (!product) return;
-  if (!Array.isArray(product.images)) product.images = [];
-  product.images.splice(index, 1);
-  product.image = product.images[0] || '';
-  window.markDirty();
+window.removeProductImageV2 = async function(productId) {
+  var r = await productsApi('/products/' + encodeURIComponent(productId), { method: 'PUT', body: JSON.stringify({ image_url: '' }) });
+  if (!r.ok) { toast('Could not remove image', 'err'); return; }
+  var p = (state.productsV2 || []).find(function(x){ return x.id === productId; });
+  if (p) p.image_url = '';
   renderProducts();
 };
 
-window.addProduct = function() {
-  if (state.products.length >= STARTER_PRODUCT_LIMIT) {
+window.addProduct = async function() {
+  var products = state.productsV2 || [];
+  var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
+  if (!isPro && products.length >= STARTER_PRODUCT_LIMIT) {
     document.getElementById('productLimitMsg').style.display = 'block';
     toast('6 product limit on Starter. Upgrade to Pro for unlimited.', 'err');
     return;
   }
-  state.products.push({id:'p_'+Date.now(), name:'', description:'', price:'', image:'', images:[], variants:[], colors:[] });
-  renderProducts(); markDirty();
+  var r = await productsApi('/products', {
+    method: 'POST',
+    body: JSON.stringify({ site_id: window.state.site.id, name: '', description: '', base_price: 0, product_type: 'physical' }),
+  });
+  if (!r.ok) { toast('Could not create product', 'err'); return; }
+  await loadProducts();
+  // Open the newly created card for editing straight away.
+  var card = document.querySelector('.product-card[data-pid="' + r.data.product.id + '"]');
+  if (card) card.classList.add('open');
 };
-window.removeProduct = function(id) {
-  state.products = state.products.filter(function(p) { return p.id !== id; });
-  renderProducts(); markDirty();
+
+window.removeProductV2 = async function(id) {
+  if (!confirm('Remove this product? It will no longer appear on your site or in your store.')) return;
+  var r = await productsApi('/products/' + encodeURIComponent(id), { method: 'DELETE' });
+  if (!r.ok) { toast('Could not remove product', 'err'); return; }
+  state.productsV2 = (state.productsV2 || []).filter(function(p) { return p.id !== id; });
+  renderProducts();
 };
-window.updateProduct = function(id, key, val) {
-  var p = state.products.find(function(p) { return p.id === id; });
-  if (p) { p[key] = val; markDirty(); }
+
+window.updateProductV2 = async function(id, key, val) {
+  var body = {};
+  body[key] = (key === 'base_price') ? Number(val) : val;
+  var r = await productsApi('/products/' + encodeURIComponent(id), { method: 'PUT', body: JSON.stringify(body) });
+  if (!r.ok) { toast('Could not save change', 'err'); return; }
+  var p = (state.productsV2 || []).find(function(x){ return x.id === id; });
+  if (p) p[key] = body[key];
+  if (key === 'product_type') renderProducts(); // digital upload zone / stock field visibility changes
+  else if (key === 'name' || key === 'base_price') {
+    // Cheap in-place update of the collapsed header without a full re-render.
+    var card = document.querySelector('.product-card[data-pid="' + id + '"] .product-card-head');
+    if (card) {
+      var nameEl = card.querySelector('.product-name'), priceEl = card.querySelector('.product-price');
+      if (nameEl && key === 'name') nameEl.textContent = val || 'Tap to edit';
+      if (priceEl && key === 'base_price') priceEl.textContent = '$' + Number(val || 0).toFixed(2);
+    }
+  }
+};
+
+window.updateProductStockV2 = async function(id, val) {
+  var stock = val === '' ? null : Math.max(0, Math.floor(Number(val) || 0));
+  if (stock === null) return; // "not tracked" — nothing to persist server-side, stock stays whatever it was; blank is just a display choice
+  var r = await productsApi('/products/' + encodeURIComponent(id) + '/stock', { method: 'POST', body: JSON.stringify({ stock: stock }) });
+  if (!r.ok) { toast('Could not update stock', 'err'); return; }
+  toast('Stock updated ✓', 'ok');
+};
+
+window.handleDigitalAssetUpload = async function(productId, input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 200 * 1024 * 1024) { toast('File must be under 200MB', 'err'); return; }
+  toast('Uploading file…', 'ok');
+  var token = getToken();
+  try {
+    var resp = await fetch(PRODUCTS_API_BASE + '/products/' + encodeURIComponent(productId) + '/digital-asset', {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? 'Bearer ' + token : '',
+        'Content-Type': file.type || 'application/octet-stream',
+        'X-Filename': file.name,
+      },
+      body: file,
+    });
+    if (!resp.ok) { toast('Upload failed — try again', 'err'); return; }
+  } catch (e) {
+    toast('Upload failed — try again', 'err');
+    return;
+  }
+  await loadProducts();
+  toast('File uploaded ✓ — delivered automatically after payment', 'ok');
+};
+
+/* ── Variant builder ──────────────────────────────────────────────────
+   Owner types comma-separated Size/Colour values, hits "Generate", gets
+   an editable grid of every combination with its own stock + price
+   adjustment, then hits Save — which replaces the whole variant set in
+   one call (see PUT /products/:id/variants). Working state lives in
+   state._variantDraft, keyed by product id, so switching between
+   products doesn't lose an in-progress grid. */
+if (!state._variantDraft) state._variantDraft = {};
+
+window.openVariantBuilder = function(productId) {
+  var wrap = document.getElementById('variantBuilder-' + productId);
+  if (!wrap) return;
+  var isOpen = wrap.style.display !== 'none';
+  if (isOpen) { wrap.style.display = 'none'; return; }
+
+  var product = (state.productsV2 || []).find(function(p) { return p.id === productId; });
+  if (!product) return;
+
+  if (!state._variantDraft[productId]) {
+    // Seed the draft from whatever's already saved, so reopening doesn't
+    // wipe out an existing variant set.
+    var sizeVals = [], colorVals = [];
+    (product.variants || []).forEach(function(v) {
+      if (v.option_values && v.option_values.Size && sizeVals.indexOf(v.option_values.Size) < 0) sizeVals.push(v.option_values.Size);
+      if (v.option_values && v.option_values.Color && colorVals.indexOf(v.option_values.Color) < 0) colorVals.push(v.option_values.Color);
+    });
+    state._variantDraft[productId] = { sizesText: sizeVals.join(', '), colorsText: colorVals.join(', '), grid: (product.variants || []).slice() };
+  }
+
+  wrap.style.display = '';
+  renderVariantBuilder(productId);
+};
+
+function renderVariantBuilder(productId) {
+  var wrap = document.getElementById('variantBuilder-' + productId);
+  if (!wrap) return;
+  var draft = state._variantDraft[productId];
+
+  var gridHtml = '';
+  if (draft.grid.length) {
+    gridHtml = '<div style="border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-top:10px">'
+      + '<table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+      + '<thead><tr style="background:var(--surface)"><th style="text-align:left;padding:7px 10px">Option</th><th style="text-align:left;padding:7px 10px;width:90px">Price +/-</th><th style="text-align:left;padding:7px 10px;width:80px">Stock</th></tr></thead><tbody>'
+      + draft.grid.map(function(v, i) {
+          var label = Object.values(v.option_values || {}).join(' / ');
+          return '<tr style="border-top:1px solid var(--line)">'
+            + '<td style="padding:6px 10px">' + esc(label) + '</td>'
+            + '<td style="padding:6px 10px"><input class="fld-input" style="padding:5px 8px;font-size:12.5px" type="number" step="0.01" value="' + (v.price_delta || 0) + '" onchange="updateVariantDraftField(\'' + productId + '\',' + i + ',\'price_delta\',this.value)"></td>'
+            + '<td style="padding:6px 10px"><input class="fld-input" style="padding:5px 8px;font-size:12.5px" type="number" min="0" value="' + (v.stock || 0) + '" onchange="updateVariantDraftField(\'' + productId + '\',' + i + ',\'stock\',this.value)"></td>'
+            + '</tr>';
+        }).join('')
+      + '</tbody></table></div>';
+  }
+
+  wrap.innerHTML =
+    '<div style="background:var(--surface);border-radius:var(--r-sm);padding:12px">'
+    + '<div class="two">'
+    + '<div class="fld-group"><label class="fld-label">Sizes <span class="fld-hint">comma-separated, optional</span></label><input class="fld-input" placeholder="S, M, L, XL" value="' + esc(draft.sizesText) + '" oninput="updateVariantDraftText(\'' + productId + '\',\'sizesText\',this.value)"></div>'
+    + '<div class="fld-group"><label class="fld-label">Colours <span class="fld-hint">comma-separated, optional</span></label><input class="fld-input" placeholder="Red, Blue" value="' + esc(draft.colorsText) + '" oninput="updateVariantDraftText(\'' + productId + '\',\'colorsText\',this.value)"></div>'
+    + '</div>'
+    + '<button type="button" class="btn btn-ghost btn-sm" onclick="generateVariantGrid(\'' + productId + '\')">Generate options</button>'
+    + gridHtml
+    + (draft.grid.length ? '<div style="margin-top:12px;display:flex;gap:8px"><button type="button" class="btn btn-green btn-sm" onclick="saveVariantGrid(\'' + productId + '\')">Save options</button><button type="button" class="btn btn-ghost btn-sm" onclick="clearVariantGrid(\'' + productId + '\')">Clear all (back to single price)</button></div>' : '')
+    + '</div>';
+}
+
+window.updateVariantDraftText = function(productId, key, val) {
+  state._variantDraft[productId][key] = val;
+};
+
+window.updateVariantDraftField = function(productId, idx, key, val) {
+  var grid = state._variantDraft[productId].grid;
+  if (!grid[idx]) return;
+  grid[idx][key] = key === 'price_delta' ? Number(val) || 0 : Math.max(0, Math.floor(Number(val) || 0));
+};
+
+window.generateVariantGrid = function(productId) {
+  var draft = state._variantDraft[productId];
+  var sizes = draft.sizesText.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  var colors = draft.colorsText.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+
+  if (!sizes.length && !colors.length) {
+    toast('Enter at least one Size or Colour value', 'err');
+    return;
+  }
+
+  var sizeList = sizes.length ? sizes : [null];
+  var colorList = colors.length ? colors : [null];
+
+  // Preserve existing stock/price for combos that already existed —
+  // regenerating shouldn't wipe out numbers the owner already typed for
+  // combos that are still present.
+  var existingByKey = {};
+  draft.grid.forEach(function(v) {
+    var key = (v.option_values.Size || '') + '|' + (v.option_values.Color || '');
+    existingByKey[key] = v;
+  });
+
+  var newGrid = [];
+  sizeList.forEach(function(sz) {
+    colorList.forEach(function(col) {
+      var ov = {};
+      if (sz) ov.Size = sz;
+      if (col) ov.Color = col;
+      var key = (sz || '') + '|' + (col || '');
+      var existing = existingByKey[key];
+      newGrid.push({
+        option_values: ov,
+        price_delta: existing ? existing.price_delta : 0,
+        stock: existing ? existing.stock : 0,
+        sku: existing ? existing.sku : null,
+      });
+    });
+  });
+
+  draft.grid = newGrid;
+  renderVariantBuilder(productId);
+};
+
+window.saveVariantGrid = async function(productId) {
+  var draft = state._variantDraft[productId];
+  var optionNames = [];
+  if (draft.sizesText.trim()) optionNames.push('Size');
+  if (draft.colorsText.trim()) optionNames.push('Color');
+
+  var r = await productsApi('/products/' + encodeURIComponent(productId) + '/variants', {
+    method: 'PUT',
+    body: JSON.stringify({ option_names: optionNames, variants: draft.grid }),
+  });
+  if (!r.ok) { toast('Could not save options', 'err'); return; }
+  toast('Options saved ✓', 'ok');
+  await loadProducts();
+};
+
+window.clearVariantGrid = async function(productId) {
+  if (!confirm('Remove all Size/Colour options for this product? It will go back to a single price and stock count.')) return;
+  var r = await productsApi('/products/' + encodeURIComponent(productId) + '/variants', {
+    method: 'PUT',
+    body: JSON.stringify({ option_names: [], variants: [] }),
+  });
+  if (!r.ok) { toast('Could not clear options', 'err'); return; }
+  delete state._variantDraft[productId];
+  toast('Options cleared ✓', 'ok');
+  await loadProducts();
 };
 
 window.triggerUpload=function(type){var el=document.getElementById(type+"File");if(el)el.click();};
@@ -1616,6 +1820,21 @@ async function paymentsApi(path, opts) {
   if (token) headers["Authorization"] = "Bearer " + token;
   try {
     var r = await fetch(PAYMENTS_API_BASE + path, Object.assign({ headers: headers }, opts || {}));
+    var data = {}; try { data = await r.json(); } catch (e) {}
+    return { ok: r.ok, status: r.status, data: data };
+  } catch (e) {
+    return { ok: false, status: 0, data: {} };
+  }
+}
+
+var PRODUCTS_API_BASE = "https://products.websites.co.zw";
+
+async function productsApi(path, opts) {
+  var token = (typeof getToken === "function") ? getToken() : (localStorage.getItem("wcz_token") || "");
+  var headers = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = "Bearer " + token;
+  try {
+    var r = await fetch(PRODUCTS_API_BASE + path, Object.assign({ headers: headers }, opts || {}));
     var data = {}; try { data = await r.json(); } catch (e) {}
     return { ok: r.ok, status: r.status, data: data };
   } catch (e) {
