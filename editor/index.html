@@ -558,7 +558,7 @@ img{display:block;max-width:100%}
         <div class="panel-head">
           <div>
             <h2>Professional email</h2>
-            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Pick any name you like — yourname@, sales@, hello@ — not just the defaults</div>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Pick any name you like — yourname@, sales@, hello@websites.co.zw — not just the defaults</div>
           </div>
           <span class="tag" id="emailRouteCount">— used</span>
         </div>
@@ -567,7 +567,7 @@ img{display:block;max-width:100%}
             <label class="fld-label">New address</label>
             <div style="display:flex;align-items:stretch;border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:#fff">
               <input id="newEmailLocal" type="text" placeholder="e.g. yourname, sales, hello" style="flex:1;border:none;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;min-width:0" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9._+-]/g,'').slice(0,64)">
-              <span style="background:var(--surface);padding:10px 12px;font-size:13px;font-weight:600;color:var(--ink3);border-left:1px solid var(--line);white-space:nowrap;flex-shrink:0" id="emailDomainSuffix">@yoursite.co.zw</span>
+              <span style="background:var(--surface);padding:10px 12px;font-size:13px;font-weight:600;color:var(--ink3);border-left:1px solid var(--line);white-space:nowrap;flex-shrink:0" id="emailDomainSuffix">@websites.co.zw</span>
             </div>
           </div>
           <div class="fld-group">
@@ -2411,25 +2411,30 @@ async function loadEmailRoutesTab() {
   var listEl = document.getElementById("emailRoutesList");
   var countEl = document.getElementById("emailRouteCount");
   var suffixEl = document.getElementById("emailDomainSuffix");
-  var slug = (window.state && window.state.site && window.state.site.draft_subdomain) || "yoursite";
-  if (suffixEl) suffixEl.textContent = "@" + slug + ".co.zw";
+  // Default before the API responds — most sites are still on the shared
+  // zone. Overwritten below with the real value, which for a migrated
+  // own-zone tenant will be their own domain instead.
+  if (suffixEl) suffixEl.textContent = "@websites.co.zw";
   if (listEl) listEl.innerHTML = '<div class="empty-state"><p>Loading…</p></div>';
   try {
     var r = await window.__api("/api/sites/" + encodeURIComponent(siteId) + "/email-routes", { method: "GET" });
     if (!r.ok) { if (listEl) listEl.innerHTML = '<div class="empty-state"><p>Couldn\'t load your addresses. Try again.</p></div>'; return; }
     var routes = r.data.routes || [];
+    var addressDomain = r.data.address_domain || "websites.co.zw";
+    if (suffixEl) suffixEl.textContent = "@" + addressDomain;
     var plan = (window.state && window.state.site && window.state.site.plan) || "starter";
     var limit = plan === "pro" ? 10 : 3;
     if (countEl) countEl.textContent = routes.length + " / " + limit + " used";
-    renderEmailRoutesList(routes, slug);
+    renderEmailRoutesList(routes, addressDomain);
   } catch (e) {
     if (listEl) listEl.innerHTML = '<div class="empty-state"><p>Network error. Try again.</p></div>';
   }
 }
 
-function renderEmailRoutesList(routes, slug) {
+function renderEmailRoutesList(routes, addressDomain) {
   var listEl = document.getElementById("emailRoutesList");
   if (!listEl) return;
+  var domain = addressDomain || "websites.co.zw";
   if (!routes.length) {
     listEl.innerHTML = '<div class="empty-state"><p>No email addresses yet. Add your first one above — any name you like.</p></div>';
     return;
@@ -2440,7 +2445,7 @@ function renderEmailRoutesList(routes, slug) {
       : '<span class="status-badge status-pending">Pending verification</span>';
     return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)">'+
       '<div style="min-width:0;overflow:hidden">'+
-        '<div style="font-weight:600;font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escV3(r.local_part)+'@'+escV3(slug)+'.co.zw</div>'+
+        '<div style="font-weight:600;font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escV3(r.local_part)+'@'+escV3(domain)+'</div>'+
         '<div style="font-size:12px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">→ '+escV3(r.destination)+'</div>'+
       '</div>'+
       '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
