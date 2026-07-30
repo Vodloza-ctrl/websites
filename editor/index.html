@@ -345,6 +345,9 @@ img{display:block;max-width:100%}
     <div class="nav-item" data-tab="contact" onclick="switchTab('contact',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><path d="M3 4h12a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M2 5l7 5 7-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Contact
     </div>
+    <div class="nav-item" data-tab="email" onclick="switchTab('email',this)">
+      <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2 6l7 5 7-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Email
+    </div>
     <div class="nav-item" data-tab="social" onclick="switchTab('social',this)">
       <svg class="nav-ico" viewBox="0 0 18 18" fill="none"><circle cx="13.5" cy="4.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="4.5" cy="9" r="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="13.5" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 8l6-3M6 10l6 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Social
     </div>
@@ -550,6 +553,38 @@ img{display:block;max-width:100%}
       </div>
       <div class="upsell" id="bookingTemplateUpsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div class="upsell-body"><strong>Let customers book appointments online</strong><p>Booking works on templates like Beauty Salon, Advisory Firm, Medical Clinic, Personal Portfolio, Lodge/Hotel, and Creative Studio. Switch templates to turn it on.</p><button class="btn btn-sm" style="margin-top:8px;background:var(--gold-bg);color:var(--gold-dk);border:1.5px solid var(--gold)" onclick="openTplModalV3()">Switch template →</button></div></div>
     </div>
+    <div class="tab-section" id="tab-email">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Professional email</h2>
+            <div style="font-size:12px;color:var(--ink3);margin-top:2px">Pick any name you like — yourname@, sales@, hello@ — not just the defaults</div>
+          </div>
+          <span class="tag" id="emailRouteCount">— used</span>
+        </div>
+        <div class="panel-body">
+          <div class="fld-group">
+            <label class="fld-label">New address</label>
+            <div style="display:flex;align-items:stretch;border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:#fff">
+              <input id="newEmailLocal" type="text" placeholder="e.g. yourname, sales, hello" style="flex:1;border:none;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;min-width:0" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9._+-]/g,'').slice(0,64)">
+              <span style="background:var(--surface);padding:10px 12px;font-size:13px;font-weight:600;color:var(--ink3);border-left:1px solid var(--line);white-space:nowrap;flex-shrink:0" id="emailDomainSuffix">@yoursite.co.zw</span>
+            </div>
+          </div>
+          <div class="fld-group">
+            <label class="fld-label">Forwards to</label>
+            <input id="newEmailDest" type="email" class="fld-input" placeholder="your@gmail.com">
+          </div>
+          <button class="btn btn-green" style="width:100%" id="addEmailBtn" onclick="addEmailRoute()">+ Add address</button>
+          <div id="emailAddMsg" style="font-size:12px;margin-top:8px;min-height:16px;line-height:1.5"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Your addresses</h2></div>
+        <div class="panel-body">
+          <div id="emailRoutesList"><div class="empty-state"><p>Loading…</p></div></div>
+        </div>
+      </div>
+    </div>
     <div class="tab-section" id="tab-social">
       <div class="panel">
         <div class="panel-head"><h2>Social media &amp; links</h2></div>
@@ -586,7 +621,6 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-rooms"><div class="panel"><div class="panel-head"><div><h2>Rooms &amp; Suites</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Each room becomes its own card — the first room shown is featured on your site</div></div><button class="btn btn-green btn-sm" onclick="addRoom()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="rooms-rep-list"><div class="empty-state" id="rooms-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 18h20"/></svg></span><p>No rooms yet. Add your first room type.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-bookings"><div class="panel"><div class="panel-head"><div><h2>Bookings</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Guest requests and appointments</div></div><div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="openBlockTimeModal()">Block time off</button><button class="btn btn-green btn-sm" id="addBookingBtn" style="display:none" onclick="openManualBookingModal()">+ Add booking</button><button class="btn btn-ghost btn-sm" onclick="loadBookings(true)">↻ Refresh</button></div></div><div class="panel-body">
       <div id="bookingsPricingSection" style="display:none;margin-bottom:14px"></div>
-      <div id="connectPaynowSection" style="display:none;margin-bottom:14px"></div>
       <div id="bookingsProUpsell" style="display:none;margin-bottom:14px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div class="upsell-body"><strong>Manual entry &amp; payment tracking — Pro only</strong><p>Log phone, walk-in, and email bookings directly, and track deposits and payments with one-tap "mark as paid". Available on Bookings <b>Pro</b> ($25/mo).</p></div></div></div>
       <div class="booking-filters" id="booking-filters"></div>
       <div class="booking-list" id="booking-list"><div class="empty-state" id="booking-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3V2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h4"/></svg></span><p id="booking-empty-text">No bookings yet. Once someone makes a request, it'll show up here.</p></div></div>
@@ -614,7 +648,7 @@ img{display:block;max-width:100%}
     <div class="tab-section" id="tab-experiences"><div class="panel"><div class="panel-head"><div><h2>Experiences &amp; Activities</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Safaris, game drives, tours — anything guests can book or join</div></div><button class="btn btn-green btn-sm" onclick="addExperience()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="experiences-rep-list"><div class="empty-state" id="experiences-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 0 0 20 15 15 0 0 0 0-20"/><path d="M2 12h20"/></svg></span><p>No experiences yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-packages"><div class="panel"><div class="panel-head"><div><h2>Packages &amp; Deals</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Bundled offers — e.g. honeymoon package, weekend getaway, all-inclusive stay</div></div><button class="btn btn-green btn-sm" onclick="addPackage()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="packages-rep-list"><div class="empty-state" id="packages-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9.5 3 12 8 12 8s2.5-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><p>No packages yet.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-team"><div class="panel"><div class="panel-head"><div><h2 id="team-tab-title">Team</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px" id="team-tab-sub">Hover cards flip to show bio on desktop</div></div><button class="btn btn-green btn-sm" onclick="addTeamMember()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="team-rep-list"><div class="empty-state" id="team-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span><p>No team members yet.</p></div></div></div></div></div>
-    <div class="tab-section" id="tab-booking-services"><div class="panel"><div class="panel-head"><div><h2>Bookable Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">What clients can actually book online — separate from the price list shown on your site</div></div><button class="btn btn-green btn-sm" id="addBookingServiceBtn" onclick="addBookingService()">+ Add</button></div><div class="panel-body"><div id="bookingServicesPricingSection" style="display:none;margin-bottom:14px"></div><div class="rep-list" id="booking-services-rep-list"><div class="empty-state" id="booking-services-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><p>No bookable services yet. Add one so clients can book real appointments online.</p></div></div></div></div></div>
+    <div class="tab-section" id="tab-booking-services"><div class="panel"><div class="panel-head"><div><h2>Bookable Services</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">What clients can actually book online — separate from the price list shown on your site</div></div><button class="btn btn-green btn-sm" onclick="addBookingService()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="booking-services-rep-list"><div class="empty-state" id="booking-services-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><p>No bookable services yet. Add one so clients can book real appointments online.</p></div></div></div></div></div>
     <div class="tab-section" id="tab-hours"><div class="panel"><div class="panel-head"><h2>Opening Hours</h2></div><div class="panel-body"><p style="font-size:12.5px;color:var(--ink3);margin-bottom:12px">A live Open/Closed badge shows on your site based on these times.</p><div class="hours-grid-wrap" id="hours-grid-wrap"><div class="hours-hdr">Day</div><div class="hours-hdr">Opens</div><div class="hours-hdr">Closes</div><div class="hours-hdr">Closed?</div></div></div></div></div>
     <div class="tab-section" id="tab-stats"><div class="panel"><div class="panel-head"><div><h2>Stats / Numbers</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Numbers animate (count up) when visitors scroll to them</div></div><button class="btn btn-green btn-sm" onclick="addStat()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="stats-rep-list"><div class="empty-state" id="stats-rep-empty"><span class="es-icon"><svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M3 15V9M7 15V5M11 15V8M15 15V3"/></svg></span><p>Add key numbers — e.g. 500+ clients served, 15 years in business, 98% satisfaction</p></div></div></div></div></div>
     <div class="tab-section" id="tab-events"><div class="panel"><div class="panel-head"><div><h2>Events / Schedule</h2><div style="font-size:12px;color:var(--ink3);margin-top:2px">Shown as a timeline on your site</div></div><button class="btn btn-green btn-sm" onclick="addEvent()">+ Add</button></div><div class="panel-body"><div class="rep-list" id="events-rep-list"><div class="empty-state" id="events-rep-empty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><p>No events yet. Add term dates or announcements.</p></div></div></div></div></div>
@@ -630,6 +664,7 @@ img{display:block;max-width:100%}
   <div class="dock-item" data-tab="images" onclick="switchTab('images',this)"><svg viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10" r="2" fill="currentColor"/><path d="M3 16l5-4 4 3 3-3 5 4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Images<div class="dock-dot"></div></div>
   <div class="dock-item" data-tab="products" onclick="switchTab('products',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M4 7h14l-2 9H6L4 7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.2" fill="currentColor"/><circle cx="15" cy="19" r="1.2" fill="currentColor"/><path d="M2 4h2.5L5 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Products<div class="dock-dot"></div></div>
   <div class="dock-item" data-tab="contact" onclick="switchTab('contact',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M4 5h14a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M3 6l8 6 8-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Contact<div class="dock-dot"></div></div>
+  <div class="dock-item" data-tab="email" onclick="switchTab('email',this)"><svg viewBox="0 0 22 22" fill="none"><rect x="3" y="5" width="16" height="12" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 7l8 6 8-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Email<div class="dock-dot"></div></div>
   <div class="dock-item" data-tab="publish" onclick="switchTab('publish',this)"><svg viewBox="0 0 22 22" fill="none"><path d="M11 3v12M7 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Publish<div class="dock-dot"></div></div>
   <div class="dock-item" data-tab="design" onclick="switchTab('design',this)"><svg viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="3" fill="currentColor"/><path d="M11 4v2M11 16v2M4 11h2M16 11h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Design<div class="dock-dot"></div></div>
 </nav>
@@ -909,21 +944,10 @@ window.onSave = async function() {
     if (typeof window.__syncTeamToBookingsWorker === "function") {
       try { await window.__syncTeamToBookingsWorker(siteId); } catch (e) {}
     }
-    var serviceSyncErrors = [];
     if (typeof window.__syncServicesToBookingsWorker === "function") {
-      try { serviceSyncErrors = await window.__syncServicesToBookingsWorker(siteId) || []; } catch (e) { serviceSyncErrors = ["Could not save bookable services -- please try again"]; }
+      try { await window.__syncServicesToBookingsWorker(siteId); } catch (e) {}
     }
-    if (serviceSyncErrors.length) {
-      // Site content itself still saved fine (that's a separate call) --
-      // this only reflects specific bookable-service rows that bookings-
-      // worker rejected (e.g. a validation error like a missing price for
-      // a full-payment service). Previously these failed completely
-      // silently -- the editor said "Saved" while quietly discarding the
-      // change, which is worse than an ugly error message.
-      toast("Saved, but couldn't update: " + serviceSyncErrors.join("; "), "err");
-    } else {
-      toast("Saved ✓", "ok");
-    }
+    toast("Saved ✓", "ok");
     refreshPreview();
   } catch(e) { toast("Network error", "err"); }
   finally { if (btn) { btn.disabled = false; btn.textContent = "Save"; } }
@@ -1634,37 +1658,15 @@ window.__syncServicesToBookingsWorker = async function(siteId) {
   }
   v3state._deletedServiceIds = [];
   var assignedNewIds = false;
-  var syncErrors = [];
-  // Strips anything that isn't a digit or a decimal point before parsing --
-  // a price field is free text (people naturally type "$40", "40.00",
-  // "$ 40" etc.), and Number() on a string containing a currency symbol
-  // returns NaN, which then serializes to null in the request body. That
-  // silently breaks anything that actually NEEDS a numeric price
-  // server-side (full-payment bookings, percent-based deposits) even
-  // though the field visually looked filled in.
-  function parseMoney(val) {
-    if (val == null || val === "") return null;
-    var cleaned = String(val).replace(/[^0-9.]/g, "");
-    if (!cleaned) return null;
-    var n = Number(cleaned);
-    return isNaN(n) ? null : n;
-  }
   for (var i = 0; i < v3state.bookingServices.length; i++) {
     var svc = v3state.bookingServices[i];
     if (!svc.name || !svc.duration_min) continue;
     var payload = {
       name: svc.name,
       duration_min: parseInt(svc.duration_min, 10),
-      price: parseMoney(svc.price),
+      price: svc.price ? Number(svc.price) : null,
       staff_mode: svc.staff_mode === "any" ? "any" : "choose",
       resource_id: svc.resource_id || "",
-      // v1.17 — deposit/full-payment commitment, mirrors booking_services
-      // columns on bookings-worker. Sending "none" explicitly (not omitting
-      // the key) so switching a service back to "none" actually clears it
-      // server-side rather than leaving a stale deposit config in place.
-      commitment_level: svc.commitment_level || "none",
-      deposit_amount: parseMoney(svc.deposit_amount),
-      deposit_percent: svc.deposit_percent !== "" && svc.deposit_percent != null ? Number(svc.deposit_percent) : null,
     };
     var needsCreate = !svc.service_id;
     if (svc.service_id) {
@@ -1672,22 +1674,7 @@ window.__syncServicesToBookingsWorker = async function(siteId) {
         method: "PUT",
         body: JSON.stringify(payload)
       });
-      if (!putResult.ok) {
-        // Only treat this as "the service_id is stale, create a fresh one"
-        // when the server genuinely doesn't recognize that ID (404). Any
-        // other failure (400 validation error, 402 addon lapsed, 500, etc.)
-        // must NOT silently fall through to creating a duplicate row under
-        // a new ID -- that's what produced the orphaned duplicate service
-        // seen earlier. Surface the real error instead.
-        if (putResult.status === 404) {
-          svc.service_id = null;
-          needsCreate = true;
-        } else {
-          var msg = (putResult.data && (putResult.data.message || putResult.data.error)) || ("save failed (" + putResult.status + ")");
-          syncErrors.push(svc.name + ": " + msg);
-          continue;
-        }
-      }
+      if (!putResult.ok) { svc.service_id = null; needsCreate = true; }
     }
     if (needsCreate) {
       var createPayload = Object.assign({ site_id: siteId }, payload);
@@ -1699,14 +1686,10 @@ window.__syncServicesToBookingsWorker = async function(siteId) {
       if (r.ok && r.data && r.data.service && r.data.service.id) {
         svc.service_id = r.data.service.id;
         assignedNewIds = true;
-      } else if (!r.ok) {
-        var createMsg = (r.data && (r.data.message || r.data.error)) || ("save failed (" + r.status + ")");
-        syncErrors.push(svc.name + ": " + createMsg);
       }
     }
   }
   if (assignedNewIds) { await persistSyncedContent(siteId); }
-  return syncErrors;
 };
 
 async function persistSyncedContent(siteId) {
@@ -1762,128 +1745,14 @@ async function fetchBookingsTier() {
   if (addBtn) addBtn.style.display = isPro ? "inline-flex" : "none";
   if (upsell) upsell.style.display = "none";
   renderBookingsPricing();
-  renderConnectPaynowSection();
-  toggleBookingServicesGate();
 }
 
-// v1.17 — owner Paynow connection for booking deposits. Talks to
-// payments-worker (NOT bookings.websites.co.zw, which is what bookingsApi()
-// is scoped to) — merchant credential storage is payments-worker's
-// exclusive responsibility. Mirrors bookingsApi()'s own
-// fetch-with-Bearer-token pattern.
-var PAYMENTS_API_BASE = "https://api.websites.co.zw";
-
-async function paymentsApi(path, opts) {
-  var token = (typeof getToken === "function") ? getToken() : (localStorage.getItem("wcz_token") || "");
-  var headers = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = "Bearer " + token;
-  try {
-    var r = await fetch(PAYMENTS_API_BASE + path, Object.assign({ headers: headers }, opts || {}));
-    var data = {}; try { data = await r.json(); } catch (e) {}
-    return { ok: r.ok, status: r.status, data: data };
-  } catch (e) {
-    return { ok: false, status: 0, data: {} };
-  }
-}
-
-async function renderConnectPaynowSection() {
-  var wrap = document.getElementById("connectPaynowSection");
-  if (!wrap) return;
-  // Deposits are Pro-only — no point showing a Paynow-connect box to a
-  // Basic-tier (or no-addon) owner who can't use it yet.
-  if (bookingsState.tier !== "pro") { wrap.style.display = "none"; return; }
-  wrap.style.display = "block";
-  wrap.innerHTML = '<div class="panel"><div class="panel-body" style="font-size:13px;color:var(--ink3)">Checking Paynow connection…</div></div>';
-
-  var r = await paymentsApi("/merchant-credentials/status?site_id=" + encodeURIComponent(siteId));
-  var data = r.ok ? r.data : { connected: false };
-
-  if (!data.connected) { wrap.innerHTML = connectPaynowFormHtml(); return; }
-
-  if (data.status === "verified") {
-    var currencyLabel = data.currency === "ZIG" ? "ZiG" : "USD";
-    var emailLine = data.email ? (' &middot; ' + escV3(data.email)) : '';
-    wrap.innerHTML =
-      '<div class="panel" style="border:1.5px solid var(--green);box-shadow:none">' +
-        '<div class="panel-body" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">' +
-          '<div><div style="font-size:13.5px;font-weight:700;color:var(--green)">✅ Paynow connected — ' + currencyLabel + emailLine + '</div>' +
-          '<div style="font-size:12px;color:var(--ink3);margin-top:2px">Deposit and full-payment bookings pay straight into your own Paynow account.</div></div>' +
-          '<button class="btn btn-ghost btn-sm" onclick="disconnectPaynow()">Disconnect</button>' +
-        '</div></div>';
-    return;
-  }
-
-  if (data.status === "pending") {
-    wrap.innerHTML =
-      '<div class="panel" style="border:1.5px solid var(--gold);box-shadow:none">' +
-        '<div class="panel-body">' +
-          '<div style="font-size:13.5px;font-weight:700;color:var(--gold-dk)">⏳ Almost there</div>' +
-          '<div style="font-size:12px;color:var(--ink3);margin-top:2px">Approve the small test prompt sent to your phone to finish connecting.</div>' +
-          '<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="renderConnectPaynowSection()">I approved it — check again</button>' +
-        '</div></div>';
-    return;
-  }
-
-  // 'failed' or 'revoked' — show the form again with a note explaining why.
-  wrap.innerHTML =
-    '<div class="upsell" style="border-color:var(--red);background:#fdecea;margin-bottom:10px"><div class="upsell-body"><strong style="color:var(--red)">Connection failed</strong><p>Double-check your Integration ID/Key and try again.</p></div></div>' +
-    connectPaynowFormHtml();
-}
-
-function connectPaynowFormHtml() {
-  return (
-    '<div class="panel">' +
-      '<div class="panel-head"><h2>Connect Paynow for deposits</h2></div>' +
-      '<div class="panel-body">' +
-        '<p style="font-size:12.5px;color:var(--ink3);margin-bottom:14px;line-height:1.5">To charge deposits or full payment on a service, connect your own Paynow account. Money goes straight to you — websites.co.zw never touches it.</p>' +
-        '<div class="fld-group"><label class="fld-label">Which currency is this account in? <span class="fld-hint">— Paynow accounts are locked to one currency</span></label>' +
-          '<select class="fld-select" id="pn_currency"><option value="USD">USD</option><option value="ZIG">ZiG</option></select>' +
-        '</div>' +
-        '<div class="fld-group"><label class="fld-label">Paynow Integration ID</label><input class="fld-input" id="pn_integration_id" autocomplete="off"></div>' +
-        '<div class="fld-group"><label class="fld-label">Paynow Integration Key</label><input class="fld-input" type="password" id="pn_integration_key" autocomplete="off"></div>' +
-        '<div class="fld-group"><label class="fld-label">Your Paynow login email <span class="fld-hint">— must match the email you log into Paynow with</span></label><input class="fld-input" type="email" id="pn_email" placeholder="you@example.com"></div>' +
-        '<div class="fld-group"><label class="fld-label">Your EcoCash number <span class="fld-hint">— for a small test payment</span></label><input class="fld-input" id="pn_test_phone" placeholder="077xxxxxxx"></div>' +
-        '<button class="btn btn-green" id="pnConnectBtn" onclick="connectPaynow()">Connect Paynow account</button>' +
-        '<div id="pnConnectMsg" style="font-size:12.5px;margin-top:8px;display:none"></div>' +
-      '</div></div>'
-  );
-}
-
-window.connectPaynow = async function() {
-  var integrationId = ((document.getElementById("pn_integration_id") || {}).value || "").trim();
-  var integrationKey = ((document.getElementById("pn_integration_key") || {}).value || "").trim();
-  var phone = ((document.getElementById("pn_test_phone") || {}).value || "").trim();
-  var email = ((document.getElementById("pn_email") || {}).value || "").trim();
-  var currency = ((document.getElementById("pn_currency") || {}).value || "USD") === "ZIG" ? "ZIG" : "USD";
-  var msgEl = document.getElementById("pnConnectMsg");
-  function showMsg(text, ok) { if (!msgEl) return; msgEl.style.display = "block"; msgEl.style.color = ok ? "var(--green)" : "var(--red)"; msgEl.textContent = text; }
-  if (!integrationId || !integrationKey || !phone) { showMsg("Fill in all fields.", false); return; }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMsg("Enter the email address you log into Paynow with — required for verification.", false); return; }
-  var btn = document.getElementById("pnConnectBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "Connecting…"; }
-  var r = await paymentsApi("/merchant-credentials/connect", {
-    method: "POST",
-    body: JSON.stringify({ site_id: siteId, integration_id: integrationId, integration_key: integrationKey, phone: phone, currency: currency, email: email })
-  });
-  if (btn) { btn.disabled = false; btn.textContent = "Connect Paynow account"; }
-  if (!r.ok) { showMsg((r.data && (r.data.message || r.data.error)) || "Couldn't connect — try again.", false); return; }
-  if (!r.data.verified) showMsg(r.data.message || "Connected — approve the test prompt on your phone, then check again.", true);
-  await renderConnectPaynowSection();
-};
-
-window.disconnectPaynow = async function() {
-  if (!confirm("Disconnect your Paynow account? Deposit and full-payment bookings will stop working until you reconnect.")) return;
-  await paymentsApi("/merchant-credentials/disconnect", { method: "POST", body: JSON.stringify({ site_id: siteId }) });
-  await renderConnectPaynowSection();
-};
-
-function renderBookingsPricing(containerId) {
-  containerId = containerId || "bookingsPricingSection";
+function renderBookingsPricing() {
   var savedEmail = ((window.state && window.state.content && window.state.content.content && window.state.content.content.contact) || {}).email;
   if (typeof WczCheckout !== 'undefined' && WczCheckout.renderPricingSection) {
     WczCheckout.renderPricingSection({
       namespace: "bookings",
-      containerId: containerId,
+      containerId: "bookingsPricingSection",
       currentTier: bookingsState.tier,
       prefillEmail: savedEmail || null,
       toast: toast,
@@ -1905,53 +1774,12 @@ function renderBookingsPricing(containerId) {
   }
 }
 
-// v1.19 — every addon-gated tab tied to a template should offer its own
-// upsell at the point of use, not just the addon's "home" tab (Bookings).
-// Previously the Bookable Services tab had zero tier-awareness: an owner
-// on a template with no Bookings addon at all could open the tab, add a
-// service, hit Save, and get nothing but a raw "bookings addon not
-// active" error with no path forward. This mirrors exactly what the
-// Bookings tab already does (same WczCheckout.renderPricingSection call,
-// same purchase/poll wiring), just targeting a second container — so any
-// addon-gated tab can get the same treatment by following this pattern,
-// not just Bookings.
-function toggleBookingServicesGate() {
-  var pricingWrap = document.getElementById("bookingServicesPricingSection");
-  var listWrap = document.getElementById("booking-services-rep-list");
-  var addBtn = document.getElementById("addBookingServiceBtn");
-  var hasAccess = !!bookingsState.tier; // Basic already grants access to manage services -- deposits specifically require Pro, gated separately per-service.
-  if (pricingWrap) pricingWrap.style.display = hasAccess ? "none" : "block";
-  if (listWrap) listWrap.style.display = hasAccess ? "" : "none";
-  if (addBtn) addBtn.style.display = hasAccess ? "inline-flex" : "none";
-  if (!hasAccess) renderBookingsPricing("bookingServicesPricingSection");
-}
-
 window.loadBookings = async function(force) {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
   if (INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl) === -1 && !isSlotBookingTemplate(tpl)) return;
   if (!siteId) return;
-  // v1.19 — tier is now always resolved FIRST, unconditionally. Previously
-  // this only ran after a successful /bookings list fetch — but that list
-  // fetch itself requires an active addon and 402s when there isn't one,
-  // so on a site with no addon the function hit the generic error path
-  // and returned before fetchBookingsTier() (which renders the upsell)
-  // ever ran at all. The upsell was unreachable in exactly the situation
-  // it exists for. /bookings/tier itself is never addon-gated (reports
-  // null tier safely), so this call is always safe to make first.
-  await fetchBookingsTier();
-  var listEl = document.getElementById("booking-list");
-  if (!bookingsState.tier) {
-    // No addon active -- the pricing upsell (already rendered by
-    // fetchBookingsTier above) IS the UI here; don't attempt a list fetch
-    // that's guaranteed to fail, and don't show a "couldn't load" error
-    // for something that was never expected to load in the first place.
-    bookingsState.loaded = true;
-    bookingsState.list = [];
-    if (listEl) listEl.innerHTML = "";
-    renderBookingFilters();
-    return;
-  }
   if (bookingsState.loaded && !force) { renderBookingsList(); return; }
+  var listEl = document.getElementById("booking-list");
   if (listEl) listEl.innerHTML = '<div class="empty-state"><span class="es-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M5 22h14M5 2h14M17 22v-4.17a2 2 0 0 0-.59-1.41L12 12l-4.41 4.42A2 2 0 0 0 7 17.83V22M7 2v4.17a2 2 0 0 0 .59 1.41L12 12l4.41-4.42A2 2 0 0 0 17 6.17V2"/></svg></span><p>Loading bookings…</p></div>';
   var r = await bookingsApi("/bookings?site_id=" + encodeURIComponent(siteId));
   bookingsState.loaded = true;
@@ -1961,6 +1789,7 @@ window.loadBookings = async function(force) {
     return;
   }
   bookingsState.list = (r.data && r.data.bookings) || [];
+  await fetchBookingsTier();
   renderBookingFilters();
   renderBookingsList();
 };
@@ -2300,9 +2129,9 @@ function injectV3Nav(){
 }
 function switchTabV3(tab,clickEl){document.querySelectorAll(".tab-section").forEach(function(s){s.classList.remove("active");});var t=document.getElementById("tab-"+tab);if(t)t.classList.add("active");document.querySelectorAll(".nav-item,.dock-item").forEach(function(i){i.classList.remove("active");});if(clickEl)clickEl.classList.add("active");document.querySelectorAll("[data-tab='"+tab+"']").forEach(function(i){i.classList.add("active");});window.scrollTo({top:0,behavior:"smooth"});
   if(tab==="bookings"&&typeof window.loadBookings==="function")window.loadBookings();
-  if(tab==="booking-services"){renderRepListV3("booking-services-rep-list",v3state.bookingServices,renderBookingServiceRowV3,"booking-services-rep-empty");if(typeof fetchBookingsTier==="function")fetchBookingsTier();}
+  if(tab==="booking-services")renderRepListV3("booking-services-rep-list",v3state.bookingServices,renderBookingServiceRowV3,"booking-services-rep-empty");
 }
-window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","bookings","amenities","conference","dining","experiences","packages","booking-services"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);return;}if(_origSwitchTab)_origSwitchTab(tab,el);};
+window.switchTab=function(tab,el){var v3Tabs=["services","menu","listings","team","hours","stats","events","testimonials","rooms","bookings","amenities","conference","dining","experiences","packages","booking-services"];if(v3Tabs.indexOf(tab)>-1){switchTabV3(tab,el);return;}if(_origSwitchTab)_origSwitchTab(tab,el);if(tab==="email"&&typeof loadEmailRoutesTab==="function")loadEmailRoutesTab();};
 function applyTemplateConfigV3(tpl){
   var cfg=TPL_CFG[tpl]||TPL_CFG["bold-retail"];var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};
   var iconEl=document.getElementById("v3-tpl-icon");var nameEl=document.getElementById("v3-tpl-name");
@@ -2530,77 +2359,8 @@ window.onTuneTeamBio=async function(idx){var taId='team-bio-'+idx;var btnId='tea
 
 function bookingServiceStaffModeOptions(mode){ return '<option value="choose"'+(mode!=="any"?" selected":"")+'>Customer picks a team member</option><option value="any"'+(mode==="any"?" selected":"")+'>Any available team member</option>'; }
 function bookingServiceResourceOptions(selectedId){ var opts = '<option value="">Shared (any available team member)</option>'; (v3state.team||[]).forEach(function(m){ if(!m.resource_id) return; opts += '<option value="'+escV3(m.resource_id)+'"'+(selectedId===m.resource_id?" selected":"")+'>'+escV3(m.name||"Unnamed")+'</option>'; }); return opts; }
-
-// v1.17 companion — mirrors the commitment_level/deposit_amount/deposit_percent
-// columns added to booking_services on websites-bookings-worker.js. 'none' is
-// the default and matches every service created before this patch (the
-// column defaults to 'none' server-side too, so old rows need no backfill).
-function bookingServiceCommitmentOptions(level){
-  return '<option value="none"'+((!level||level==="none")?" selected":"")+'>No payment required</option>'+
-         '<option value="deposit"'+(level==="deposit"?" selected":"")+'>Deposit required</option>'+
-         '<option value="full"'+(level==="full"?" selected":"")+'>Full payment upfront</option>';
-}
-
-function renderBookingServiceRowV3(s, idx){
-  var staffModeOpts = bookingServiceStaffModeOptions(s.staff_mode);
-  var resourceOpts = bookingServiceResourceOptions(s.resource_id || "");
-  var hasStylists = (v3state.team||[]).some(function(m){ return !!m.resource_id; });
-  var body = row2V3(
-    fldV3("Service name","",s.name,"e.g. Consultation","updateBookingServiceV3("+idx+",'name',this.value)"),
-    fldV3("Duration (minutes)","",s.duration_min,"30","updateBookingServiceV3("+idx+",'duration_min',this.value)",' type="number" min="5" step="5"')
-  ) + row2V3(
-    fldV3("Price <span class=\"fld-hint\">optional</span>","",s.price,"$15","updateBookingServiceV3("+idx+",'price',this.value)"),
-    '<div class="fld-group"><label class="fld-label">Staff assignment</label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'staff_mode',this.value)\">"+staffModeOpts+'</select></div>'
-  ) + '<div class="fld-group"><label class="fld-label">Belongs to <span class="fld-hint">optional — locks this service to one specific team member</span></label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'resource_id',this.value)\">"+resourceOpts+'</select>'
-    + (hasStylists ? '' : '<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Add team members in the Team tab and save once — they\'ll appear here to assign specific services to.</div>')
-    + '</div>';
-
-  // Payment-to-book block. Owner sees this select regardless of Pro/Paynow
-  // status so the option is discoverable; the actual charge attempt at
-  // booking time is what enforces the Paynow-connected + Pro requirement
-  // (bookings-worker's requireBookingsAddon("pro") + ownerPaynowConnected()).
-  var commitmentOpts = bookingServiceCommitmentOptions(s.commitment_level);
-  var commitmentBlock = '<div class="fld-group"><label class="fld-label">Payment to book <span class="fld-hint">— Pro feature, requires Paynow connected in the Bookings tab</span></label>'
-    + '<select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'commitment_level',this.value);refreshBookingServiceRowV3("+idx+")\">"+commitmentOpts+'</select></div>';
-
-  if (s.commitment_level === "deposit") {
-    commitmentBlock += row2V3(
-      fldV3("Deposit amount ($) <span class=\"fld-hint\">optional</span>","",s.deposit_amount,"e.g. 10","updateBookingServiceV3("+idx+",'deposit_amount',this.value)",' type="number" min="0" step="0.01"'),
-      fldV3("...or deposit % of price <span class=\"fld-hint\">optional</span>","",s.deposit_percent,"e.g. 30","updateBookingServiceV3("+idx+",'deposit_percent',this.value)",' type="number" min="0" max="100" step="1"')
-    );
-    commitmentBlock += '<div style="font-size:11.5px;color:var(--ink3);margin-top:-6px;margin-bottom:10px">Set one or the other — a fixed dollar amount, or a percentage of the price above. If both are set, the fixed amount wins.</div>';
-  } else if (s.commitment_level === "full") {
-    commitmentBlock += '<div style="font-size:11.5px;color:var(--ink3);margin-top:-6px;margin-bottom:10px">The full price above is charged when the customer books — make sure a price is set.</div>';
-  }
-
-  body += commitmentBlock;
-  return makeRepItemV3(s.name || "Service", body, "removeBookingServiceV3("+idx+")");
-}
-
-// Re-renders just one row after the commitment_level select changes, so the
-// conditional deposit fields appear/disappear without collapsing every
-// other open row (renderRepListV3 would rebuild the whole list and lose
-// everyone's open/closed state).
-window.refreshBookingServiceRowV3 = function(idx){
-  var items = document.querySelectorAll("#booking-services-rep-list .rep-item");
-  var svc = v3state.bookingServices[idx];
-  if (!svc || !items[idx]) return;
-  var wasOpen = items[idx].classList.contains("open");
-  var newEl = renderBookingServiceRowV3(svc, idx);
-  if (wasOpen) newEl.classList.add("open");
-  items[idx].replaceWith(newEl);
-};
-
-window.addBookingService = function(){
-  v3state.bookingServices.push({
-    id: 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-    service_id: null, name: "", duration_min: 30, price: "",
-    staff_mode: "choose", resource_id: "",
-    commitment_level: "none", deposit_amount: "", deposit_percent: "",
-  });
-  renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty");
-  window.markDirty();
-};
+function renderBookingServiceRowV3(s, idx){ var staffModeOpts = bookingServiceStaffModeOptions(s.staff_mode); var resourceOpts = bookingServiceResourceOptions(s.resource_id || ""); var hasStylists = (v3state.team||[]).some(function(m){ return !!m.resource_id; }); var body = row2V3( fldV3("Service name","",s.name,"e.g. Consultation","updateBookingServiceV3("+idx+",'name',this.value)"), fldV3("Duration (minutes)","",s.duration_min,"30","updateBookingServiceV3("+idx+",'duration_min',this.value)",' type="number" min="5" step="5"') ) + row2V3( fldV3("Price <span class=\"fld-hint\">optional</span>","",s.price,"$15","updateBookingServiceV3("+idx+",'price',this.value)"), '<div class="fld-group"><label class="fld-label">Staff assignment</label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'staff_mode',this.value)\">"+staffModeOpts+'</select></div>' ) + '<div class="fld-group"><label class="fld-label">Belongs to <span class="fld-hint">optional — locks this service to one specific team member</span></label><select class="listing-type-sel" onchange="updateBookingServiceV3('+idx+",'resource_id',this.value)\">"+resourceOpts+'</select>' + (hasStylists ? '' : '<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Add team members in the Team tab and save once — they\'ll appear here to assign specific services to.</div>') + '</div>'; return makeRepItemV3(s.name || "Service", body, "removeBookingServiceV3("+idx+")"); }
+window.addBookingService = function(){ v3state.bookingServices.push({ id: 'svc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), service_id: null, name: "", duration_min: 30, price: "", staff_mode: "choose", resource_id: "", }); renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty"); window.markDirty(); };
 window.removeBookingServiceV3 = function(idx){ var svc = v3state.bookingServices[idx]; if (svc && svc.service_id) { if (!Array.isArray(v3state._deletedServiceIds)) v3state._deletedServiceIds = []; v3state._deletedServiceIds.push(svc.service_id); } v3state.bookingServices.splice(idx, 1); renderRepListV3("booking-services-rep-list", v3state.bookingServices, renderBookingServiceRowV3, "booking-services-rep-empty"); window.markDirty(); };
 window.updateBookingServiceV3 = function(idx, key, val){ if (v3state.bookingServices[idx]) { v3state.bookingServices[idx][key] = val; window.markDirty(); } if (key === "name") { var items = document.querySelectorAll("#booking-services-rep-list .rep-item"); if (items[idx]) { var t = items[idx].querySelector(".rep-item-title"); if (t) t.textContent = val || "Service"; } } };
 
@@ -2641,6 +2401,100 @@ function bootV3(){ injectV3Nav();upgradePreviewDrawer(); var attempts=0; var pol
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",bootV3);}else{bootV3();}
 
 async function tuneText(fieldType,currentText,opts){opts=opts||{};if(!currentText||!currentText.trim()){toast("Add some text first","err");return null;}try{var r=await window.__api("/api/ai/tune",{method:"POST",body:JSON.stringify({field_type:fieldType,current_text:currentText,business_name:(window.state&&window.state.content&&window.state.content.content&&window.state.content.content.business_name)||"",industry:(document.getElementById("f_industry")||{}).value||"",site_id:new URLSearchParams(location.search).get("site"),})});if(!r.ok||!r.data.text){toast(r.data&&r.data.error==="tune_limit_reached"?"AI tune-up limit reached for this site":"Couldn't improve that text — try again","err");return null;}return r.data.text;}catch(e){toast("Network error — try again","err");return null;}}
+
+// ── Email routing tab ────────────────────────────────────────────────────
+// The only prior way to set up a forwarding address was a one-time popup
+// shown right after a site's FIRST publish payment — anyone who skipped
+// it, wants a second address, or is a renewing client from months back
+// had no way back in. This tab is the permanent home for it instead.
+async function loadEmailRoutesTab() {
+  var listEl = document.getElementById("emailRoutesList");
+  var countEl = document.getElementById("emailRouteCount");
+  var suffixEl = document.getElementById("emailDomainSuffix");
+  var slug = (window.state && window.state.site && window.state.site.draft_subdomain) || "yoursite";
+  if (suffixEl) suffixEl.textContent = "@" + slug + ".co.zw";
+  if (listEl) listEl.innerHTML = '<div class="empty-state"><p>Loading…</p></div>';
+  try {
+    var r = await window.__api("/api/sites/" + encodeURIComponent(siteId) + "/email-routes", { method: "GET" });
+    if (!r.ok) { if (listEl) listEl.innerHTML = '<div class="empty-state"><p>Couldn\'t load your addresses. Try again.</p></div>'; return; }
+    var routes = r.data.routes || [];
+    var plan = (window.state && window.state.site && window.state.site.plan) || "starter";
+    var limit = plan === "pro" ? 10 : 3;
+    if (countEl) countEl.textContent = routes.length + " / " + limit + " used";
+    renderEmailRoutesList(routes, slug);
+  } catch (e) {
+    if (listEl) listEl.innerHTML = '<div class="empty-state"><p>Network error. Try again.</p></div>';
+  }
+}
+
+function renderEmailRoutesList(routes, slug) {
+  var listEl = document.getElementById("emailRoutesList");
+  if (!listEl) return;
+  if (!routes.length) {
+    listEl.innerHTML = '<div class="empty-state"><p>No email addresses yet. Add your first one above — any name you like.</p></div>';
+    return;
+  }
+  listEl.innerHTML = routes.map(function(r) {
+    var badge = r.status === "active"
+      ? '<span class="status-badge status-published">Active</span>'
+      : '<span class="status-badge status-pending">Pending verification</span>';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)">'+
+      '<div style="min-width:0;overflow:hidden">'+
+        '<div style="font-weight:600;font-size:13.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escV3(r.local_part)+'@'+escV3(slug)+'.co.zw</div>'+
+        '<div style="font-size:12px;color:var(--ink3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">→ '+escV3(r.destination)+'</div>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
+        badge+
+        '<button class="btn btn-danger btn-sm" onclick="removeEmailRoute(\''+r.id+'\')" title="Remove">✕</button>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+
+window.addEmailRoute = async function() {
+  var localInput = document.getElementById("newEmailLocal");
+  var destInput = document.getElementById("newEmailDest");
+  var msgEl = document.getElementById("emailAddMsg");
+  var btn = document.getElementById("addEmailBtn");
+  var local = ((localInput||{}).value || "").trim();
+  var dest = ((destInput||{}).value || "").trim();
+
+  if (!local) { if (msgEl) { msgEl.style.color = "#c0392b"; msgEl.textContent = "Enter a name for the address — e.g. yourname, sales, hello."; } return; }
+  if (!dest || dest.indexOf("@") === -1) { if (msgEl) { msgEl.style.color = "#c0392b"; msgEl.textContent = "Enter a valid destination email."; } return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = "Adding…"; }
+  if (msgEl) { msgEl.style.color = "#868a96"; msgEl.textContent = "Setting up…"; }
+
+  try {
+    var r = await window.__api("/api/sites/" + encodeURIComponent(siteId) + "/email-routes", {
+      method: "POST",
+      body: JSON.stringify({ local_part: local, destination: dest })
+    });
+    if (!r.ok) {
+      if (msgEl) { msgEl.style.color = "#c0392b"; msgEl.textContent = r.data.message || r.data.error || "Couldn't add that address — try again."; }
+    } else {
+      if (msgEl) { msgEl.style.color = "#15924B"; msgEl.textContent = r.data.message || ("Check " + dest + " for a verification link to activate it."); }
+      if (localInput) localInput.value = "";
+      if (destInput) destInput.value = "";
+      loadEmailRoutesTab();
+    }
+  } catch (e) {
+    if (msgEl) { msgEl.style.color = "#c0392b"; msgEl.textContent = "Network error. Try again."; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "+ Add address"; }
+  }
+};
+
+window.removeEmailRoute = async function(routeId) {
+  if (!confirm("Remove this email address? Mail sent to it will stop forwarding.")) return;
+  try {
+    await window.__api("/api/sites/" + encodeURIComponent(siteId) + "/email-routes/" + encodeURIComponent(routeId), { method: "DELETE" });
+    toast("Address removed", "ok");
+    loadEmailRoutesTab();
+  } catch (e) {
+    toast("Couldn't remove — try again", "err");
+  }
+};
 
 function escV3(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function g(id){var e=document.getElementById(id);return e?e.value.trim():"";}
