@@ -530,14 +530,59 @@ img{display:block;max-width:100%}
       </div>
     </div>
     <div class="tab-section" id="tab-products">
+      <div class="panel" id="storePaymentsPanel">
+        <div class="panel-head">
+          <div><h2>Store Payments</h2><div style="font-size:12.5px;color:var(--ink3);margin-top:2px">Accept payments online — money goes straight to your own Paynow account</div></div>
+        </div>
+        <div class="panel-body">
+          <div id="spLoading" style="font-size:13px;color:var(--ink3)">Checking connection…</div>
+
+          <div id="spNotConnected" style="display:none">
+            <p style="font-size:13.5px;color:var(--ink2);margin:0 0 14px;line-height:1.5">Connect your own Paynow account so customer payments go directly to you — websites.co.zw never holds or touches the money. WhatsApp ordering is already free and always on; this just adds the option to pay online.</p>
+            <div class="fld-group"><label class="fld-label">Paynow Integration ID</label><input class="fld-input" id="spIntegrationId" placeholder="e.g. 18512"></div>
+            <div class="fld-group"><label class="fld-label">Paynow Integration Key</label><input class="fld-input" id="spIntegrationKey" type="password" placeholder="Paste your Integration Key"></div>
+            <div class="two">
+              <div class="fld-group"><label class="fld-label">Currency</label><select class="fld-select" id="spCurrency"><option value="USD">USD</option><option value="ZIG">ZiG</option></select></div>
+              <div class="fld-group"><label class="fld-label">EcoCash number <span class="fld-hint">for test charge</span></label><input class="fld-input" id="spPhone" placeholder="0771234567"></div>
+            </div>
+            <div class="fld-group"><label class="fld-label">Paynow login email <span class="fld-hint">required by Paynow</span></label><input class="fld-input" id="spEmail" type="email" placeholder="you@example.com"></div>
+            <div id="spConnectError" style="display:none;font-size:12.5px;color:var(--red);background:#fdecea;border-radius:var(--r-xs);padding:9px 11px;margin-bottom:12px;line-height:1.4"></div>
+            <button class="btn btn-green btn-sm" id="spConnectBtn" onclick="submitConnectMerchant()">Connect &amp; verify</button>
+            <p style="font-size:11.5px;color:var(--ink3);margin:10px 0 0;line-height:1.5">We'll send a small (1c) test EcoCash prompt to confirm your account is set up correctly. Approve it on your phone to finish verifying.</p>
+          </div>
+
+          <div id="spConnected" style="display:none">
+            <div style="display:flex;align-items:flex-start;gap:10px;background:var(--green-bg);border:1.5px solid var(--green);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:14px">
+              <div style="font-size:18px;line-height:1;color:var(--green)">&#10003;</div>
+              <div>
+                <div style="font-weight:700;font-size:13.5px;color:var(--ink)">Paynow connected</div>
+                <div style="font-size:12.5px;color:var(--ink2);margin-top:2px" id="spConnectedDetail"></div>
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="disconnectMerchant()">Disconnect</button>
+          </div>
+
+          <div id="spPending" style="display:none">
+            <div style="display:flex;align-items:flex-start;gap:10px;background:var(--gold-bg);border:1.5px solid var(--gold);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:14px">
+              <div>
+                <div style="font-weight:700;font-size:13.5px;color:var(--ink)">Connection couldn't be verified</div>
+                <div style="font-size:12.5px;color:var(--ink2);margin-top:2px" id="spPendingDetail"></div>
+              </div>
+            </div>
+            <button class="btn btn-green btn-sm" onclick="showReconnectForm()" style="margin-right:8px">Try again</button>
+            <button class="btn btn-ghost btn-sm" onclick="disconnectMerchant()">Disconnect</button>
+          </div>
+        </div>
+      </div>
       <div class="panel">
         <div class="panel-head"><div><h2>Products &amp; Catalogue</h2><div style="font-size:12.5px;color:var(--ink3);margin-top:2px">Photos, prices, variants and stock status — no checkout needed</div></div><button class="btn btn-green btn-sm" onclick="addProduct()">+ Add</button></div>
         <div class="panel-body">
           <div class="product-list" id="productList"><div class="empty-state" id="productEmpty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span><p>No products yet.<br>Add items with photos, prices, variants and stock status.</p></div></div>
-          <div id="productLimitMsg" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div class="upsell-body"><strong>Starter plan: 6 products included</strong><p>Upgrade to <b>Pro</b> for unlimited products plus your <b>WhatsApp Store</b> — customers browse and add to cart on your site, and the order lands straight in your WhatsApp.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button></div></div></div>
-          <div id="whatsappStoreUpsell" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><div class="upsell-body"><strong>Turn this into a WhatsApp Store</strong><p>Customers browse your products, add to cart, and the order lands in your WhatsApp automatically — no separate app needed. Available on <b>Pro</b>.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button></div></div></div>
+          <div id="productLimitMsg" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div class="upsell-body"><strong>Starter plan: 6 products included</strong><p>Upgrade to <b>Pro</b> for unlimited products.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button></div></div></div>
+          <div id="whatsappStoreUpsell" style="display:none;margin-top:12px"><div class="upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><div class="upsell-body"><strong>Your store is ready</strong><p>Customers can already browse, add to cart, and order via WhatsApp — free, no upgrade needed. Want to accept payments online too? Connect Paynow above.</p></div></div></div>
         </div>
       </div>
+
     </div>
     <div class="tab-section" id="tab-contact">
       <div class="panel">
@@ -1049,7 +1094,7 @@ window.updateVideoPreview = function() {
   state.images=(inner.images&&typeof inner.images==="object")?inner.images:{};
   state.gallery=Array.isArray(inner.images&&inner.images.gallery)?inner.images.gallery:[];
   if (raw.favicon) { window._storedFavicon = raw.favicon; }
-  populateForm();renderProducts();renderGallery();renderImagePreviews();updateBudget(null);initDesignTab();
+  populateForm();renderProducts();renderGallery();renderImagePreviews();updateBudget(null);initDesignTab();loadMerchantStatus();
   document.getElementById("topSiteName").textContent=state.site.site_name||"Your site";
   document.getElementById("pubUrl").textContent=(state.site.draft_subdomain||"yoursite")+".websites.co.zw";
   var badge=document.getElementById("statusBadge");
@@ -1235,7 +1280,7 @@ function renderProducts() {
   var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
   empty.style.display = state.products.length === 0 ? '' : 'none';
   limitMsg.style.display = (!isPro && state.products.length >= STARTER_PRODUCT_LIMIT) ? 'block' : 'none';
-  if (waUpsell) waUpsell.style.display = (!isPro && state.products.length > 0 && state.products.length < STARTER_PRODUCT_LIMIT) ? 'block' : 'none';
+  if (waUpsell) waUpsell.style.display = (state.products.length > 0) ? 'block' : 'none';
   list.querySelectorAll('.product-card').forEach(function(c) { c.remove(); });
   state.products.forEach(function(p) {
     if (!Array.isArray(p.images)) p.images = p.image ? [p.image] : [];
@@ -1561,6 +1606,141 @@ async function bookingsApi(path, opts) {
   } catch (e) {
     return { ok: false, status: 0, data: {} };
   }
+}
+
+var PAYMENTS_API_BASE = "https://api.websites.co.zw";
+
+async function paymentsApi(path, opts) {
+  var token = (typeof getToken === "function") ? getToken() : (localStorage.getItem("wcz_token") || "");
+  var headers = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = "Bearer " + token;
+  try {
+    var r = await fetch(PAYMENTS_API_BASE + path, Object.assign({ headers: headers }, opts || {}));
+    var data = {}; try { data = await r.json(); } catch (e) {}
+    return { ok: r.ok, status: r.status, data: data };
+  } catch (e) {
+    return { ok: false, status: 0, data: {} };
+  }
+}
+
+/* ── Store Payments (merchant Paynow connection) ─────────────────────── */
+function spShow(step) {
+  ['spLoading', 'spNotConnected', 'spConnected', 'spPending'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = (id === step) ? '' : 'none';
+  });
+}
+
+async function loadMerchantStatus() {
+  if (!window.state || !window.state.site || !window.state.site.id) return;
+  spShow('spLoading');
+  var r = await paymentsApi('/merchant-credentials/status?site_id=' + encodeURIComponent(window.state.site.id));
+  if (!r.ok) {
+    // Can't reach payments-worker right now — default to the connect form
+    // rather than leaving a permanent "Checking connection..." spinner.
+    spShow('spNotConnected');
+    return;
+  }
+  var data = r.data;
+  if (!data.connected) {
+    spShow('spNotConnected');
+    return;
+  }
+  if (data.status === 'verified') {
+    var detail = document.getElementById('spConnectedDetail');
+    if (detail) {
+      var currencyLabel = data.currency === 'ZIG' ? 'ZiG' : 'USD';
+      var whenText = data.last_verified_at ? new Date(data.last_verified_at).toLocaleDateString() : '';
+      detail.textContent = currencyLabel + (data.email ? ' · ' + data.email : '') + (whenText ? ' · verified ' + whenText : '');
+    }
+    spShow('spConnected');
+    return;
+  }
+  // 'pending' or 'failed' — credentials are on file but not yet verified.
+  var pendingDetail = document.getElementById('spPendingDetail');
+  if (pendingDetail) {
+    pendingDetail.textContent = data.status === 'failed'
+      ? "Paynow rejected these credentials — double-check your Integration ID and Key and try again."
+      : "We're still confirming your Paynow details.";
+  }
+  spShow('spPending');
+}
+
+function showReconnectForm() {
+  spShow('spNotConnected');
+}
+
+async function submitConnectMerchant() {
+  if (!window.state || !window.state.site || !window.state.site.id) return;
+  var integrationId = (document.getElementById('spIntegrationId') || {}).value || '';
+  var integrationKey = (document.getElementById('spIntegrationKey') || {}).value || '';
+  var currency = (document.getElementById('spCurrency') || {}).value || 'USD';
+  var phone = (document.getElementById('spPhone') || {}).value || '';
+  var email = (document.getElementById('spEmail') || {}).value || '';
+  var errEl = document.getElementById('spConnectError');
+
+  integrationId = integrationId.trim();
+  integrationKey = integrationKey.trim();
+  phone = phone.trim();
+  email = email.trim();
+
+  if (errEl) errEl.style.display = 'none';
+
+  if (!integrationId || !integrationKey) {
+    if (errEl) { errEl.textContent = 'Enter both your Integration ID and Integration Key.'; errEl.style.display = ''; }
+    return;
+  }
+  if (!phone) {
+    if (errEl) { errEl.textContent = 'Enter an EcoCash number to receive the test charge.'; errEl.style.display = ''; }
+    return;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (errEl) { errEl.textContent = 'Enter the email address you log into your Paynow account with.'; errEl.style.display = ''; }
+    return;
+  }
+
+  var btn = document.getElementById('spConnectBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Connecting…'; }
+
+  var r = await paymentsApi('/merchant-credentials/connect', {
+    method: 'POST',
+    body: JSON.stringify({
+      site_id: window.state.site.id,
+      integration_id: integrationId,
+      integration_key: integrationKey,
+      currency: currency,
+      phone: phone,
+      email: email,
+    }),
+  });
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Connect & verify'; }
+
+  if (!r.ok) {
+    var msg = (r.data && (r.data.message || r.data.error)) || 'Could not connect right now — please try again.';
+    if (errEl) { errEl.textContent = msg; errEl.style.display = ''; }
+    return;
+  }
+
+  if (!r.data.verified) {
+    // Saved, but Paynow rejected the initiate call — surface why inline
+    // rather than silently flipping to the "connected" view.
+    if (errEl) { errEl.textContent = r.data.message || 'Connected, but verification failed. Double-check your credentials.'; errEl.style.display = ''; }
+  }
+
+  toast(r.data.verified ? 'Paynow connected ✓' : 'Saved — verification failed, see details above', r.data.verified ? 'ok' : 'err');
+  loadMerchantStatus();
+}
+
+async function disconnectMerchant() {
+  if (!window.state || !window.state.site || !window.state.site.id) return;
+  if (!confirm('Disconnect Paynow from this store? Customers will no longer be able to pay online until you reconnect.')) return;
+  await paymentsApi('/merchant-credentials/disconnect', {
+    method: 'POST',
+    body: JSON.stringify({ site_id: window.state.site.id }),
+  });
+  toast('Paynow disconnected', 'ok');
+  loadMerchantStatus();
 }
 
 window.__syncRoomsToBookingsWorker = async function(siteId) {
