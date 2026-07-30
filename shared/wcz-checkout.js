@@ -104,7 +104,16 @@
     var container = document.getElementById(config.containerId);
     if (!container) return;
 
-    var ns = config.namespace || "wcz";
+    // Namespaced by BOTH the addon namespace AND the container it's
+    // rendered into -- the same pricing section (e.g. "bookings") can now
+    // legitimately be rendered into more than one container on the same
+    // page (its own tab, plus an upsell inside a feature-specific tab
+    // like Bookable Services) without their generated element IDs
+    // colliding. A collision here isn't just a display gotcha: with
+    // duplicate IDs, getElementById() during click-listener setup below
+    // resolves to whichever copy rendered FIRST, so every subsequent
+    // container's buttons end up looking real but wired to nothing.
+    var ns = (config.namespace || "wcz") + "-" + config.containerId;
     var toastFn = typeof config.toast === "function" ? config.toast : defaultToast;
     var currentTier = config.currentTier || null;
     var tiers = config.tiers || [];
