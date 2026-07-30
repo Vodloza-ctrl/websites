@@ -572,11 +572,24 @@ img{display:block;max-width:100%}
             <button class="btn btn-green btn-sm" onclick="showReconnectForm()" style="margin-right:8px">Try again</button>
             <button class="btn btn-ghost btn-sm" onclick="disconnectMerchant()">Disconnect</button>
           </div>
+          <div id="spError" style="display:none">
+            <div style="display:flex;align-items:flex-start;gap:10px;background:#fdecea;border:1.5px solid var(--red);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:14px">
+              <div>
+                <div style="font-weight:700;font-size:13.5px;color:var(--red)">Couldn't check payment status</div>
+                <div style="font-size:12.5px;color:var(--ink2);margin-top:2px" id="spErrorDetail"></div>
+              </div>
+            </div>
+            <button class="btn btn-green btn-sm" onclick="loadMerchantStatus()">Retry</button>
+          </div>
         </div>
       </div>
       <div class="panel">
         <div class="panel-head"><div><h2>Products &amp; Catalogue</h2><div style="font-size:12.5px;color:var(--ink3);margin-top:2px">Photos, prices, variants and stock status — no checkout needed</div></div><button class="btn btn-green btn-sm" onclick="addProduct()">+ Add</button></div>
         <div class="panel-body">
+          <div id="productLoadError" style="display:none;margin-bottom:12px;border:1.5px solid var(--red);background:#fdecea;border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--red)">
+            <strong>Couldn't load your products.</strong> <span id="productLoadErrorDetail"></span>
+            <button type="button" class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="loadProducts()">Retry</button>
+          </div>
           <div class="product-list" id="productList"><div class="empty-state" id="productEmpty"><span class="es-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span><p>No products yet.<br>Add items with photos, prices, variants and stock status.</p></div></div>
           <div id="productLimitMsg" style="display:none;margin-top:12px"><div class="upsell-pro upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:-3px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div><div class="upsell-body"><strong>Starter plan: 6 products included</strong><p>Upgrade to <b>Pro</b> for unlimited products.</p><button class="btn btn-pro btn-sm" style="margin-top:8px" onclick="switchTab('publish',null)">Upgrade to Pro</button></div></div></div>
           <div id="whatsappStoreUpsell" style="display:none;margin-top:12px"><div class="upsell"><div class="upsell-ico"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><div class="upsell-body"><strong>Your store is ready</strong><p>Customers can already browse, add to cart, and order via WhatsApp — free, no upgrade needed. Want to accept payments online too? Connect Paynow above.</p></div></div></div>
@@ -1280,11 +1293,31 @@ window.onGenerate=async function(){
    see websites-products-worker.js's header comment for the full reasoning. */
 
 async function loadProducts() {
-  if (!siteId) return;
-  var r = await productsApi('/products?site_id=' + encodeURIComponent(siteId));
-  if (!r.ok) { toast('Could not load products right now', 'err'); return; }
-  state.productsV2 = Array.isArray(r.data.products) ? r.data.products : [];
-  renderProducts();
+  var errBanner = document.getElementById('productLoadError');
+  var errDetail = document.getElementById('productLoadErrorDetail');
+  if (errBanner) errBanner.style.display = 'none';
+
+  var sid = siteId || new URLSearchParams(location.search).get('site');
+  if (!sid) {
+    if (errBanner && errDetail) { errDetail.textContent = 'No site selected in the URL.'; errBanner.style.display = ''; }
+    return;
+  }
+  try {
+    var r = await productsApi('/products?site_id=' + encodeURIComponent(sid));
+    if (!r.ok) {
+      var msg = 'HTTP ' + r.status + (r.data && (r.data.error || r.data.message) ? ' — ' + (r.data.error || r.data.message) : '');
+      console.error('loadProducts failed:', msg, r.data);
+      if (errBanner && errDetail) { errDetail.textContent = msg; errBanner.style.display = ''; }
+      toast('Could not load products (' + msg + ')', 'err');
+      return;
+    }
+    state.productsV2 = Array.isArray(r.data.products) ? r.data.products : [];
+    renderProducts();
+  } catch (err) {
+    console.error('loadProducts threw:', err);
+    if (errBanner && errDetail) { errDetail.textContent = String(err && err.message || err); errBanner.style.display = ''; }
+    toast('Could not load products — see console for details', 'err');
+  }
 }
 
 function renderProducts() {
@@ -1388,22 +1421,35 @@ window.removeProductImageV2 = async function(productId) {
 };
 
 window.addProduct = async function() {
-  var products = state.productsV2 || [];
-  var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
-  if (!isPro && products.length >= STARTER_PRODUCT_LIMIT) {
-    document.getElementById('productLimitMsg').style.display = 'block';
-    toast('6 product limit on Starter. Upgrade to Pro for unlimited.', 'err');
-    return;
+  try {
+    var products = state.productsV2 || [];
+    var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
+    if (!isPro && products.length >= STARTER_PRODUCT_LIMIT) {
+      document.getElementById('productLimitMsg').style.display = 'block';
+      toast('6 product limit on Starter. Upgrade to Pro for unlimited.', 'err');
+      return;
+    }
+    var sid = siteId || new URLSearchParams(location.search).get('site');
+    if (!sid) { toast('No site selected — reload the editor from your dashboard', 'err'); return; }
+
+    var r = await productsApi('/products', {
+      method: 'POST',
+      body: JSON.stringify({ site_id: sid, name: '', description: '', base_price: 0, product_type: 'physical' }),
+    });
+    if (!r.ok) {
+      var msg = 'HTTP ' + r.status + (r.data && (r.data.error || r.data.message) ? ' — ' + (r.data.error || r.data.message) : '');
+      console.error('addProduct failed:', msg, r.data);
+      toast('Could not create product (' + msg + ')', 'err');
+      return;
+    }
+    await loadProducts();
+    // Open the newly created card for editing straight away.
+    var card = document.querySelector('.product-card[data-pid="' + r.data.product.id + '"]');
+    if (card) card.classList.add('open');
+  } catch (err) {
+    console.error('addProduct threw:', err);
+    toast('Could not create product — see console for details', 'err');
   }
-  var r = await productsApi('/products', {
-    method: 'POST',
-    body: JSON.stringify({ site_id: siteId, name: '', description: '', base_price: 0, product_type: 'physical' }),
-  });
-  if (!r.ok) { toast('Could not create product', 'err'); return; }
-  await loadProducts();
-  // Open the newly created card for editing straight away.
-  var card = document.querySelector('.product-card[data-pid="' + r.data.product.id + '"]');
-  if (card) card.classList.add('open');
 };
 
 window.removeProductV2 = async function(id) {
@@ -1844,45 +1890,60 @@ async function productsApi(path, opts) {
 
 /* ── Store Payments (merchant Paynow connection) ─────────────────────── */
 function spShow(step) {
-  ['spLoading', 'spNotConnected', 'spConnected', 'spPending'].forEach(function(id) {
+  ['spLoading', 'spNotConnected', 'spConnected', 'spPending', 'spError'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = (id === step) ? '' : 'none';
   });
 }
 
 async function loadMerchantStatus() {
-  if (!siteId) { console.warn('loadMerchantStatus: no siteId in URL — panel will stay on Checking connection'); return; }
+  var sid = siteId || new URLSearchParams(location.search).get('site');
+  if (!sid) {
+    var errDetail0 = document.getElementById('spErrorDetail');
+    if (errDetail0) errDetail0.textContent = 'No site selected in the URL.';
+    spShow('spError');
+    return;
+  }
   spShow('spLoading');
-  var r = await paymentsApi('/merchant-credentials/status?site_id=' + encodeURIComponent(siteId));
-  if (!r.ok) {
-    // Can't reach payments-worker right now — default to the connect form
-    // rather than leaving a permanent "Checking connection..." spinner.
-    spShow('spNotConnected');
-    return;
-  }
-  var data = r.data;
-  if (!data.connected) {
-    spShow('spNotConnected');
-    return;
-  }
-  if (data.status === 'verified') {
-    var detail = document.getElementById('spConnectedDetail');
-    if (detail) {
-      var currencyLabel = data.currency === 'ZIG' ? 'ZiG' : 'USD';
-      var whenText = data.last_verified_at ? new Date(data.last_verified_at).toLocaleDateString() : '';
-      detail.textContent = currencyLabel + (data.email ? ' · ' + data.email : '') + (whenText ? ' · verified ' + whenText : '');
+  try {
+    var r = await paymentsApi('/merchant-credentials/status?site_id=' + encodeURIComponent(sid));
+    if (!r.ok) {
+      var msg = 'HTTP ' + r.status + (r.data && (r.data.error || r.data.message) ? ' — ' + (r.data.error || r.data.message) : '');
+      console.error('loadMerchantStatus failed:', msg, r.data);
+      var errDetail = document.getElementById('spErrorDetail');
+      if (errDetail) errDetail.textContent = msg;
+      spShow('spError');
+      return;
     }
-    spShow('spConnected');
-    return;
+    var data = r.data;
+    if (!data.connected) {
+      spShow('spNotConnected');
+      return;
+    }
+    if (data.status === 'verified') {
+      var detail = document.getElementById('spConnectedDetail');
+      if (detail) {
+        var currencyLabel = data.currency === 'ZIG' ? 'ZiG' : 'USD';
+        var whenText = data.last_verified_at ? new Date(data.last_verified_at).toLocaleDateString() : '';
+        detail.textContent = currencyLabel + (data.email ? ' · ' + data.email : '') + (whenText ? ' · verified ' + whenText : '');
+      }
+      spShow('spConnected');
+      return;
+    }
+    // 'pending' or 'failed' — credentials are on file but not yet verified.
+    var pendingDetail = document.getElementById('spPendingDetail');
+    if (pendingDetail) {
+      pendingDetail.textContent = data.status === 'failed'
+        ? "Paynow rejected these credentials — double-check your Integration ID and Key and try again."
+        : "We're still confirming your Paynow details.";
+    }
+    spShow('spPending');
+  } catch (err) {
+    console.error('loadMerchantStatus threw:', err);
+    var errDetail2 = document.getElementById('spErrorDetail');
+    if (errDetail2) errDetail2.textContent = String(err && err.message || err);
+    spShow('spError');
   }
-  // 'pending' or 'failed' — credentials are on file but not yet verified.
-  var pendingDetail = document.getElementById('spPendingDetail');
-  if (pendingDetail) {
-    pendingDetail.textContent = data.status === 'failed'
-      ? "Paynow rejected these credentials — double-check your Integration ID and Key and try again."
-      : "We're still confirming your Paynow details.";
-  }
-  spShow('spPending');
 }
 
 function showReconnectForm() {
