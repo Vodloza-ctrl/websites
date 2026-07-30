@@ -328,6 +328,15 @@ main{overflow-x:hidden;padding:28px 28px 60px}
         </select>
       </div>
       <div class="fld-group"><label class="fld">Expires at (Unix timestamp — leave blank to auto-set)</label><input class="input" id="editSiteExpires" type="number" placeholder="e.g. 1780000000"></div>
+      <div class="fld-group" style="border-top:1px solid var(--line);padding-top:14px;margin-top:4px">
+        <label class="fld">Cloudflare zone <span style="font-weight:400;color:var(--ink3)">— full nameserver migration, needed for the tenant's own email addresses</span></label>
+        <div id="zoneStatusBlock" style="font-size:13px;color:var(--ink2);margin-bottom:8px">—</div>
+        <div id="zoneNameserversBlock" style="display:none;background:var(--card2);border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:var(--ink2)"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-green btn-sm" id="createZoneBtn" onclick="createZoneForCurrentSite()">Create Cloudflare zone</button>
+          <button class="btn btn-ghost btn-sm" id="checkZoneBtn" style="display:none" onclick="checkZoneForCurrentSite()">↺ Check status</button>
+        </div>
+      </div>
       <input type="hidden" id="editSiteId">
     </div>
     <div class="modal-foot">
@@ -774,6 +783,7 @@ window.adminVerifyEmail = async function(routeId, siteId) {
 };
 
 // ── Edit site modal ────────────────────────────────────────────────────────────
+var _currentEditSiteDomain = null;
 window.openEditSite = function(siteId) {
   var site = _allSites.find(function(s){ return s.id===siteId; });
   if (!site) return;
@@ -782,7 +792,87 @@ window.openEditSite = function(siteId) {
   document.getElementById("editSiteStatus").value = site.status || "draft";
   document.getElementById("editSitePlan").value   = site.plan || "starter";
   document.getElementById("editSiteExpires").value = site.expires_at || "";
+  _currentEditSiteDomain = site.custom_domain || null;
+  renderZoneBlock(site);
   document.getElementById("editSiteModal").classList.add("open");
+};
+
+function renderZoneBlock(site) {
+  var statusEl = document.getElementById("zoneStatusBlock");
+  var nsBlock = document.getElementById("zoneNameserversBlock");
+  var createBtn = document.getElementById("createZoneBtn");
+  var checkBtn = document.getElementById("checkZoneBtn");
+  nsBlock.style.display = "none"; nsBlock.innerHTML = "";
+
+  if (!site.custom_domain) {
+    statusEl.innerHTML = '<span style="color:var(--ink3)">No custom domain assigned yet — assign one via the Domain Queue first.</span>';
+    createBtn.style.display = "none"; checkBtn.style.display = "none";
+    return;
+  }
+
+  var zoneStatus = site.zone_status || "none";
+  if (zoneStatus === "active") {
+    statusEl.innerHTML = '<span class="badge badge-green">Active</span> ' + esc(site.custom_domain) + " is a full Cloudflare zone — email routing and DNS run on their own domain.";
+    createBtn.style.display = "none"; checkBtn.style.display = "none";
+  } else if (zoneStatus === "pending") {
+    statusEl.innerHTML = '<span class="badge badge-gold">Pending</span> Zone created for ' + esc(site.custom_domain) + ' — waiting on the client to update nameservers at their registrar.';
+    createBtn.style.display = "none"; checkBtn.style.display = "";
+  } else {
+    statusEl.innerHTML = '<span class="badge badge-grey">Not migrated</span> ' + esc(site.custom_domain) + ' is using the shared websites.co.zw zone. Create a Cloudflare zone to enable the tenant\'s own email addresses.';
+    createBtn.style.display = ""; checkBtn.style.display = zoneStatus === "failed" ? "" : "none";
+  }
+}
+
+window.createZoneForCurrentSite = async function() {
+  var siteId = document.getElementById("editSiteId").value;
+  var btn = document.getElementById("createZoneBtn");
+  btn.disabled = true; btn.textContent = "Creating…";
+  try {
+    var r = await fetch(ADMIN_API + "/sites/" + encodeURIComponent(siteId) + "/zone", {
+      method: "POST", headers: adminHeaders()
+    });
+    var data = await r.json().catch(function(){ return {}; });
+    if (!r.ok) throw new Error(data.detail || data.error || "Zone creation failed");
+    var nsBlock = document.getElementById("zoneNameserversBlock");
+    nsBlock.style.display = "block";
+    nsBlock.innerHTML = '<strong>Give these nameservers to the client:</strong><br>' +
+      (data.nameservers || []).map(function(ns){ return esc(ns); }).join('<br>') +
+      '<div style="margin-top:6px;color:var(--ink3)">They set these at wherever they registered ' + esc(data.domain) + '. Propagation can take a few hours to 48h — use "Check status" once they\'ve made the change.</div>';
+    toast("Zone created — relay the nameservers to the client", "ok");
+    _allSites = []; // force refresh so the cached row picks up the new zone_status
+    if (currentPage === "sites") loadAllSites();
+    _currentEditSiteDomain = data.domain;
+    renderZoneBlock({ custom_domain: data.domain, zone_status: "pending" });
+  } catch (e) {
+    toast("Error: " + e.message, "err");
+  } finally {
+    btn.disabled = false; btn.textContent = "Create Cloudflare zone";
+  }
+};
+
+window.checkZoneForCurrentSite = async function() {
+  var siteId = document.getElementById("editSiteId").value;
+  var btn = document.getElementById("checkZoneBtn");
+  btn.disabled = true; btn.textContent = "Checking…";
+  try {
+    var r = await fetch(ADMIN_API + "/sites/" + encodeURIComponent(siteId) + "/zone", {
+      method: "GET", headers: adminHeaders()
+    });
+    var data = await r.json().catch(function(){ return {}; });
+    if (!r.ok) throw new Error(data.detail || data.error || "Status check failed");
+    if (data.zone_status === "active") {
+      toast("Zone is active! Email routing and DNS are now live on their domain.", "ok");
+    } else {
+      toast("Still pending — nameservers haven't propagated yet (cf status: " + (data.cf_status || "unknown") + ")", "ok");
+    }
+    _allSites = [];
+    if (currentPage === "sites") loadAllSites();
+    renderZoneBlock({ custom_domain: _currentEditSiteDomain, zone_status: data.zone_status });
+  } catch (e) {
+    toast("Error: " + e.message, "err");
+  } finally {
+    btn.disabled = false; btn.textContent = "↺ Check status";
+  }
 };
 
 window.saveEditSite = async function() {
