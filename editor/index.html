@@ -1305,7 +1305,7 @@ async function loadProducts() {
   try {
     var r = await productsApi('/products?site_id=' + encodeURIComponent(sid));
     if (!r.ok) {
-      var msg = 'HTTP ' + r.status + (r.data && (r.data.error || r.data.message) ? ' — ' + (r.data.error || r.data.message) : '');
+      var msg = 'HTTP ' + r.status + (r.data && (r.data.detail || r.data.message || r.data.error) ? ' — ' + (r.data.detail || r.data.message || r.data.error) : '');
       console.error('loadProducts failed:', msg, r.data);
       if (errBanner && errDetail) { errDetail.textContent = msg; errBanner.style.display = ''; }
       toast('Could not load products (' + msg + ')', 'err');
@@ -1437,7 +1437,7 @@ window.addProduct = async function() {
       body: JSON.stringify({ site_id: sid, name: '', description: '', base_price: 0, product_type: 'physical' }),
     });
     if (!r.ok) {
-      var msg = 'HTTP ' + r.status + (r.data && (r.data.error || r.data.message) ? ' — ' + (r.data.error || r.data.message) : '');
+      var msg = 'HTTP ' + r.status + (r.data && (r.data.detail || r.data.message || r.data.error) ? ' — ' + (r.data.detail || r.data.message || r.data.error) : '');
       console.error('addProduct failed:', msg, r.data);
       toast('Could not create product (' + msg + ')', 'err');
       return;
@@ -1908,7 +1908,7 @@ async function loadMerchantStatus() {
   try {
     var r = await paymentsApi('/merchant-credentials/status?site_id=' + encodeURIComponent(sid));
     if (!r.ok) {
-      var msg = 'HTTP ' + r.status + (r.data && (r.data.error || r.data.message) ? ' — ' + (r.data.error || r.data.message) : '');
+      var msg = 'HTTP ' + r.status + (r.data && (r.data.detail || r.data.message || r.data.error) ? ' — ' + (r.data.detail || r.data.message || r.data.error) : '');
       console.error('loadMerchantStatus failed:', msg, r.data);
       var errDetail = document.getElementById('spErrorDetail');
       if (errDetail) errDetail.textContent = msg;
