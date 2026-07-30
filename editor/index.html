@@ -1930,8 +1930,28 @@ window.loadBookings = async function(force) {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
   if (INTERVAL_BOOKING_TEMPLATE_IDS.indexOf(tpl) === -1 && !isSlotBookingTemplate(tpl)) return;
   if (!siteId) return;
-  if (bookingsState.loaded && !force) { renderBookingsList(); return; }
+  // v1.19 — tier is now always resolved FIRST, unconditionally. Previously
+  // this only ran after a successful /bookings list fetch — but that list
+  // fetch itself requires an active addon and 402s when there isn't one,
+  // so on a site with no addon the function hit the generic error path
+  // and returned before fetchBookingsTier() (which renders the upsell)
+  // ever ran at all. The upsell was unreachable in exactly the situation
+  // it exists for. /bookings/tier itself is never addon-gated (reports
+  // null tier safely), so this call is always safe to make first.
+  await fetchBookingsTier();
   var listEl = document.getElementById("booking-list");
+  if (!bookingsState.tier) {
+    // No addon active -- the pricing upsell (already rendered by
+    // fetchBookingsTier above) IS the UI here; don't attempt a list fetch
+    // that's guaranteed to fail, and don't show a "couldn't load" error
+    // for something that was never expected to load in the first place.
+    bookingsState.loaded = true;
+    bookingsState.list = [];
+    if (listEl) listEl.innerHTML = "";
+    renderBookingFilters();
+    return;
+  }
+  if (bookingsState.loaded && !force) { renderBookingsList(); return; }
   if (listEl) listEl.innerHTML = '<div class="empty-state"><span class="es-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-4px"><path d="M5 22h14M5 2h14M17 22v-4.17a2 2 0 0 0-.59-1.41L12 12l-4.41 4.42A2 2 0 0 0 7 17.83V22M7 2v4.17a2 2 0 0 0 .59 1.41L12 12l4.41-4.42A2 2 0 0 0 17 6.17V2"/></svg></span><p>Loading bookings…</p></div>';
   var r = await bookingsApi("/bookings?site_id=" + encodeURIComponent(siteId));
   bookingsState.loaded = true;
@@ -1941,7 +1961,6 @@ window.loadBookings = async function(force) {
     return;
   }
   bookingsState.list = (r.data && r.data.bookings) || [];
-  await fetchBookingsTier();
   renderBookingFilters();
   renderBookingsList();
 };
