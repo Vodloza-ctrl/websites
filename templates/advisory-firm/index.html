@@ -348,11 +348,9 @@ ul { list-style:none; }
       <a href="#why">Why us</a>
       <a href="#contact">Contact</a>
     </nav>
-    {{#if phone}}
-    <a href="{{whatsapp_wa_link}}" class="nav-cta" target="_blank" rel="noopener">
+    <button type="button" class="nav-cta wcz-slot-book-trigger">
       Book a consultation
-    </a>
-    {{/if}}
+    </button>
     <div class="nav-ham" id="navHam" onclick="openMobileMenu()">
       <span></span><span></span><span></span>
     </div>
@@ -364,9 +362,7 @@ ul { list-style:none; }
   {{#if has_team}}<a href="#team" onclick="closeMobileMenu()">Our team</a>{{/if}}
   <a href="#why" onclick="closeMobileMenu()">Why us</a>
   <a href="#contact" onclick="closeMobileMenu()">Contact</a>
-  {{#if phone}}
-  <a href="{{whatsapp_wa_link}}" class="mobile-cta" target="_blank" rel="noopener">Book a consultation</a>
-  {{/if}}
+  <button type="button" class="mobile-cta wcz-slot-book-trigger" onclick="closeMobileMenu()">Book a consultation</button>
 </div>
 
 <!-- HERO -->
@@ -376,7 +372,7 @@ ul { list-style:none; }
     <h1>{{tagline}}</h1>
     <p class="hero-lead">{{about}}</p>
     <div class="hero-actions">
-      <a href="#contact" class="btn-primary">Book a consultation</a>
+      <button type="button" class="btn-primary wcz-slot-book-trigger">Book a consultation</button>
       <a href="#services" class="btn-outline">Our services</a>
     </div>
   </div>
@@ -414,9 +410,12 @@ ul { list-style:none; }
      its own .wcz-slot-book-trigger with real service data, skipping straight
      to the team-member/date/time flow for that one service — including a
      deposit or full-payment prompt if the owner has one configured. Hidden
-     entirely if the owner hasn't set up any bookable services yet; the
-     WhatsApp "Book a consultation" nav CTA remains available regardless as
-     a fallback contact method. -->
+     entirely if the owner hasn't set up any bookable services yet. The nav/
+     mobile/hero "Book a consultation" buttons open the SAME modal in browse
+     mode (no data-service-id) regardless of this flag — if zero bookable
+     services exist, the widget itself shows its own graceful "contact us
+     directly" empty state, matching every other slot-booking template
+     rather than this one having special-cased WhatsApp-link behavior. -->
 {{#if has_bookable_services}}
 <section class="book-section" id="book-consultation">
   <div class="wrap">
