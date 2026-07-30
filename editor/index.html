@@ -1422,14 +1422,14 @@ window.removeProductImageV2 = async function(productId) {
 
 window.addProduct = async function() {
   try {
-    var products = state.productsV2 || [];
+    var products = (window.state && window.state.productsV2) || [];
     var isPro = (window.state && window.state.site && window.state.site.plan === 'pro');
     if (!isPro && products.length >= STARTER_PRODUCT_LIMIT) {
       document.getElementById('productLimitMsg').style.display = 'block';
       toast('6 product limit on Starter. Upgrade to Pro for unlimited.', 'err');
       return;
     }
-    var sid = siteId || new URLSearchParams(location.search).get('site');
+    var sid = (typeof siteId !== 'undefined' && siteId) || new URLSearchParams(location.search).get('site');
     if (!sid) { toast('No site selected — reload the editor from your dashboard', 'err'); return; }
 
     var r = await productsApi('/products', {
@@ -1442,13 +1442,19 @@ window.addProduct = async function() {
       toast('Could not create product (' + msg + ')', 'err');
       return;
     }
+    if (!r.data || !r.data.product || !r.data.product.id) {
+      console.error('addProduct: unexpected response shape', r.data);
+      toast('Product created but response was unexpected — reloading list', 'err');
+      await loadProducts();
+      return;
+    }
     await loadProducts();
     // Open the newly created card for editing straight away.
     var card = document.querySelector('.product-card[data-pid="' + r.data.product.id + '"]');
     if (card) card.classList.add('open');
   } catch (err) {
     console.error('addProduct threw:', err);
-    toast('Could not create product — see console for details', 'err');
+    toast('Could not create product: ' + String(err && err.message || err), 'err');
   }
 };
 
