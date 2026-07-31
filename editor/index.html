@@ -537,6 +537,11 @@ img{display:block;max-width:100%}
         <div class="panel-body">
           <div id="spLoading" style="font-size:13px;color:var(--ink3)">Checking connection…</div>
 
+          <div id="spPaywall" style="display:none">
+            <p style="font-size:13.5px;color:var(--ink2);margin:0 0 14px;line-height:1.5">Accept payments online with your own Paynow account — subscribe to Store Payments to unlock it.</p>
+            <div id="storePaymentsPricingSection"></div>
+          </div>
+
           <div id="spNotConnected" style="display:none">
             <p style="font-size:13.5px;color:var(--ink2);margin:0 0 14px;line-height:1.5">Connect your own Paynow account so customer payments go directly to you — websites.co.zw never holds or touches the money. WhatsApp ordering is already free and always on; this just adds the option to pay online.</p>
             <div class="fld-group"><label class="fld-label">Paynow Integration ID</label><input class="fld-input" id="spIntegrationId" placeholder="e.g. 18512"></div>
@@ -1898,7 +1903,7 @@ window.productsApi = productsApi;
 
 /* ── Store Payments (merchant Paynow connection) ─────────────────────── */
 function spShow(step) {
-  ['spLoading', 'spNotConnected', 'spConnected', 'spPending', 'spError'].forEach(function(id) {
+  ['spLoading', 'spPaywall', 'spNotConnected', 'spConnected', 'spPending', 'spError'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = (id === step) ? '' : 'none';
   });
@@ -1924,6 +1929,17 @@ async function loadMerchantStatus() {
       return;
     }
     var data = r.data;
+
+    // Store Payments billing gate — must be exempt or subscribed before
+    // ever seeing the connect form, regardless of whether Paynow is
+    // already connected (covers a lapsed subscription too).
+    var sub = data.subscription || { active: false, exempt: false };
+    if (!sub.active && !sub.exempt) {
+      renderStorePaymentsPricing();
+      spShow('spPaywall');
+      return;
+    }
+
     if (!data.connected) {
       spShow('spNotConnected');
       return;
@@ -2246,6 +2262,38 @@ function renderBookingsPricing() {
     });
   }
 }
+
+// Store Payments — $20/mo subscription gate in front of connecting Paynow
+// at all. Single tier, no upsell tiers like Bookings has. Uses the
+// generic GET /pay/status?ref= on payments-worker for polling (no
+// separate status route needed — this charge isn't scoped to a
+// bookings-worker-style namespace the way Bookings' purchase is).
+function renderStorePaymentsPricing() {
+  var savedEmail = ((window.state && window.state.content && window.state.content.content && window.state.content.content.contact) || {}).email;
+  if (typeof WczCheckout !== 'undefined' && WczCheckout.renderPricingSection) {
+    WczCheckout.renderPricingSection({
+      namespace: "store-payments",
+      containerId: "storePaymentsPricingSection",
+      currentTier: null,
+      prefillEmail: savedEmail || null,
+      toast: toast,
+      tiers: [
+        { key: "monthly", label: "Store Payments", price: 20, isTopTier: true, features: ["Accept payments online via your own Paynow account", "Money goes straight to you — we never hold it", "Automatic digital product delivery", "Per-variant stock tracking"] }
+      ],
+      purchase: async function (tier, phone, email) {
+        return await paymentsApi("/store-payments/purchase", {
+          method: "POST",
+          body: JSON.stringify({ site_id: siteId, phone: phone, email: email })
+        });
+      },
+      pollStatus: async function (reference) {
+        return await paymentsApi("/pay/status?ref=" + encodeURIComponent(reference));
+      },
+      onActivated: async function () { await loadMerchantStatus(); }
+    });
+  }
+}
+window.renderStorePaymentsPricing = renderStorePaymentsPricing;
 
 window.loadBookings = async function(force) {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
