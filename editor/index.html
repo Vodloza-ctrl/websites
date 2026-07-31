@@ -1878,6 +1878,7 @@ async function paymentsApi(path, opts) {
     return { ok: false, status: 0, data: {} };
   }
 }
+window.paymentsApi = paymentsApi;
 
 var PRODUCTS_API_BASE = "https://products.websites.co.zw";
 
@@ -1893,6 +1894,7 @@ async function productsApi(path, opts) {
     return { ok: false, status: 0, data: {} };
   }
 }
+window.productsApi = productsApi;
 
 /* ── Store Payments (merchant Paynow connection) ─────────────────────── */
 function spShow(step) {
@@ -1951,10 +1953,12 @@ async function loadMerchantStatus() {
     spShow('spError');
   }
 }
+window.loadMerchantStatus = loadMerchantStatus;
 
 function showReconnectForm() {
   spShow('spNotConnected');
 }
+window.showReconnectForm = showReconnectForm;
 
 async function submitConnectMerchant() {
   if (!siteId) return;
@@ -2017,6 +2021,7 @@ async function submitConnectMerchant() {
   toast(r.data.verified ? 'Paynow connected ✓' : 'Saved — verification failed, see details above', r.data.verified ? 'ok' : 'err');
   loadMerchantStatus();
 }
+window.submitConnectMerchant = submitConnectMerchant;
 
 async function disconnectMerchant() {
   if (!siteId) return;
@@ -2028,6 +2033,7 @@ async function disconnectMerchant() {
   toast('Paynow disconnected', 'ok');
   loadMerchantStatus();
 }
+window.disconnectMerchant = disconnectMerchant;
 
 window.__syncRoomsToBookingsWorker = async function(siteId) {
   var tpl = (window.state && window.state.site && window.state.site.template_id) || "";
