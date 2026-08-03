@@ -168,7 +168,8 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
 .cs-contact-grid{display:grid;grid-template-columns:1fr .8fr;gap:56px;align-items:start}
 @media(max-width:800px){.cs-contact-grid{grid-template-columns:1fr}}
 .cs-contact h2{font-size:clamp(2rem,4vw,3rem);color:#fff;margin-top:10px}
-.cs-wa-btn{display:inline-flex;align-items:center;gap:10px;margin-top:28px;background:var(--gold);color:var(--bg);font-weight:700;font-size:.86rem;padding:14px 26px;border-radius:var(--r-pill)}
+.cs-book-btn{display:inline-flex;align-items:center;gap:10px;margin-top:28px;background:var(--gold);color:var(--bg);font-weight:700;font-size:.86rem;padding:14px 26px;border-radius:var(--r-pill);border:none;cursor:pointer;font-family:"Inter",sans-serif;transition:.2s}
+.cs-book-btn:hover{background:#e0c37e}
 .cs-contact-meta{display:flex;flex-direction:column;gap:14px;padding-top:6px}
 .cs-contact-meta-item{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--muted)}
 .cs-hours-box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-card);padding:22px 24px}
@@ -197,6 +198,18 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
 
 /* ── UPSELL / GATED EMPTY STATES ─────────────────────────────────────────── */
 .cs-empty{text-align:center;padding:80px 20px;color:rgba(255,255,255,.4)}
+
+/* ── FLOATING WHATSAPP ENQUIRY BUBBLE ────────────────────────────────────
+   Booking lives in the nav + contact section CTA; this is for casual
+   "just asking a question" enquiries, kept separate on purpose. Matches
+   the fab pattern used elsewhere on the platform (fixed, bottom-right,
+   fades in after the visitor scrolls past the hero). */
+.cs-wa-fab{position:fixed;bottom:22px;right:22px;z-index:80;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(37,211,102,.4);opacity:0;transform:scale(.85);transition:opacity .3s,transform .3s;pointer-events:none}
+.cs-wa-fab.visible{opacity:1;transform:scale(1);pointer-events:auto}
+.cs-wa-fab:hover{transform:scale(1.08)}
+.cs-wa-fab-pulse{position:absolute;inset:0;border-radius:50%;border:2px solid #25D366;animation:cs-fabpulse 2s infinite}
+@keyframes cs-fabpulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+@media(max-width:640px){.cs-wa-fab{width:50px;height:50px;bottom:18px;right:18px}}
 </style>
 </head>
 <body>
@@ -374,12 +387,10 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
     <div class="reveal">
       <div class="eyebrow">Let's Create Together</div>
       <h2>Ready to book<br>your shoot?</h2>
-      {{#if phone}}
-      <a href="{{wa_href_booking}}" class="cs-wa-btn" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" stroke="none" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-        WhatsApp
-      </a>
-      {{/if}}
+      <button type="button" class="cs-book-btn wcz-slot-book-trigger">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Book Now
+      </button>
       <div class="cs-contact-meta" style="margin-top:30px">
         {{#if location}}<div class="cs-contact-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>{{location}} — <a href="{{directions_href}}" target="_blank" rel="noopener" style="color:var(--gold)">Get Directions</a></div>{{/if}}
         {{#if email}}<div class="cs-contact-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>{{email}}</div>{{/if}}
@@ -411,6 +422,13 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
   </div>
 </footer>
 
+{{#if phone}}
+<a href="{{wa_href_enquiry}}" class="cs-wa-fab" id="cs-wa-fab" target="_blank" rel="noopener" aria-label="WhatsApp enquiry">
+  <div class="cs-wa-fab-pulse"></div>
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+</a>
+{{/if}}
+
 <!-- LIGHTBOX -->
 <div id="cs-lb" role="dialog" aria-modal="true" aria-label="Media viewer">
   <button class="cs-lb-close" id="cs-lb-close" aria-label="Close">
@@ -423,7 +441,11 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
 (function(){
   /* ── Nav scroll state ── */
   var nav = document.getElementById('cs-nav');
-  function onScroll(){ if(nav) nav.classList.toggle('scrolled', window.scrollY > 40); }
+  var waFab = document.getElementById('cs-wa-fab');
+  function onScroll(){
+    if (nav) nav.classList.toggle('scrolled', window.scrollY > 40);
+    if (waFab) waFab.classList.toggle('visible', window.scrollY > 300);
+  }
   window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
 
   /* ── Mobile menu ── */
