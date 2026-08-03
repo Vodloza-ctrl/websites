@@ -24,226 +24,264 @@
   --r-pill:999px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-img{display:block;max-width:100%}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:"Inter",sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
 a{color:inherit;text-decoration:none}
-button{cursor:pointer;border:none;background:none;font:inherit}
-body{font-family:"Inter",sans-serif;color:var(--text);background:var(--bg);line-height:1.65}
-h1,h2,h3{font-family:"Cormorant",serif;font-weight:600;line-height:1.05;letter-spacing:.01em}
-.wrap{max-width:1240px;margin:0 auto;padding:0 32px}
+button{font:inherit;background:none;border:none;cursor:pointer;color:inherit}
+.wrap{max-width:1360px;margin:0 auto;padding:0 32px}
 @media(max-width:640px){.wrap{padding:0 20px}}
+h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.01em}
+.eyebrow{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:600}
 
-/* ── NAV — transparent over hero, solidifies on scroll ─────────────────── */
-header{position:fixed;top:0;left:0;right:0;z-index:200;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
-header.solid{background:rgba(10,9,8,.92);backdrop-filter:blur(10px);border-color:var(--line)}
-.nav{display:flex;align-items:center;justify-content:space-between;max-width:1240px;margin:0 auto;padding:22px 32px;gap:16px}
-@media(max-width:640px){.nav{padding:18px 20px}}
-.logo{display:flex;align-items:center;gap:10px;font-family:"Cormorant",serif;font-weight:600;font-size:1.35rem;letter-spacing:.02em;color:#fff;flex-shrink:0}
-.logo-img{height:34px;width:34px;object-fit:cover;border-radius:50%;flex:none}
-.nav-links{display:flex;gap:30px;flex:1;justify-content:center}
-.nav-links a{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;color:rgba(255,255,255,.68)}
-.nav-links a:hover{color:var(--gold)}
-.btn-cta{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--gold);color:var(--gold);font-weight:600;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;padding:11px 22px;border-radius:var(--r-pill);white-space:nowrap;transition:.2s}
-.btn-cta:hover{background:var(--gold);color:#100c05}
-.hamburger{display:none;width:38px;height:38px;align-items:center;justify-content:center;color:#fff}
-@media(max-width:860px){.nav-links{display:none}.btn-cta{display:none}.hamburger{display:flex}}
+/* ── REVEAL ──────────────────────────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
 
-.mob-menu{display:none;position:fixed;inset:0;z-index:999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:2rem}
-.mob-menu.open{display:flex}
-.mob-menu a{font-family:"Cormorant",serif;font-size:1.6rem;font-weight:600;color:#fff}
-.mob-close{position:absolute;top:22px;right:22px;color:rgba(255,255,255,.6)}
+/* ── NAV ─────────────────────────────────────────────────────────────────── */
+.cs-nav{position:fixed;top:0;left:0;right:0;z-index:60;padding:22px 0;transition:background .3s ease,padding .3s ease,border-color .3s ease;border-bottom:1px solid transparent}
+.cs-nav.scrolled{background:rgba(10,9,8,.86);backdrop-filter:blur(10px);padding:14px 0;border-color:var(--line)}
+.cs-nav-inner{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.cs-word{font-family:"Cormorant",serif;font-size:1.5rem;font-weight:600;letter-spacing:.01em}
+.cs-word img{height:34px;width:auto;display:block}
+.cs-nav-links{display:flex;align-items:center;gap:30px}
+.cs-nav-links a{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:rgba(255,255,255,.65);transition:color .2s}
+.cs-nav-links a:hover{color:var(--text)}
+.cs-nav-book{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--gold);border:1.5px solid var(--gold);border-radius:var(--r-pill);padding:9px 22px;transition:.2s}
+.cs-nav-book:hover{background:var(--gold);color:var(--bg)}
+.cs-ham{display:none;flex-direction:column;gap:5px;width:26px;padding:6px}
+.cs-ham span{display:block;height:1.5px;background:var(--text);width:100%}
+@media(max-width:860px){.cs-nav-links{display:none}.cs-ham{display:flex}}
 
-/* ── HERO — full-bleed, cinematic ───────────────────────────────────────── */
-.hero{position:relative;height:100vh;min-height:560px;display:flex;align-items:flex-end;overflow:hidden}
-.hero-media{position:absolute;inset:0}
-.hero-media img,.hero-media video{width:100%;height:100%;object-fit:cover}
-.hero-media-ph{position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,#1c1917,var(--bg))}
-.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,9,8,.96) 0%,rgba(10,9,8,.35) 55%,rgba(10,9,8,.15) 100%)}
-.hero-content{position:relative;z-index:1;padding:0 32px 80px;width:100%;text-align:center}
-@media(max-width:640px){.hero-content{padding:0 20px 56px}}
-.hero-eyebrow{font-size:.76rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:600}
-.hero h1{font-size:clamp(3rem,9vw,6.5rem);color:#fff;margin:16px auto 0;max-width:20ch}
-.hero-scroll{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:1;color:rgba(255,255,255,.55);display:flex;flex-direction:column;align-items:center;gap:8px;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase}
-.hero-scroll svg{animation:cs-bounce 1.8s ease-in-out infinite}
-@keyframes cs-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+.cs-mob-menu{position:fixed;inset:0;z-index:120;background:var(--bg);display:flex;flex-direction:column;padding:24px 28px;transform:translateX(100%);transition:transform .35s ease}
+.cs-mob-menu.open{transform:translateX(0)}
+.cs-mob-close{align-self:flex-end;padding:10px}
+.cs-mob-menu a,.cs-mob-menu button{font-family:"Cormorant",serif;font-size:1.9rem;padding:16px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.cs-mob-book{margin-top:24px;color:var(--gold)}
 
-/* ── INTRO STRIP ─────────────────────────────────────────────────────────── */
-.intro{padding:90px 0 60px;text-align:center}
-.intro p{font-family:"Cormorant",serif;font-size:clamp(1.3rem,2.6vw,1.85rem);font-weight:500;font-style:italic;color:var(--text);max-width:32ch;margin:0 auto;line-height:1.5}
+/* ── HERO ────────────────────────────────────────────────────────────────── */
+.cs-hero{position:relative;height:100vh;min-height:520px;max-height:900px;overflow:hidden}
+.cs-hero-media{position:absolute;inset:0}
+.cs-hero-media video,.cs-hero-media img,.cs-hero-media iframe{width:100%;height:100%;object-fit:cover}
+.cs-hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,8,.35) 0%,rgba(10,9,8,.15) 40%,rgba(10,9,8,.75) 100%)}
+.cs-hero-ph{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,var(--paper2),var(--bg))}
+.cs-hero-content{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:64px}
+.cs-hero-eyebrow{font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:10px}
+.cs-hero-name{font-size:clamp(2.6rem,7vw,5.2rem);line-height:.98;color:#fff}
+.cs-hero-scroll{position:absolute;bottom:26px;right:32px;z-index:1;display:flex;align-items:center;gap:8px;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.cs-hero-scroll svg{animation:cs-bounce 1.8s infinite}
+@keyframes cs-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@media(max-width:640px){.cs-hero{height:88vh}.cs-hero-scroll{display:none}}
 
-/* ── GALLERY — the centerpiece ───────────────────────────────────────────── */
-.work-sec{padding:20px 0 100px}
-.sec-head{text-align:center;max-width:600px;margin:0 auto 44px}
-.sec-head .eyebrow{font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600}
-.sec-head h2{font-size:clamp(2rem,4vw,2.9rem);color:#fff;margin-top:10px}
+/* When there is no hero media at all, collapse to a slim intro strip
+   instead of a big empty dark block — every creative-studio site should
+   still work day one before any hero photo/video is uploaded. */
+.cs-hero-slim{padding:150px 0 56px}
+.cs-hero-slim .cs-hero-name{color:#fff}
 
-.cs-filters{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:44px}
-.cs-filter{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:rgba(255,255,255,.55);padding:8px 4px;border-bottom:1.5px solid transparent;transition:.2s}
-.cs-filter:hover{color:#fff}
+/* ── ORDERED SECTIONS WRAPPER ──────────────────────────────────────────────
+   Gives every reorderable section a flex `order` driven by the Design
+   tab's arrows, via the order_* tokens computed server-side. */
+.cs-sections{display:flex;flex-direction:column}
+
+/* ── GALLERY / WORK ─────────────────────────────────────────────────────── */
+.cs-work{padding:90px 0 100px}
+.cs-work-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:40px}
+.cs-work-head h2{font-size:clamp(1.9rem,3.6vw,2.7rem);color:#fff;margin-top:8px}
+.cs-filters{display:flex;flex-wrap:wrap;gap:8px 18px}
+.cs-filter{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:rgba(255,255,255,.5);padding:8px 2px;border-bottom:1.5px solid transparent;transition:.2s}
+.cs-filter:hover{color:var(--text)}
 .cs-filter.active{color:var(--gold);border-color:var(--gold)}
 
-.cs-masonry{columns:3 260px;column-gap:14px}
-@media(max-width:900px){.cs-masonry{columns:2 220px}}
-@media(max-width:560px){.cs-masonry{columns:1}}
-.cs-tile{break-inside:avoid;margin-bottom:14px;transition:opacity .25s}
-.cs-tile.hidden{display:none}
-.cs-tile-btn{display:block;position:relative;width:100%;overflow:hidden;border-radius:var(--r-card)}
-.cs-tile-btn img{width:100%;height:auto;display:block;transition:transform .5s ease,filter .3s}
-.cs-tile-btn:hover img{transform:scale(1.035);filter:brightness(.82)}
-.cs-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(10,9,8,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.4)}
+.cs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cs-tile{position:relative;grid-column:span 1;aspect-ratio:1/1;overflow:hidden;background:var(--paper)}
+.cs-tile:nth-child(6n+1){grid-column:span 2;grid-row:span 2;aspect-ratio:1/1}
+.cs-tile-btn{display:block;width:100%;height:100%;position:relative}
+.cs-tile-btn img{width:100%;height:100%;object-fit:cover;transition:transform .6s ease,opacity .3s ease}
+.cs-tile-btn:hover img{transform:scale(1.045)}
+.cs-tile.filtered-out{display:none}
+.cs-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(10,9,8,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;transition:.2s;pointer-events:none}
+.cs-tile-btn:hover .cs-play{background:var(--gold)}
+.cs-tile-cap{position:absolute;left:0;right:0;bottom:0;padding:14px 16px;font-size:.76rem;letter-spacing:.04em;color:#fff;background:linear-gradient(0deg,rgba(10,9,8,.82),transparent);opacity:0;transform:translateY(6px);transition:.25s}
+.cs-tile-btn:hover .cs-tile-cap{opacity:1;transform:none}
+
+@media(max-width:900px){.cs-grid{grid-template-columns:repeat(3,1fr)}.cs-tile:nth-child(6n+1){grid-column:span 2;grid-row:span 2}}
+@media(max-width:640px){.cs-grid{grid-template-columns:repeat(2,1fr);gap:4px}.cs-tile:nth-child(6n+1){grid-column:span 2;grid-row:span 1;aspect-ratio:16/11}.cs-tile-cap{display:none}}
 
 /* ── ABOUT ───────────────────────────────────────────────────────────────── */
-.about-sec{padding:90px 0;background:var(--paper)}
-.about-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:56px;align-items:center}
-@media(max-width:800px){.about-grid{grid-template-columns:1fr}}
-.about-photo img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--r-card)}
-.about-body .eyebrow{font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600}
-.about-body h2{font-size:clamp(1.9rem,3.4vw,2.6rem);color:#fff;margin-top:10px}
-.about-body p{color:var(--muted);margin-top:18px;font-size:1rem;line-height:1.85}
-.cs-cred-list{list-style:none;margin-top:24px;display:flex;flex-direction:column;gap:10px}
-.cs-cred{display:flex;gap:10px;font-size:.9rem;color:var(--text)}
-.cs-cred::before{content:'—';color:var(--gold);flex-shrink:0}
+.cs-about{padding:90px 0;background:var(--paper)}
+.cs-about-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:56px;align-items:center}
+@media(max-width:800px){.cs-about-grid{grid-template-columns:1fr}}
+.cs-about-photo img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--r-card)}
+.cs-about-body h2{font-size:clamp(1.9rem,3.4vw,2.6rem);color:#fff;margin-top:10px}
+.cs-about-body p{color:var(--muted);margin-top:18px;font-size:1rem;line-height:1.85}
+.cs-cred-list{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px 22px;list-style:none}
+.cs-cred{font-size:.82rem;color:var(--text);display:flex;align-items:center;gap:8px}
+.cs-cred::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.cs-about-social{margin-top:28px}
+.cs-about-social a{display:inline-flex;align-items:center;gap:8px;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--gold);border-bottom:1px solid var(--gold);padding-bottom:2px}
 
-/* ── BRANDS ──────────────────────────────────────────────────────────────── */
-.brands-band{padding:44px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.brands-row{display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:center;opacity:.7}
-.cs-brand img{height:24px;width:auto;object-fit:contain;filter:grayscale(1) brightness(1.6)}
-.cs-brand span{font-weight:600;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cs-brands-band{padding:44px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cs-brands-row{display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:center;opacity:.7}
+.cs-brand img{max-height:26px;width:auto;filter:grayscale(1) brightness(1.6)}
+.cs-brand span{font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 
-/* ── PACKAGES (full-day, date-range booking) ────────────────────────────── */
-.packages-sec{padding:90px 0}
-.cs-pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-@media(max-width:860px){.cs-pkg-grid{grid-template-columns:1fr}}
-.cs-pkg-card{background:var(--paper);padding:40px 32px;position:relative}
-.cs-pkg-card.featured{background:var(--paper2)}
-.cs-pkg-tag{display:inline-block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--gold);border:1px solid var(--gold);padding:3px 10px;border-radius:var(--r-pill);margin-bottom:16px}
-.cs-pkg-card h3{font-size:1.5rem;color:#fff}
-.cs-pkg-price{margin-top:10px;font-family:"Cormorant",serif;font-size:2rem;font-weight:600;color:var(--gold)}
+/* ── PACKAGES ────────────────────────────────────────────────────────────── */
+.cs-pkg-sec{padding:90px 0}
+.cs-pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+@media(max-width:860px){.cs-pkg-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.cs-pkg-grid{grid-template-columns:1fr}}
+.cs-pkg-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-card);padding:30px;position:relative}
+.cs-pkg-card.featured{border-color:var(--gold)}
+.cs-pkg-tag{position:absolute;top:-11px;left:26px;background:var(--gold);color:var(--bg);font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:var(--r-pill)}
+.cs-pkg-card h3{font-family:"Inter",sans-serif;font-size:1.02rem;font-weight:700;color:#fff}
+.cs-pkg-price{font-family:"Cormorant",serif;font-size:1.7rem;color:var(--gold);margin-top:10px}
 .cs-pkg-price span{font-family:"Inter",sans-serif;font-size:.78rem;color:var(--muted);font-weight:500;margin-left:4px}
 .cs-pkg-desc{margin-top:16px;color:var(--muted);font-size:.9rem;line-height:1.7}
-.cs-pkg-card .wcz-book-trigger{margin-top:24px;width:100%;padding:13px 18px;border-radius:0;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:"Inter",sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:.2s}
-.cs-pkg-card .wcz-book-trigger:hover{background:var(--gold);color:#100c05}
+.cs-pkg-card .wcz-book-trigger{margin-top:20px;width:100%;padding:12px 18px;border-radius:2px;border:1.5px solid var(--gold);background:transparent;color:var(--gold);font-family:"Inter",sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;transition:.2s}
+.cs-pkg-card .wcz-book-trigger:hover{background:var(--gold);color:var(--bg)}
 
-/* ── SESSIONS (slot booking) ─────────────────────────────────────────────── */
-.sessions-sec{padding:20px 0 100px}
+/* ── SESSIONS ────────────────────────────────────────────────────────────── */
+.cs-sessions-sec{padding:20px 0 100px}
 .cs-session-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-@media(max-width:820px){.cs-session-grid{grid-template-columns:1fr 1fr}} @media(max-width:560px){.cs-session-grid{grid-template-columns:1fr}}
+@media(max-width:820px){.cs-session-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.cs-session-grid{grid-template-columns:1fr}}
 .cs-session-card{background:var(--paper);border:1px solid var(--line);padding:26px;text-align:center}
 .cs-session-card h3{font-family:"Inter",sans-serif;font-size:.98rem;font-weight:700;color:#fff}
 .cs-session-card p{font-size:.82rem;color:var(--muted);margin-top:5px}
+.wcz-deposit-note{font-size:.74rem;color:var(--gold);margin-top:6px}
 .cs-session-card .wcz-slot-book-trigger{margin-top:16px;width:100%;padding:11px 16px;border-radius:var(--r-pill);border:1.5px solid var(--gold);background:transparent;color:var(--gold);font-family:"Inter",sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:.2s}
 .cs-session-card .wcz-slot-book-trigger:hover{background:var(--gold);color:#100c05}
 
 /* ── TESTIMONIALS ────────────────────────────────────────────────────────── */
-.testi-sec{padding:90px 0;background:var(--paper);text-align:center}
-.cs-testi{max-width:680px;margin:0 auto}
-.cs-testi-text{font-family:"Cormorant",serif;font-size:clamp(1.3rem,2.6vw,1.8rem);font-style:italic;color:var(--text);line-height:1.6}
-.cs-testi-name{margin-top:20px;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--gold)}
+.cs-testi-sec{padding:90px 0;background:var(--paper)}
+.cs-testi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;margin-top:40px}
+@media(max-width:700px){.cs-testi-grid{grid-template-columns:1fr}}
+.cs-testi{border-left:2px solid var(--gold);padding-left:22px}
+.cs-testi-text{font-family:"Cormorant",serif;font-size:1.3rem;font-style:italic;color:var(--text);line-height:1.55}
+.cs-testi-name{margin-top:14px;font-size:.82rem;font-weight:700;color:#fff}
 .cs-testi-role{font-size:.78rem;color:var(--muted);margin-top:2px}
-.cs-testi-dots{display:flex;gap:8px;justify-content:center;margin-top:30px}
-.cs-testi-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:.2s}
-.cs-testi-dot.on{background:var(--gold)}
 
 /* ── CONTACT ─────────────────────────────────────────────────────────────── */
-.contact-sec{padding:100px 0 80px;text-align:center}
-.contact-sec .eyebrow{font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600}
-.contact-sec h2{font-size:clamp(2.2rem,5vw,3.6rem);color:#fff;margin-top:12px;max-width:16ch;margin-left:auto;margin-right:auto}
-.contact-actions{display:flex;gap:14px;justify-content:center;margin-top:32px;flex-wrap:wrap}
-.wa-btn{display:inline-flex;align-items:center;gap:9px;background:#25D366;color:#fff;font-weight:700;padding:14px 26px;border-radius:var(--r-pill);font-size:.86rem}
-.cs-ig-btn{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--gold);color:var(--gold);font-weight:600;padding:13px 24px;border-radius:var(--r-pill);font-size:.86rem}
-.cs-ig-btn:hover{background:var(--gold);color:#100c05}
-.contact-meta{margin-top:26px;color:var(--muted);font-size:.86rem}
-.contact-meta a{color:var(--gold)}
+.cs-contact{padding:100px 0}
+.cs-contact-grid{display:grid;grid-template-columns:1fr .8fr;gap:56px;align-items:start}
+@media(max-width:800px){.cs-contact-grid{grid-template-columns:1fr}}
+.cs-contact h2{font-size:clamp(2rem,4vw,3rem);color:#fff;margin-top:10px}
+.cs-wa-btn{display:inline-flex;align-items:center;gap:10px;margin-top:28px;background:var(--gold);color:var(--bg);font-weight:700;font-size:.86rem;padding:14px 26px;border-radius:var(--r-pill)}
+.cs-contact-meta{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.cs-contact-meta-item{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--muted)}
+.cs-hours-box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-card);padding:22px 24px}
+.cs-hours-box h3{font-family:"Inter",sans-serif;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.hours-row{display:flex;justify-content:space-between;font-size:.86rem;padding:6px 0;border-bottom:1px solid var(--line);color:var(--muted)}
+.hours-row:last-child{border-bottom:none}
+.hours-row.today{color:var(--text)}
+.today-pill{margin-left:8px;font-size:.62rem;background:var(--gold);color:var(--bg);padding:1px 7px;border-radius:var(--r-pill);font-weight:700}
 
-footer{padding:36px 32px;border-top:1px solid var(--line);color:var(--muted);font-size:.82rem}
-.foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;max-width:1240px;margin:0 auto;align-items:center}
+/* ── FOOTER ──────────────────────────────────────────────────────────────── */
+.cs-footer{border-top:1px solid var(--line);padding:28px 0}
+.cs-footer-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.cs-footer-social{display:flex;gap:16px}
+.cs-footer-social a{color:var(--muted);transition:color .2s}
+.cs-footer-social a:hover{color:var(--gold)}
 
-/* ── LIGHTBOX ────────────────────────────────────────────────────────────── */
-.cs-lb{display:none;position:fixed;inset:0;z-index:2000;background:rgba(6,5,4,.96);align-items:center;justify-content:center;padding:24px}
-.cs-lb.open{display:flex}
-.cs-lb-stage{max-width:min(1000px,92vw);max-height:86vh;position:relative}
-.cs-lb-stage img,.cs-lb-stage video{max-width:min(1000px,92vw);max-height:86vh;object-fit:contain;display:block;border-radius:2px}
-.cs-lb-caption{text-align:center;color:var(--muted);font-size:.84rem;margin-top:16px}
-.cs-lb-close{position:absolute;top:24px;right:28px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1}
-.cs-lb-close:hover{background:rgba(255,255,255,.18)}
+/* ── LIGHTBOX (image / iframe embed / direct video) ─────────────────────── */
+#cs-lb{position:fixed;inset:0;z-index:200;background:rgba(6,5,4,.97);display:none;align-items:center;justify-content:center;padding:5vh 4vw}
+#cs-lb.open{display:flex}
+.cs-lb-close{position:absolute;top:20px;right:24px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff}
+.cs-lb-stage{width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.cs-lb-stage img{max-width:min(1000px,92vw);max-height:80vh;object-fit:contain;display:block;border-radius:2px}
+.cs-lb-stage video{max-width:min(1000px,92vw);max-height:80vh;border-radius:2px;background:#000}
+.cs-lb-stage iframe{width:min(1000px,92vw);aspect-ratio:16/9;border:0;border-radius:2px}
+.cs-lb-caption{text-align:center;color:var(--muted);font-size:.84rem}
 
-.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
-.reveal.in{opacity:1;transform:none}
+/* ── UPSELL / GATED EMPTY STATES ─────────────────────────────────────────── */
+.cs-empty{text-align:center;padding:80px 20px;color:rgba(255,255,255,.4)}
 </style>
 </head>
 <body>
 
-<header id="cs-header">
-  <div class="nav">
-    <a href="/" class="logo">
-      {{#if logo_url}}<img class="logo-img" src="{{logo_url}}" alt="{{business_name}}">{{/if}}
-      {{business_name}}
-    </a>
-    <nav class="nav-links">
+<!-- NAV -->
+<nav class="cs-nav" id="cs-nav">
+  <div class="wrap cs-nav-inner">
+    <a href="#top" class="cs-word">{{#if logo_url}}<img src="{{logo_url}}" alt="{{business_name}}">{{else}}{{business_name}}{{/if}}</a>
+    <div class="cs-nav-links">
       {{#if has_gallery}}<a href="#work">Work</a>{{/if}}
       {{#if has_packages}}<a href="#packages">Packages</a>{{/if}}
       {{#if has_bookable_services}}<a href="#sessions">Sessions</a>{{/if}}
-      <a href="#about">About</a>
+      {{#if has_about}}<a href="#about">About</a>{{/if}}
       <a href="#contact">Contact</a>
-    </nav>
-    <a href="{{whatsapp_wa_link}}" class="btn-cta" target="_blank" rel="noopener">Book</a>
-    <div class="hamburger" id="cs-ham">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button type="button" class="cs-nav-book wcz-slot-book-trigger">Book</button>
+    </div>
+    <div class="cs-ham" id="cs-ham" aria-label="Menu">
+      <span></span><span></span><span></span>
     </div>
   </div>
-</header>
+</nav>
 
-<div class="mob-menu" id="cs-mob-menu">
-  <div class="mob-close" id="cs-mob-close">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-  </div>
+<div class="cs-mob-menu" id="cs-mob-menu">
+  <button class="cs-mob-close" id="cs-mob-close" aria-label="Close menu">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+  </button>
   {{#if has_gallery}}<a href="#work">Work</a>{{/if}}
   {{#if has_packages}}<a href="#packages">Packages</a>{{/if}}
   {{#if has_bookable_services}}<a href="#sessions">Sessions</a>{{/if}}
-  <a href="#about">About</a>
+  {{#if has_about}}<a href="#about">About</a>{{/if}}
   <a href="#contact">Contact</a>
+  <button type="button" class="cs-mob-book wcz-slot-book-trigger">Book a session</button>
 </div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-media">
-    {{#if has_hero_video}}
-    <video autoplay muted loop playsinline poster="{{hero_image_url}}"><source src="{{video_url}}" type="video/mp4"></video>
-    {{else}}{{#if hero_image_url}}
-    <img src="{{hero_image_url}}" alt="{{business_name}}">
-    {{else}}
-    <div class="hero-media-ph"></div>
-    {{/if}}{{/if}}
+<!-- HERO — a real minimal thesis statement: the work itself is the pitch,
+     so this is just the wordmark over full-bleed media (or a slim intro
+     strip when no hero photo/video has been added yet), not a paragraph. -->
+<div id="top"></div>
+{{#if has_hero_video}}
+<section class="cs-hero">
+  <div class="cs-hero-media">{{hero_video_html}}</div>
+  <div class="cs-hero-scrim"></div>
+  <div class="wrap cs-hero-content">
+    <div class="cs-hero-eyebrow">{{business_type_label}}</div>
+    <h1 class="cs-hero-name">{{business_name}}</h1>
   </div>
-  <div class="hero-content">
-    <div class="hero-eyebrow">{{tagline}}</div>
-    <h1>{{business_name}}</h1>
-  </div>
-  <div class="hero-scroll">
-    <span>Scroll</span>
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-  </div>
+  <div class="cs-hero-scroll">Scroll<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
 </section>
-
-<!-- INTRO -->
-{{#if about}}
-<section class="intro">
-  <div class="wrap reveal">
-    <p>{{about}}</p>
+{{else}}{{#if hero_image_url}}
+<section class="cs-hero">
+  <div class="cs-hero-media"><img src="{{hero_image_url}}" alt="{{business_name}}"></div>
+  <div class="cs-hero-scrim"></div>
+  <div class="wrap cs-hero-content">
+    <div class="cs-hero-eyebrow">{{business_type_label}}</div>
+    <h1 class="cs-hero-name">{{business_name}}</h1>
   </div>
+  <div class="cs-hero-scroll">Scroll<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
 </section>
-{{/if}}
+{{else}}
+<section class="cs-hero-slim wrap">
+  <div class="cs-hero-eyebrow">{{business_type_label}}</div>
+  <h1 class="cs-hero-name">{{business_name}}</h1>
+</section>
+{{/if}}{{/if}}
 
-<!-- WORK / GALLERY -->
+<div class="cs-sections">
+
+<!-- WORK / GALLERY — the primary content of the page. Mixed photo and
+     video tiles, independently playable, filterable by category. -->
 {{#if has_gallery}}
-<section class="work-sec" id="work">
+<section class="cs-work" id="work" style="order:{{order_gallery}}">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Selected Work</span>
-      <h2>The Portfolio</h2>
+    <div class="cs-work-head reveal">
+      <div>
+        <div class="eyebrow">Selected Work</div>
+        <h2>The Portfolio</h2>
+      </div>
+      {{#if has_gallery_filters}}
+      <div class="cs-filters" id="cs-filters">
+        <button type="button" class="cs-filter active" data-filter="">All</button>
+        {{gallery_filters_html}}
+      </div>
+      {{/if}}
     </div>
-    <div class="cs-filters" id="cs-filters"></div>
-    <div class="cs-masonry reveal" id="cs-masonry">
+    <div class="cs-grid reveal" id="cs-grid">
       {{#each gallery}}<!-- rendered from config.json's gallery itemTemplate -->{{/each}}
     </div>
   </div>
@@ -251,44 +289,47 @@ footer{padding:36px 32px;border-top:1px solid var(--line);color:var(--muted);fon
 {{/if}}
 
 <!-- ABOUT -->
-<section class="about-sec" id="about">
-  <div class="wrap">
-    <div class="about-grid reveal">
-      <div class="about-photo">
-        {{#if hero_image_url}}<img src="{{hero_image_url}}" alt="{{business_name}}">{{/if}}
+{{#if has_about}}
+<section class="cs-about" id="about" style="order:{{order_about}}">
+  <div class="wrap cs-about-grid">
+    <div class="cs-about-photo reveal">
+      {{#if hero_image_url}}<img src="{{hero_image_url}}" alt="{{business_name}}">{{/if}}
+    </div>
+    <div class="cs-about-body reveal">
+      <div class="eyebrow">About</div>
+      <h2>{{business_name}}</h2>
+      <p>{{about}}</p>
+      {{#if has_credentials}}
+      <ul class="cs-cred-list">
+        {{#each credentials}}<!-- rendered from config.json's credentials itemTemplate -->{{/each}}
+      </ul>
+      {{/if}}
+      {{#if has_instagram}}
+      <div class="cs-about-social">
+        <a href="{{instagram_url}}" target="_blank" rel="noopener">Follow on Instagram</a>
       </div>
-      <div class="about-body">
-        <div class="eyebrow">About</div>
-        <h2>{{business_name}}</h2>
-        <p>{{about}}</p>
-        {{#if has_credentials}}
-        <ul class="cs-cred-list">
-          {{#each credentials}}<!-- rendered from config.json's credentials itemTemplate -->{{/each}}
-        </ul>
-        {{/if}}
-      </div>
+      {{/if}}
     </div>
   </div>
 </section>
-
-<!-- BRANDS -->
+{{/if}}
 {{#if has_brands}}
-<div class="brands-band">
+<div class="cs-brands-band">
   <div class="wrap">
-    <div class="brands-row reveal">
+    <div class="cs-brands-row reveal">
       {{#each brands}}<!-- rendered from config.json's brands itemTemplate -->{{/each}}
     </div>
   </div>
 </div>
 {{/if}}
 
-<!-- PACKAGES — full-day, date-range booking -->
+<!-- PACKAGES — full-day / multi-day bookings -->
 {{#if has_packages}}
-<section class="packages-sec" id="packages">
+<section class="cs-pkg-sec" id="packages" style="order:{{order_packages}}">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Full-Day Coverage</span>
-      <h2>Packages</h2>
+    <div class="reveal">
+      <div class="eyebrow">Full-Day Coverage</div>
+      <h2 style="color:#fff;font-size:clamp(1.9rem,3.4vw,2.6rem);margin-top:8px">Packages</h2>
     </div>
     <div class="cs-pkg-grid reveal">
       {{packages_html}}
@@ -299,11 +340,11 @@ footer{padding:36px 32px;border-top:1px solid var(--line);color:var(--muted);fon
 
 <!-- SESSIONS — slot booking -->
 {{#if has_bookable_services}}
-<section class="sessions-sec" id="sessions">
+<section class="cs-sessions-sec" id="sessions" style="order:{{order_sessions}}">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Shorter Sessions</span>
-      <h2>Book a Session</h2>
+    <div class="reveal" style="margin-bottom:32px">
+      <div class="eyebrow">Shorter Sessions</div>
+      <h2 style="color:#fff;font-size:clamp(1.9rem,3.4vw,2.6rem);margin-top:8px">Book a Session</h2>
     </div>
     <div class="cs-session-grid reveal">
       {{bookable_services_html}}
@@ -314,151 +355,150 @@ footer{padding:36px 32px;border-top:1px solid var(--line);color:var(--muted);fon
 
 <!-- TESTIMONIALS -->
 {{#if has_testimonials}}
-<section class="testi-sec">
+<section class="cs-testi-sec" style="order:{{order_testimonials}}">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Kind Words</span>
+    <div class="reveal">
+      <div class="eyebrow">Kind Words</div>
+      <h2 style="color:#fff;font-size:clamp(1.9rem,3.4vw,2.6rem);margin-top:8px">Client Stories</h2>
     </div>
-    <div id="cs-testi-wrap">
+    <div class="cs-testi-grid reveal">
       {{#each testimonials}}<!-- rendered from config.json's testimonials itemTemplate -->{{/each}}
     </div>
-    <div class="cs-testi-dots" id="cs-testi-dots"></div>
   </div>
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section class="contact-sec" id="contact">
-  <div class="wrap reveal">
-    <div class="eyebrow">Let's Create Together</div>
-    <h2>Ready to book your shoot?</h2>
-    <div class="contact-actions">
-      <a href="{{whatsapp_wa_link}}" class="wa-btn" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+<section class="cs-contact" id="contact" style="order:{{order_contact}}">
+  <div class="wrap cs-contact-grid">
+    <div class="reveal">
+      <div class="eyebrow">Let's Create Together</div>
+      <h2>Ready to book<br>your shoot?</h2>
+      {{#if phone}}
+      <a href="{{wa_href_booking}}" class="cs-wa-btn" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" stroke="none" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
         WhatsApp
       </a>
-      {{#if has_instagram}}<a href="{{instagram_url}}" class="cs-ig-btn" target="_blank" rel="noopener">Follow on Instagram</a>{{/if}}
+      {{/if}}
+      <div class="cs-contact-meta" style="margin-top:30px">
+        {{#if location}}<div class="cs-contact-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>{{location}} — <a href="{{directions_href}}" target="_blank" rel="noopener" style="color:var(--gold)">Get Directions</a></div>{{/if}}
+        {{#if email}}<div class="cs-contact-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>{{email}}</div>{{/if}}
+        {{#if phone}}<div class="cs-contact-meta-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>{{phone}}</div>{{/if}}
+      </div>
     </div>
-    <div class="contact-meta">
-      {{#if location}}{{location}} &middot; <a href="{{directions_href}}" target="_blank" rel="noopener">Get Directions</a>{{/if}}
-      {{#if email}}<br>{{email}}{{/if}}
-      {{#if has_hours}}<div style="margin-top:14px">{{open_badge_html}}</div><div style="max-width:260px;margin:12px auto 0;text-align:left;font-size:.84rem;color:var(--muted)">{{hours_grid_html}}</div>{{/if}}
+    {{#if has_hours}}
+    <div class="cs-hours-box reveal">
+      <h3>Studio Hours</h3>
+      {{hours_grid_html}}
     </div>
+    {{/if}}
   </div>
 </section>
 
-<footer>
-  <div class="foot">
-    <div>{{business_name}}</div>
-    <div>&copy; {{current_year}} {{business_name}} &middot; Built with websites.co.zw</div>
+</div><!-- /.cs-sections -->
+
+<!-- FOOTER -->
+<footer class="cs-footer">
+  <div class="wrap cs-footer-inner">
+    <span>&copy; {{current_year}} {{business_name}} &middot; Built with websites.co.zw</span>
+    {{#if has_instagram}}
+    <div class="cs-footer-social">
+      <a href="{{instagram_url}}" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      </a>
+    </div>
+    {{/if}}
   </div>
 </footer>
 
 <!-- LIGHTBOX -->
-<div class="cs-lb" id="cs-lb" role="dialog" aria-modal="true">
-  <button class="cs-lb-close" id="cs-lb-close">&#x2715;</button>
+<div id="cs-lb" role="dialog" aria-modal="true" aria-label="Media viewer">
+  <button class="cs-lb-close" id="cs-lb-close" aria-label="Close">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+  </button>
   <div class="cs-lb-stage" id="cs-lb-stage"></div>
 </div>
 
 <script>
 (function(){
-  var header = document.getElementById('cs-header');
-  function onScroll(){ header.classList.toggle('solid', window.scrollY > 40); }
+  /* ── Nav scroll state ── */
+  var nav = document.getElementById('cs-nav');
+  function onScroll(){ if(nav) nav.classList.toggle('scrolled', window.scrollY > 40); }
   window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
 
-  var hbtn = document.getElementById('cs-ham'), hmenu = document.getElementById('cs-mob-menu'), hcl = document.getElementById('cs-mob-close');
-  if(hbtn && hmenu){
-    hbtn.addEventListener('click', function(){ hmenu.classList.add('open'); document.body.style.overflow='hidden'; });
-    function closeMob(){ hmenu.classList.remove('open'); document.body.style.overflow=''; }
-    if(hcl) hcl.addEventListener('click', closeMob);
-    hmenu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMob); });
+  /* ── Mobile menu ── */
+  var ham = document.getElementById('cs-ham');
+  var mob = document.getElementById('cs-mob-menu');
+  var mobClose = document.getElementById('cs-mob-close');
+  if (ham && mob) ham.addEventListener('click', function(){ mob.classList.add('open'); });
+  if (mobClose && mob) mobClose.addEventListener('click', function(){ mob.classList.remove('open'); });
+  if (mob) mob.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ mob.classList.remove('open'); }); });
+
+  /* ── Reveal on scroll ── */
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in'); });
   }
 
-  var rvl = document.querySelectorAll('.reveal');
-  if(rvl.length){
-    var obs = new IntersectionObserver(function(e){
-      e.forEach(function(x){ if(x.isIntersecting){ x.target.classList.add('in'); obs.unobserve(x.target); } });
-    }, {threshold:.08});
-    rvl.forEach(function(el){ obs.observe(el); });
-  }
-
-  /* ── Gallery category filters — built from data-category attrs already
-     rendered on each tile, so no server-side filter list needed ── */
-  var masonry = document.getElementById('cs-masonry');
+  /* ── Gallery category filter ── */
   var filterBar = document.getElementById('cs-filters');
-  if (masonry && filterBar) {
-    var tiles = Array.prototype.slice.call(masonry.querySelectorAll('.cs-tile'));
-    var cats = [];
-    tiles.forEach(function(t){
-      var c = t.getAttribute('data-category');
-      if (c && cats.indexOf(c) === -1) cats.push(c);
-    });
-    if (cats.length > 1) {
-      var html = '<button type="button" class="cs-filter active" data-cat="">All</button>';
-      cats.forEach(function(c){ html += '<button type="button" class="cs-filter" data-cat="' + c + '">' + c + '</button>'; });
-      filterBar.innerHTML = html;
-      filterBar.addEventListener('click', function(e){
-        var btn = e.target.closest('.cs-filter');
-        if (!btn) return;
-        filterBar.querySelectorAll('.cs-filter').forEach(function(b){ b.classList.toggle('active', b === btn); });
-        var cat = btn.getAttribute('data-cat');
-        tiles.forEach(function(t){
-          t.classList.toggle('hidden', !!cat && t.getAttribute('data-category') !== cat);
-        });
+  var grid = document.getElementById('cs-grid');
+  if (filterBar && grid) {
+    filterBar.addEventListener('click', function(e){
+      var btn = e.target.closest('.cs-filter');
+      if (!btn) return;
+      filterBar.querySelectorAll('.cs-filter').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var cat = btn.getAttribute('data-filter') || '';
+      grid.querySelectorAll('.cs-tile').forEach(function(tile){
+        var tileCat = tile.getAttribute('data-category') || '';
+        tile.classList.toggle('filtered-out', !!cat && tileCat !== cat);
       });
-    }
+    });
   }
 
-  /* ── Lightbox — images and video, driven by data-attributes on the tile
-     button (safe for captions containing quotes/apostrophes) ── */
+  /* ── Lightbox — images, YouTube/Vimeo embeds, and direct video files,
+     driven entirely by data-attributes on the tile button (safe for
+     captions containing quotes/apostrophes) ── */
   window.csOpenLightbox = function(btn) {
     var stage = document.getElementById('cs-lb-stage');
     var isVideo = btn.getAttribute('data-type') === 'video';
     var videoUrl = btn.getAttribute('data-video-url');
+    var embedType = btn.getAttribute('data-embed-type');
     var fullUrl = btn.getAttribute('data-full') || btn.getAttribute('data-thumb');
     var caption = btn.getAttribute('data-caption') || '';
+    var capHtml = caption ? '<div class="cs-lb-caption">' + caption + '</div>' : '';
 
-    if (isVideo && videoUrl) {
-      stage.innerHTML = '<video src="' + videoUrl + '" controls autoplay playsinline></video>' +
-        (caption ? '<div class="cs-lb-caption">' + caption + '</div>' : '');
+    if (isVideo && videoUrl && (embedType === 'youtube' || embedType === 'vimeo')) {
+      var sep = videoUrl.indexOf('?') > -1 ? '&' : '?';
+      var autoplaySrc = videoUrl + sep + (embedType === 'youtube' ? 'autoplay=1' : 'autoplay=1&muted=0');
+      stage.innerHTML = '<iframe src="' + autoplaySrc + '" allow="autoplay; fullscreen" allowfullscreen></iframe>' + capHtml;
+    } else if (isVideo && videoUrl) {
+      stage.innerHTML = '<video src="' + videoUrl + '" controls autoplay playsinline></video>' + capHtml;
     } else {
-      stage.innerHTML = '<img src="' + fullUrl + '" alt="' + caption + '">' +
-        (caption ? '<div class="cs-lb-caption">' + caption + '</div>' : '');
+      stage.innerHTML = '<img src="' + fullUrl + '" alt="' + caption + '">' + capHtml;
     }
     document.getElementById('cs-lb').classList.add('open');
     document.body.style.overflow = 'hidden';
   };
   function closeLb(){
     var stage = document.getElementById('cs-lb-stage');
-    stage.innerHTML = ''; // stops any playing video
+    stage.innerHTML = ''; // stops any playing video/iframe
     document.getElementById('cs-lb').classList.remove('open');
     document.body.style.overflow = '';
   }
-  document.getElementById('cs-lb-close').addEventListener('click', closeLb);
-  document.getElementById('cs-lb').addEventListener('click', function(e){ if (e.target === this) closeLb(); });
+  var lbClose = document.getElementById('cs-lb-close');
+  if (lbClose) lbClose.addEventListener('click', closeLb);
+  var lb = document.getElementById('cs-lb');
+  if (lb) lb.addEventListener('click', function(e){ if (e.target === lb) closeLb(); });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeLb(); });
-
-  /* ── Testimonials carousel ── */
-  var testiCards = document.querySelectorAll('#cs-testi-wrap .cs-testi');
-  var dotsEl = document.getElementById('cs-testi-dots');
-  if (testiCards.length && dotsEl) {
-    var cur = 0;
-    testiCards.forEach(function(c,i){ if(i>0) c.style.display='none'; });
-    dotsEl.innerHTML = Array.prototype.map.call(testiCards, function(_,i){
-      return '<span class="cs-testi-dot' + (i===0?' on':'') + '" data-i="' + i + '"></span>';
-    }).join('');
-    dotsEl.querySelectorAll('.cs-testi-dot').forEach(function(d){
-      d.addEventListener('click', function(){
-        testiCards[cur].style.display='none'; cur=parseInt(d.getAttribute('data-i'),10); testiCards[cur].style.display='block';
-        dotsEl.querySelectorAll('.cs-testi-dot').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-i')==cur); });
-      });
-    });
-    if (testiCards.length > 1) setInterval(function(){
-      testiCards[cur].style.display='none'; cur=(cur+1)%testiCards.length; testiCards[cur].style.display='block';
-      dotsEl.querySelectorAll('.cs-testi-dot').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-i')==cur); });
-    }, 6000);
-  }
 })();
 </script>
+
 </body>
 </html>
