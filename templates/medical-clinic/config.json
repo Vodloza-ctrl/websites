@@ -112,6 +112,11 @@
       "flag": "show_reviews_section",
       "type": "computed",
       "token": "show_reviews_section"
+    },
+    {
+      "flag": "show_press_section",
+      "type": "computed",
+      "token": "show_press_section"
     }
   ]
 }
