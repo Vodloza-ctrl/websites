@@ -349,22 +349,13 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
 {{/if}}
 
 <!-- REVIEWS -->
+{{#if show_reviews_section}}
 <section class="cs-testi-sec" id="reviews" style="order:6">
   <div class="wrap">
-    <div class="reveal">
-      <div class="eyebrow">Client Reviews</div>
-      <h2 style="color:#fff;font-size:clamp(1.9rem,3.4vw,2.6rem);margin-top:8px">Share Your Experience</h2>
-    </div>
-    {{#if has_reviews}}
-    <div class="cs-testi-grid reveal" style="margin-bottom:56px">
-      {{#each reviews}}<!-- rendered from config.json's reviews itemTemplate -->{{/each}}
-    </div>
-    {{/if}}
-    <div class="reveal">
-      {{review_form_html}}
-    </div>
+    {{reviews_section_html}}
   </div>
 </section>
+{{/if}}
 
 <!-- CONTACT -->
 <section class="cs-contact" id="contact" style="order:{{order_contact}}">
