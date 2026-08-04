@@ -350,7 +350,7 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section class="cs-testi-sec" id="reviews" style="order:6">
+<section class="cs-testi-sec" id="reviews" style="order:{{order_reviews}}">
   <div class="wrap">
     {{reviews_section_html}}
   </div>
@@ -359,7 +359,7 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" class="cs-testi-sec" style="order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
