@@ -123,9 +123,7 @@
     {{business_name}}
   </div>
   <nav>
-    {{#if has_specials}}<a href="#specials">Specials</a>{{/if}}
-    <a href="#products">Shop</a>
-    <a href="#visit">Visit</a>
+    {{nav_links_html}}
   </nav>
   <a href="{{wa_href_order}}" class="btn" target="_blank" rel="noopener">Order on WhatsApp</a>
 </div></header>
@@ -149,8 +147,10 @@
 </div></div>
 {{/if}}
 
+<div class="gr-sections" style="display:flex;flex-direction:column">
+
 {{#if has_specials}}
-<section class="board-section" id="specials">
+<section class="board-section" id="specials" style="order:{{order_specials}}">
   <div class="wrap">
     <div class="sec-head"><span class="eyebrow">Limited Stock</span><h2>Today's specials</h2></div>
     <div class="board">
@@ -163,7 +163,7 @@
 </section>
 {{/if}}
 
-<section class="products" id="products">
+<section class="products" id="products" style="order:{{order_products}}">
   <div class="wrap">
     <div class="sec-head"><span class="eyebrow">Shop</span><h2>Shop the essentials</h2></div>
     <div class="products-filter-bar" id="shopFilters">
@@ -177,19 +177,19 @@
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
-<section id="visit">
+<section id="visit" style="order:{{order_visit}}">
   <div class="wrap">
     <div class="info-band">
       <div>
@@ -207,6 +207,8 @@
     </div>
   </div>
 </section>
+
+</div><!-- /.gr-sections -->
 
 <footer><div class="wrap foot">
   <div><span class="logo" style="color:#fff;font-size:1.1rem">{{#if has_logo}}<img class="logo-img" src="{{logo_url}}" alt="{{business_name}}">{{else}}<span class="leaf">🥬</span>{{/if}}{{business_name}}</span>{{#if has_address}}<p style="margin-top:8px">📍 {{address}}</p>{{/if}}</div>
