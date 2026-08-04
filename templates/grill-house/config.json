@@ -1,7 +1,7 @@
 {
   "templateId": "grill-house",
   "defaultPrimaryColor": "#221A14",
-  "defaultTypeLabel": "Flame-grilled · Zimbabwe",
+  "defaultTypeLabel": "Flame-grilled \u00b7 Zimbabwe",
   "bodyClass": "tpl-grill-house",
   "googleFonts": "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
   "navTextColor": "#fff",
@@ -19,8 +19,8 @@
     "amber_color": "#E0A12E"
   },
   "typeLabels": {
-    "grill-house": "Flame-grilled · Zimbabwe",
-    "restaurant": "Restaurant · Zimbabwe",
+    "grill-house": "Flame-grilled \u00b7 Zimbabwe",
+    "restaurant": "Restaurant \u00b7 Zimbabwe",
     "takeaway": "Takeaway & Delivery"
   },
   "extraTokens": {
@@ -95,6 +95,11 @@
       "flag": "map_embed_url",
       "type": "field_present",
       "field": "map_embed_url"
+    },
+    {
+      "flag": "show_reviews_section",
+      "type": "computed",
+      "token": "show_reviews_section"
     }
   ],
   "selfContainedNav": true
