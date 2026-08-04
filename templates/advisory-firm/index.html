@@ -343,10 +343,7 @@ ul { list-style:none; }
     <a href="#" class="nav-logo">{{business_name}}</a>
     {{/if}}
     <nav class="nav-links">
-      <a href="#services">Services</a>
-      {{#if has_team}}<a href="#team">Our team</a>{{/if}}
-      <a href="#why">Why us</a>
-      <a href="#contact">Contact</a>
+      {{nav_links_html}}
     </nav>
     <button type="button" class="nav-cta wcz-slot-book-trigger">
       Book a consultation
@@ -358,10 +355,7 @@ ul { list-style:none; }
 </header>
 <div class="mobile-menu" id="mobileMenu">
   <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
-  <a href="#services" onclick="closeMobileMenu()">Services</a>
-  {{#if has_team}}<a href="#team" onclick="closeMobileMenu()">Our team</a>{{/if}}
-  <a href="#why" onclick="closeMobileMenu()">Why us</a>
-  <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+  {{mobile_nav_links_html}}
   <button type="button" class="mobile-cta wcz-slot-book-trigger" onclick="closeMobileMenu()">Book a consultation</button>
 </div>
 
@@ -392,8 +386,10 @@ ul { list-style:none; }
 </section>
 
 <!-- SERVICES -->
+<div class="af-sections" style="display:flex;flex-direction:column">
+
 {{#if has_services}}
-<section class="services-section" id="services">
+<section class="services-section" id="services" style="order:{{order_services}}">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-eyebrow">What we do</div>
@@ -417,7 +413,7 @@ ul { list-style:none; }
      directly" empty state, matching every other slot-booking template
      rather than this one having special-cased WhatsApp-link behavior. -->
 {{#if has_bookable_services}}
-<section class="book-section" id="book-consultation">
+<section class="book-section" id="book-consultation" style="order:{{order_book_consultation}}">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-eyebrow">Book online</div>
@@ -433,7 +429,7 @@ ul { list-style:none; }
 
 <!-- STATS -->
 {{#if has_stats}}
-<section class="stats-section" id="credentials">
+<section class="stats-section" id="credentials" style="order:{{order_credentials}}">
   <div class="wrap">
     <div class="stats-grid">{{#each stats}}{{/each}}</div>
   </div>
@@ -442,7 +438,7 @@ ul { list-style:none; }
 
 <!-- TEAM -->
 {{#if has_team}}
-<section class="team-section" id="team">
+<section class="team-section" id="team" style="order:{{order_team}}">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-eyebrow">The people</div>
@@ -455,7 +451,7 @@ ul { list-style:none; }
 {{/if}}
 
 <!-- WHY US -->
-<section class="band" id="why">
+<section class="band" id="why" style="order:{{order_why}}">
   <div class="wrap band-inner">
     <div>
       <div class="sec-eyebrow" style="color:rgba(255,255,255,.5)">Why {{business_name}}</div>
@@ -475,7 +471,7 @@ ul { list-style:none; }
 
 <!-- TESTIMONIALS -->
 {{#if has_testimonials}}
-<section class="testi-section" id="testimonials">
+<section class="testi-section" id="testimonials" style="order:{{order_testimonials}}">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-eyebrow">Client feedback</div>
@@ -488,20 +484,20 @@ ul { list-style:none; }
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section class="contact-section" id="contact">
+<section class="contact-section" id="contact" style="order:{{order_contact}}">
   <div class="wrap contact-grid">
     <div class="contact-left">
       <div class="sec-eyebrow">Get in touch</div>
@@ -551,6 +547,8 @@ ul { list-style:none; }
     </div>
   </div>
 </section>
+
+</div><!-- /.af-sections -->
 
 <!-- FOOTER -->
 <footer class="site-footer">
