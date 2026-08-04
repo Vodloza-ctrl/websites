@@ -216,10 +216,7 @@
       </div>
     </div>
     <div class="nav-links">
-      <a href="#products">Products</a>
-      {{#if has_specials}}<a href="#specials">Specials</a>{{/if}}
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
+      {{nav_links_html}}
       <a href="{{wa_href_order}}" class="btn-order" target="_blank">Order Now</a>
     </div>
   </div>
@@ -248,7 +245,9 @@
 </section>
 
 <!-- PRODUCTS -->
-<section class="products" id="products">
+<div class="hw-sections" style="display:flex;flex-direction:column">
+
+<section class="products" id="products" style="order:{{order_products}}">
   <div class="wrap">
     <div class="products-header">
       <div>
@@ -267,7 +266,7 @@
 
 <!-- SPECIALS -->
 {{#if has_specials}}
-<section class="specials" id="specials">
+<section class="specials" id="specials" style="order:{{order_specials}}">
   <div class="wrap specials-content">
     <div class="specials-header">
       <span class="kicker">⭐ Limited Time Offers</span>
@@ -281,7 +280,7 @@
 {{/if}}
 
 <!-- ABOUT -->
-<section class="about" id="about">
+<section class="about" id="about" style="order:{{order_about}}">
   <div class="wrap">
     <div class="about-grid">
       <div class="about-image">
@@ -305,20 +304,20 @@
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section id="contact">
+<section id="contact" style="order:{{order_contact}}">
   <div class="wrap">
     <div class="contact-band">
       <div>
@@ -346,6 +345,8 @@
     </div>
   </div>
 </section>
+
+</div><!-- /.hw-sections -->
 
 <!-- FOOTER -->
 <footer>
