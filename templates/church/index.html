@@ -438,6 +438,9 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
     <a href="#events">Events</a>
     <a href="#give">Give</a>
     {{#if has_products}}<a href="#shop">Shop</a>{{/if}}
+    {{#if show_reviews_section}}<a href="#reviews">Reviews</a>{{/if}}
+    {{#if show_press_section}}<a href="#press">Press</a>{{/if}}
+    {{#if has_blog}}<a href="/blog">Blog</a>{{/if}}
     <a href="#contact">Contact</a>
     <button class="nav-wa" id="wcz-nav-cart" onclick="wczNavCta()">
       <svg class="icon" viewBox="0 0 24 24"><use href="#icon-cart"/></svg>
@@ -458,6 +461,9 @@ footer{background:var(--warm);color:rgba(255,255,255,.75);padding:36px 0}
   <a href="#events" class="mob-link">Events</a>
   <a href="#give" class="mob-link">Give</a>
   {{#if has_products}}<a href="#shop" class="mob-link">Shop</a>{{/if}}
+  {{#if show_reviews_section}}<a href="#reviews" class="mob-link">Reviews</a>{{/if}}
+  {{#if show_press_section}}<a href="#press" class="mob-link">Press</a>{{/if}}
+  {{#if has_blog}}<a href="/blog" class="mob-link">Blog</a>{{/if}}
   <a href="#contact" class="mob-link">Contact</a>
   <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open')" style="color:var(--amber);font-family:var(--font-head);font-size:1.3rem;font-weight:600">My order</button>
 </div>
