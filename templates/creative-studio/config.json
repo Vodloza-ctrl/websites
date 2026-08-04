@@ -41,6 +41,11 @@
       "key": "testimonials",
       "emptyHtml": "",
       "itemTemplate": "<div class=\"cs-testi\"><p class=\"cs-testi-text\">{{item.text}}</p><div class=\"cs-testi-name\">{{item.name}}</div>{{#if item.role}}<div class=\"cs-testi-role\">{{item.role}}</div>{{/if}}</div>"
+    },
+    {
+      "key": "reviews",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"cs-testi\"><div class=\"cs-rev-stars\">{{item.stars_html}}</div><p class=\"cs-testi-text\">{{item.text}}</p><div class=\"cs-testi-name\">{{item.name}}</div></div>"
     }
   ],
   "conditionals": [
@@ -113,6 +118,11 @@
       "flag": "location",
       "type": "field_present",
       "field": "location"
+    },
+    {
+      "flag": "has_reviews",
+      "type": "computed",
+      "token": "has_reviews"
     }
   ]
 }
