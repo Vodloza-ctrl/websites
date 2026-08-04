@@ -516,9 +516,7 @@ footer{
     {{business_name}}
   </a>
   <div class="nav-links">
-    <a href="#fr-shop">Shop</a>
-    <a href="#fr-about">About</a>
-    <a href="#fr-contact">Contact</a>
+    {{nav_links_html}}
   </div>
   <div style="display:flex;align-items:center;gap:12px">
     <button class="nav-cta" id="wcz-nav-cart" onclick="wczNavCta()">
@@ -535,9 +533,7 @@ footer{
 <!-- MOBILE NAV -->
 <div id="nav-mob">
   <span class="mob-close" id="mob-close">&#x2715;</span>
-  <a href="#fr-shop">Shop</a>
-  <a href="#fr-about">About</a>
-  <a href="#fr-contact">Contact</a>
+  {{mobile_nav_links_html}}
   <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open');document.body.style.overflow=''" style="color:var(--sand);background:none;border:none;font-family:var(--serif);font-size:1.6rem;cursor:pointer">My cart</button>
 </div>
 
@@ -551,7 +547,9 @@ footer{
 </div>
 
 <!-- PRODUCT GRID — universal module mount point -->
-<section id="fr-shop">
+<div class="fr-sections" style="display:flex;flex-direction:column">
+
+<section id="fr-shop" style="order:{{order_shop}}">
   <div id="wcz-products">
     {{fr_products_html}}
   </div>
@@ -565,7 +563,7 @@ footer{
 
 <!-- ABOUT -->
 {{#if about}}
-<section id="fr-about">
+<section id="fr-about" style="order:{{order_about}}">
   <div class="fr-about-img reveal">
     {{#if gallery_0_url}}
     <img src="{{gallery_0_url}}" alt="{{business_name}}">
@@ -582,20 +580,20 @@ footer{
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section id="fr-contact">
+<section id="fr-contact" style="order:{{order_contact}}">
   <div class="reveal">
     <div class="fr-eyebrow">Find us</div>
     <h2 class="fr-h2">Come visit<br><em style="font-style:italic;color:var(--sand)">or shop online</em></h2>
@@ -648,6 +646,8 @@ footer{
     {{/if}}
   </div>
 </section>
+
+</div><!-- /.fr-sections -->
 
 <!-- FOOTER -->
 <footer>
