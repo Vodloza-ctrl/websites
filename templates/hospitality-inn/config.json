@@ -1,7 +1,7 @@
 {
   "templateId": "hospitality-inn",
   "name": "Hospitality Inn",
-  "description": "For lodges, B&Bs, and hotels — WhatsApp booking-first, with room categories, amenities, conferencing venues, packages, availability display, and optional cinematic video section.",
+  "description": "For lodges, B&Bs, and hotels \u2014 WhatsApp booking-first, with room categories, amenities, conferencing venues, packages, availability display, and optional cinematic video section.",
   "defaultPalette": "navy-gold",
   "defaultPrimaryColor": "#1a1a2e",
   "defaultTypeLabel": "Lodge",
@@ -17,21 +17,19 @@
   },
   "extraTokens": {
     "hi_hero_headline": "Your Private Retreat",
-    "hi_hero_subtext": "A calm, comfortable stay — book directly with us on WhatsApp.",
-
+    "hi_hero_subtext": "A calm, comfortable stay \u2014 book directly with us on WhatsApp.",
     "_video_comment": "All video fields are optional. Remove the 'video' object entirely (or omit 'url') to hide the section.",
     "video": {
-      "url":       "",
+      "url": "",
       "thumbnail": "",
-      "title":     "",
-      "subtitle":  "",
-      "label":     "Our Story",
-      "heading":   "Experience the Property",
-      "body":      "",
-      "runtime":   ""
+      "title": "",
+      "subtitle": "",
+      "label": "Our Story",
+      "heading": "Experience the Property",
+      "body": "",
+      "runtime": ""
     },
-
-    "_menu_comment": "Menu section — shows a full priced menu if content.menu has items.",
+    "_menu_comment": "Menu section \u2014 shows a full priced menu if content.menu has items.",
     "menu_eyebrow": "Menu",
     "menu_heading": "Our Menu",
     "menu_sub": "Seasonal dishes, local ingredients, crafted with care."
@@ -51,27 +49,120 @@
   ],
   "lists": [],
   "conditionals": [
-    { "flag": "has_logo",           "type": "computed", "token": "has_logo" },
-    { "flag": "has_hero",           "type": "computed", "token": "has_hero" },
-    { "flag": "has_whatsapp",       "type": "computed", "token": "has_whatsapp" },
-    { "flag": "has_address",        "type": "computed", "token": "has_address" },
-    { "flag": "has_phone",          "type": "computed", "token": "has_phone" },
-    { "flag": "has_email",          "type": "computed", "token": "has_email" },
-    { "flag": "has_map",            "type": "computed", "token": "has_map" },
-    { "flag": "has_facebook",       "type": "computed", "token": "has_facebook" },
-    { "flag": "has_instagram",      "type": "computed", "token": "has_instagram" },
-    { "flag": "has_about",          "type": "computed", "token": "has_about" },
-    { "flag": "has_rooms",          "type": "computed", "token": "has_rooms" },
-    { "flag": "has_multiple_rooms", "type": "computed", "token": "has_multiple_rooms" },
-    { "flag": "has_amenities",      "type": "computed", "token": "has_amenities" },
-    { "flag": "has_conference",     "type": "computed", "token": "has_conference" },
-    { "flag": "has_packages",       "type": "computed", "token": "has_packages" },
-    { "flag": "has_dining",         "type": "computed", "token": "has_dining" },
-    { "flag": "has_menu",           "type": "computed", "token": "has_menu" },
-    { "flag": "has_experiences",    "type": "computed", "token": "has_experiences" },
-    { "flag": "has_video",          "type": "computed", "token": "has_video" },
-    { "flag": "has_gallery",        "type": "computed", "token": "has_gallery" },
-    { "flag": "has_testimonials",   "type": "computed", "token": "has_testimonials" },
-    { "flag": "has_hours",          "type": "computed", "token": "has_hours" }
+    {
+      "flag": "has_logo",
+      "type": "computed",
+      "token": "has_logo"
+    },
+    {
+      "flag": "has_hero",
+      "type": "computed",
+      "token": "has_hero"
+    },
+    {
+      "flag": "has_whatsapp",
+      "type": "computed",
+      "token": "has_whatsapp"
+    },
+    {
+      "flag": "has_address",
+      "type": "computed",
+      "token": "has_address"
+    },
+    {
+      "flag": "has_phone",
+      "type": "computed",
+      "token": "has_phone"
+    },
+    {
+      "flag": "has_email",
+      "type": "computed",
+      "token": "has_email"
+    },
+    {
+      "flag": "has_map",
+      "type": "computed",
+      "token": "has_map"
+    },
+    {
+      "flag": "has_facebook",
+      "type": "computed",
+      "token": "has_facebook"
+    },
+    {
+      "flag": "has_instagram",
+      "type": "computed",
+      "token": "has_instagram"
+    },
+    {
+      "flag": "has_about",
+      "type": "computed",
+      "token": "has_about"
+    },
+    {
+      "flag": "has_rooms",
+      "type": "computed",
+      "token": "has_rooms"
+    },
+    {
+      "flag": "has_multiple_rooms",
+      "type": "computed",
+      "token": "has_multiple_rooms"
+    },
+    {
+      "flag": "has_amenities",
+      "type": "computed",
+      "token": "has_amenities"
+    },
+    {
+      "flag": "has_conference",
+      "type": "computed",
+      "token": "has_conference"
+    },
+    {
+      "flag": "has_packages",
+      "type": "computed",
+      "token": "has_packages"
+    },
+    {
+      "flag": "has_dining",
+      "type": "computed",
+      "token": "has_dining"
+    },
+    {
+      "flag": "has_menu",
+      "type": "computed",
+      "token": "has_menu"
+    },
+    {
+      "flag": "has_experiences",
+      "type": "computed",
+      "token": "has_experiences"
+    },
+    {
+      "flag": "has_video",
+      "type": "computed",
+      "token": "has_video"
+    },
+    {
+      "flag": "has_gallery",
+      "type": "computed",
+      "token": "has_gallery"
+    },
+    {
+      "flag": "has_testimonials",
+      "type": "computed",
+      "token": "has_testimonials"
+    },
+    {
+      "flag": "has_hours",
+      "type": "computed",
+      "token": "has_hours"
+    },
+    {
+      "flag": "show_reviews_section",
+      "type": "computed",
+      "token": "show_reviews_section"
+    }
   ]
 }
