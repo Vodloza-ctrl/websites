@@ -60,28 +60,28 @@
     },
     {
       "flag": "has_services",
-      "type": "list_present",
-      "field": "services"
+      "type": "computed",
+      "token": "has_services"
     },
     {
       "flag": "has_team",
-      "type": "list_present",
-      "field": "team"
+      "type": "computed",
+      "token": "has_team"
     },
     {
       "flag": "has_testimonials",
-      "type": "list_present",
-      "field": "testimonials"
+      "type": "computed",
+      "token": "has_testimonials"
     },
     {
       "flag": "has_gallery",
-      "type": "list_present",
-      "field": "gallery"
+      "type": "computed",
+      "token": "has_gallery"
     },
     {
       "flag": "has_insurance",
-      "type": "list_present",
-      "field": "insurance"
+      "type": "computed",
+      "token": "has_insurance"
     },
     {
       "flag": "has_bookable_services",
