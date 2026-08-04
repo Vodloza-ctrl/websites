@@ -8,7 +8,13 @@
   "showHoursGrid": false,
   "googleFonts": "https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap",
   "lists": [],
-  "conditionals": [],
+  "conditionals": [
+    {
+      "flag": "show_reviews_section",
+      "type": "computed",
+      "token": "show_reviews_section"
+    }
+  ],
   "typeLabels": {
     "boutique-fashion": "Fashion",
     "boutique": "Fashion",
