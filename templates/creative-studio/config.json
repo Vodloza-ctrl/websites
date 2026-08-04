@@ -24,7 +24,7 @@
   "lists": [
     {
       "key": "gallery",
-      "emptyHtml": "<div style=\"text-align:center;padding:80px 20px;color:rgba(255,255,255,.4)\">The gallery is empty — add work in your dashboard.</div>",
+      "emptyHtml": "<div style=\"text-align:center;padding:80px 20px;color:rgba(255,255,255,.4)\">The gallery is empty \u2014 add work in your dashboard.</div>",
       "itemTemplate": "<div class=\"cs-tile\" data-category=\"{{item.category}}\" data-video=\"{{item.type}}\"><button type=\"button\" class=\"cs-tile-btn\" data-thumb=\"{{item.thumbnail}}\" data-full=\"{{item.url}}\" data-video-url=\"{{item.video_url}}\" data-embed-type=\"{{item.embed_type}}\" data-caption=\"{{item.caption}}\" data-type=\"{{item.type}}\" data-category-label=\"{{item.category}}\" onclick=\"csOpenLightbox(this)\"><img src=\"{{item.thumbnail}}\" alt=\"{{item.caption}}\" loading=\"lazy\">{{#if item.type}}<span class=\"cs-play\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"#fff\" stroke=\"none\"><path d=\"M8 5v14l11-7z\"/></svg></span>{{/if}}{{#if item.caption}}<span class=\"cs-tile-cap\">{{item.caption}}</span>{{/if}}</button></div>"
     },
     {
@@ -44,21 +44,75 @@
     }
   ],
   "conditionals": [
-    { "flag": "logo_url",              "type": "computed",      "token": "logo_url" },
-    { "flag": "hero_image_url",        "type": "computed",      "token": "hero_image_url" },
-    { "flag": "has_hero_video",        "type": "field_present", "field": "video_url" },
-    { "flag": "has_gallery",           "type": "computed",      "token": "has_gallery" },
-    { "flag": "has_gallery_filters",   "type": "computed",      "token": "has_gallery_filters" },
-    { "flag": "has_about",             "type": "computed",      "token": "has_about" },
-    { "flag": "has_credentials",       "type": "list_present",  "field": "credentials" },
-    { "flag": "has_brands",            "type": "list_present",  "field": "brands" },
-    { "flag": "has_testimonials",      "type": "computed",      "token": "has_testimonials" },
-    { "flag": "has_packages",          "type": "computed",      "token": "has_packages" },
-    { "flag": "has_bookable_services", "type": "computed",      "token": "has_bookable_services" },
-    { "flag": "has_hours",             "type": "computed",      "token": "has_hours" },
-    { "flag": "has_instagram",         "type": "computed",      "token": "has_instagram" },
-    { "flag": "phone",                 "type": "field_present", "field": "phone" },
-    { "flag": "email",                 "type": "field_present", "field": "email" },
-    { "flag": "location",              "type": "field_present", "field": "location" }
+    {
+      "flag": "logo_url",
+      "type": "computed",
+      "token": "logo_url"
+    },
+    {
+      "flag": "hero_image_url",
+      "type": "computed",
+      "token": "hero_image_url"
+    },
+    {
+      "flag": "has_hero_video",
+      "type": "field_present",
+      "field": "video_url"
+    },
+    {
+      "flag": "has_gallery",
+      "type": "computed",
+      "token": "has_gallery"
+    },
+    {
+      "flag": "has_about",
+      "type": "computed",
+      "token": "has_about"
+    },
+    {
+      "flag": "has_brands",
+      "type": "list_present",
+      "field": "brands"
+    },
+    {
+      "flag": "has_testimonials",
+      "type": "computed",
+      "token": "has_testimonials"
+    },
+    {
+      "flag": "has_packages",
+      "type": "computed",
+      "token": "has_packages"
+    },
+    {
+      "flag": "has_bookable_services",
+      "type": "computed",
+      "token": "has_bookable_services"
+    },
+    {
+      "flag": "has_hours",
+      "type": "computed",
+      "token": "has_hours"
+    },
+    {
+      "flag": "has_instagram",
+      "type": "computed",
+      "token": "has_instagram"
+    },
+    {
+      "flag": "phone",
+      "type": "field_present",
+      "field": "phone"
+    },
+    {
+      "flag": "email",
+      "type": "field_present",
+      "field": "email"
+    },
+    {
+      "flag": "location",
+      "type": "field_present",
+      "field": "location"
+    }
   ]
 }
