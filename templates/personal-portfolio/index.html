@@ -179,10 +179,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
       {{business_name}}
     </a>
     <nav class="nav-links">
-      {{#if has_experience}}<a href="#experience">Experience</a>{{/if}}
-      {{#if has_awards}}<a href="#awards">Awards</a>{{/if}}
-      {{#if has_products}}<a href="#shop">Shop</a>{{/if}}
-      <a href="#contact">Contact</a>
+      {{nav_links_html}}
     </nav>
     <a href="{{whatsapp_wa_link}}" class="btn-cta" target="_blank" rel="noopener">Get in Touch</a>
     <div class="hamburger" id="pp-ham">
@@ -195,10 +192,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
   <div class="mob-close" id="pp-mob-close">
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </div>
-  {{#if has_experience}}<a href="#experience">Experience</a>{{/if}}
-  {{#if has_awards}}<a href="#awards">Awards</a>{{/if}}
-  {{#if has_products}}<a href="#shop">Shop</a>{{/if}}
-  <a href="#contact">Contact</a>
+  {{mobile_nav_links_html}}
   <a href="{{whatsapp_wa_link}}" class="btn-primary" target="_blank" rel="noopener" style="background:#25D366">WhatsApp</a>
 </div>
 
@@ -225,7 +219,9 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- ABOUT -->
 {{#if about}}
-<section class="sec" id="about">
+<div class="pp-sections" style="display:flex;flex-direction:column">
+
+<section class="sec" id="about" style="order:{{order_about}}">
   <div class="wrap">
     <div class="about-grid reveal">
       <div class="about-photo">
@@ -259,7 +255,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- EXPERIENCE -->
 {{#if has_experience}}
-<section class="sec" id="experience">
+<section class="sec" id="experience" style="order:{{order_experience}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Career</span>
@@ -274,7 +270,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- AWARDS -->
 {{#if has_awards}}
-<section class="sec" id="awards" style="background:var(--paper)">
+<section class="sec" id="awards" style="background:var(--paper);order:{{order_awards}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Recognition</span>
@@ -289,7 +285,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- SERVICES / OFFERINGS -->
 {{#if has_services}}
-<section class="sec">
+<section class="sec" id="services" style="order:{{order_services}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Work with me</span>
@@ -310,7 +306,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- SHOP -->
 {{#if has_products}}
-<section class="sec" id="shop" style="background:var(--paper)">
+<section class="sec" id="shop" style="background:var(--paper);order:{{order_shop}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Shop</span>
@@ -328,7 +324,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- TESTIMONIALS -->
 {{#if has_testimonials}}
-<section class="sec">
+<section class="sec" id="testimonials" style="order:{{order_testimonials}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Kind words</span>
@@ -343,7 +339,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- GALLERY -->
 {{#if has_gallery}}
-<section class="sec" style="background:var(--paper)">
+<section class="sec" id="gallery" style="background:var(--paper);order:{{order_gallery}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Gallery</span>
@@ -358,20 +354,20 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section class="sec" id="contact">
+<section class="sec" id="contact" style="order:{{order_contact}}">
   <div class="contact-band reveal">
     <h2>Let's work together.</h2>
     <p>{{#if email}}{{email}}{{/if}}{{#if phone}} &middot; {{phone}}{{/if}}</p>
@@ -393,6 +389,8 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
     {{/if}}
   </div>
 </section>
+
+</div><!-- /.pp-sections -->
 
 <footer>
   <div class="foot">
