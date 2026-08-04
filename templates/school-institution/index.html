@@ -234,10 +234,7 @@ ul{list-style:none}
   </div>
   <div class="si-nav__links" id="siNavLinks">
     <a href="#about">About</a>
-    <!--WCZ:show_programmes--><a href="#programmes">Programmes</a><!--WCZ:/show_programmes-->
-    <!--WCZ:show_team--><a href="#team">Our Team</a><!--WCZ:/show_team-->
-    <!--WCZ:show_events--><a href="#events">Events</a><!--WCZ:/show_events-->
-    <!--WCZ:show_shop--><a href="#shop">Shop</a><!--WCZ:/show_shop-->
+    <!--WCZ:nav_links_html-->
     <a href="#contact">Contact</a>
     <!--WCZ:has_whatsapp--><a href="https://wa.me/<!--WCZ:whatsapp-->" class="si-btn si-btn--gold si-nav__cta" target="_blank">Enquire Now</a><!--WCZ:/has_whatsapp-->
   </div>
@@ -247,10 +244,7 @@ ul{list-style:none}
 </nav>
 <div class="si-mobile-menu" id="siMobileMenu">
   <a href="#about" onclick="closeMobileMenu()">About</a>
-  <!--WCZ:show_programmes--><a href="#programmes" onclick="closeMobileMenu()">Programmes</a><!--WCZ:/show_programmes-->
-  <!--WCZ:show_team--><a href="#team" onclick="closeMobileMenu()">Our Team</a><!--WCZ:/show_team-->
-  <!--WCZ:show_events--><a href="#events" onclick="closeMobileMenu()">Events</a><!--WCZ:/show_events-->
-  <!--WCZ:show_shop--><a href="#shop" onclick="closeMobileMenu()">Shop</a><!--WCZ:/show_shop-->
+  <!--WCZ:mobile_nav_links_html-->
   <a href="#contact" onclick="closeMobileMenu()">Contact</a>
   <!--WCZ:has_whatsapp--><a href="https://wa.me/<!--WCZ:whatsapp-->" target="_blank">Enquire on WhatsApp</a><!--WCZ:/has_whatsapp-->
 </div>
@@ -283,7 +277,9 @@ ul{list-style:none}
 <!--WCZ:/show_stats-->
 
 <!-- ABOUT -->
-<section class="si-section" id="about">
+<div class="si-sections" style="display:flex;flex-direction:column">
+
+<section class="si-section" id="about" style="order:{{order_about}}">
   <div class="si-about">
     <!--WCZ:has_hero-->
     <div class="si-about__img">
@@ -314,7 +310,7 @@ ul{list-style:none}
 
 <!-- PROGRAMMES -->
 <!--WCZ:show_programmes-->
-<section class="si-section si-section--alt" id="programmes">
+<section class="si-section si-section--alt" id="programmes" style="order:{{order_programmes}}">
   <div class="si-section__head">
     <div class="si-label">What We Offer</div>
     <h2 class="si-h2">Our <em>Programmes</em></h2>
@@ -326,7 +322,7 @@ ul{list-style:none}
 
 <!-- TEAM -->
 <!--WCZ:show_team-->
-<section class="si-section" id="team">
+<section class="si-section" id="team" style="order:{{order_team}}">
   <div class="si-section__head">
     <div class="si-label">The People Behind the Mission</div>
     <h2 class="si-h2">Meet Our <em>Team</em></h2>
@@ -337,7 +333,7 @@ ul{list-style:none}
 
 <!-- EVENTS -->
 <!--WCZ:show_events-->
-<section class="si-section si-section--alt" id="events">
+<section class="si-section si-section--alt" id="events" style="order:{{order_events}}">
   <div class="si-section__head">
     <div class="si-label">Stay in the Loop</div>
     <h2 class="si-h2">Upcoming <em>Events</em></h2>
@@ -348,7 +344,7 @@ ul{list-style:none}
 
 <!-- GALLERY -->
 <!--WCZ:show_gallery-->
-<section class="si-section" id="gallery">
+<section class="si-section" id="gallery" style="order:{{order_gallery}}">
   <div class="si-section__head">
     <div class="si-label">Campus Life</div>
     <h2 class="si-h2">Life at <em><!--WCZ:business_name--></em></h2>
@@ -359,7 +355,7 @@ ul{list-style:none}
 
 <!-- SHOP / PRODUCTS -->
 <!--WCZ:show_shop-->
-<section class="si-shop" id="shop">
+<section class="si-shop" id="shop" style="order:{{order_shop}}">
   <div class="si-section__head">
     <div class="si-label">Merchandise</div>
     <h2 class="si-h2">School <em>Shop</em></h2>
@@ -376,7 +372,7 @@ ul{list-style:none}
 
 <!-- TESTIMONIALS -->
 <!--WCZ:show_testimonials-->
-<section class="si-section si-section--alt" id="testimonials">
+<section class="si-section si-section--alt" id="testimonials" style="order:{{order_testimonials}}">
   <div class="si-section__head">
     <div class="si-label">Voices from Our Community</div>
     <h2 class="si-h2">What <em>People Say</em></h2>
@@ -387,20 +383,20 @@ ul{list-style:none}
 
 <!-- REVIEWS -->
 <!--WCZ:show_reviews-->
-<section class="si-section" id="reviews">
+<section class="si-section" id="reviews" style="order:{{order_reviews}}">
   <div class="si-reviews" id="siReviews"></div>
 </section>
 <!--WCZ:/show_reviews-->
 
 <!-- PRESS -->
 <!--WCZ:show_press-->
-<section class="si-section" id="press">
+<section class="si-section" id="press" style="order:{{order_press}}">
   <div class="si-reviews" id="siPress"></div>
 </section>
 <!--WCZ:/show_press-->
 
 <!-- CONTACT -->
-<div class="si-contact" id="contact">
+<div class="si-contact" id="contact" style="order:{{order_contact}}">
   <div>
     <div class="si-contact__head">
       <div class="si-label">Get In Touch</div>
@@ -443,6 +439,8 @@ ul{list-style:none}
     <!--WCZ:/has_address-->
   </div>
 </div>
+
+</div><!-- /.si-sections -->
 
 <!-- FOOTER -->
 <footer class="si-footer">
