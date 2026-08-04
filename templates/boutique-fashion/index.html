@@ -314,10 +314,7 @@ footer{
     {{business_name}}
   </a>
   <div class="nav-links">
-    <a href="#collections">Collections</a>
-    <a href="#drops">Drops</a>
-    <a href="#gallery">Gallery</a>
-    <a href="#contact">Contact</a>
+    {{nav_links_html}}
     <button class="nav-wa" id="wcz-nav-cart" onclick="wczNavCta()">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       <span id="wcz-nav-cart-label">Order online</span>
@@ -332,10 +329,7 @@ footer{
 <!-- MOBILE NAV -->
 <div id="nav-mob">
   <span class="mob-close" id="mob-close">&#x2715;</span>
-  <a href="#collections" class="mob-link">Collections</a>
-  <a href="#drops" class="mob-link">Drops</a>
-  <a href="#gallery" class="mob-link">Gallery</a>
-  <a href="#contact" class="mob-link">Contact</a>
+  {{mobile_nav_links_html}}
   <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open')" style="color:var(--gold);background:none;border:none;font-family:var(--mono);font-size:1.4rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer">My cart</button>
 </div>
 
@@ -358,8 +352,10 @@ footer{
   <div class="hero-scroll"><span>Scroll</span></div>
 </section>
 
+<div class="bf-sections" style="display:flex;flex-direction:column">
+
 <!-- ABOUT -->
-<section id="about">
+<section id="about" style="order:{{order_about}}">
   <div class="wrap">
     <div class="about-grid">
       <div class="about-text reveal">
@@ -391,7 +387,7 @@ footer{
 
 <!-- COLLECTIONS -->
 {{#if has_services}}
-<section id="collections">
+<section id="collections" style="order:{{order_services}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-eyebrow">What we carry</div>
@@ -407,7 +403,7 @@ footer{
 
 <!-- DROPS — SDK-driven -->
 {{#if has_products}}
-<section id="drops">
+<section id="drops" style="order:{{order_products}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Available now</div>
@@ -426,7 +422,7 @@ footer{
 
 <!-- GALLERY -->
 {{#if has_gallery}}
-<section id="gallery">
+<section id="gallery" style="order:{{order_gallery}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-eyebrow">The culture</div>
@@ -443,7 +439,7 @@ footer{
 
 <!-- TESTIMONIALS -->
 {{#if has_testimonials}}
-<section id="testimonials">
+<section id="testimonials" style="order:{{order_testimonials}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-eyebrow">From the culture</div>
@@ -458,20 +454,20 @@ footer{
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section id="contact">
+<section id="contact" style="order:{{order_contact}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-eyebrow">Get in touch</div>
@@ -520,6 +516,8 @@ footer{
     </div>
   </div>
 </section>
+
+</div><!-- /.bf-sections -->
 
 <!-- FOOTER -->
 <footer>
