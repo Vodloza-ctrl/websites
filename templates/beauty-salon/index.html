@@ -215,11 +215,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
       <span class="logo-text"><!--WCZ:site_name--></span>
     </div>
     <nav class="nav-links">
-      <a href="#services">Services</a>
-      <a href="#gallery">Gallery</a>
-      <a href="#team">Team</a>
-      <!--WCZ:show_shop--><a href="#shop">Shop</a><!--WCZ:/show_shop-->
-      <a href="#visit">Visit</a>
+      <!--WCZ:nav_links_html-->
     </nav>
     <button class="btn btn-book-modal wcz-slot-book-trigger" type="button">Book now</button>
   </div>
@@ -241,8 +237,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
   </div>
 </section>
 
+<div class="bs-sections" style="display:flex;flex-direction:column">
+
 <!-- SERVICES -->
-<section class="services-section" id="services">
+<section class="services-section" id="services" style="order:{{order_services}}">
   <div class="wrap">
     <div class="sec-head">
       <span class="sec-eyebrow">What we offer</span>
@@ -262,7 +260,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
      straight to the stylist/date/time flow for that one service. Hidden
      entirely if the owner hasn't set up any bookable services yet. -->
 <!--WCZ:has_bookable_services-->
-<section class="services-section" id="book-appointment" style="background:var(--paper)">
+<section class="services-section" id="book-appointment" style="background:var(--paper);order:{{order_book_appointment}}">
   <div class="wrap">
     <div class="sec-head center">
       <span class="sec-eyebrow">Book online</span>
@@ -278,7 +276,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
 
 <!-- GALLERY -->
 <!--WCZ:has_gallery-->
-<section class="gallery-section" id="gallery">
+<section class="gallery-section" id="gallery" style="order:{{order_gallery}}">
   <div class="wrap">
     <div class="sec-head center">
       <span class="sec-eyebrow">Our work</span>
@@ -293,7 +291,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
 
 <!-- TEAM -->
 <!--WCZ:has_team-->
-<section class="team-section" id="team">
+<section class="team-section" id="team" style="order:{{order_team}}">
   <div class="wrap">
     <div class="sec-head">
       <span class="sec-eyebrow">The team</span>
@@ -309,7 +307,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
 
 <!-- SHOP / PRODUCTS -->
 <!--WCZ:show_shop-->
-<section class="shop-section" id="shop">
+<section class="shop-section" id="shop" style="order:{{order_shop}}">
   <div class="wrap">
     <div class="sec-head center">
       <span class="sec-eyebrow">Shop</span>
@@ -343,7 +341,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
 </section>
 
 <!-- VISIT / MAP -->
-<section class="visit-section" id="visit">
+<section class="visit-section" id="visit" style="order:{{order_visit}}">
   <div class="wrap">
     <div class="visit-grid">
       <div>
@@ -373,7 +371,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
 
 <!-- REVIEWS -->
 <!--WCZ:show_reviews_section-->
-<section class="visit-section" id="reviews">
+<section class="visit-section" id="reviews" style="order:{{order_reviews}}">
   <div class="wrap">
     <!--WCZ:reviews_section_html-->
   </div>
@@ -382,12 +380,14 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
 
 <!-- PRESS -->
 <!--WCZ:show_press_section-->
-<section class="visit-section" id="press">
+<section class="visit-section" id="press" style="order:{{order_press}}">
   <div class="wrap">
     <!--WCZ:press_section_html-->
   </div>
 </section>
 <!--WCZ:/show_press_section-->
+
+</div><!-- /.bs-sections -->
 
 <!-- FOOTER -->
 <footer>
