@@ -305,10 +305,7 @@ img { display:block; max-width:100%; }
     <a href="#" class="nav-logo">{{business_name_first}}<b>.</b>{{business_name_rest}}</a>
     {{/if}}
     <nav class="nav-links">
-      <a href="#listings">Listings</a>
-      {{#if has_agents}}<a href="#agents">Our agents</a>{{/if}}
-      <a href="#sell">Sell with us</a>
-      <a href="#contact">Contact</a>
+      {{nav_links_html}}
     </nav>
     {{#if phone}}
     <a href="{{wa_href_enquiry}}" class="nav-cta" target="_blank" rel="noopener">List your property</a>
@@ -320,10 +317,7 @@ img { display:block; max-width:100%; }
 </header>
 <div class="mobile-menu" id="mobileMenu">
   <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
-  <a href="#listings" onclick="closeMobileMenu()">Listings</a>
-  {{#if has_agents}}<a href="#agents" onclick="closeMobileMenu()">Our agents</a>{{/if}}
-  <a href="#sell" onclick="closeMobileMenu()">Sell with us</a>
-  <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+  {{mobile_nav_links_html}}
   {{#if phone}}
   <a href="{{wa_href_enquiry}}" class="mobile-cta" target="_blank" rel="noopener">List your property</a>
   {{/if}}
@@ -347,8 +341,10 @@ img { display:block; max-width:100%; }
   </div>
 </section>
 
+<div class="pe-sections" style="display:flex;flex-direction:column">
+
 <!-- LISTINGS -->
-<section class="listings-section" id="listings">
+<section class="listings-section" id="listings" style="order:{{order_listings}}">
   <div class="wrap">
     <div class="sec-top">
       <div class="sec-head">
@@ -362,7 +358,7 @@ img { display:block; max-width:100%; }
 
 <!-- AGENTS -->
 {{#if has_agents}}
-<section class="agents-section" id="agents">
+<section class="agents-section" id="agents" style="order:{{order_agents}}">
   <div class="wrap">
     <div class="sec-head">
       <h2>Our agents</h2>
@@ -374,7 +370,7 @@ img { display:block; max-width:100%; }
 {{/if}}
 
 <!-- SELL BAND -->
-<section class="sell-band" id="sell">
+<section class="sell-band" id="sell" style="order:{{order_sell}}">
   <div class="wrap">
     <h2>{{sell_heading}}</h2>
     <p>{{sell_body}}</p>
@@ -389,20 +385,20 @@ img { display:block; max-width:100%; }
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section class="contact-section" id="contact">
+<section class="contact-section" id="contact" style="order:{{order_contact}}">
   <div class="wrap contact-grid">
     <div class="contact-left">
       <h2>Get in touch</h2>
@@ -451,6 +447,8 @@ img { display:block; max-width:100%; }
     </div>
   </div>
 </section>
+
+</div><!-- /.pe-sections -->
 
 <!-- FOOTER -->
 <footer class="site-footer">
