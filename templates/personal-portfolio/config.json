@@ -55,6 +55,10 @@
       "key": "gallery",
       "emptyHtml": "",
       "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\" loading=\"lazy\">"
+    },
+    {
+      "key": "stats",
+      "itemTemplate": "<div class=\"pp-stat\"><div class=\"pp-stat-value\">{{item.value}}{{item.suffix}}</div><div class=\"pp-stat-label\">{{item.label}}</div></div>"
     }
   ],
   "conditionals": [
@@ -147,6 +151,11 @@
       "flag": "show_press_section",
       "type": "computed",
       "token": "show_press_section"
+    },
+    {
+      "flag": "has_stats",
+      "type": "computed",
+      "token": "has_stats"
     }
   ]
 }
