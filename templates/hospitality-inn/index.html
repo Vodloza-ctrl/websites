@@ -567,7 +567,8 @@ svg { display: block; flex-shrink: 0; }
       {{#if has_menu}}<a href="#menu">Menu</a>{{/if}}
       {{#if has_video}}<a href="#video">{{nav_video_label}}</a>{{/if}}
       {{#if has_gallery}}<a href="#gallery">{{nav_gallery_label}}</a>{{/if}}
-      {{#if has_testimonials}}<a href="#reviews">{{nav_reviews_label}}</a>{{/if}}
+      {{#if has_testimonials}}<a href="#testimonials">{{nav_reviews_label}}</a>{{/if}}
+      {{reviews_press_nav_html}}
       <a href="#contact">{{nav_contact_label}}</a>
       <a href="{{whatsapp_wa_link}}" class="nav-reserve" target="_blank" rel="noopener">{{nav_cta_label}}</a>
     </div>
@@ -589,7 +590,9 @@ svg { display: block; flex-shrink: 0; }
     {{#if has_menu}}<a href="#menu" class="drawer-link">Menu</a>{{/if}}
     {{#if has_video}}<a href="#video" class="drawer-link">{{nav_video_label}}</a>{{/if}}
     {{#if has_gallery}}<a href="#gallery" class="drawer-link">{{nav_gallery_label}}</a>{{/if}}
-    {{#if has_testimonials}}<a href="#reviews" class="drawer-link">{{nav_reviews_label}}</a>{{/if}}
+    {{#if has_testimonials}}<a href="#testimonials" class="drawer-link">{{nav_reviews_label}}</a>{{/if}}
+    {{#if show_reviews_section}}<a href="#reviews" class="drawer-link">Reviews</a>{{/if}}
+    {{#if show_press_section}}<a href="#press" class="drawer-link">Press</a>{{/if}}
     <a href="#contact" class="drawer-link">{{nav_contact_label}}</a>
     <a href="{{whatsapp_wa_link}}" class="mobile-reserve-btn" target="_blank" rel="noopener">{{nav_cta_label}}</a>
   </div>
@@ -620,7 +623,9 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- ABOUT -->
 {{#if has_about}}
-<section class="experience-intro" id="about">
+<div class="hi-sections" style="display:flex;flex-direction:column">
+
+<section class="experience-intro" id="about" style="order:{{order_about}}">
   <div class="experience-split">
     <div class="experience-image reveal">{{about_image_html}}</div>
     <div class="experience-text reveal reveal-delay-2">
@@ -635,7 +640,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- VIDEO SECTION -->
 {{#if has_video}}
-<section class="video-section" id="video">
+<section class="video-section" id="video" style="order:{{order_video}}">
   <div class="container">
     <div class="video-section-inner">
       <div class="video-editorial reveal">
@@ -654,12 +659,12 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- FEATURED SUITE -->
 {{#if has_rooms}}
-<section class="featured-suite" id="rooms">{{rooms_featured_html}}</section>
+<section class="featured-suite" id="rooms" style="order:{{order_rooms}}">{{rooms_featured_html}}</section>
 {{/if}}
 
 <!-- ROOM COLLECTION -->
 {{#if has_multiple_rooms}}
-<section class="rooms-collection">
+<section class="rooms-collection" style="order:{{order_rooms}}">
   <div class="container">
     <div class="rooms-collection-header reveal">
       <span class="label-eyebrow">{{rooms_eyebrow}}</span>
@@ -672,7 +677,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- AMENITIES -->
 {{#if has_amenities}}
-<section class="amenities-section" id="amenities">
+<section class="amenities-section" id="amenities" style="order:{{order_amenities}}">
   <div class="container">
     <div class="amenities-header reveal">
       <span class="label-eyebrow">{{amenities_eyebrow}}</span>
@@ -686,7 +691,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- CONFERENCE / VENUES -->
 {{#if has_conference}}
-<section class="conference-section" id="conference">
+<section class="conference-section" id="conference" style="order:{{order_conference}}">
   <div class="container">
     <div class="conference-header reveal">
       <span class="label-eyebrow">{{conference_eyebrow}}</span>
@@ -700,7 +705,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- PACKAGES / DEALS -->
 {{#if has_packages}}
-<section class="packages-section" id="packages">
+<section class="packages-section" id="packages" style="order:{{order_packages}}">
   <div class="container">
     <div class="packages-header reveal">
       <span class="label-eyebrow">{{packages_eyebrow}}</span>
@@ -714,7 +719,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- DINING -->
 {{#if has_dining}}
-<section class="dining-section" id="dining">
+<section class="dining-section" id="dining" style="order:{{order_dining}}">
   <div class="container">
     <div class="dining-inner">
       <div class="dining-image-stack reveal">{{dining_images_html}}</div>
@@ -735,7 +740,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- MENU (full priced list) -->
 {{#if has_menu}}
-<section class="menu-section" id="menu">
+<section class="menu-section" id="menu" style="order:{{order_menu}}">
   <div class="container">
     <div class="menu-header reveal">
       <span class="label-eyebrow">{{menu_eyebrow}}</span>
@@ -763,7 +768,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- EXPERIENCES -->
 {{#if has_experiences}}
-<section class="experiences-section" id="experiences">
+<section class="experiences-section" id="experiences" style="order:{{order_experiences}}">
   <div class="container">
     <div class="experiences-header reveal">
       <span class="label-eyebrow">{{experiences_eyebrow}}</span>
@@ -777,7 +782,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- GALLERY -->
 {{#if has_gallery}}
-<section class="gallery-section" id="gallery">
+<section class="gallery-section" id="gallery" style="order:{{order_gallery}}">
   <div class="container">
     <div class="gallery-header reveal">
       <span class="label-eyebrow">{{gallery_eyebrow}}</span>
@@ -792,7 +797,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- REVIEWS -->
 {{#if has_testimonials}}
-<section class="reviews-section" id="reviews">
+<section class="reviews-section" id="testimonials" style="order:{{order_testimonials}}">
   <div class="container">
     <div class="reviews-header reveal">
       <span class="label-eyebrow">{{reviews_eyebrow}}</span>
@@ -805,7 +810,7 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- HOURS -->
 {{#if has_hours}}
-<section class="hours-section" id="hours">
+<section class="hours-section" id="hours" style="order:{{order_hours}}">
   <div class="container">
     <div class="reveal" style="margin-bottom:var(--sp-6);">
       <span class="label-eyebrow">{{hours_eyebrow}}</span>
@@ -818,20 +823,20 @@ svg { display: block; flex-shrink: 0; }
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- LOCATION -->
-<section class="location-section" id="contact">
+<section class="location-section" id="contact" style="order:{{order_contact}}">
   <div class="container">
     <div class="location-inner">
       <div class="location-info reveal">
@@ -848,6 +853,8 @@ svg { display: block; flex-shrink: 0; }
     </div>
   </div>
 </section>
+
+</div><!-- /.hi-sections -->
 
 <!-- BOOKING CTA -->
 <section class="booking-cta">
@@ -886,7 +893,8 @@ svg { display: block; flex-shrink: 0; }
           {{#if has_menu}}<a href="#menu">Menu</a>{{/if}}
           {{#if has_video}}<a href="#video">{{nav_video_label}}</a>{{/if}}
           {{#if has_gallery}}<a href="#gallery">{{nav_gallery_label}}</a>{{/if}}
-          {{#if has_testimonials}}<a href="#reviews">{{nav_reviews_label}}</a>{{/if}}
+          {{#if has_testimonials}}<a href="#testimonials">{{nav_reviews_label}}</a>{{/if}}
+          {{reviews_press_nav_html}}
         </div>
       </div>
       <div>
