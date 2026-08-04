@@ -321,10 +321,7 @@ footer{border-top:1px solid var(--line);padding:38px 0}
     {{business_name}}
   </a>
   <div class="nav-links">
-    <a href="#services">Services</a>
-    {{#if has_products}}<a href="#work">Work</a>{{/if}}
-    {{#if has_team}}<a href="#team">Team</a>{{/if}}
-    <a href="#contact">Contact</a>
+    {{nav_links_html}}
     <button class="nav-wa" id="wcz-nav-cart" onclick="wczNavCta()">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       <span id="wcz-nav-cart-label">Get a quote</span>
@@ -339,10 +336,7 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 <!-- MOBILE NAV -->
 <div id="nav-mob">
   <span class="mob-close" id="mob-close">&#x2715;</span>
-  <a href="#services" class="mob-link">Services</a>
-  {{#if has_products}}<a href="#work" class="mob-link">Work</a>{{/if}}
-  {{#if has_team}}<a href="#team" class="mob-link">Team</a>{{/if}}
-  <a href="#contact" class="mob-link">Contact</a>
+  {{mobile_nav_links_html}}
   <button onclick="wczCartToggle();document.getElementById('nav-mob').classList.remove('open')" style="color:var(--signal-deep);font-family:var(--display);font-size:1.5rem;font-weight:600">My quote</button>
 </div>
 
@@ -371,7 +365,9 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 </section>
 
 <!-- ABOUT -->
-<section id="about" class="pane">
+<div class="br-sections" style="display:flex;flex-direction:column">
+
+<section id="about" class="pane" style="order:{{order_about}}">
   <div class="wrap">
     <div class="about-grid">
       <div class="about-img reveal">
@@ -402,7 +398,7 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 
 <!-- THE LEDGER (services) -->
 {{#if has_services}}
-<section id="services" class="pane">
+<section id="services" class="pane" style="order:{{order_services}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div>
@@ -421,7 +417,7 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 
 <!-- CATALOGUE — SDK-driven -->
 {{#if has_products}}
-<section id="work" class="pane">
+<section id="work" class="pane" style="order:{{order_products}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div>
@@ -442,7 +438,7 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 
 <!-- VIDEO -->
 {{#if has_video}}
-<section id="video" class="pane">
+<section id="video" class="pane" style="order:{{order_video}}">
   <div class="wrap">
     <div class="video-grid">
       <div class="video-stage reveal" id="br-video-stage" data-embed-type="{{video_embed_type}}" data-embed-url="{{video_embed_url}}">
@@ -466,7 +462,7 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 
 <!-- TEAM -->
 {{#if has_team}}
-<section id="team" class="pane">
+<section id="team" class="pane" style="order:{{order_team}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div>
@@ -484,7 +480,7 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 
 <!-- TESTIMONIALS -->
 {{#if has_testimonials}}
-<section id="testimonials" class="pane">
+<section id="testimonials" class="pane" style="order:{{order_testimonials}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div>
@@ -501,7 +497,7 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 
 <!-- GALLERY -->
 {{#if has_gallery}}
-<section id="gallery" class="pane">
+<section id="gallery" class="pane" style="order:{{order_gallery}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div>
@@ -519,7 +515,21 @@ footer{border-top:1px solid var(--line);padding:38px 0}
 {{/if}}
 
 <!-- CONTACT -->
-<section id="contact" class="pane">
+<!-- REVIEWS -->
+{{#if show_reviews_section}}
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
+  {{reviews_section_html}}
+</section>
+{{/if}}
+
+<!-- PRESS -->
+{{#if show_press_section}}
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
+  {{press_section_html}}
+</section>
+{{/if}}
+
+<section id="contact" class="pane" style="order:{{order_contact}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <div>
@@ -564,6 +574,8 @@ footer{border-top:1px solid var(--line);padding:38px 0}
     </div>
   </div>
 </section>
+
+</div><!-- /.br-sections -->
 
 <!-- FOOTER -->
 <footer>
