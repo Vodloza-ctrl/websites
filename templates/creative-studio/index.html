@@ -248,32 +248,9 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
      so this is just the wordmark over full-bleed media (or a slim intro
      strip when no hero photo/video has been added yet), not a paragraph. -->
 <div id="top"></div>
-{{#if has_hero_video}}
-<section class="cs-hero">
-  <div class="cs-hero-media">{{hero_video_html}}</div>
-  <div class="cs-hero-scrim"></div>
-  <div class="wrap cs-hero-content">
-    <div class="cs-hero-eyebrow">{{business_type_label}}</div>
-    <h1 class="cs-hero-name">{{business_name}}</h1>
-  </div>
-  <div class="cs-hero-scroll">Scroll<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
+<section class="{{hero_section_class}}">
+  {{hero_section_html}}
 </section>
-{{else}}{{#if hero_image_url}}
-<section class="cs-hero">
-  <div class="cs-hero-media"><img src="{{hero_image_url}}" alt="{{business_name}}"></div>
-  <div class="cs-hero-scrim"></div>
-  <div class="wrap cs-hero-content">
-    <div class="cs-hero-eyebrow">{{business_type_label}}</div>
-    <h1 class="cs-hero-name">{{business_name}}</h1>
-  </div>
-  <div class="cs-hero-scroll">Scroll<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
-</section>
-{{else}}
-<section class="cs-hero-slim wrap">
-  <div class="cs-hero-eyebrow">{{business_type_label}}</div>
-  <h1 class="cs-hero-name">{{business_name}}</h1>
-</section>
-{{/if}}{{/if}}
 
 <div class="cs-sections">
 
@@ -287,12 +264,7 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
         <div class="eyebrow">Selected Work</div>
         <h2>The Portfolio</h2>
       </div>
-      {{#if has_gallery_filters}}
-      <div class="cs-filters" id="cs-filters">
-        <button type="button" class="cs-filter active" data-filter="">All</button>
-        {{gallery_filters_html}}
-      </div>
-      {{/if}}
+      {{gallery_filters_bar_html}}
     </div>
     <div class="cs-grid reveal" id="cs-grid">
       {{#each gallery}}<!-- rendered from config.json's gallery itemTemplate -->{{/each}}
@@ -306,22 +278,16 @@ h1,h2,h3{font-family:"Cormorant",Georgia,serif;font-weight:600;letter-spacing:-.
 <section class="cs-about" id="about" style="order:{{order_about}}">
   <div class="wrap cs-about-grid">
     <div class="cs-about-photo reveal">
-      {{#if hero_image_url}}<img src="{{hero_image_url}}" alt="{{business_name}}">{{/if}}
+      {{about_photo_html}}
     </div>
     <div class="cs-about-body reveal">
       <div class="eyebrow">About</div>
       <h2>{{business_name}}</h2>
       <p>{{about}}</p>
-      {{#if has_credentials}}
       <ul class="cs-cred-list">
         {{#each credentials}}<!-- rendered from config.json's credentials itemTemplate -->{{/each}}
       </ul>
-      {{/if}}
-      {{#if has_instagram}}
-      <div class="cs-about-social">
-        <a href="{{instagram_url}}" target="_blank" rel="noopener">Follow on Instagram</a>
-      </div>
-      {{/if}}
+      {{about_social_html}}
     </div>
   </div>
 </section>
