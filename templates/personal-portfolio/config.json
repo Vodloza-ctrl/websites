@@ -58,21 +58,90 @@
     }
   ],
   "conditionals": [
-    { "flag": "logo_url",              "type": "computed",      "token": "logo_url" },
-    { "flag": "hero_image_url",        "type": "computed",      "token": "hero_image_url" },
-    { "flag": "has_experience",        "type": "list_present",  "field": "experience" },
-    { "flag": "has_awards",            "type": "list_present",  "field": "awards" },
-    { "flag": "has_credentials",       "type": "list_present",  "field": "credentials" },
-    { "flag": "has_brands",            "type": "list_present",  "field": "brands" },
-    { "flag": "has_services",          "type": "list_present",  "field": "services" },
-    { "flag": "has_products",          "type": "list_present",  "field": "products" },
-    { "flag": "has_testimonials",      "type": "list_present",  "field": "testimonials" },
-    { "flag": "has_gallery",           "type": "list_present",  "field": "gallery" },
-    { "flag": "has_bookable_services", "type": "computed",      "token": "has_bookable_services" },
-    { "flag": "has_linkedin",          "type": "computed",      "token": "has_linkedin" },
-    { "flag": "has_hours",             "type": "computed",      "token": "open_badge_html" },
-    { "flag": "phone",                 "type": "field_present", "field": "phone" },
-    { "flag": "email",                 "type": "field_present", "field": "email" },
-    { "flag": "location",              "type": "field_present", "field": "location" }
+    {
+      "flag": "logo_url",
+      "type": "computed",
+      "token": "logo_url"
+    },
+    {
+      "flag": "hero_image_url",
+      "type": "computed",
+      "token": "hero_image_url"
+    },
+    {
+      "flag": "has_experience",
+      "type": "list_present",
+      "field": "experience"
+    },
+    {
+      "flag": "has_awards",
+      "type": "list_present",
+      "field": "awards"
+    },
+    {
+      "flag": "has_credentials",
+      "type": "list_present",
+      "field": "credentials"
+    },
+    {
+      "flag": "has_brands",
+      "type": "list_present",
+      "field": "brands"
+    },
+    {
+      "flag": "has_services",
+      "type": "list_present",
+      "field": "services"
+    },
+    {
+      "flag": "has_products",
+      "type": "list_present",
+      "field": "products"
+    },
+    {
+      "flag": "has_testimonials",
+      "type": "list_present",
+      "field": "testimonials"
+    },
+    {
+      "flag": "has_gallery",
+      "type": "list_present",
+      "field": "gallery"
+    },
+    {
+      "flag": "has_bookable_services",
+      "type": "computed",
+      "token": "has_bookable_services"
+    },
+    {
+      "flag": "has_linkedin",
+      "type": "computed",
+      "token": "has_linkedin"
+    },
+    {
+      "flag": "has_hours",
+      "type": "computed",
+      "token": "open_badge_html"
+    },
+    {
+      "flag": "phone",
+      "type": "field_present",
+      "field": "phone"
+    },
+    {
+      "flag": "email",
+      "type": "field_present",
+      "field": "email"
+    },
+    {
+      "flag": "location",
+      "type": "field_present",
+      "field": "location"
+    },
+    {
+      "flag": "show_reviews_section",
+      "type": "computed",
+      "token": "show_reviews_section"
+    }
   ]
 }
