@@ -70,13 +70,13 @@
     },
     {
       "flag": "has_experience",
-      "type": "list_present",
-      "field": "experience"
+      "type": "computed",
+      "token": "has_experience"
     },
     {
       "flag": "has_awards",
-      "type": "list_present",
-      "field": "awards"
+      "type": "computed",
+      "token": "has_awards"
     },
     {
       "flag": "has_credentials",
@@ -90,23 +90,23 @@
     },
     {
       "flag": "has_services",
-      "type": "list_present",
-      "field": "services"
+      "type": "computed",
+      "token": "has_services"
     },
     {
       "flag": "has_products",
-      "type": "list_present",
-      "field": "products"
+      "type": "computed",
+      "token": "has_products"
     },
     {
       "flag": "has_testimonials",
-      "type": "list_present",
-      "field": "testimonials"
+      "type": "computed",
+      "token": "has_testimonials"
     },
     {
       "flag": "has_gallery",
-      "type": "list_present",
-      "field": "gallery"
+      "type": "computed",
+      "token": "has_gallery"
     },
     {
       "flag": "has_bookable_services",
