@@ -164,10 +164,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
       {{business_name}}
     </a>
     <nav class="nav-links">
-      {{#if has_services}}<a href="#services">Services</a>{{/if}}
-      {{#if has_team}}<a href="#team">Our Team</a>{{/if}}
-      {{#if has_insurance}}<a href="#insurance">Insurance</a>{{/if}}
-      <a href="#contact">Contact</a>
+      {{nav_links_html}}
     </nav>
     <a href="{{whatsapp_wa_link}}" class="btn-cta" target="_blank" rel="noopener">Book Appointment</a>
     <div class="hamburger" id="mc-ham">
@@ -180,10 +177,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
   <div class="mob-close" id="mc-mob-close">
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </div>
-  {{#if has_services}}<a href="#services">Services</a>{{/if}}
-  {{#if has_team}}<a href="#team">Our Team</a>{{/if}}
-  {{#if has_insurance}}<a href="#insurance">Insurance</a>{{/if}}
-  <a href="#contact">Contact</a>
+  {{mobile_nav_links_html}}
   <a href="{{whatsapp_wa_link}}" class="btn-primary" target="_blank" rel="noopener" style="background:#25D366">Book on WhatsApp</a>
 </div>
 
@@ -210,8 +204,10 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 </section>
 
 <!-- SERVICES -->
+<div class="mc-sections" style="display:flex;flex-direction:column">
+
 {{#if has_services}}
-<section class="sec" id="services">
+<section class="sec" id="services" style="order:{{order_services}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">What we treat</span>
@@ -232,7 +228,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- TEAM -->
 {{#if has_team}}
-<section class="sec" id="team" style="background:var(--paper)">
+<section class="sec" id="team" style="background:var(--paper);order:{{order_team}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Meet the practice</span>
@@ -247,7 +243,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- INSURANCE -->
 {{#if has_insurance}}
-<section class="sec mc-ins-band" id="insurance">
+<section class="sec mc-ins-band" id="insurance" style="order:{{order_insurance}}">
   <div class="wrap">
     <div class="sec-head reveal" style="margin-bottom:0">
       <span class="eyebrow">Medical Aid</span>
@@ -262,7 +258,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- TESTIMONIALS -->
 {{#if has_testimonials}}
-<section class="sec">
+<section class="sec" id="testimonials" style="order:{{order_testimonials}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Patient experiences</span>
@@ -277,7 +273,7 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- GALLERY -->
 {{#if has_gallery}}
-<section class="sec" style="background:var(--paper)">
+<section class="sec" id="gallery" style="background:var(--paper);order:{{order_gallery}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Our facility</span>
@@ -292,20 +288,20 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section class="sec" id="contact">
+<section class="sec" id="contact" style="order:{{order_contact}}">
   <div class="contact-band reveal">
     <div class="contact-grid">
       <div>
@@ -333,6 +329,8 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
   <div class="map-wrap"><iframe src="{{map_embed_url}}" allowfullscreen loading="lazy"></iframe></div>
   {{/if}}
 </section>
+
+</div><!-- /.mc-sections -->
 
 <footer>
   <div class="foot">
