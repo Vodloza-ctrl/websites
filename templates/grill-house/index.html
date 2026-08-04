@@ -426,10 +426,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
       {{/if}}
     </a>
     <nav class="nav-links">
-      <a href="#menu">Menu</a>
-      {{#if has_team}}<a href="#team">Team</a>{{/if}}
-      {{#if has_hours}}<a href="#hours">Hours</a>{{/if}}
-      <a href="#contact">Visit us</a>
+      {{nav_links_html}}
     </nav>
     <button class="nav-cta" id="nav-order-btn" onclick="ghNavCta()">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -447,10 +444,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
   <div class="mob-close" id="gh-mob-close">
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </div>
-  <a href="#menu">Menu</a>
-  {{#if has_team}}<a href="#team">Team</a>{{/if}}
-  {{#if has_hours}}<a href="#hours">Hours</a>{{/if}}
-  <a href="#contact">Visit us</a>
+  {{nav_links_html}}
   <button class="mob-order-btn" id="mob-order-btn" onclick="ghMobOrder()">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
     <span id="mob-order-label">View Menu &amp; Order</span>
@@ -489,9 +483,11 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
   </div>
 </section>
 
+<div class="gh-sections" style="display:flex;flex-direction:column">
+
 <!-- MENU -->
 {{#if has_menu}}
-<section class="sec" id="menu">
+<section class="sec" id="menu" style="order:{{order_menu}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">What we serve</span>
@@ -504,7 +500,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
 {{/if}}
 
 <!-- ORDER CTA BAND -->
-<section class="band" id="order">
+<section class="band" id="order" style="order:{{order_menu}}">
   <div class="wrap">
     <h2>Ready to order?</h2>
     <p>Add dishes from the menu above, then send your order straight to our kitchen on WhatsApp.</p>
@@ -520,7 +516,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
 
 <!-- TEAM -->
 {{#if has_team}}
-<section class="sec" id="team">
+<section class="sec" id="team" style="order:{{order_team}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Our people</span>
@@ -547,7 +543,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
 
 <!-- GALLERY -->
 {{#if has_gallery}}
-<section class="sec" id="gallery">
+<section class="sec" id="gallery" style="order:{{order_gallery}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">From our kitchen</span>
@@ -564,7 +560,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
 
 <!-- TESTIMONIALS -->
 {{#if has_testimonials}}
-<div class="testi-wrap" id="testimonials">
+<div class="testi-wrap" id="testimonials" style="order:{{order_testimonials}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">What people say</span>
@@ -590,7 +586,7 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
 
 <!-- HOURS -->
 {{#if has_hours}}
-<div class="hours-wrap" id="hours">
+<div class="hours-wrap" id="hours" style="order:{{order_hours}}">
   <div class="wrap">
     <h2>Opening Hours</h2>
     <div class="hours-inner">
@@ -603,20 +599,20 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
 
 <!-- REVIEWS -->
 {{#if show_reviews_section}}
-<section id="reviews" style="padding:90px 20px">
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
   {{reviews_section_html}}
 </section>
 {{/if}}
 
 <!-- PRESS -->
 {{#if show_press_section}}
-<section id="press" style="padding:70px 20px">
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
   {{press_section_html}}
 </section>
 {{/if}}
 
 <!-- CONTACT -->
-<section class="contact-wrap" id="contact">
+<section class="contact-wrap" id="contact" style="order:{{order_contact}}">
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="eyebrow">Visit us</span>
@@ -655,6 +651,8 @@ footer{background:#16100B;color:rgba(255,255,255,.5);padding:32px 24px;font-size
     {{/if}}
   </div>
 </section>
+
+</div><!-- /.gh-sections -->
 
 <!-- FOOTER -->
 <footer>
