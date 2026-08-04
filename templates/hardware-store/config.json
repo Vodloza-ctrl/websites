@@ -3,18 +3,51 @@
   "defaultPrimaryColor": "#0f1729",
   "selfContainedNav": true,
   "navCtaLabel": "Order Now",
-  "navLinks": ["#products:Products", "#about:About", "#contact:Contact"],
+  "navLinks": [
+    "#products:Products",
+    "#about:About",
+    "#contact:Contact"
+  ],
   "showOpenBadge": true,
   "showHoursGrid": true,
   "typeLabels": {
     "hardware-store": "Hardware & Building Supply"
   },
   "conditionals": [
-    { "flag": "has_hero", "type": "field_present", "field": "hero_image_url" },
-    { "flag": "has_logo", "type": "field_present", "field": "logo_url" },
-    { "flag": "has_specials", "type": "list_present", "field": "specials" },
-    { "flag": "has_facebook", "type": "field_present", "field": "facebook_url" },
-    { "flag": "has_instagram", "type": "field_present", "field": "instagram_url" },
-    { "flag": "has_whatsapp", "type": "field_present", "field": "whatsapp" }
+    {
+      "flag": "has_hero",
+      "type": "field_present",
+      "field": "hero_image_url"
+    },
+    {
+      "flag": "has_logo",
+      "type": "field_present",
+      "field": "logo_url"
+    },
+    {
+      "flag": "has_specials",
+      "type": "list_present",
+      "field": "specials"
+    },
+    {
+      "flag": "has_facebook",
+      "type": "field_present",
+      "field": "facebook_url"
+    },
+    {
+      "flag": "has_instagram",
+      "type": "field_present",
+      "field": "instagram_url"
+    },
+    {
+      "flag": "has_whatsapp",
+      "type": "field_present",
+      "field": "whatsapp"
+    },
+    {
+      "flag": "show_reviews_section",
+      "type": "computed",
+      "token": "show_reviews_section"
+    }
   ]
 }
