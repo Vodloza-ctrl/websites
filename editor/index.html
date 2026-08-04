@@ -402,9 +402,15 @@ img{display:block;max-width:100%}
                 <option value="beauty-salon">Salon / Spa / Clinic</option>
                 <option value="advisory-firm">Consultant / Law / Accounting</option>
                 <option value="property-estate">Property / Real Estate</option>
+                <option value="medical-clinic">Medical / Dental / Healthcare Clinic</option>
+              </optgroup>
+              <optgroup label="Creative &amp; Portfolio">
+                <option value="creative-studio">Photography / Film Studio</option>
+                <option value="personal-portfolio">Personal / Freelancer Portfolio</option>
               </optgroup>
               <optgroup label="Retail &amp; Products">
                 <option value="boutique-fashion">Boutique / Fashion / Cosmetics</option>
+                <option value="fashion-retail">Fashion Retail Store</option>
                 <option value="grocery-fmcg">Grocery / Supermarket / Spaza</option>
                 <option value="hardware-store">Hardware / Electronics / General Retail</option>
               </optgroup>
@@ -1735,11 +1741,11 @@ async function loadPreview(){
 window.exitEditor=function(){if(state.dirty&&!confirm("You have unsaved changes. Leave without saving?"))return;location.href=DASH_URL;};
 
 var ALL_SECS_V3 = {
-  "bold-retail": [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"video",label:"Video"},{key:"team",label:"Team"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
+  "bold-retail": [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"video",label:"Video"},{key:"team",label:"Team"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "grill-house": [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
   "beauty-salon": [{key:"hero",label:"Hero banner"},{key:"services",label:"Services & prices"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
   "school-institution": [{key:"hero",label:"Hero banner"},{key:"stats",label:"Key stats"},{key:"about",label:"About us"},{key:"services",label:"Programmes"},{key:"team",label:"Leadership"},{key:"events",label:"Term dates"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"shop",label:"Shop"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
-  "church": [{key:"hero",label:"Hero banner"},{key:"times",label:"Service Times"},{key:"about",label:"About us"},{key:"values",label:"Our Values"},{key:"pastor",label:"Pastor / Leadership"},{key:"services",label:"Ministries"},{key:"events",label:"Events"},{key:"give",label:"Giving"},{key:"video",label:"Video"},{key:"products",label:"Shop"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
+  "church": [{key:"hero",label:"Hero banner"},{key:"times",label:"Service Times"},{key:"about",label:"About us"},{key:"values",label:"Our Values"},{key:"pastor",label:"Pastor / Leadership"},{key:"services",label:"Ministries"},{key:"events",label:"Events"},{key:"give",label:"Giving"},{key:"video",label:"Video"},{key:"products",label:"Shop"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "advisory-firm": [{key:"hero",label:"Hero banner"},{key:"services",label:"Practice areas"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"stats",label:"Credentials"},{key:"team",label:"The team"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
   "property-estate": [{key:"hero",label:"Listings / Hero"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"team",label:"Our agents"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"contact",label:"Contact"}],
   "boutique-fashion": [{key:"hero",label:"Hero banner"},{key:"products",label:"Shop / Catalogue"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
@@ -1748,7 +1754,7 @@ var ALL_SECS_V3 = {
   "hospitality-inn": [{key:"hero",label:"Hero banner"},{key:"rooms",label:"Rooms"},{key:"about",label:"About us"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"packages",label:"Packages"},{key:"dining",label:"Dining"},{key:"experiences",label:"Experiences"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Testimonials"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
   "medical-clinic": [{key:"hero",label:"Hero banner"},{key:"services",label:"Services"},{key:"team",label:"Practitioners"},{key:"insurance",label:"Insurance / Medical Aid"},{key:"testimonials",label:"Patient reviews"},{key:"gallery",label:"Facility photos"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
   "personal-portfolio": [{key:"hero",label:"Hero banner"},{key:"about",label:"About"},{key:"experience",label:"Experience"},{key:"awards",label:"Awards"},{key:"services",label:"What I offer"},{key:"products",label:"Shop"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"hours",label:"Availability"},{key:"contact",label:"Contact"}],
-  "creative-studio": [{key:"hero",label:"Hero banner"},{key:"gallery",label:"Portfolio gallery"},{key:"about",label:"About"},{key:"rooms",label:"Packages"},{key:"booking-services",label:"Sessions"},{key:"testimonials",label:"Testimonials"},{key:"hours",label:"Studio hours"},{key:"contact",label:"Contact"}]
+  "creative-studio": [{key:"hero",label:"Hero banner"},{key:"gallery",label:"Portfolio gallery"},{key:"about",label:"About"},{key:"rooms",label:"Packages"},{key:"booking-services",label:"Sessions"},{key:"testimonials",label:"Testimonials"},{key:"hours",label:"Studio hours"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}]
 };
 var REQUIRED_V3=["hero","contact"];
 
