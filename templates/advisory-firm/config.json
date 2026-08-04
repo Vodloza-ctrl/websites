@@ -1,15 +1,15 @@
 {
   "templateId": "advisory-firm",
   "defaultPrimaryColor": "#C08A2D",
-  "defaultTypeLabel": "Business · Legal · Advisory",
+  "defaultTypeLabel": "Business \u00b7 Legal \u00b7 Advisory",
   "bodyClass": "tpl-advisory",
   "selfContainedNav": true,
   "googleFonts": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@400;500;600&display=swap",
   "typeLabels": {
-    "advisory-firm":   "Business · Legal · Advisory",
-    "consultant":      "Business · Tax · Advisory",
-    "law-firm":        "Legal · Compliance · Advisory",
-    "accountant":      "Accounting · Tax · Finance"
+    "advisory-firm": "Business \u00b7 Legal \u00b7 Advisory",
+    "consultant": "Business \u00b7 Tax \u00b7 Advisory",
+    "law-firm": "Legal \u00b7 Compliance \u00b7 Advisory",
+    "accountant": "Accounting \u00b7 Tax \u00b7 Finance"
   },
   "scalars": [],
   "lists": [
@@ -41,16 +41,65 @@
     }
   ],
   "conditionals": [
-    { "flag": "logo_url",         "type": "computed",     "token": "logo_url" },
-    { "flag": "hero_image_url",   "type": "computed",     "token": "hero_image_url" },
-    { "flag": "band_image_url",   "type": "computed",     "token": "band_image_url" },
-    { "flag": "has_services",     "type": "list_present", "field": "services" },
-    { "flag": "has_stats",        "type": "list_present", "field": "stats" },
-    { "flag": "has_team",         "type": "list_present", "field": "team" },
-    { "flag": "has_testimonials", "type": "list_present", "field": "testimonials" },
-    { "flag": "has_bookable_services", "type": "computed", "token": "has_bookable_services" },
-    { "flag": "phone",            "type": "field_present","field": "phone" },
-    { "flag": "location",         "type": "field_present","field": "location" },
-    { "flag": "email",            "type": "field_present","field": "email" }
+    {
+      "flag": "logo_url",
+      "type": "computed",
+      "token": "logo_url"
+    },
+    {
+      "flag": "hero_image_url",
+      "type": "computed",
+      "token": "hero_image_url"
+    },
+    {
+      "flag": "band_image_url",
+      "type": "computed",
+      "token": "band_image_url"
+    },
+    {
+      "flag": "has_services",
+      "type": "list_present",
+      "field": "services"
+    },
+    {
+      "flag": "has_stats",
+      "type": "list_present",
+      "field": "stats"
+    },
+    {
+      "flag": "has_team",
+      "type": "list_present",
+      "field": "team"
+    },
+    {
+      "flag": "has_testimonials",
+      "type": "list_present",
+      "field": "testimonials"
+    },
+    {
+      "flag": "has_bookable_services",
+      "type": "computed",
+      "token": "has_bookable_services"
+    },
+    {
+      "flag": "phone",
+      "type": "field_present",
+      "field": "phone"
+    },
+    {
+      "flag": "location",
+      "type": "field_present",
+      "field": "location"
+    },
+    {
+      "flag": "email",
+      "type": "field_present",
+      "field": "email"
+    },
+    {
+      "flag": "show_reviews_section",
+      "type": "computed",
+      "token": "show_reviews_section"
+    }
   ]
 }
