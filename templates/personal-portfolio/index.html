@@ -94,10 +94,13 @@ header{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.94);backdr
 /* ── BRANDS / PRESS ──────────────────────────────────────────────────── */
 .pp-brands-band{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:36px 0}
 .pp-brands-row{display:flex;flex-wrap:wrap;gap:32px;justify-content:center;align-items:center;opacity:.75}
-.pp-stats-band{padding:52px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.pp-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:24px;text-align:center}
-.pp-stat-value{font-family:var(--display,inherit);font-size:clamp(1.8rem,3.4vw,2.6rem);font-weight:700;color:var(--teal-dk,inherit)}
-.pp-stat-label{font-size:.8rem;letter-spacing:.04em;opacity:.6;margin-top:6px}
+.pp-stats-band{padding:70px 0;background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.pp-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));max-width:820px;margin:0 auto}
+.pp-stat{padding:8px 24px;text-align:center;border-left:1px solid var(--line)}
+.pp-stat:first-child{border-left:none}
+.pp-stat-value{display:block;font-family:var(--display,inherit);font-size:clamp(2.4rem,5vw,3.4rem);font-weight:700;line-height:1;color:var(--teal-dk,inherit)}
+.pp-stat-label{display:block;font-size:.82rem;letter-spacing:.03em;opacity:.6;margin-top:12px}
+@media(max-width:640px){.pp-stats-row{grid-template-columns:repeat(2,1fr);gap:28px 0}.pp-stat{border-left:none;border-top:1px solid var(--line);padding-top:20px}.pp-stat:nth-child(-n+2){border-top:none;padding-top:0}}
 .pp-brand img{height:28px;width:auto;object-fit:contain;filter:grayscale(1)}
 .pp-brand span{font-weight:700;font-size:.9rem;color:var(--muted)}
 
@@ -250,6 +253,10 @@ footer{padding:36px 24px;color:var(--muted);font-size:.84rem}
 {{#if has_stats}}
 <div class="pp-stats-band" style="order:{{order_stats}}">
   <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">By the numbers</span>
+      <h2>Track record</h2>
+    </div>
     <div class="pp-stats-row reveal">
       {{#each stats}}<!-- rendered from config.json's stats itemTemplate -->{{/each}}
     </div>
