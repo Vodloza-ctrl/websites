@@ -1218,6 +1218,20 @@ function buildContent(brief){
   var existing=(state.content&&state.content.content)||{};
   var existingTheme=(state.content&&state.content.theme)||{};
   var theme=Object.assign({palette:paletteFor(g("f_template")),font_pair:fontFor(g("f_template")),sections:["hero","about","services","products","gallery","contact"]},existingTheme);
+  (function sanitizeSections(){
+    var tpl=g("f_template")||"bold-retail";
+    var allSecs=ALL_SECS_V3[tpl]||ALL_SECS_V3["bold-retail"];
+    var allKeys=allSecs.map(function(s){return s.key;});
+    var cleaned=(Array.isArray(theme.sections)?theme.sections:[]).filter(function(k){return allKeys.indexOf(k)>-1;});
+    REQUIRED_V3.forEach(function(k){
+      if(allKeys.indexOf(k)>-1 && cleaned.indexOf(k)<0){
+        var defIdx=allKeys.indexOf(k);
+        var insertAt=cleaned.findIndex(function(ck){return allKeys.indexOf(ck)>defIdx;});
+        if(insertAt<0) cleaned.push(k); else cleaned.splice(insertAt,0,k);
+      }
+    });
+    theme.sections=cleaned;
+  })();
   var resolvedColors=resolvePaletteColors(theme.palette,theme.custom_accent);
   theme.accent=resolvedColors.accent;theme.bg=resolvedColors.bg;theme.dark=resolvedColors.dark;theme.gold=resolvedColors.gold;
 
