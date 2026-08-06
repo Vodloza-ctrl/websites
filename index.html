@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>websites — where Zimbabwe builds online</title>
+<link rel="icon" type="image/svg+xml" href="https://assets.websites.co.zw/branding%20and%20image/favicon/websites-favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,17 +14,21 @@
   --green:#15924B;--green-dk:#0f6e39;--green-bg:#e8f5ee;
   --ink:#0c0e13;--ink2:#3d4251;--ink3:#767c8c;
   --surface:#f4f5f8;--card:#ffffff;--line:#e4e7ee;
+  --err:#c0392b;--err-bg:#fdeceb;
   --r-lg:20px;--r:14px;--r-sm:9px;
   --font-head:"Space Grotesk",system-ui,sans-serif;--font-body:"Hanken Grotesk",system-ui,sans-serif;
   --shadow:0 20px 60px -20px rgba(15,20,35,.18);
+  --safe-b:env(safe-area-inset-bottom,0px);
 }
 html{scroll-behavior:smooth}
-body{font-family:var(--font-body);background:var(--surface);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-body);background:var(--surface);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 h1,h2,h3{font-family:var(--font-head);font-weight:800;letter-spacing:-.03em}
 input,button{font:inherit}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;border:none;background:none}
 svg{display:block}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:6px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .zim-flag{display:inline-flex;height:8px;width:80px;border-radius:3px;overflow:hidden}
 .zim-flag span{flex:1}
@@ -45,29 +50,47 @@ svg{display:block}
 
 .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
 
+/* ── Header ───────────────────────────────────────────────────────────── */
 .bar{background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.brand{font-family:var(--font-head);font-weight:800;font-size:18px;display:flex;align-items:center;gap:8px}
-.brand .g{color:var(--green)}
+.brand-link{display:flex;align-items:center;line-height:0}
+.brand-logo{display:block;height:26px;width:auto}
+.logo-mobile{display:none}
+@media(max-width:640px){
+  .logo-desktop{display:none}
+  .logo-mobile{display:block;height:32px;width:32px}
+}
+.nav-desktop{display:flex;align-items:center;gap:10px}
+@media(max-width:640px){.nav-desktop{display:none}}
+.burger{display:none;width:40px;height:40px;align-items:center;justify-content:center;border-radius:9px;color:var(--ink)}
+.burger:hover{background:var(--surface)}
+@media(max-width:640px){.burger{display:flex}}
+.mobile-menu{display:none;flex-direction:column;position:fixed;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 16px 34px rgba(15,20,35,.14);z-index:98;padding:8px 20px 16px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{padding:13px 2px;font-weight:600;font-size:.95rem;color:var(--ink2);border-bottom:1px solid var(--line)}
+.mobile-menu a:last-child{border-bottom:none}
+.mobile-menu a.mm-primary{color:var(--green-dk)}
 
-.hero{padding:76px 0 0;text-align:center}
+.hero{padding:52px 0 0;text-align:center}
+@media(max-width:480px){.hero{padding:36px 0 0}}
 .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;color:var(--green-dk);background:var(--green-bg);border:1px solid #cdead9;padding:6px 14px 6px 10px;border-radius:999px}
 .eyebrow .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:live-pulse 1.4s ease-in-out infinite}
-.hero h1{font-size:clamp(2.4rem,5.4vw,3.9rem);margin:22px auto 0;max-width:18ch;line-height:1.06}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);margin:20px auto 0;max-width:17ch;line-height:1.1}
 .hero h1 .g{color:var(--green)}
-.hero p{font-size:1.1rem;color:var(--ink2);max-width:46ch;margin:18px auto 0}
+.hero p.lead{font-size:1.08rem;color:var(--ink2);max-width:50ch;margin:16px auto 0}
 
-/* ── Builder — single unified screen, no gating step ─────────────────────── */
-.builder{max-width:1080px;margin:38px auto 0;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);overflow:hidden;text-align:left}
+/* ── Builder — the demo. Always on screen, never gated behind a click. ──── */
+.builder{max-width:1080px;margin:32px auto 0;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);overflow:hidden;text-align:left}
 .builder-grid{display:grid;grid-template-columns:1fr 1.05fr}
 @media(max-width:860px){.builder-grid{grid-template-columns:1fr}}
 
-.builder-controls{padding:32px 30px;display:flex;flex-direction:column;gap:22px}
+.builder-controls{padding:30px 30px;display:flex;flex-direction:column;gap:20px}
+@media(max-width:480px){.builder-controls{padding:22px 18px;gap:16px}}
 .field label{display:block;font-size:.78rem;font-weight:700;color:var(--ink2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
 .field input{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:1.02rem;background:var(--surface);color:var(--ink);transition:.15s}
 .field input:focus{outline:none;border-color:var(--ink);background:#fff}
 
-.pill-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-@media(max-width:420px){.pill-grid{grid-template-columns:repeat(2,1fr)}}
+.pill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
+@media(max-width:480px){.pill-grid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}}
 .pill{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);cursor:pointer;transition:.15s;text-align:center}
 .pill:hover{border-color:var(--ink3)}
 .pill svg{color:var(--ink2);transition:.15s}
@@ -78,10 +101,20 @@ svg{display:block}
 .cta-zone{display:flex;flex-direction:column;gap:10px}
 .microcopy{font-size:.76rem;color:var(--ink3);text-align:center}
 
-.claim-panel{text-align:center;padding:4px 0 0}
-.claim-panel .icon-circle{width:52px;height:52px;border-radius:50%;background:var(--green-bg);color:var(--green-dk);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.claim-panel h3{font-size:1.2rem;margin-bottom:6px}
-.claim-panel p{color:var(--ink2);font-size:.92rem;margin-bottom:16px}
+/* ── Claim — appears inline, right under the pills. Never replaces or
+   hides the business-name field or the industry pills, so the demo stays
+   on screen the whole time the person is claiming it. ──────────────────── */
+.claim-block{margin-top:2px;padding-top:18px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:12px}
+.claim-block-hdr{display:flex;align-items:center;gap:9px}
+.claim-block-hdr .ic{width:30px;height:30px;border-radius:9px;background:var(--green-bg);color:var(--green-dk);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.claim-block-hdr strong{font-size:1rem;font-family:var(--font-body)}
+.claim-lead{font-size:.85rem;color:var(--ink2)}
+.claim-msg{font-size:.8rem;display:none;padding:8px 11px;border-radius:8px;line-height:1.4}
+.claim-msg.err{display:block;color:var(--err);background:var(--err-bg)}
+.claim-msg.ok{display:block;color:var(--green-dk);background:var(--green-bg)}
+.sent-note{font-size:.85rem;color:var(--ink2)}
+.sent-note b{color:var(--ink)}
+.code-input{text-align:center;font-family:var(--font-head);font-size:1.35rem;letter-spacing:.4em;padding-left:.4em}
 
 .preview-pane{padding:18px;display:flex;flex-direction:column;background:var(--surface);border-left:1px solid var(--line)}
 @media(max-width:860px){.preview-pane{border-left:none;border-top:1px solid var(--line)}}
@@ -94,6 +127,7 @@ svg{display:block}
 .preview-frame-wrap{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#fff;flex:1}
 #livePreview{width:100%;height:480px;border:0;display:block}
 @media(max-width:640px){#livePreview{height:360px}}
+@media(max-width:400px){#livePreview{height:300px}}
 .preview-cap{font-size:.72rem;color:var(--ink3);text-align:center;margin-top:10px}
 
 /* ── Trust bar ────────────────────────────────────────────────────────── */
@@ -103,8 +137,10 @@ svg{display:block}
 
 /* ── Feature strip ────────────────────────────────────────────────────── */
 .feature-strip{padding:70px 0}
+@media(max-width:480px){.feature-strip{padding:48px 0}}
 .feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;max-width:960px;margin:0 auto}
 @media(max-width:860px){.feature-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.feature-grid{grid-template-columns:1fr;gap:18px}}
 .feature{text-align:left}
 .feature .icon-box{width:40px;height:40px;border-radius:11px;background:var(--green-bg);color:var(--green-dk);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .feature h3{font-size:1rem;font-weight:700;margin-bottom:5px;font-family:var(--font-body)}
@@ -132,74 +168,111 @@ svg{display:block}
 
 /* ── CTA band ─────────────────────────────────────────────────────────── */
 .cta{background:var(--ink);color:#fff;border-radius:var(--r-lg);margin:0 24px;padding:70px 0;text-align:center}
-.cta h2{color:#fff;font-size:clamp(2rem,4.2vw,3rem)}
+@media(max-width:480px){.cta{margin:0 12px;padding:48px 0;border-radius:16px}}
+.cta h2{color:#fff;font-size:clamp(1.7rem,4.2vw,3rem)}
 .cta p{color:rgba(255,255,255,.68);font-size:1.05rem;margin:14px auto 0;max-width:44ch}
 
 footer{padding:56px 0 40px}
+@media(max-width:480px){footer{padding:40px 0 28px}}
 .foot{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;padding-bottom:36px;border-bottom:1px solid var(--line)}
 .foot p{font-size:.9rem;color:var(--ink2);margin-top:12px;max-width:30ch}
 .foot h5{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-bottom:14px}
 .foot a{display:block;font-size:.9rem;color:var(--ink2);margin-bottom:10px}
 .foot a:hover{color:var(--ink)}
 .foot-bot{display:flex;justify-content:space-between;align-items:center;padding-top:24px;flex-wrap:wrap;gap:12px;font-size:.84rem;color:var(--ink3)}
-@media(max-width:980px){.foot{grid-template-columns:1fr 1fr}} @media(max-width:620px){.foot{grid-template-columns:1fr}}
+@media(max-width:980px){.foot{grid-template-columns:1fr 1fr}} @media(max-width:620px){.foot{grid-template-columns:1fr;gap:28px}}
 
-.toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--ink);color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.3);transform:translateY(100px);opacity:0;transition:all .35s;max-width:400px;display:flex;align-items:center;gap:10px}
+.toast{position:fixed;bottom:calc(28px + var(--safe-b));right:28px;z-index:999;background:var(--ink);color:#fff;padding:14px 20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.3);transform:translateY(100px);opacity:0;transition:all .35s;max-width:400px;display:flex;align-items:center;gap:10px}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.ok{background:var(--green)}
 .toast.err{background:#c0392b}
 .toast .close{background:none;border:none;color:rgba(255,255,255,.6);font-size:1.1rem;cursor:pointer;margin-left:auto}
+@media(max-width:480px){.toast{left:16px;right:16px;bottom:calc(16px + var(--safe-b));max-width:none}}
 
-.wa-fab{position:fixed;bottom:26px;left:26px;z-index:99;background:#25D366;color:#fff;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.4);transition:.2s}
+.wa-fab{position:fixed;bottom:calc(26px + var(--safe-b));left:26px;z-index:99;background:#25D366;color:#fff;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.4);transition:.2s}
 .wa-fab:hover{transform:scale(1.08)}
-@media(max-width:640px){.wa-fab{width:46px;height:46px;bottom:18px;left:18px}}
+@media(max-width:640px){.wa-fab{width:46px;height:46px;bottom:calc(18px + var(--safe-b));left:18px}}
 </style>
 </head>
 <body>
 
 <header class="bar">
-  <div class="brand">webs<span class="g">·</span>tes<span class="g">.co.zw</span></div>
-  <div style="display:flex;align-items:center;gap:10px">
+  <a href="/" class="brand-link" aria-label="websites.co.zw — home">
+    <img class="brand-logo logo-desktop" src="https://assets.websites.co.zw/branding%20and%20image/logo/websites-logo.svg" alt="websites.co.zw" onerror="this.style.display='none'">
+    <img class="brand-logo logo-mobile" src="https://assets.websites.co.zw/branding%20and%20image/brandmark/Websites-minimalist--design.svg" alt="websites.co.zw" onerror="this.style.display='none'">
+  </a>
+  <nav class="nav-desktop">
     <a href="/dashboard/customer.html" class="btn btn-ghost btn-sm">Sign in</a>
     <a href="#start" class="btn btn-primary btn-sm" id="navCta">Get started</a>
-  </div>
+  </nav>
+  <button class="burger" id="burgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu"></button>
 </header>
+<nav class="mobile-menu" id="mobileMenu">
+  <a href="#start" class="mm-primary">Get started</a>
+  <a href="/dashboard/customer.html">Sign in</a>
+  <a href="#">Templates</a>
+  <a href="#">Pricing</a>
+</nav>
 
 <section class="hero" id="start">
   <div class="wrap">
     <span class="eyebrow"><span class="pulse"></span>Live in seconds — not a mockup</span>
-    <h1>See your name on a <span class="g">real website, right now.</span></h1>
-    <p>Type your business name. Pick your industry. Watch a real, live example update instantly with your name on it.</p>
+    <h1>Get your business online <span class="g">today.</span></h1>
+    <p class="lead">Try it out and see how your website will look. Type your business name. Pick your industry. Watch a real, live example update instantly with your name on it.</p>
 
     <div class="builder" id="builder">
       <div class="builder-grid">
         <div class="builder-controls">
 
-          <div id="controlsView">
-            <div class="field">
-              <label for="bizName">Your business name</label>
-              <input type="text" id="bizName" placeholder="e.g. Tendai's Hardware" autofocus autocomplete="off">
-            </div>
-
-            <div class="field" style="margin-top:22px">
-              <label>Your industry</label>
-              <div class="pill-grid" id="pillGrid"></div>
-            </div>
-
-            <div class="cta-zone" style="margin-top:24px">
-              <button id="generateBtn" class="btn btn-primary" style="width:100%;padding:15px">
-                Continue — claim via WhatsApp →
-              </button>
-              <div class="microcopy">Takes about 10 seconds. No password to remember.</div>
-            </div>
+          <div class="field">
+            <label for="bizName">Your business name</label>
+            <input type="text" id="bizName" placeholder="e.g. Tendai's Hardware" autofocus autocomplete="off">
           </div>
 
-          <div id="claimView" class="claim-panel" style="display:none">
-            <div class="icon-circle" id="claimIcon"></div>
-            <h3>Like what you see?</h3>
-            <p>Message us on WhatsApp to claim it — your WhatsApp number becomes your login. Everything except your name here belongs to a real example site; you'll swap in your own after claiming.</p>
-            <a id="claimWhatsAppBtn" class="btn btn-whatsapp" style="padding:14px 24px;width:100%" href="#" target="_blank"></a>
-            <button id="claimBackBtn" class="btn btn-ghost btn-sm" style="margin-top:12px">‹ Back to editing</button>
+          <div class="field">
+            <label>Your industry</label>
+            <div class="pill-grid" id="pillGrid"></div>
+          </div>
+
+          <div class="cta-zone" id="ctaZone">
+            <button id="generateBtn" class="btn btn-primary" style="width:100%;padding:15px">
+              Continue — claim by email →
+            </button>
+            <div class="microcopy">Takes about a minute. No password to remember.</div>
+          </div>
+
+          <div class="claim-block" id="claimBlock" style="display:none">
+            <div class="claim-block-hdr">
+              <span class="ic" id="claimIconSmall"></span>
+              <strong>Claim this site</strong>
+            </div>
+            <p class="claim-lead">Enter your phone and email — we'll email a 6-digit code to confirm it's you, then create your site instantly. Everything except the name above belongs to a real example; you'll swap in your own after claiming.</p>
+
+            <div id="claimStepRequest">
+              <div class="field" style="margin-bottom:12px">
+                <label for="claimPhone">Phone number</label>
+                <input type="tel" id="claimPhone" placeholder="077 123 4567" autocomplete="tel" inputmode="tel">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label for="claimEmail">Email</label>
+                <input type="email" id="claimEmail" placeholder="you@example.com" autocomplete="email" inputmode="email">
+              </div>
+              <div class="claim-msg" id="claimMsg1"></div>
+              <button id="claimSendBtn" class="btn btn-primary" style="width:100%;padding:14px;margin-top:14px">Send code →</button>
+            </div>
+
+            <div id="claimStepCode" style="display:none">
+              <p class="sent-note" id="sentNote"></p>
+              <div class="field" style="margin-bottom:0">
+                <label for="claimCode">6-digit code</label>
+                <input type="text" id="claimCode" class="code-input" inputmode="numeric" maxlength="6" placeholder="••••••">
+              </div>
+              <div class="claim-msg" id="claimMsg2"></div>
+              <button id="claimVerifyBtn" class="btn btn-primary" style="width:100%;padding:14px;margin-top:14px">Verify &amp; create my site →</button>
+              <button id="claimResendBtn" class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px">Resend code</button>
+            </div>
+
+            <button id="claimBackBtn" class="btn btn-ghost btn-sm" style="align-self:flex-start">‹ Back</button>
           </div>
 
         </div>
@@ -254,7 +327,7 @@ footer{padding:56px 0 40px}
   <div class="wrap">
     <div class="foot">
       <div>
-        <div class="brand">webs<span class="g">·</span>tes<span class="g">.co.zw</span></div>
+        <div class="brand-link"><img class="brand-logo" style="height:24px" src="https://assets.websites.co.zw/branding%20and%20image/logo/websites-logo.svg" alt="websites.co.zw" onerror="this.style.display='none'"></div>
         <p>The fast, affordable way for Zimbabwean businesses to get online.</p>
         <span class="zim-flag" style="margin-top:14px"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
       </div>
@@ -268,7 +341,7 @@ footer{padding:56px 0 40px}
 
 <div class="toast" id="toast"><span id="toastMsg">Message</span><button class="close" id="toastClose">✕</button></div>
 
-<button class="wa-fab" id="waFab" aria-label="Chat on WhatsApp"></button>
+<button class="wa-fab" id="waFab" aria-label="Chat with us on WhatsApp"></button>
 
 <script>
 (function(){
@@ -276,6 +349,10 @@ footer{padding:56px 0 40px}
 
 const WHATSAPP_NUMBER = '263719362321';
 const PREVIEW_ENDPOINT = 'https://preview.websites.co.zw/api/live-preview';
+const AUTH_BASE = 'https://app.websites.co.zw/auth';
+const API_BASE  = 'https://app.websites.co.zw/api';
+const EDITOR_BASE = 'https://www.websites.co.zw/editor/';
+const DASHBOARD_URL = 'https://app.websites.co.zw/dashboard';
 
 // ── Icon set (Lucide-style: 24x24, stroke, round caps — no emoji anywhere) ─
 const ICONS = {
@@ -300,6 +377,12 @@ const ICONS = {
   cursor: '<path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8L4 4.4l2.8 2.9"/><path d="m21.2 15.2-4.4-4.4 6.6-1.6-14-6.9 3.6 14 1.9-6.5Z"/><path d="m13 13 6 6"/>',
   rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2Z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
   whatsapp: '<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>',
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  menu: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>',
+  x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
 };
 
 function icon(name, size, strokeW, filled) {
@@ -308,7 +391,7 @@ function icon(name, size, strokeW, filled) {
   return `<svg width="${size||18}" height="${size||18}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeW||1.75}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 }
 
-// ── All 12 real templates — every one you have a live demo for ────────────
+// ── All 15 real templates — every one you have a live demo for ────────────
 const INDUSTRIES = [
   { key:'beauty-salon',       label:'Salon / Spa',       ic:'scissors' },
   { key:'grill-house',        label:'Restaurant',        ic:'utensils' },
@@ -321,6 +404,9 @@ const INDUSTRIES = [
   { key:'boutique-fashion',   label:'Fashion Boutique',  ic:'shirt' },
   { key:'fashion-retail',     label:'Fashion Store',     ic:'store' },
   { key:'hospitality-inn',    label:'Lodge / Hotel',     ic:'bed' },
+  { key:'medical-clinic',     label:'Medical / Clinic',  ic:'activity' },
+  { key:'personal-portfolio', label:'Portfolio',         ic:'user' },
+  { key:'creative-studio',    label:'Creative Studio',   ic:'camera' },
   { key:'bold-retail',        label:'General / Other',   ic:'building' },
 ];
 
@@ -333,12 +419,22 @@ const DOM = {
   bizName: document.getElementById('bizName'),
   livePreview: document.getElementById('livePreview'),
   previewStatus: document.getElementById('previewStatus'),
-  controlsView: document.getElementById('controlsView'),
-  claimView: document.getElementById('claimView'),
-  claimIcon: document.getElementById('claimIcon'),
+  ctaZone: document.getElementById('ctaZone'),
+  claimBlock: document.getElementById('claimBlock'),
+  claimIconSmall: document.getElementById('claimIconSmall'),
   generateBtn: document.getElementById('generateBtn'),
   claimBackBtn: document.getElementById('claimBackBtn'),
-  claimWhatsAppBtn: document.getElementById('claimWhatsAppBtn'),
+  claimStepRequest: document.getElementById('claimStepRequest'),
+  claimStepCode: document.getElementById('claimStepCode'),
+  claimPhone: document.getElementById('claimPhone'),
+  claimEmail: document.getElementById('claimEmail'),
+  claimCode: document.getElementById('claimCode'),
+  claimSendBtn: document.getElementById('claimSendBtn'),
+  claimVerifyBtn: document.getElementById('claimVerifyBtn'),
+  claimResendBtn: document.getElementById('claimResendBtn'),
+  claimMsg1: document.getElementById('claimMsg1'),
+  claimMsg2: document.getElementById('claimMsg2'),
+  sentNote: document.getElementById('sentNote'),
   toast: document.getElementById('toast'),
   toastMsg: document.getElementById('toastMsg'),
   toastClose: document.getElementById('toastClose'),
@@ -347,10 +443,12 @@ const DOM = {
   featureGrid: document.getElementById('featureGrid'),
   stepsGrid: document.getElementById('stepsGrid'),
   priceGrid: document.getElementById('priceGrid'),
+  burgerBtn: document.getElementById('burgerBtn'),
+  mobileMenu: document.getElementById('mobileMenu'),
 };
 
 let selectedTemplate = DEFAULT_TEMPLATE;
-let generating = false;
+let claimingPhone = '';
 
 function debounce(fn, wait) {
   let t;
@@ -359,6 +457,21 @@ function debounce(fn, wait) {
     t = setTimeout(() => fn.apply(this, args), wait);
   };
 }
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+// ── Mobile burger menu ─────────────────────────────────────────────────────
+DOM.burgerBtn.innerHTML = icon('menu', 22, 2);
+function closeMobileMenu() {
+  DOM.mobileMenu.classList.remove('open');
+  DOM.burgerBtn.setAttribute('aria-expanded', 'false');
+  DOM.burgerBtn.innerHTML = icon('menu', 22, 2);
+}
+DOM.burgerBtn.addEventListener('click', function() {
+  const nowOpen = DOM.mobileMenu.classList.toggle('open');
+  DOM.burgerBtn.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
+  DOM.burgerBtn.innerHTML = icon(nowOpen ? 'x' : 'menu', 22, 2);
+});
+DOM.mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
 
 // ── Render pills ────────────────────────────────────────────────────────
 DOM.pillGrid.innerHTML = INDUSTRIES.map(ind => `
@@ -376,7 +489,7 @@ DOM.pillGrid.addEventListener('click', function(e) {
   renderLivePreview();
 });
 
-// ── Live preview ────────────────────────────────────────────────────────
+// ── Live preview — always on screen, updates as the person types/picks ──
 const debouncedRender = debounce(renderLivePreview, 350);
 DOM.bizName.addEventListener('input', debouncedRender);
 
@@ -398,7 +511,7 @@ DOM.livePreview.addEventListener('load', function() {
   }
 });
 
-// Straight to the preview — render immediately on load, no gate, no click required.
+// Render immediately on load — no gate, no click required.
 renderLivePreview();
 
 // ── Toast ───────────────────────────────────────────────────────────────
@@ -410,53 +523,151 @@ function showToast(msg, type) {
 }
 DOM.toastClose.addEventListener('click', () => DOM.toast.classList.remove('show'));
 
-function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+// ── Claim flow — real account + site creation via the live Auth/Sites API ─
+// The claim block appears BELOW the name field and industry pills without
+// hiding them — the demo (name, pills, live preview) stays on screen the
+// whole time someone is claiming their site. Identity is still phone-based
+// (that's how the whole platform is keyed), but the OTP is delivered by
+// EMAIL, not WhatsApp — WhatsApp delivery depends on ManyChat, which this
+// flow no longer needs at all. On a correct code, this signs the person in
+// for real and creates their draft site with the name/template chosen
+// above, then drops them straight into the editor — no manual step on
+// your end.
+DOM.claimIconSmall.innerHTML = icon('mail', 16, 1.9);
 
-// ── Claim flow ──────────────────────────────────────────────────────────
-DOM.claimIcon.innerHTML = icon('rocket', 24, 1.8);
-DOM.claimWhatsAppBtn.innerHTML = icon('whatsapp', 19, 0, true) + '<span style="margin-left:8px">Claim via WhatsApp</span>';
+const claimErrText = {
+  invalid_phone: "Enter a valid phone number.",
+  invalid_input: "Check the number and code, then try again.",
+  too_many_requests: "Too many requests — wait a few minutes and try again.",
+  too_many_attempts: "Too many wrong codes. Request a new one.",
+  invalid_code: "That code didn't match. Try again.",
+  code_expired_or_missing: "That code expired. Request a new one.",
+  email_required: "Enter your email so we can send your code.",
+  email_not_on_file: "This number already has an account without an email on file. Sign in and add one from your dashboard, or use a different number.",
+};
+function claimFriendly(code) { return claimErrText[code] || "Something went wrong. Try again."; }
 
-async function generateSite() {
-  if (generating) return;
+function setClaimMsg(el, text, kind) {
+  el.className = 'claim-msg' + (kind ? ' ' + kind : '');
+  el.textContent = text || '';
+}
+
+async function authApi(path, body) {
+  const token = localStorage.getItem('wcz_token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const r = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body || {}) });
+  let data = {}; try { data = await r.json(); } catch (e) {}
+  return { ok: r.ok, data };
+}
+
+function startClaim() {
   const name = DOM.bizName.value.trim();
-
   if (!name) {
     showToast('Please enter your business name.', 'err');
     DOM.bizName.focus();
     return;
   }
+  DOM.ctaZone.style.display = 'none';
+  DOM.claimBlock.style.display = 'flex';
+  DOM.claimStepRequest.style.display = 'block';
+  DOM.claimStepCode.style.display = 'none';
+  DOM.claimPhone.focus();
+  DOM.claimBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
 
-  generating = true;
-  DOM.generateBtn.disabled = true;
-  DOM.generateBtn.textContent = 'Preparing…';
+function cancelClaim() {
+  DOM.claimBlock.style.display = 'none';
+  DOM.ctaZone.style.display = 'flex';
+  setClaimMsg(DOM.claimMsg1, '');
+  setClaimMsg(DOM.claimMsg2, '');
+}
+
+async function sendClaimCode() {
+  setClaimMsg(DOM.claimMsg1, '');
+  const phone = DOM.claimPhone.value.trim();
+  const email = DOM.claimEmail.value.trim();
+  if (!phone) return setClaimMsg(DOM.claimMsg1, 'Enter your phone number.', 'err');
+  if (!email) return setClaimMsg(DOM.claimMsg1, 'Enter your email.', 'err');
+
+  claimingPhone = phone;
+  DOM.claimSendBtn.disabled = true;
+  DOM.claimSendBtn.textContent = 'Sending…';
 
   try {
-    await sleep(250);
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'mybusiness';
-    DOM.claimWhatsAppBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hi! I want to claim my site: ' + name + ' (' + slug + '.co.zw)')}`;
-    DOM.controlsView.style.display = 'none';
-    DOM.claimView.style.display = 'block';
+    const r = await authApi(AUTH_BASE + '/request-otp', { phone, channel: 'email', email });
+    if (!r.ok) {
+      setClaimMsg(DOM.claimMsg1, claimFriendly(r.data.error), 'err');
+      return;
+    }
+    const safeEmail = email.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    DOM.sentNote.innerHTML = 'We emailed a 6-digit code to <b>' + safeEmail + '</b>.';
+    DOM.claimStepRequest.style.display = 'none';
+    DOM.claimStepCode.style.display = 'block';
+    setClaimMsg(DOM.claimMsg2, '');
+    DOM.claimCode.value = '';
+    DOM.claimCode.focus();
+  } catch (e) {
+    setClaimMsg(DOM.claimMsg1, 'Network error. Check your connection and try again.', 'err');
   } finally {
-    generating = false;
-    DOM.generateBtn.disabled = false;
-    DOM.generateBtn.textContent = 'Continue — claim via WhatsApp →';
+    DOM.claimSendBtn.disabled = false;
+    DOM.claimSendBtn.textContent = 'Send code →';
   }
 }
 
-DOM.generateBtn.addEventListener('click', generateSite);
-DOM.claimBackBtn.addEventListener('click', function() {
-  DOM.claimView.style.display = 'none';
-  DOM.controlsView.style.display = 'block';
-});
+async function verifyClaimCode() {
+  setClaimMsg(DOM.claimMsg2, '');
+  const code = DOM.claimCode.value.replace(/\D/g, '');
+  if (code.length < 4) return setClaimMsg(DOM.claimMsg2, 'Enter the code we sent you.', 'err');
+
+  DOM.claimVerifyBtn.disabled = true;
+  DOM.claimVerifyBtn.textContent = 'Verifying…';
+
+  try {
+    const r = await authApi(AUTH_BASE + '/verify-otp', { phone: claimingPhone, code });
+    if (!r.ok) {
+      setClaimMsg(DOM.claimMsg2, claimFriendly(r.data.error), 'err');
+      return;
+    }
+    if (r.data.token) localStorage.setItem('wcz_token', r.data.token);
+
+    const siteName = DOM.bizName.value.trim() || 'My Business';
+    const siteResp = await authApi(API_BASE + '/sites', { site_name: siteName, template_id: selectedTemplate });
+
+    if (!siteResp.ok || !siteResp.data.site) {
+      setClaimMsg(DOM.claimMsg2, "You're signed in, but your site couldn't be created automatically — taking you to your dashboard to create it there.", 'ok');
+      await sleep(1400);
+      window.location.href = DASHBOARD_URL;
+      return;
+    }
+
+    setClaimMsg(DOM.claimMsg2, 'Your site is ready — taking you to the editor…', 'ok');
+    await sleep(500);
+    window.location.href = EDITOR_BASE + '?site=' + encodeURIComponent(siteResp.data.site.id);
+  } catch (e) {
+    setClaimMsg(DOM.claimMsg2, 'Network error. Try again.', 'err');
+  } finally {
+    DOM.claimVerifyBtn.disabled = false;
+    DOM.claimVerifyBtn.textContent = 'Verify & create my site →';
+  }
+}
+
+DOM.generateBtn.addEventListener('click', startClaim);
+DOM.claimSendBtn.addEventListener('click', sendClaimCode);
+DOM.claimVerifyBtn.addEventListener('click', verifyClaimCode);
+DOM.claimResendBtn.addEventListener('click', sendClaimCode);
+DOM.claimBackBtn.addEventListener('click', cancelClaim);
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && document.activeElement === DOM.bizName) {
-    e.preventDefault();
-    generateSite();
-  }
+  if (e.key !== 'Enter') return;
+  if (document.activeElement === DOM.bizName) { e.preventDefault(); startClaim(); }
+  else if (document.activeElement === DOM.claimPhone || document.activeElement === DOM.claimEmail) { e.preventDefault(); sendClaimCode(); }
+  else if (document.activeElement === DOM.claimCode) { e.preventDefault(); verifyClaimCode(); }
 });
 
-// ── WhatsApp FAB ────────────────────────────────────────────────────────
+// ── WhatsApp FAB — general enquiries only. This is a plain wa.me deep
+// link straight into the WhatsApp app, independent of ManyChat, so it
+// keeps working regardless of the OTP/automation reconnection status.
 DOM.waFab.innerHTML = icon('whatsapp', 26, 0, true);
 DOM.waFab.addEventListener('click', function() {
   const name = DOM.bizName.value.trim() || 'My Business';
@@ -474,7 +685,7 @@ document.getElementById('navCta').addEventListener('click', function(e) {
 DOM.trustBar.innerHTML = [
   ['check', 'Real templates, not a demo mockup'],
   ['check', 'Free .co.zw domain included'],
-  ['check', 'No card needed to preview'],
+  ['check', 'Claim by email in under a minute'],
 ].map(([ic, label]) => `<span>${icon(ic, 15, 2.5)}${label}</span>`).join('');
 
 // ── Feature strip ───────────────────────────────────────────────────────
@@ -482,7 +693,7 @@ DOM.featureGrid.innerHTML = [
   ['zap', 'Live in minutes', 'Choose a template, swap in your content, publish instantly.'],
   ['globe', 'Free .co.zw domain', 'Your own address included — or add a .com for $50/yr.'],
   ['pencil', 'Edit it yourself', 'Change text, colours, images and logo anytime.'],
-  ['message', 'WhatsApp ready', 'Every site ships with WhatsApp enquiries.'],
+  ['message', 'WhatsApp ready', 'Every site ships with a WhatsApp enquiry button for your customers.'],
 ].map(([ic, title, body]) => `
   <div class="feature">
     <div class="icon-box">${icon(ic, 20, 1.75)}</div>
@@ -493,12 +704,12 @@ DOM.featureGrid.innerHTML = [
 
 // ── Steps ───────────────────────────────────────────────────────────────
 DOM.stepsGrid.innerHTML = [
-  ['cursor', 'See your name on a real site', 'Type your name, pick your industry — the preview is live instantly.'],
-  ['whatsapp', 'Claim via WhatsApp', 'Message us once. Your WhatsApp number becomes your login.'],
+  ['cursor', 'See your name on a real site', 'Type your name, pick your industry — the preview is live instantly, right here on this page.'],
+  ['mail', 'Claim by email', 'Enter your phone and email, confirm with a 6-digit code — your account and draft site are created on the spot.'],
   ['rocket', 'Make it yours', 'Swap in your own photos, prices and words, then publish on your free domain.'],
 ].map(([ic, title, body]) => `
   <div class="step">
-    <div class="icon-box">${icon(ic, 20, 1.8, ic === 'whatsapp')}</div>
+    <div class="icon-box">${icon(ic, 20, 1.8)}</div>
     <h4>${title}</h4>
     <p>${body}</p>
   </div>
@@ -529,13 +740,6 @@ DOM.priceGrid.innerHTML = `
     <a href="#start" class="btn btn-ghost" style="width:100%">Add store</a>
   </div>
 `;
-
-console.log('🚀 websites.co.zw — landing page ready!');
-console.log('🔗 Preview endpoint:', PREVIEW_ENDPOINT);
-console.log('🎨 Default template:', DEFAULT_TEMPLATE);
-
-})();
-</script>
 
 </body>
 </html>
