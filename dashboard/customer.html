@@ -98,6 +98,7 @@
   .seg{display:flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;margin-top:4px}
   .seg button{flex:1;border:none;background:#fff;padding:9px 8px;font-size:13.5px;font-weight:600;color:var(--ink-soft)}
   .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+  .seg button:disabled{background:#f3f4f6;color:var(--muted);cursor:not-allowed}
   .auth .btn-gold{width:100%;justify-content:center;padding:13px;margin-top:18px;font-size:15px}
   .row-links{display:flex;justify-content:space-between;margin-top:14px}
   .msg{font-size:13px;margin-top:12px;padding:9px 11px;border-radius:8px;display:none}
@@ -105,6 +106,7 @@
   .msg.ok {display:block;color:var(--live);   background:var(--live-bg)}
   .sent-to{font-size:13.5px;color:var(--ink-soft);margin:0 0 4px}
   .sent-to b{color:var(--ink)}
+  .chan-note{font-size:12px;color:var(--muted);margin:8px 0 0;line-height:1.5}
 
   .ribbon{background:var(--gold-soft);color:var(--gold-strong);text-align:center;font-size:12.5px;font-weight:600;padding:7px}
   .skeleton{height:150px;border-radius:var(--radius);background:linear-gradient(90deg,#fff,#f3f4f6,#fff);background-size:200% 100%;animation:sh 1.2s infinite;border:1px solid var(--line)}
@@ -161,7 +163,12 @@
   var NEW   = PAGES + "/new/";
   var now  = Math.floor(Date.now()/1000);
   var DEMO = false;
-  var state = { owner:null, channel:"whatsapp", phone:"", step:"phone" };
+  // ── WhatsApp OTP is temporarily offline while ManyChat is reconnected —
+  // default to email and don't let the person pick WhatsApp from the UI.
+  // Flip WHATSAPP_LOGIN_ENABLED back to true (and drop the "disabled" below)
+  // once ManyChat is confirmed working again.
+  var WHATSAPP_LOGIN_ENABLED = false;
+  var state = { owner:null, channel:"email", phone:"", step:"phone" };
   var app   = document.getElementById("app");
 
   // ── Delete state ──────────────────────────────────────────────────────────
@@ -292,8 +299,8 @@
     invalid_code:"That code didn't match. Try again.",
     code_expired_or_missing:"That code expired. Request a new one.",
     email_required:"Enter your email to receive the code.",
-    email_not_on_file:"No email on file for this number — use WhatsApp, or add an email after signing in.",
-    otp_delivery_failed:"Couldn't send the code. Try the other channel."
+    email_not_on_file:"No email on file for this number — add one from your dashboard settings once you're in, or contact support.",
+    otp_delivery_failed:"Couldn't send the code. Try again in a moment."
   };
   function friendly(code){ return errText[code] || "Something went wrong. Try again."; }
 
@@ -344,14 +351,20 @@
 
   function renderPhoneStep(){
     var wrap = document.getElementById("step");
+    // WhatsApp is temporarily disabled (ManyChat reconnection in progress) —
+    // the button renders greyed out and unclickable, and the channel is
+    // pinned to email. See WHATSAPP_LOGIN_ENABLED at the top of this file.
+    var waDisabled = WHATSAPP_LOGIN_ENABLED ? "" : "disabled";
+    var waLabel    = WHATSAPP_LOGIN_ENABLED ? "WhatsApp" : "WhatsApp — coming soon";
     wrap.innerHTML =
       '<label class="fld" for="phone">Phone number</label>'+
       '<input class="input" id="phone" inputmode="tel" autocomplete="tel" placeholder="077 123 4567" value="'+esc(state.phone)+'">'+
       '<label class="fld">Send the code by</label>'+
       '<div class="seg" role="group" aria-label="Delivery channel">'+
-        '<button type="button" data-ch="whatsapp" aria-pressed="'+(state.channel==="whatsapp")+'">WhatsApp</button>'+
+        '<button type="button" data-ch="whatsapp" aria-pressed="'+(state.channel==="whatsapp")+'" '+waDisabled+'>'+waLabel+'</button>'+
         '<button type="button" data-ch="email"    aria-pressed="'+(state.channel==="email")+'">Email</button>'+
       '</div>'+
+      (WHATSAPP_LOGIN_ENABLED ? '' : '<p class="chan-note">We\'re reconnecting WhatsApp sign-in — for now, your code is sent by email.</p>')+
       '<div id="email-wrap" style="'+(state.channel==="email"?"":"display:none")+'">'+
         '<label class="fld" for="email">Email</label>'+
         '<input class="input" id="email" inputmode="email" autocomplete="email" placeholder="you@example.com">'+
@@ -360,6 +373,7 @@
       '<label style="display:flex;align-items:flex-start;gap:10px;margin-top:14px;cursor:pointer"><input type="checkbox" id="agreeTerms" style="width:17px;height:17px;margin-top:2px;flex-shrink:0;accent-color:var(--gold)"><span style="font-size:13px;color:var(--ink-soft);line-height:1.5">I agree to the <a href="https://websites.co.zw/terms" target="_blank" style="color:var(--gold);font-weight:600">Terms of Service</a> and Acceptable Use Policy</span></label>';
 
     wrap.querySelectorAll(".seg button").forEach(function(b){
+      if (b.disabled) return;
       b.addEventListener("click", function(){
         state.channel = b.getAttribute("data-ch");
         wrap.querySelectorAll(".seg button").forEach(function(x){ x.setAttribute("aria-pressed", x===b); });
