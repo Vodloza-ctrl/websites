@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>{{business_name}} — {{hi_hero_headline}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   SANDS — premium hospitality skin (websites.co.zw)
+   Same content schema as hospitality-inn (buildHospitalityExtras). Presentation
+   only. Palette vars overridden per tenant via TEMPLATE_VAR_MAP -- defaults
+   below are the fallback look.
+   Signature: an asymmetric photo pair (one large, one small, overlapping)
+   used as the recurring motif in the hero, About, and Rooms sections, paired
+   with a small tracked eyebrow + one oversized italic word as the header
+   treatment throughout.
+═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Work Sans', system-ui, -apple-system, sans-serif;
+
+  --paper: #FAF6EF;
+  --plaster: #F0E6D6;
+  --ink: #2A2521;
+  --stone: #8C8172;
+  --clay: #A87F52;
+  --horizon: #6B8CA3;
+  --white: #FFFFFF;
+  --line: rgba(42,37,33,0.12);
+
+  --sp-1: 8px;  --sp-2: 16px; --sp-3: 24px; --sp-4: 32px; --sp-5: 48px;
+  --sp-6: 64px; --sp-7: 96px; --sp-8: 128px; --sp-9: 168px;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 0.25s var(--ease);
+  --t-slow: 0.9s var(--ease);
+
+  --max-w: 1240px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font-body); background: var(--paper); color: var(--ink); line-height: 1.7; font-weight: 300; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font: inherit; }
+svg { display: block; flex-shrink: 0; }
+
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--sp-4); }
+
+.eyebrow { display: block; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--clay); margin-bottom: var(--sp-2); }
+.headline { font-family: var(--font-display); font-weight: 400; line-height: 1.05; color: var(--ink); }
+.headline em { font-style: italic; font-weight: 400; color: var(--clay); }
+.body-text { font-size: 0.98rem; color: var(--stone); line-height: 1.85; max-width: 480px; }
+
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 1s var(--ease), transform 1s var(--ease); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* ── NAV — a single quiet line, no pill button ── */
+.nav { position: absolute; top: 0; left: 0; right: 0; z-index: 1000; padding: var(--sp-4) 0; transition: background var(--t-fast), padding var(--t-fast), position 0s; }
+.nav.scrolled { position: fixed; background: rgba(250,246,239,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.nav-logo { display: flex; align-items: center; gap: 10px; }
+.nav-logo img { max-height: 30px; width: auto; }
+.nav-logo-text { font-family: var(--font-display); font-size: 1.15rem; font-style: italic; color: var(--white); letter-spacing: 0.01em; transition: color var(--t-fast); }
+.nav.scrolled .nav-logo-text { color: var(--ink); }
+.nav-links { display: flex; align-items: center; gap: var(--sp-4); }
+.nav-links a { font-size: 0.74rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.82); transition: color var(--t-fast); }
+.nav.scrolled .nav-links a { color: var(--stone); }
+.nav-links a:hover { color: var(--white); }
+.nav.scrolled .nav-links a:hover { color: var(--ink); }
+.nav-reserve { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white) !important; border-bottom: 1px solid rgba(255,255,255,0.5); padding-bottom: 3px; transition: border-color var(--t-fast), color var(--t-fast) !important; }
+.nav.scrolled .nav-reserve { color: var(--ink) !important; border-bottom-color: var(--clay); }
+.nav-reserve:hover { border-color: var(--clay); }
+.nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+.nav-hamburger span { display: block; width: 20px; height: 1px; background: var(--white); transition: var(--t-fast); }
+.nav.scrolled .nav-hamburger span { background: var(--ink); }
+.nav-hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+
+.mobile-drawer { display: none; position: fixed; inset: 0; z-index: 999; pointer-events: none; }
+.mobile-drawer.open { pointer-events: all; }
+.mobile-drawer-overlay { position: absolute; inset: 0; background: rgba(42,37,33,0.4); opacity: 0; transition: opacity var(--t-fast); }
+.mobile-drawer.open .mobile-drawer-overlay { opacity: 1; }
+.mobile-drawer-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(320px, 88vw); background: var(--paper);
+  padding: var(--sp-7) var(--sp-4) var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-1);
+  transform: translateX(100%); transition: transform var(--t-slow); }
+.mobile-drawer.open .mobile-drawer-panel { transform: translateX(0); }
+.mobile-drawer-close { position: absolute; top: var(--sp-3); right: var(--sp-3); color: var(--stone); font-size: 1.3rem; cursor: pointer; }
+.mobile-drawer-panel a { font-family: var(--font-display); font-size: 1.2rem; font-style: italic; color: var(--ink); padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
+.mobile-reserve-btn { display: inline-block; margin-top: var(--sp-3); background: var(--ink); color: var(--paper) !important;
+  padding: 13px var(--sp-4); text-align: center; font-family: var(--font-body) !important; font-size: 0.75rem !important;
+  font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; }
+
+@media (max-width: 900px) { .nav-links { display: none; } .nav-hamburger { display: flex; } .mobile-drawer { display: block; } }
+
+/* ── HERO — asymmetric photo pair + floating text, generous negative space ── */
+.hero { position: relative; min-height: 100svh; display: flex; align-items: center; padding: var(--sp-9) 0 var(--sp-7); overflow: hidden; background: var(--ink); }
+.hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--sp-7); align-items: center; width: 100%; }
+.hero-photos { position: relative; height: 640px; }
+.hero-photo-main { position: absolute; top: 0; left: 0; width: 78%; height: 92%; overflow: hidden; }
+.hero-photo-main img { width: 100%; height: 100%; object-fit: cover; }
+.hero-photo-accent { position: absolute; bottom: 0; right: 0; width: 46%; height: 46%; overflow: hidden; border: 6px solid var(--ink); }
+.hero-photo-accent img { width: 100%; height: 100%; object-fit: cover; }
+.hero-text { color: var(--white); }
+.hero-location { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.16em;
+  text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: var(--sp-3); }
+.hero-location svg { color: var(--horizon); }
+.hero-headline { font-size: clamp(2.6rem, 4.4vw, 4.4rem); margin-bottom: var(--sp-3); color: var(--white); }
+.hero-headline em { color: var(--horizon); }
+.hero-sub { font-size: 1rem; color: rgba(255,255,255,0.68); line-height: 1.8; max-width: 400px; margin-bottom: var(--sp-5); }
+.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); }
+.btn-reserve { display: inline-flex; align-items: center; gap: 10px; background: var(--paper); color: var(--ink);
+  padding: 15px 34px; font-size: 0.76rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: background var(--t-fast), transform var(--t-fast); }
+.btn-reserve:hover { background: var(--clay); color: var(--white); transform: translateY(-2px); }
+.btn-ghost { display: inline-flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.8); font-size: 0.76rem;
+  border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 2px; transition: color var(--t-fast), border-color var(--t-fast); }
+.btn-ghost:hover { color: var(--white); border-color: var(--white); }
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-photos { height: 340px; order: -1; }
+  .hero { padding-top: var(--sp-8); }
+}
+@media (max-width: 560px) { .hero-headline { font-size: 2.2rem; } }
+
+/* ── SECTION SHELL ── */
+section { padding: var(--sp-9) 0; }
+.sec-head { margin-bottom: var(--sp-7); max-width: 560px; }
+.sec-head .headline { font-size: clamp(1.9rem, 3.4vw, 2.7rem); }
+.sec-head.center { margin-left: auto; margin-right: auto; text-align: center; }
+
+/* ── VIDEO SECTION ── */
+.video-section { background: var(--plaster); }
+.video-section-inner { display: grid; grid-template-columns: 1fr 1.6fr; gap: var(--sp-7); align-items: center; }
+.video-runtime { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--stone); margin-top: var(--sp-2); }
+.video-runtime::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--clay); }
+.video-stage { position: relative; border-radius: 2px; overflow: hidden; background: var(--ink); cursor: pointer; }
+.video-stage::after { content: ''; position: absolute; inset: 0; background: rgba(42,37,33,0.2); transition: opacity var(--t-fast); pointer-events: none; }
+.video-stage.playing::after { opacity: 0; }
+.video-stage-ratio { aspect-ratio: 16/9; position: relative; }
+.video-thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity var(--t-fast); }
+.video-stage.playing .video-thumb { opacity: 0; pointer-events: none; }
+.video-embed { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity var(--t-fast); border: none; }
+.video-stage.playing .video-embed { opacity: 1; }
+.video-play-btn { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; transition: opacity var(--t-fast); }
+.video-stage.playing .video-play-btn { opacity: 0; pointer-events: none; }
+.video-play-ring { width: 68px; height: 68px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; transition: transform var(--t-fast), background var(--t-fast); }
+.video-stage:hover .video-play-ring { background: var(--white); transform: scale(1.06); }
+.video-play-icon { width: 0; height: 0; border-style: solid; border-width: 9px 0 9px 16px; border-color: transparent transparent transparent #fff; margin-left: 3px; }
+.video-stage:hover .video-play-icon { border-left-color: var(--ink); }
+.video-meta { position: absolute; bottom: 0; left: 0; right: 0; z-index: 4; padding: var(--sp-4); background: linear-gradient(to top, rgba(42,37,33,0.7), transparent); transition: opacity var(--t-fast); }
+.video-stage.playing .video-meta { opacity: 0; pointer-events: none; }
+.video-meta-title { font-family: var(--font-display); font-style: italic; font-size: 1.1rem; color: var(--white); }
+@media (max-width: 800px) { .video-section-inner { grid-template-columns: 1fr; } }
+
+/* ── ABOUT — the collage motif repeats ── */
+.about-section { background: var(--paper); }
+.about-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: var(--sp-7); align-items: center; }
+.about-photos { position: relative; height: 520px; }
+.about-photo-main { position: absolute; top: 8%; right: 0; width: 76%; height: 84%; overflow: hidden; }
+.about-photo-main img { width: 100%; height: 100%; object-fit: cover; }
+.about-photo-accent { position: absolute; bottom: 0; left: 0; width: 44%; height: 42%; overflow: hidden; border: 6px solid var(--paper); }
+.about-photo-accent img { width: 100%; height: 100%; object-fit: cover; }
+.stat-row { display: flex; gap: var(--sp-6); margin-top: var(--sp-5); padding-top: var(--sp-5); border-top: 1px solid var(--line); }
+.stat-number { font-family: var(--font-display); font-style: italic; font-size: 2rem; color: var(--clay); display: block; }
+.stat-label { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone); margin-top: 4px; display: block; }
+@media (max-width: 800px) { .about-grid { grid-template-columns: 1fr; } .about-photos { height: 320px; } }
+
+/* ── FEATURED SUITE ── */
+.featured-suite { background: var(--ink); color: var(--white); }
+.suite-editorial { display: grid; grid-template-columns: 1fr 1fr; min-height: 560px; }
+.suite-photo { position: relative; overflow: hidden; }
+.suite-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.suite-photo-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.04); }
+.suite-info { padding: var(--sp-7) var(--sp-6); display: flex; flex-direction: column; justify-content: center; gap: var(--sp-3); }
+.suite-name { font-family: var(--font-display); font-style: italic; font-size: clamp(1.7rem, 3vw, 2.4rem); color: var(--white); }
+.suite-desc { font-size: 0.92rem; color: rgba(255,255,255,0.6); line-height: 1.85; max-width: 360px; }
+.suite-details { display: flex; flex-direction: column; gap: var(--sp-1); }
+.suite-detail-row { display: flex; align-items: center; gap: 12px; font-size: 0.82rem; color: rgba(255,255,255,0.65); }
+.suite-detail-row svg { color: var(--clay); flex-shrink: 0; }
+.suite-price-row { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
+.suite-price { font-family: var(--font-display); font-style: italic; font-size: 1.8rem; color: var(--horizon); }
+.suite-price-unit { font-size: 0.72rem; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.06em; }
+.suite-status { display: inline-flex; align-items: center; gap: 6px; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 12px; border: 1px solid rgba(255,255,255,0.2); width: fit-content; }
+.suite-status.available { color: #9FCBA8; border-color: rgba(159,203,168,0.4); }
+.suite-status.limited { color: #E0BE86; border-color: rgba(224,190,134,0.4); }
+.suite-status.booked { color: rgba(255,255,255,0.35); }
+.btn-reserve-dark { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; background: var(--white); color: var(--ink); padding: 13px 30px; font-size: 0.74rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; transition: background var(--t-fast); }
+.btn-reserve-dark:hover { background: var(--clay); color: var(--white); }
+.btn-reserve-dark.booked-state { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); pointer-events: none; }
+@media (max-width: 800px) { .suite-editorial { grid-template-columns: 1fr; } .suite-photo { aspect-ratio: 16/9; min-height: 280px; } .suite-info { padding: var(--sp-5) var(--sp-3); } }
+
+/* ── ROOM COLLECTION ── */
+.rooms-collection { background: var(--paper); }
+.room-row { display: grid; grid-template-columns: 1fr 1fr; min-height: 440px; margin-bottom: 2px; }
+.room-row.row-reverse { direction: rtl; }
+.room-row.row-reverse > * { direction: ltr; }
+.room-row-photo { overflow: hidden; background: var(--plaster); position: relative; }
+.room-row-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.room-row-status { position: absolute; top: var(--sp-3); left: var(--sp-3); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 12px; z-index: 2; background: rgba(250,246,239,0.92); color: var(--ink); }
+.room-row-info { padding: var(--sp-6) var(--sp-6); display: flex; flex-direction: column; justify-content: center; gap: var(--sp-3); background: var(--white); }
+.room-row-name { font-family: var(--font-display); font-style: italic; font-size: clamp(1.4rem, 2.2vw, 2rem); color: var(--ink); }
+.room-row-desc { font-size: 0.9rem; color: var(--stone); line-height: 1.85; max-width: 340px; }
+.room-feature-item { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--ink); opacity: 0.75; }
+.room-feature-item svg { color: var(--clay); flex-shrink: 0; }
+.room-row-price { display: flex; align-items: baseline; gap: 6px; }
+.room-price-fig { font-family: var(--font-display); font-style: italic; font-size: 1.6rem; color: var(--clay); }
+.room-price-unit { font-size: 0.7rem; color: var(--stone); text-transform: uppercase; letter-spacing: 0.05em; }
+.btn-reserve-outline { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; color: var(--ink); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--ink); padding-bottom: 3px; transition: color var(--t-fast), border-color var(--t-fast); }
+.btn-reserve-outline:hover { color: var(--clay); border-color: var(--clay); }
+.btn-reserve-outline.disabled { color: var(--stone); border-color: var(--stone); pointer-events: none; }
+@media (max-width: 800px) { .room-row { grid-template-columns: 1fr; } .room-row.row-reverse { direction: ltr; } .room-row-photo { min-height: 240px; } .room-row-info { padding: var(--sp-5) var(--sp-3); } }
+
+/* ── AMENITIES ── */
+.amenities-section { background: var(--ink); color: var(--white); }
+.amenities-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(255,255,255,0.08); }
+.amenity-card { background: var(--ink); padding: var(--sp-5) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); }
+.amenity-icon { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: var(--horizon); }
+.amenity-name { font-family: var(--font-display); font-style: italic; font-size: 1.05rem; color: var(--white); }
+.amenity-desc { font-size: 0.8rem; color: rgba(255,255,255,0.45); line-height: 1.75; }
+@media (max-width: 800px) { .amenities-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .amenities-grid { grid-template-columns: 1fr; } }
+
+/* ── CONFERENCE ── */
+.conference-section { background: var(--white); }
+.venue-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
+.venue-card { display: flex; flex-direction: column; background: var(--paper); overflow: hidden; }
+.venue-photo { aspect-ratio: 16/10; overflow: hidden; background: var(--plaster); position: relative; }
+.venue-photo img { width: 100%; height: 100%; object-fit: cover; }
+.venue-cap { position: absolute; top: var(--sp-2); left: var(--sp-2); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.04em; background: rgba(42,37,33,0.8); color: #fff; padding: 4px 12px; }
+.venue-body { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); flex: 1; }
+.venue-name { font-family: var(--font-display); font-style: italic; font-size: 1.25rem; color: var(--ink); }
+.venue-desc { font-size: 0.85rem; color: var(--stone); line-height: 1.75; }
+.venue-features { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.venue-chip { font-size: 0.7rem; color: var(--ink); background: var(--white); border: 1px solid var(--line); padding: 3px 10px; }
+.venue-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: var(--sp-2); }
+.venue-price-fig { font-family: var(--font-display); font-style: italic; font-size: 1.3rem; color: var(--clay); }
+@media (max-width: 700px) { .venue-grid { grid-template-columns: 1fr; } }
+
+/* ── PACKAGES ── */
+.packages-section { background: var(--plaster); }
+.packages-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+.package-card { position: relative; display: flex; flex-direction: column; gap: var(--sp-3); background: var(--paper); border: 1px solid var(--line); padding: var(--sp-5) var(--sp-4); }
+.package-card.featured { border-color: var(--clay); }
+.package-tag { position: absolute; top: -10px; left: var(--sp-4); background: var(--clay); color: var(--white); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 12px; }
+.package-name { font-family: var(--font-display); font-style: italic; font-size: 1.25rem; color: var(--ink); }
+.package-price { font-family: var(--font-display); font-style: italic; font-size: 1.9rem; color: var(--clay); }
+.package-unit { font-size: 0.7rem; color: var(--stone); text-transform: uppercase; }
+.package-desc { font-size: 0.85rem; color: var(--stone); line-height: 1.75; }
+.package-inc-item { display: flex; align-items: flex-start; gap: 9px; font-size: 0.82rem; color: var(--ink); opacity: 0.8; }
+.package-inc-item svg { color: var(--clay); margin-top: 3px; flex-shrink: 0; }
+.package-cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--ink); color: var(--paper); padding: 12px var(--sp-3); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; transition: background var(--t-fast); }
+.package-cta:hover { background: var(--clay); }
+@media (max-width: 900px) { .packages-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; } }
+
+/* ── DINING ── */
+.dining-section { background: var(--paper); }
+.dining-inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-7); align-items: center; }
+.dining-main-img { aspect-ratio: 4/5; overflow: hidden; background: var(--plaster); }
+.dining-main-img img { width: 100%; height: 100%; object-fit: cover; }
+.dining-highlight { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin-top: var(--sp-2); }
+.dining-item { padding: var(--sp-3); background: var(--white); border-left: 2px solid var(--clay); }
+.dining-item-name { font-family: var(--font-display); font-style: italic; font-size: 1rem; color: var(--ink); margin-bottom: 4px; }
+.dining-item-desc { font-size: 0.78rem; color: var(--stone); line-height: 1.7; }
+@media (max-width: 800px) { .dining-inner { grid-template-columns: 1fr; } .dining-highlight { grid-template-columns: 1fr; } }
+
+/* ── MENU ── */
+.menu-section { background: var(--plaster); }
+.menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
+.menu-item { display: flex; gap: var(--sp-3); background: var(--paper); padding: var(--sp-3); }
+.menu-item-photo { width: 74px; height: 74px; flex-shrink: 0; overflow: hidden; background: var(--white); }
+.menu-item-photo img { width: 100%; height: 100%; object-fit: cover; }
+.menu-item-body { flex: 1; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+.menu-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); }
+.menu-item-name { font-family: var(--font-display); font-style: italic; font-size: 1rem; color: var(--ink); }
+.menu-item-price { font-family: var(--font-display); font-style: italic; color: var(--clay); }
+.menu-item-desc { font-size: 0.76rem; color: var(--stone); line-height: 1.6; }
+.menu-item-cat { font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--clay); }
+@media (max-width: 640px) { .menu-grid { grid-template-columns: 1fr; } }
+
+/* ── EXPERIENCES ── */
+.experiences-section { background: var(--paper); }
+.experiences-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-3); }
+.experience-card-img { aspect-ratio: 3/4; overflow: hidden; background: var(--plaster); }
+.experience-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--t-slow); }
+.experience-card:hover .experience-card-img img { transform: scale(1.05); }
+.experience-card-body { padding-top: var(--sp-2); }
+.experience-card-name { font-family: var(--font-display); font-style: italic; font-size: 0.98rem; color: var(--ink); margin-bottom: 3px; }
+.experience-card-desc { font-size: 0.76rem; color: var(--stone); line-height: 1.6; }
+@media (max-width: 900px) { .experiences-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .experiences-grid { grid-template-columns: 1fr; } }
+
+/* ── GALLERY — offset collage, not a uniform grid ── */
+.gallery-section { background: var(--plaster); }
+.gallery-masonry { columns: 3; column-gap: 10px; }
+.gallery-item { break-inside: avoid; margin-bottom: 10px; overflow: hidden; cursor: zoom-in; }
+.gallery-item img { width: 100%; display: block; transition: transform var(--t-slow); }
+.gallery-item:hover img { transform: scale(1.03); }
+@media (max-width: 640px) { .gallery-masonry { columns: 2; } }
+@media (max-width: 400px) { .gallery-masonry { columns: 1; } }
+.lightbox { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(42,37,33,0.95); align-items: center; justify-content: center; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+.lightbox-close { position: absolute; top: var(--sp-3); right: var(--sp-3); color: rgba(255,255,255,0.6); font-size: 2rem; cursor: pointer; }
+.lightbox-close:hover { color: var(--white); }
+
+/* ── REVIEWS ── */
+.reviews-section { background: var(--white); }
+.reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+.review-card { padding: var(--sp-5) var(--sp-4); border: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--sp-3); }
+.review-stars { color: var(--clay); font-size: 0.9rem; }
+.review-text { font-size: 0.9rem; line-height: 1.85; color: var(--ink); flex: 1; font-style: italic; font-family: var(--font-display); font-weight: 400; }
+.review-author { display: flex; align-items: center; gap: var(--sp-2); padding-top: var(--sp-3); border-top: 1px solid var(--line); }
+.review-avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--plaster); }
+.review-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.review-avatar-init { width: 38px; height: 38px; border-radius: 50%; background: var(--plaster); color: var(--clay); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-style: italic; }
+.review-name { font-weight: 500; font-size: 0.85rem; color: var(--ink); }
+.review-role { font-size: 0.72rem; color: var(--stone); margin-top: 2px; }
+@media (max-width: 800px) { .reviews-grid { grid-template-columns: 1fr; } }
+@media (min-width: 540px) and (max-width: 800px) { .reviews-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── HOURS ── */
+.hours-section { background: var(--paper); }
+.hours-grid { max-width: 480px; }
+.hours-row { display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.hours-row:last-child { border-bottom: none; }
+.hours-row.today .hours-day { color: var(--clay); font-weight: 500; }
+.hours-day { font-size: 0.88rem; color: var(--ink); }
+.today-pill { font-size: 0.56rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; background: var(--clay); color: var(--white); padding: 3px 10px; margin-left: 8px; }
+.hours-time { font-size: 0.82rem; color: var(--stone); }
+
+/* ── LOCATION ── */
+.location-section { background: var(--plaster); }
+.location-inner { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--sp-6); align-items: start; }
+.location-details { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-3); }
+.location-detail { display: flex; align-items: flex-start; gap: 12px; font-size: 0.88rem; color: var(--ink); }
+.location-detail svg { color: var(--clay); margin-top: 2px; flex-shrink: 0; }
+.location-map { overflow: hidden; aspect-ratio: 4/3; background: var(--white); }
+.location-map iframe { width: 100%; height: 100%; border: none; }
+@media (max-width: 800px) { .location-inner { grid-template-columns: 1fr; } }
+
+/* ── BOOKING CTA ── */
+.booking-cta { position: relative; padding: var(--sp-9) 0; background: var(--ink); overflow: hidden; }
+.booking-cta-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0.25; }
+.booking-cta-content { position: relative; z-index: 2; text-align: center; color: var(--white); display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); }
+.booking-cta-headline { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(2rem, 3.6vw, 3rem); color: var(--white); max-width: 600px; }
+.booking-cta-body { font-size: 0.95rem; color: rgba(255,255,255,0.55); max-width: 420px; line-height: 1.8; }
+.booking-cta-note { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+
+/* ── STICKY WIDGET ── */
+.sticky-widget { position: fixed; bottom: var(--sp-3); left: 50%; transform: translateX(-50%) translateY(120px); z-index: 800;
+  background: rgba(42,37,33,0.92); backdrop-filter: blur(14px); padding: 10px 10px 10px var(--sp-3); display: flex; align-items: center; gap: var(--sp-2);
+  transition: transform 0.6s var(--ease); white-space: nowrap; }
+.sticky-widget.visible { transform: translateX(-50%) translateY(0); }
+.sticky-widget-label { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
+.sticky-widget-name { font-family: var(--font-display); font-style: italic; font-size: 0.92rem; color: var(--white); }
+.sticky-widget-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.15); }
+.sticky-widget-btn { background: var(--paper); color: var(--ink); padding: 9px 20px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+@media (max-width: 640px) { .sticky-widget-label { display: none; } .sticky-widget-divider { display: none; } }
+
+/* ── FOOTER ── */
+.footer { background: var(--ink); color: rgba(255,255,255,0.5); padding: var(--sp-8) 0 var(--sp-4); }
+.footer-inner { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: var(--sp-5); padding-bottom: var(--sp-6); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.footer-brand-name { font-family: var(--font-display); font-style: italic; font-size: 1.2rem; color: var(--white); margin-bottom: var(--sp-2); }
+.footer-brand-tagline { font-size: 0.82rem; line-height: 1.75; color: rgba(255,255,255,0.4); max-width: 240px; margin-bottom: var(--sp-4); }
+.footer-social { display: flex; gap: var(--sp-2); }
+.footer-social a { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); }
+.footer-col-title { font-size: 0.66rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: var(--sp-3); }
+.footer-links-list { display: flex; flex-direction: column; gap: 10px; }
+.footer-links-list a { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+.footer-links-list a:hover { color: var(--white); }
+.footer-contact-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
+.footer-contact-item svg { color: var(--clay); margin-top: 2px; flex-shrink: 0; }
+.footer-bottom { padding-top: var(--sp-4); display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-2); font-size: 0.74rem; color: rgba(255,255,255,0.25); }
+.footer-bottom a { color: rgba(255,255,255,0.35); }
+@media (max-width: 800px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; } }
+
+/* ── WHATSAPP FAB ── */
+.wa-fab { position: fixed; bottom: var(--sp-4); right: var(--sp-4); z-index: 700; width: 50px; height: 50px; border-radius: 50%;
+  background: #25D366; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.2); transition: transform var(--t-fast); }
+.wa-fab:hover { transform: scale(1.07); }
+.wa-fab svg { color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <div class="nav-logo">
+      {{#if has_logo}}<img src="{{logo_url}}" alt="{{business_name}}">{{/if}}
+      <span class="nav-logo-text">{{business_name}}</span>
+    </div>
+    <div class="nav-links">
+      {{#if has_rooms}}<a href="#rooms">{{nav_rooms_label}}</a>{{/if}}
+      {{#if has_about}}<a href="#about">{{nav_about_label}}</a>{{/if}}
+      {{#if has_amenities}}<a href="#amenities">{{nav_amenities_label}}</a>{{/if}}
+      {{#if has_conference}}<a href="#conference">{{nav_conference_label}}</a>{{/if}}
+      {{#if has_packages}}<a href="#packages">{{nav_packages_label}}</a>{{/if}}
+      {{#if has_dining}}<a href="#dining">{{nav_dining_label}}</a>{{/if}}
+      {{#if has_menu}}<a href="#menu">Menu</a>{{/if}}
+      {{#if has_video}}<a href="#video">{{nav_video_label}}</a>{{/if}}
+      {{#if has_experiences}}<a href="#experiences">Experiences</a>{{/if}}
+      {{#if has_gallery}}<a href="#gallery">{{nav_gallery_label}}</a>{{/if}}
+      {{#if has_testimonials}}<a href="#testimonials">{{nav_reviews_label}}</a>{{/if}}
+      {{reviews_press_nav_html}}
+      {{#if has_hours}}<a href="#hours">Hours</a>{{/if}}
+      <a href="#contact">{{nav_contact_label}}</a>
+      <a href="{{whatsapp_wa_link}}" class="nav-reserve" target="_blank" rel="noopener">{{nav_cta_label}}</a>
+    </div>
+    <div class="nav-hamburger" id="nav-hamburger" aria-label="Open menu"><span></span><span></span><span></span></div>
+  </div>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="mobile-drawer-overlay" id="drawer-overlay"></div>
+  <div class="mobile-drawer-panel">
+    <span class="mobile-drawer-close" id="drawer-close">&#10005;</span>
+    {{#if has_rooms}}<a href="#rooms" class="drawer-link">{{nav_rooms_label}}</a>{{/if}}
+    {{#if has_about}}<a href="#about" class="drawer-link">{{nav_about_label}}</a>{{/if}}
+    {{#if has_amenities}}<a href="#amenities" class="drawer-link">{{nav_amenities_label}}</a>{{/if}}
+    {{#if has_conference}}<a href="#conference" class="drawer-link">{{nav_conference_label}}</a>{{/if}}
+    {{#if has_packages}}<a href="#packages" class="drawer-link">{{nav_packages_label}}</a>{{/if}}
+    {{#if has_dining}}<a href="#dining" class="drawer-link">{{nav_dining_label}}</a>{{/if}}
+    {{#if has_menu}}<a href="#menu" class="drawer-link">Menu</a>{{/if}}
+    {{#if has_video}}<a href="#video" class="drawer-link">{{nav_video_label}}</a>{{/if}}
+    {{#if has_experiences}}<a href="#experiences" class="drawer-link">Experiences</a>{{/if}}
+    {{#if has_gallery}}<a href="#gallery" class="drawer-link">{{nav_gallery_label}}</a>{{/if}}
+    {{#if has_testimonials}}<a href="#testimonials" class="drawer-link">{{nav_reviews_label}}</a>{{/if}}
+    {{#if show_reviews_section}}<a href="#reviews" class="drawer-link">Reviews</a>{{/if}}
+    {{#if show_press_section}}<a href="#press" class="drawer-link">Press</a>{{/if}}
+    {{#if has_blog}}<a href="/blog" class="drawer-link">Blog</a>{{/if}}
+    {{#if has_hours}}<a href="#hours" class="drawer-link">Hours</a>{{/if}}
+    <a href="#contact" class="drawer-link">{{nav_contact_label}}</a>
+    <a href="{{whatsapp_wa_link}}" class="mobile-reserve-btn" target="_blank" rel="noopener">{{nav_cta_label}}</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="container hero-grid">
+    <div class="hero-photos reveal">
+      <div class="hero-photo-main"><img src="{{hero_image_url}}" alt="{{business_name}}"></div>
+      <div class="hero-photo-accent"><img src="{{hero_image_url}}" alt=""></div>
+    </div>
+    <div class="hero-text reveal">
+      {{hero_location_html}}
+      <h1 class="headline hero-headline">{{hi_hero_headline}}</h1>
+      <p class="hero-sub">{{hi_hero_subtext}}</p>
+      <div class="hero-actions">
+        <a href="{{whatsapp_wa_link}}" class="btn-reserve" target="_blank" rel="noopener">{{hero_cta_label}}</a>
+        {{#if has_rooms}}<a href="#rooms" class="btn-ghost">{{hero_secondary_label}}</a>{{/if}}
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hi-sections" style="display:flex;flex-direction:column">
+
+<!-- ABOUT -->
+{{#if has_about}}
+<section class="about-section" id="about" style="order:{{order_about}}">
+  <div class="container about-grid">
+    <div class="about-photos reveal">
+      <div class="about-photo-main">{{about_image_html}}</div>
+      <div class="about-photo-accent">{{about_image_html}}</div>
+    </div>
+    <div class="reveal">
+      <span class="eyebrow">{{about_eyebrow}}</span>
+      <h2 class="headline sec-head" style="margin-bottom:var(--sp-3);font-size:clamp(1.9rem,3.4vw,2.7rem);">{{about_heading}}</h2>
+      <p class="body-text">{{about_text}}</p>
+      {{about_stats_html}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- VIDEO -->
+{{#if has_video}}
+<section class="video-section" id="video" style="order:{{order_video}}">
+  <div class="container video-section-inner">
+    <div class="reveal">
+      <span class="eyebrow">{{video_eyebrow}}</span>
+      <h2 class="headline" style="font-size:clamp(1.9rem,3.4vw,2.5rem);">{{video_heading}}</h2>
+      {{video_sub_html}}
+      {{video_runtime_html}}
+    </div>
+    <div class="reveal">{{video_stage_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- FEATURED SUITE -->
+{{#if has_rooms}}
+<section class="featured-suite" id="rooms" style="order:{{order_rooms}}">{{rooms_featured_html}}</section>
+{{/if}}
+
+<!-- ROOM COLLECTION -->
+{{#if has_multiple_rooms}}
+<section class="rooms-collection" style="order:{{order_rooms}}">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{{rooms_eyebrow}}</span>
+      <h2 class="headline">{{rooms_heading}}</h2>
+    </div>
+  </div>
+  {{rooms_collection_html}}
+</section>
+{{/if}}
+
+<!-- AMENITIES -->
+{{#if has_amenities}}
+<section class="amenities-section" id="amenities" style="order:{{order_amenities}}">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">{{amenities_eyebrow}}</span>
+      <h2 class="headline" style="color:var(--white)">{{amenities_heading}}</h2>
+      {{amenities_sub_html}}
+    </div>
+    <div class="amenities-grid">{{amenities_cards_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- CONFERENCE -->
+{{#if has_conference}}
+<section class="conference-section" id="conference" style="order:{{order_conference}}">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">{{conference_eyebrow}}</span>
+      <h2 class="headline">{{conference_heading}}</h2>
+      {{conference_sub_html}}
+    </div>
+    <div class="venue-grid">{{conference_cards_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- PACKAGES -->
+{{#if has_packages}}
+<section class="packages-section" id="packages" style="order:{{order_packages}}">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">{{packages_eyebrow}}</span>
+      <h2 class="headline">{{packages_heading}}</h2>
+      {{packages_sub_html}}
+    </div>
+    <div class="packages-grid">{{packages_cards_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- DINING -->
+{{#if has_dining}}
+<section class="dining-section" id="dining" style="order:{{order_dining}}">
+  <div class="container dining-inner">
+    <div class="reveal">{{dining_images_html}}</div>
+    <div class="reveal">
+      <span class="eyebrow">{{dining_eyebrow}}</span>
+      <h2 class="headline" style="font-size:clamp(1.9rem,3.4vw,2.5rem);margin-bottom:var(--sp-2);">{{dining_name}}</h2>
+      <p class="body-text">{{dining_description}}</p>
+      {{dining_highlights_html}}
+      <a href="{{whatsapp_wa_link}}" class="btn-reserve-outline" target="_blank" rel="noopener" style="margin-top:var(--sp-3);">{{dining_cta_label}}</a>
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- MENU -->
+{{#if has_menu}}
+<section class="menu-section" id="menu" style="order:{{order_menu}}">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">{{menu_eyebrow}}</span>
+      <h2 class="headline">{{menu_heading}}</h2>
+      {{#if menu_sub}}<p class="body-text" style="margin:var(--sp-2) auto 0;text-align:center;">{{menu_sub}}</p>{{/if}}
+    </div>
+    <div class="menu-grid">
+      {{#each menu}}
+      <div class="menu-item reveal">
+        {{#if photo}}<div class="menu-item-photo"><img src="{{photo}}" alt="{{name}}" loading="lazy"></div>{{/if}}
+        <div class="menu-item-body">
+          <div class="menu-item-top">
+            <span class="menu-item-name">{{name}}</span>
+            {{#if price}}<span class="menu-item-price">{{price}}</span>{{/if}}
+          </div>
+          {{#if description}}<p class="menu-item-desc">{{description}}</p>{{/if}}
+          {{#if category}}<span class="menu-item-cat">{{category}}</span>{{/if}}
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+{{/if}}
+
+<!-- EXPERIENCES -->
+{{#if has_experiences}}
+<section class="experiences-section" id="experiences" style="order:{{order_experiences}}">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">{{experiences_eyebrow}}</span>
+      <h2 class="headline">{{experiences_heading}}</h2>
+      {{experiences_sub_html}}
+    </div>
+    <div class="experiences-grid">{{experiences_cards_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- GALLERY -->
+{{#if has_gallery}}
+<section class="gallery-section" id="gallery" style="order:{{order_gallery}}">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">{{gallery_eyebrow}}</span>
+      <h2 class="headline">{{gallery_heading}}</h2>
+      {{gallery_sub_html}}
+    </div>
+    <div class="gallery-masonry">{{gallery_items_html}}</div>
+  </div>
+</section>
+<div class="lightbox" id="lightbox"><span class="lightbox-close" id="lightbox-close">&#10005;</span><img src="" alt="" id="lightbox-img"></div>
+{{/if}}
+
+<!-- REVIEWS (testimonials) -->
+{{#if has_testimonials}}
+<section class="reviews-section" id="testimonials" style="order:{{order_testimonials}}">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow">{{reviews_eyebrow}}</span>
+      <h2 class="headline">{{reviews_heading}}</h2>
+    </div>
+    <div class="reviews-grid">{{testimonials_cards_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- HOURS -->
+{{#if has_hours}}
+<section class="hours-section" id="hours" style="order:{{order_hours}}">
+  <div class="container">
+    <div class="reveal" style="margin-bottom:var(--sp-6);">
+      <span class="eyebrow">{{hours_eyebrow}}</span>
+      <h2 class="headline" style="font-size:clamp(1.9rem,3.4vw,2.5rem);">{{hours_heading}}</h2>
+    </div>
+    <div class="hours-grid">{{hours_rows_html}}</div>
+  </div>
+</section>
+{{/if}}
+
+<!-- REVIEWS (platform feature) -->
+{{#if show_reviews_section}}
+<section id="reviews" style="padding:90px 20px;order:{{order_reviews}}">
+  {{reviews_section_html}}
+</section>
+{{/if}}
+
+<!-- PRESS -->
+{{#if show_press_section}}
+<section id="press" style="padding:70px 20px;order:{{order_press}}">
+  {{press_section_html}}
+</section>
+{{/if}}
+
+<!-- LOCATION -->
+<section class="location-section" id="contact" style="order:{{order_contact}}">
+  <div class="container location-inner">
+    <div class="reveal">
+      <span class="eyebrow">{{location_eyebrow}}</span>
+      <h2 class="headline" style="font-size:clamp(1.9rem,3.4vw,2.5rem);">{{location_heading}}</h2>
+      {{location_body_html}}
+      <div class="location-details">{{location_details_html}}</div>
+      <a href="{{whatsapp_wa_link}}" class="btn-reserve" target="_blank" rel="noopener" style="margin-top:var(--sp-4);background:var(--ink);color:var(--paper);display:inline-flex;">{{location_cta_label}}</a>
+    </div>
+    <div class="location-map reveal">{{location_map_html}}</div>
+  </div>
+</section>
+
+</div><!-- /.hi-sections -->
+
+<!-- BOOKING CTA -->
+<section class="booking-cta">
+  {{cta_bg_html}}
+  <div class="container booking-cta-content">
+    <span class="eyebrow">{{cta_eyebrow}}</span>
+    <h2 class="booking-cta-headline">{{cta_heading}}</h2>
+    {{cta_body_html}}
+    <a href="{{whatsapp_wa_link}}" class="btn-reserve" target="_blank" rel="noopener">{{cta_button_label}}</a>
+    {{cta_note_html}}
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-name">{{business_name}}</div>
+        <p class="footer-brand-tagline">{{tagline}}</p>
+        <div class="footer-social">{{footer_social_html}}</div>
+      </div>
+      <div>
+        <div class="footer-col-title">{{footer_nav_title}}</div>
+        <div class="footer-links-list">
+          {{#if has_rooms}}<a href="#rooms">{{nav_rooms_label}}</a>{{/if}}
+          {{#if has_about}}<a href="#about">{{nav_about_label}}</a>{{/if}}
+          {{#if has_amenities}}<a href="#amenities">{{nav_amenities_label}}</a>{{/if}}
+          {{#if has_conference}}<a href="#conference">{{nav_conference_label}}</a>{{/if}}
+          {{#if has_packages}}<a href="#packages">{{nav_packages_label}}</a>{{/if}}
+          {{#if has_dining}}<a href="#dining">{{nav_dining_label}}</a>{{/if}}
+          {{#if has_menu}}<a href="#menu">Menu</a>{{/if}}
+          {{#if has_video}}<a href="#video">{{nav_video_label}}</a>{{/if}}
+          {{#if has_experiences}}<a href="#experiences">Experiences</a>{{/if}}
+          {{#if has_gallery}}<a href="#gallery">{{nav_gallery_label}}</a>{{/if}}
+          {{#if has_testimonials}}<a href="#testimonials">{{nav_reviews_label}}</a>{{/if}}
+          {{reviews_press_nav_html}}
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">{{footer_contact_title}}</div>
+        {{footer_contact_html}}
+      </div>
+      <div>
+        <div class="footer-col-title">{{footer_reserve_title}}</div>
+        <div class="footer-links-list">{{footer_reserve_html}}</div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; {{current_year}} {{business_name}}. All rights reserved.</span>
+      <span>Powered by <a href="https://websites.co.zw" target="_blank" rel="noopener">websites.co.zw</a></span>
+    </div>
+  </div>
+</footer>
+
+<!-- STICKY WIDGET -->
+<div class="sticky-widget" id="sticky-widget">
+  <div>
+    <div class="sticky-widget-label">{{sticky_label}}</div>
+    <div class="sticky-widget-name">{{business_name}}</div>
+  </div>
+  <div class="sticky-widget-divider"></div>
+  <a href="{{whatsapp_wa_link}}" class="sticky-widget-btn" target="_blank" rel="noopener">{{nav_cta_label}}</a>
+</div>
+
+<!-- WHATSAPP FAB -->
+{{#if has_whatsapp}}
+<a class="wa-fab" href="{{whatsapp_wa_link}}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+</a>
+{{/if}}
+
+<script>
+(function () {
+  'use strict';
+  var nav = document.getElementById('nav');
+  function onScroll() { if (nav) nav.classList.toggle('scrolled', window.scrollY > 60); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  var hamburger = document.getElementById('nav-hamburger');
+  var drawer    = document.getElementById('mobile-drawer');
+  var overlay   = document.getElementById('drawer-overlay');
+  var closeBtn  = document.getElementById('drawer-close');
+  function openDrawer()  { if (drawer) drawer.classList.add('open'); if (hamburger) hamburger.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeDrawer() { if (drawer) drawer.classList.remove('open'); if (hamburger) hamburger.classList.remove('open'); document.body.style.overflow = ''; }
+  if (hamburger) hamburger.addEventListener('click', openDrawer);
+  if (overlay)   overlay.addEventListener('click', closeDrawer);
+  if (closeBtn)  closeBtn.addEventListener('click', closeDrawer);
+  document.querySelectorAll('.drawer-link, .mobile-reserve-btn').forEach(function(a) { a.addEventListener('click', closeDrawer); });
+
+  var revealEls = Array.from(document.querySelectorAll('.reveal'));
+  function checkReveal() {
+    var vh = window.innerHeight;
+    revealEls = revealEls.filter(function(el) {
+      if (el.getBoundingClientRect().top < vh - 60) { el.classList.add('visible'); return false; }
+      return true;
+    });
+  }
+  window.addEventListener('scroll', checkReveal, { passive: true });
+  window.addEventListener('resize', checkReveal, { passive: true });
+  setTimeout(checkReveal, 100);
+
+  var stickyWidget = document.getElementById('sticky-widget');
+  var heroSection  = document.getElementById('hero');
+  function checkSticky() {
+    if (!stickyWidget || !heroSection) return;
+    stickyWidget.classList.toggle('visible', heroSection.getBoundingClientRect().bottom < 0);
+  }
+  window.addEventListener('scroll', checkSticky, { passive: true });
+  checkSticky();
+
+  var lightbox      = document.getElementById('lightbox');
+  var lightboxImg   = document.getElementById('lightbox-img');
+  var lightboxClose = document.getElementById('lightbox-close');
+  document.querySelectorAll('.gallery-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      var src = item.getAttribute('data-src') || (item.querySelector('img') && item.querySelector('img').src);
+      if (lightbox && lightboxImg && src) { lightboxImg.src = src; lightbox.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    });
+  });
+  function closeLightbox() { if (lightbox) { lightbox.classList.remove('open'); document.body.style.overflow = ''; } }
+  if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+  if (lightbox) lightbox.addEventListener('click', function(e) { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); window.scrollTo({ top: target.offsetTop - 20, behavior: 'smooth' }); }
+    });
+  });
+
+  document.querySelectorAll('.video-stage[data-src]').forEach(function(stage) {
+    stage.addEventListener('click', function() {
+      if (stage.classList.contains('playing')) return;
+      var src  = stage.getAttribute('data-src');
+      var type = stage.getAttribute('data-type') || 'native';
+      var embed = stage.querySelector('.video-embed');
+      if (!embed) return;
+      if (type === 'iframe') {
+        var sep = src.indexOf('?') === -1 ? '?' : '&';
+        embed.src = src + sep + 'autoplay=1&rel=0&modestbranding=1';
+      } else {
+        embed.play && embed.play().catch(function(){});
+      }
+      stage.classList.add('playing');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
