@@ -1,5 +1,28 @@
 /**
- * websites.co.zw -- Render Worker v10.30 + Church Template Support
+ * websites.co.zw -- Render Worker v10.32 + Church Template Support
+ *
+ * v10.32:
+ *   - Added hospitality-sands and hospitality-wild, two premium ($15
+ *     one-time) skins of hospitality-inn. Same buildHospitalityExtras()
+ *     content schema and booking engine, different index.html/config.json
+ *     folder per skin. Registered across all 10 places a template ID needs
+ *     to agree in THIS file: KNOWN_TEMPLATE_IDS, the main dispatch
+ *     condition, SITE_PALETTES (2 new palette entries: sand-clay,
+ *     void-ember), paletteFor(), FONT_MAP (2 new entries: fraunces-work,
+ *     bricolage-inter), fontFor(), FONT_VAR_MAP, TEMPLATE_VAR_MAP,
+ *     HOSP_TEMPLATE_IDS, DAY_BOOKING_TEMPLATE_IDS. Still needs the wizard,
+ *     editor.html (7 of its own copies), the AI worker catalogue, and
+ *     auth-worker's 3 lookup maps + TEMPLATE_ID_ALIASES -- this worker was
+ *     the only file available to patch this session.
+ *   - Bonus fix: hospitality-inn itself drives typography through
+ *     var(--font-display)/var(--font-body) but was never in FONT_VAR_MAP --
+ *     font pair overrides have likely been silently doing nothing on it
+ *     since it shipped. Added it alongside the two new skins.
+ *
+ * v10.31:
+ *   - Added GET /api/live-preview public endpoint for landing-page live previews
+ *   - Renders real templates with synthetic seeded content, no D1 writes,
+ *     no auth -- matches an industry string to a real template ID
  *
  * v10.30:
  *   - Added full church template support with dedicated handler
@@ -36,6 +59,36 @@ export default {
 async function handleRequest(request, env) {
   const url = new URL(request.url);
   const host = url.hostname;
+
+  // ── NEW: public live-preview endpoint (any hostname routed to this
+  // worker will do — e.g. preview.websites.co.zw already matches your
+  // existing *.websites.co.zw wildcard route, no new CF route needed) ──
+  if (url.pathname === '/api/live-preview') {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        },
+      });
+    }
+    return handleLivePreview(request, env);
+  }
+
+  if (url.pathname === '/api/reviews/submit') {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
+    return handleReviewSubmit(request, env);
+  }
 
   if (host === 'assets.websites.co.zw') {
     const key = url.pathname.replace(/^\/+/, '');
@@ -86,8 +139,8 @@ async function getTemplate(templateId, env) {
   const base = `${origin}/templates/${templateId}`;
 
   const [htmlRes, configRes] = await Promise.all([
-    fetch(`${base}/index.html?v=3`),
-    fetch(`${base}/config.json?v=3`),
+    fetch(`${base}/index.html?v=4`),
+    fetch(`${base}/config.json?v=4`),
   ]);
 
   if (!htmlRes.ok) throw new Error(`Template HTML not found: ${templateId}`);
@@ -146,6 +199,11 @@ function renderEngine(templateHtml, site, config, extraTokens) {
   return html;
 }
 
+function buildDirectionsHref(address) {
+  if (!address) return '';
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+}
+
 function buildComputedTokens(site, c, config) {
   const businessName = c.business_name || c.name || '';
   const theme = c.theme || (site.content && site.content.theme) || {};
@@ -158,6 +216,7 @@ function buildComputedTokens(site, c, config) {
   const phone = c.phone || c.contact?.phone || '';
   const whatsapp = c.whatsapp || c.contact?.whatsapp || phone;
   const location = c.location || c.address || c.contact?.address || '';
+  const directionsHref = buildDirectionsHref(location);
   const about = c.about || '';
 
   const nameParts = businessName.trim().split(/\s+/);
@@ -194,6 +253,7 @@ function buildComputedTokens(site, c, config) {
     whatsapp_wa_link: `https://wa.me/${whatsappClean}`,
     location: location,
     address: location,
+    directions_href: directionsHref,
     logo_url: c.logo_url || c.images?.logo || site.logo_url || '',
     hero_image_url: c.hero_image_url || c.hero_image || c.images?.hero || site.hero_image_url || '',
     seo_title: seoTitle,
@@ -315,7 +375,17 @@ async function handlePublic(request, env, slug, customDomain) {
   const raw = typeof site.content === 'string' ? JSON.parse(site.content) : site.content;
   const content = normalizeContent(raw, site.template_id);
 
-  const templateId = site.template_id || content.template || 'bold-retail';
+  const blogUrl = new URL(request.url);
+  const blogEnabled = content.articles_enabled !== false;
+  if (blogEnabled && (blogUrl.pathname === '/blog' || blogUrl.pathname === '/blog/')) {
+    return handleBlogIndex(site, content);
+  }
+  if (blogEnabled && blogUrl.pathname.startsWith('/blog/')) {
+    const articleSlug = blogUrl.pathname.slice('/blog/'.length).replace(/\/$/, '');
+    return handleBlogArticle(site, content, articleSlug);
+  }
+
+  const templateId = site.template_id || content.template || 'beauty-salon';
 
   let html;
   try {
@@ -334,7 +404,7 @@ async function handlePublic(request, env, slug, customDomain) {
       rawTheme.custom_accent || ''
     );
 
-    const { styleBlock: fontBlock, fontsUrl } = buildFontOverride(rawTheme.font_pair || '');
+    const { styleBlock: fontBlock, fontsUrl } = buildFontOverride(rawTheme.font_pair || '', templateId);
 
     if (isSelfContained) {
       let out = resolved;
@@ -352,12 +422,15 @@ async function handlePublic(request, env, slug, customDomain) {
         const hospAssets = buildHospAssets();
         if (hospAssets.css) out = out.replace('</head>', hospAssets.css + '</head>');
         if (hospAssets.js) out = out.replace('</body>', hospAssets.js + '</body>');
+      }
+      if (DAY_BOOKING_TEMPLATE_IDS.has(templateId)) {
         const bookingAssets = buildBookingWidgetAssets(site);
         if (bookingAssets.css) out = out.replace('</head>', bookingAssets.css + '</head>');
         if (bookingAssets.js) out = out.replace('</body>', bookingAssets.js + '</body>');
       }
-      if (SALON_TEMPLATE_IDS.has(templateId)) {
-        const slotAssets = buildSlotBookingWidgetAssets(site, { accentColor: '#C96A7E', resourceLabel: 'stylist' });
+      if (SLOT_BOOKING_TEMPLATE_IDS.has(templateId)) {
+        const slotConfig = SLOT_BOOKING_CONFIG[templateId] || { accentColor: '#7c3aed', resourceLabel: 'provider' };
+        const slotAssets = buildSlotBookingWidgetAssets(site, slotConfig);
         if (slotAssets.css) out = out.replace('</head>', slotAssets.css + '</head>');
         if (slotAssets.js) out = out.replace('</body>', slotAssets.js + '</body>');
       }
@@ -395,7 +468,323 @@ async function handlePublic(request, env, slug, customDomain) {
   });
 }
 
+
+// =============================================================================
+// LIVE PREVIEW ENDPOINT (v4 patch — dynamic demo lookup from D1)
+// =============================================================================
+
+const KNOWN_TEMPLATE_IDS = new Set([
+  'beauty-salon', 'grill-house', 'school-institution', 'church',
+  'property-estate', 'advisory-firm', 'hardware-store', 'grocery-fmcg',
+  'boutique-fashion', 'bold-retail', 'hospitality-inn', 'fashion-retail',
+  'medical-clinic', 'personal-portfolio', 'creative-studio',
+  'hospitality-sands', 'hospitality-wild',
+]);
+
+const PREVIEW_RIBBON = `<div style="position:fixed;bottom:14px;right:14px;z-index:99999;background:rgba(13,15,20,.92);color:#fff;font:600 11px/1 system-ui,sans-serif;letter-spacing:.02em;padding:8px 14px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none">✨ Preview — claim it to make it yours</div>`;
+
+async function getDemoSiteForTemplate(env, templateId) {
+  const row = await env.DB.prepare(
+    `SELECT s.* FROM sites s
+     JOIN owners o ON o.id = s.owner_id
+     WHERE s.template_id = ?1 AND o.is_demo = 1
+     ORDER BY
+       CASE s.status WHEN 'published' THEN 0 WHEN 'grace' THEN 1 ELSE 2 END,
+       s.updated_at DESC
+     LIMIT 1`
+  ).bind(templateId).first();
+  return row || null;
+}
+
+async function handleLivePreview(request, env) {
+  try {
+    const url = new URL(request.url);
+    const q = url.searchParams;
+
+    const businessName = clampPrev(q.get('name'), 120) || 'Your Business';
+    const templateParam = clampPrev(q.get('template'), 40) || '';
+    const templateId = KNOWN_TEMPLATE_IDS.has(templateParam) ? templateParam : 'beauty-salon';
+
+    const demoSite = await getDemoSiteForTemplate(env, templateId);
+    if (!demoSite) {
+      return new Response(renderNoDemoYet(businessName), {
+        status: 200,
+        headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Access-Control-Allow-Origin': '*' },
+      });
+    }
+
+    const raw = typeof demoSite.content === 'string' ? JSON.parse(demoSite.content) : demoSite.content;
+    const normalized = normalizeContent(raw, templateId);
+    const originalName = normalized.business_name || normalized.name || '';
+
+    let renamed = deepReplaceName(normalized, originalName, businessName);
+    renamed.business_name = businessName;
+    renamed.name = businessName;
+
+    // Guarantee the visitor's name is visible wherever THIS template's hero
+    // actually pulls from — different templates use different fields:
+    //   tagline (advisory-firm, grill-house, property-estate),
+    //   hero_headline (beauty-salon, grocery-fmcg, hardware-store),
+    //   hi_hero_headline (hospitality-inn). Safe/no-op for the rest.
+    renamed.tagline = renamed.tagline
+      ? `${businessName} — ${renamed.tagline}`
+      : businessName;
+    renamed.hero_headline = businessName;
+    renamed.hi_hero_headline = businessName;
+
+    // Strip the demo's REAL contact details.
+    renamed.contact = {};
+    renamed.phone = '';
+    renamed.email = '';
+    renamed.whatsapp = '';
+    renamed.socials = {};
+
+    const fakeSite = {
+      id: 'preview',
+      owner_id: 'preview',
+      status: 'draft',
+      template_id: templateId,
+      draft_subdomain: 'preview',
+    };
+
+    const previewEnv = Object.assign({}, env, { ORDERS_WORKER: undefined });
+
+    const { html: templateHtml, config } = await getTemplate(templateId, env);
+    const extraTokens = await buildTemplateExtras(renamed, fakeSite, config, previewEnv);
+    const resolved     = renderEngine(templateHtml, { ...fakeSite, content: renamed }, config, extraTokens);
+
+    const _docHead = resolved.replace(/^\s*(?:<!--[\s\S]*?-->\s*)*/, '').toLowerCase();
+    const isSelfContained = _docHead.startsWith('<!doctype') || _docHead.startsWith('<html');
+
+    const rawTheme = renamed.theme || {};
+    const paletteBlock = buildPaletteOverride(templateId, rawTheme.palette || '', rawTheme.custom_accent || '');
+    const { styleBlock: fontBlock, fontsUrl } = buildFontOverride(rawTheme.font_pair || '', templateId);
+
+    let html;
+    if (isSelfContained) {
+      let out = resolved;
+      if (fontsUrl) out = out.replace(/https:\/\/fonts\.googleapis\.com\/css2\?[^"]+/, fontsUrl);
+      const headInsert = (paletteBlock || '') + (fontBlock || '');
+      if (headInsert) out = out.replace('</head>', headInsert + '</head>');
+      out = out.replace('</body>', PREVIEW_RIBBON + '</body>');
+      html = out;
+    } else {
+      let shellOut = wrapWithShell(resolved, renamed, fakeSite, config, false);
+      if (fontsUrl) shellOut = shellOut.replace(/https:\/\/fonts\.googleapis\.com\/css2\?[^"]+/, fontsUrl);
+      if (fontBlock) shellOut = shellOut.replace('</head>', fontBlock + '</head>');
+      shellOut = shellOut.replace('</body>', PREVIEW_RIBBON + '</body>');
+      html = shellOut;
+    }
+
+    return new Response(html, {
+      headers: {
+        'Content-Type': 'text/html;charset=UTF-8',
+        'Cache-Control': 'no-store',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  } catch (err) {
+    console.error('Live preview error:', err);
+    return new Response(
+      `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+       <body style="font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f7f7f8;color:#666">
+         <p>Preview temporarily unavailable — try again in a moment.</p>
+       </body></html>`,
+      { status: 200, headers: { 'Content-Type': 'text/html;charset=UTF-8' } }
+    );
+  }
+}
+
+function deepReplaceName(value, fromName, toName) {
+  if (!fromName || !toName || fromName === toName) return value;
+  const escaped = fromName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(escaped, 'gi');
+
+  function walk(v) {
+    if (typeof v === 'string') return v.replace(re, toName);
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === 'object') {
+      const out = {};
+      for (const k of Object.keys(v)) out[k] = walk(v[k]);
+      return out;
+    }
+    return v;
+  }
+  return walk(value);
+}
+
+function renderNoDemoYet(businessName) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:system-ui,sans-serif;height:100vh;display:flex;align-items:center;justify-content:center;background:#f7f7f8;color:#333;text-align:center;padding:24px}
+    .card{max-width:340px}
+    h2{font-size:1.1rem;margin-bottom:8px}
+    p{font-size:.88rem;color:#666;line-height:1.5}
+  </style>
+  </head><body>
+    <div class="card">
+      <h2>${businessName ? String(businessName).replace(/</g,'&lt;') : 'Your business'} — coming soon</h2>
+      <p>We don't have a live demo for this industry yet. Message us on WhatsApp and we'll build your site with you directly.</p>
+    </div>
+  </body></html>`;
+}
+
+function clampPrev(v, max) {
+  const s = String(v == null ? '' : v).trim();
+  return s.length > max ? s.slice(0, max) : s;
+}
+
+// =============================================================================
+// END LIVE PREVIEW ENDPOINT
+// =============================================================================
+
+// =============================================================================
+// PUBLIC REVIEW SUBMISSION ENDPOINT
+// =============================================================================
+//
+// Deliberately NOT a new D1 table. Reviews live inside the same
+// `content.reviews` array every other repeater (testimonials, gallery,
+// booking_services) already uses — each item just carries a `status`
+// ('pending' | 'approved' | 'rejected'). That means moderation is just
+// normal content editing through the EXISTING, already-authenticated
+// editor save flow (owner approves/rejects, clicks Save) — no new auth
+// surface to get right. This endpoint is the one genuinely new piece:
+// an UNAUTHENTICATED public write, since the visitor leaving a review
+// isn't logged in. It only ever appends one pending review to one site's
+// array; it can't read or touch anything else in that site's content.
+
+function jsonResp(obj, status, extraHeaders) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...(extraHeaders || {}) },
+  });
+}
+
+async function handleReviewSubmit(request, env) {
+  const cors = { 'Access-Control-Allow-Origin': '*' };
+
+  if (request.method !== 'POST') {
+    return jsonResp({ ok: false, error: 'Method not allowed' }, 405, cors);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch (err) {
+    return jsonResp({ ok: false, error: 'Invalid request' }, 400, cors);
+  }
+
+  // Honeypot -- a real visitor never fills this hidden field; a bot
+  // filling every field on the form will. Fake a success so it doesn't
+  // learn the field is a trap, but never actually write anything.
+  if (body.website || body.hp) {
+    return jsonResp({ ok: true }, 200, cors);
+  }
+
+  const siteId = String(body.site_id || '').trim();
+  const name = String(body.name || '').trim().slice(0, 80);
+  const text = String(body.text || '').trim().slice(0, 600);
+  const rating = parseInt(body.rating, 10);
+
+  if (!siteId) return jsonResp({ ok: false, error: 'Missing site' }, 400, cors);
+  if (!name) return jsonResp({ ok: false, error: 'Please add your name' }, 400, cors);
+  if (text.length < 10) return jsonResp({ ok: false, error: 'Please write a little more detail (at least 10 characters)' }, 400, cors);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return jsonResp({ ok: false, error: 'Please select a star rating' }, 400, cors);
+
+  let site;
+  try {
+    site = await env.DB.prepare('SELECT id, status, content FROM sites WHERE id = ?1').bind(siteId).first();
+  } catch (err) {
+    console.error('Review submit DB read failed:', err);
+    return jsonResp({ ok: false, error: 'Could not save your review — please try again' }, 500, cors);
+  }
+  if (!site || !['published', 'grace'].includes(site.status)) {
+    return jsonResp({ ok: false, error: 'This site is not accepting reviews right now' }, 404, cors);
+  }
+
+  let raw;
+  try {
+    raw = typeof site.content === 'string' ? JSON.parse(site.content) : (site.content || {});
+  } catch (err) {
+    raw = {};
+  }
+  const isWrapped = !!(raw.content && typeof raw.content === 'object' && !Array.isArray(raw.content));
+  const inner = isWrapped ? raw.content : raw;
+  if (!Array.isArray(inner.reviews)) inner.reviews = [];
+
+  // Cap total pending reviews per site so a spam burst can't grow one
+  // site's content blob without bound -- a genuine flood is rare enough
+  // that a flat cap is fine; this isn't trying to be a full anti-abuse
+  // system, just a backstop.
+  const pendingCount = inner.reviews.filter(r => r && r.status === 'pending').length;
+  if (pendingCount >= 100) {
+    return jsonResp({ ok: false, error: 'Reviews are temporarily unavailable — please try again later' }, 429, cors);
+  }
+
+  inner.reviews.push({
+    id: 'rev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+    name,
+    rating,
+    text,
+    status: 'pending',
+    created_at: Date.now(),
+  });
+
+  if (isWrapped) raw.content = inner; else raw = inner;
+
+  try {
+    await env.DB.prepare('UPDATE sites SET content = ?1 WHERE id = ?2')
+      .bind(JSON.stringify(raw), siteId)
+      .run();
+  } catch (err) {
+    console.error('Review submit write failed:', err);
+    return jsonResp({ ok: false, error: 'Could not save your review — please try again' }, 500, cors);
+  }
+
+  return jsonResp({ ok: true }, 200, cors);
+}
+
+// =============================================================================
+// END PUBLIC REVIEW SUBMISSION ENDPOINT
+// =============================================================================
+
+
 // --- SHARED FEATURED ITEM HELPER ---------------------------------------------
+
+// --- SHARED SECTION ORDER / TOGGLE HELPER -------------------------------------
+// One reusable implementation of the pattern already proven in
+// creative-studio/bold-retail/church: content.theme.sections is an
+// owner-ordered array of active section keys (written by the Design tab's
+// Page Sections list). sectionOn(key) answers "is this section switched on
+// right now" (required keys are always on); orderOf(key) gives its position
+// for a CSS `order:` value, so sections never added to theme.sections yet
+// sort to the end in their template-default relative order instead of
+// vanishing. Every template gets the SAME helper rather than reimplementing
+// this per template.
+function buildSectionOrderHelpers(c, defaultSections, requiredKeys) {
+  const required = new Set(requiredKeys || ['hero', 'contact']);
+  const sections = (c.theme && Array.isArray(c.theme.sections) && c.theme.sections.length) ?
+    c.theme.sections : defaultSections;
+  const sectionOn = (key) => required.has(key) || sections.includes(key);
+  const orderOf = (key) => {
+    const i = sections.indexOf(key);
+    if (i !== -1) return i;
+    // Not in the saved order. A required section still renders regardless
+    // (sectionOn above), so it needs a sane position too -- falling back
+    // to 999 pushed it to the very end no matter what, silently landing
+    // it after things like Contact even when the owner set Contact last
+    // on purpose. Falling back to the template's own default relative
+    // position keeps a required-but-unlisted section roughly where it
+    // belongs instead of jumping the queue.
+    if (required.has(key)) {
+      const d = defaultSections.indexOf(key);
+      return d === -1 ? 999 : d;
+    }
+    return 999;
+  };
+  return { sectionOn, orderOf };
+}
 
 function extractFeatured(items) {
   if (!Array.isArray(items) || !items.length) {
@@ -412,6 +801,44 @@ const FEAT_STAR_SVG = `<svg viewBox="0 0 24 24" width="10" height="10" fill="cur
 
 function featBadgeHtml(tag) {
   return `<span class="feat-badge">${FEAT_STAR_SVG}${esc(tag)}</span>`;
+}
+
+// --- BOOKING DEPOSIT HELPERS -------------------------------------------------
+// Shared by every SLOT_BOOKING_TEMPLATE_IDS template's bookable_services_html
+// builder (advisory-firm, beauty-salon, medical-clinic, personal-portfolio,
+// creative-studio). `s` is one entry from content.booking_services, saved by
+// editor.html's v3state.bookingServices — which since the v1.17 deposit patch
+// includes commitment_level ('none'|'deposit'|'full'), deposit_amount, and
+// deposit_percent alongside the pre-existing name/price/duration_min fields.
+//
+// This only computes a DISPLAY estimate for the customer before they book —
+// the real, authoritative amount is computed server-side by bookings-worker's
+// createSlotBooking() at booking time (never trust a client-side number for
+// money owed). If the owner's numbers don't quite resolve here (e.g. a
+// percent-based deposit with no price set), we simply show nothing rather
+// than guess -- the real error surfaces once they actually try to book.
+function svcDepositLabel(s) {
+  const level = s && s.commitment_level;
+  if (level === 'full') {
+    return s.price ? `Full payment (${s.price}) required to book` : 'Full payment required to book';
+  }
+  if (level === 'deposit') {
+    if (s.deposit_amount) return 'Deposit required: $' + s.deposit_amount;
+    if (s.deposit_percent && s.price) return `Deposit required: ${s.deposit_percent}% of ${s.price}`;
+    if (s.deposit_percent) return `Deposit required: ${s.deposit_percent}%`;
+    return 'Deposit required to book';
+  }
+  return '';
+}
+
+// Renders the extra data-* attributes the booking widget JS reads off each
+// trigger button, so a customer sees the payment requirement (and the
+// widget can collect it) before ever calling the availability API.
+function svcDepositAttrs(s) {
+  const level = (s && s.commitment_level === 'deposit') || (s && s.commitment_level === 'full') ? s.commitment_level : 'none';
+  const depositAmount = s && s.deposit_amount ? esc(String(s.deposit_amount)) : '';
+  const depositPercent = s && s.deposit_percent ? esc(String(s.deposit_percent)) : '';
+  return `data-commitment-level="${level}" data-deposit-amount="${depositAmount}" data-deposit-percent="${depositPercent}"`;
 }
 
 // --- SERVICE BINDING HELPERS ------------------------------------------------
@@ -450,6 +877,161 @@ async function checkAddonActive(env, siteId, addonType) {
     console.error('Addon check failed, failing open:', err);
     return true;
   }
+}
+
+// --- STORE PAYMENTS GATING ----------------------------------------------
+//
+// Unlike checkAddonActive (which fails OPEN — a broken binding shouldn't
+// block a free feature), this fails CLOSED: if we can't confirm the owner
+// has a verified Paynow connection, "Pay online" simply doesn't render.
+// WhatsApp ordering is completely unaffected either way — this only ever
+// gates the extra "Pay online" button/modal on top of it.
+async function checkStorePaymentsEnabled(env, siteId) {
+  if (!env.DB || !siteId) return false;
+  try {
+    const row = await env.DB.prepare(
+      "SELECT status FROM merchant_credentials WHERE site_id = ?1"
+    ).bind(siteId).first();
+    return !!row && row.status === 'verified';
+  } catch (err) {
+    console.error('Store Payments check failed, failing closed:', err);
+    return false;
+  }
+}
+
+// --- NORMALIZED PRODUCTS ADAPTER (Store Payments) ---------------------------
+//
+// Reads the normalized `products` / `variant_options` / `product_variants`
+// tables (added for Store Payments) and flattens them into the exact legacy
+// shape the Commerce SDK already expects (the same shape as the old
+// content.content.products JSON blob):
+//   { id, name, description, price:"$65", price_was, category, stock,
+//     badge, image, images:[], colors:[{name,hex}], variants:[...],
+//     details:[], specs:{} }
+//
+// This is purely additive and safe to call on every render:
+//   - If a site has no rows in `products` yet (not migrated / no Store
+//     Payments activity), it returns null and callers fall back to
+//     c.products (the legacy JSON) unchanged. Nothing breaks for
+//     un-migrated sites.
+//   - variant_options + product_variants are folded back into a flat
+//     `variants` list (size-like values) and `colors` list, matching what
+//     buildColorPicker/buildVariantPicker already read today. This keeps
+//     display working immediately; true SKU-level (price/stock per exact
+//     combo) picking is a separate SDK upgrade, not part of this adapter.
+//
+// Money: base_price + price_delta (from the cheapest active variant, if
+// has_variants) is formatted back into a "$65" style string since every
+// downstream renderer (card, drawer, WA templates) expects a display
+// string, not a number — same convention the legacy JSON always used.
+
+function formatPriceUSD(n) {
+  if (n === null || n === undefined || isNaN(n)) return '';
+  const rounded = Math.round(n * 100) / 100;
+  return '$' + (Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2));
+}
+
+async function fetchNormalizedProducts(env, siteId) {
+  if (!env.DB || !siteId) return null;
+  try {
+    const { results: rows } = await env.DB.prepare(
+      `SELECT id, name, description, product_type, base_price, currency,
+              image_url, has_variants, stock, status
+       FROM products
+       WHERE site_id = ?1 AND status = 'active'
+       ORDER BY position ASC, created_at ASC`
+    ).bind(siteId).all();
+
+    if (!rows || !rows.length) return null; // not migrated for this site — fall back to legacy JSON
+
+    const productIds = rows.map(r => r.id);
+    const placeholders = productIds.map(() => '?').join(',');
+
+    const { results: optionRows } = await env.DB.prepare(
+      `SELECT id, product_id, option_name, position FROM variant_options
+       WHERE product_id IN (${placeholders}) ORDER BY position ASC`
+    ).bind(...productIds).all();
+
+    const { results: variantRows } = await env.DB.prepare(
+      `SELECT id, product_id, sku, option_values, price_delta, stock, status
+       FROM product_variants
+       WHERE product_id IN (${placeholders}) AND status = 'active'`
+    ).bind(...productIds).all();
+
+    const optionsByProduct = {};
+    for (const o of (optionRows || [])) {
+      (optionsByProduct[o.product_id] = optionsByProduct[o.product_id] || []).push(o);
+    }
+    const variantsByProduct = {};
+    for (const v of (variantRows || [])) {
+      (variantsByProduct[v.product_id] = variantsByProduct[v.product_id] || []).push(v);
+    }
+
+    return rows.map(p => {
+      const variants = variantsByProduct[p.id] || [];
+
+      let sizeValues = [];
+      let colorValues = [];
+      let minPrice = p.base_price;
+      let anyInStock = p.has_variants ? false : ((p.stock || 0) > 0);
+
+      if (p.has_variants && variants.length) {
+        const sizeSet = new Set();
+        const colorSet = new Set();
+        for (const v of variants) {
+          let ov = {};
+          try { ov = JSON.parse(v.option_values || '{}'); } catch (e) { ov = {}; }
+          if (ov.Size) sizeSet.add(ov.Size);
+          if (ov.Color) colorSet.add(ov.Color);
+          const vPrice = p.base_price + (v.price_delta || 0);
+          if (minPrice === null || vPrice < minPrice) minPrice = vPrice;
+          if ((v.stock || 0) > 0) anyInStock = true;
+        }
+        sizeValues = [...sizeSet];
+        colorValues = [...colorSet];
+      }
+
+      return {
+        id: p.id,
+        name: p.name || '',
+        description: p.description || '',
+        details: [],
+        specs: {},
+        price: formatPriceUSD(minPrice),
+        price_was: '',
+        category: '',
+        stock: anyInStock ? 'in' : 'out',
+        badge: '',
+        image: p.image_url || '',
+        images: p.image_url ? [p.image_url] : [],
+        colors: colorValues.map(name => ({ name, hex: '#ccc' })), // no stored hex yet in variant_options; swatches render neutral until a colour-hex field is added
+        variants: sizeValues,
+        // Not consumed by the SDK yet — carried through for the upcoming
+        // SKU-aware picker (Phase: variant matrix upgrade) so the adapter
+        // doesn't need to change shape again when that lands.
+        _variantMatrix: p.has_variants ? variants.map(v => {
+          let ov = {};
+          try { ov = JSON.parse(v.option_values || '{}'); } catch (e) { ov = {}; }
+          return {
+            variant_id: v.id,
+            sku: v.sku,
+            option_values: ov,
+            price: formatPriceUSD(p.base_price + (v.price_delta || 0)),
+            stock: v.stock || 0,
+          };
+        }) : null,
+        product_type: p.product_type || 'physical',
+      };
+    });
+  } catch (err) {
+    console.error('fetchNormalizedProducts failed, falling back to legacy content.products:', err);
+    return null;
+  }
+}
+
+async function getStoreProducts(env, siteId, legacyProducts) {
+  const normalized = await fetchNormalizedProducts(env, siteId);
+  return normalized || (Array.isArray(legacyProducts) ? legacyProducts : []);
 }
 
 // =============================================================================
@@ -1597,6 +2179,7 @@ const STORE_TEMPLATE_IDS = new Set([
   'fashion-retail',
   'grocery-fmcg', 'grocery',
   'hardware-store', 'hardware', 'retail-hardware',
+  'personal-portfolio',
 ]);
 
 async function buildTemplateExtras(c, site, config, env) {
@@ -1608,6 +2191,14 @@ async function buildTemplateExtras(c, site, config, env) {
   const whatsappStoreActive = STORE_TEMPLATE_IDS.has(templateId) ?
     await checkAddonActive(env, site.id, 'whatsapp_store') :
     true;
+
+  // Store Payments — "Pay online" only ever appears on store templates,
+  // same scope as whatsappStoreActive above. Checked once per render, not
+  // per template block, same reasoning as the comment above.
+  const storePaymentsEnabled = STORE_TEMPLATE_IDS.has(templateId) ?
+    await checkStorePaymentsEnabled(env, site.id) :
+    false;
+  const checkoutApiBase = env.CHECKOUT_API_BASE || 'https://api.websites.co.zw';
 
   const phone = c.phone || c.contact?.phone || '';
   if (phone) {
@@ -1625,11 +2216,14 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.maps_href = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
   }
 
-  if (config.showOpenBadge && c.hours) {
+  // Hours/open-badge are now computed whenever hours data exists, for any
+  // template — not gated by a per-template config flag. A template that
+  // never references {{hours_grid_html}}/{{open_badge_html}} in its HTML
+  // simply won't show them regardless; the config flags were redundant
+  // gating on top of that and meant some templates (personal-portfolio,
+  // creative-studio) couldn't offer hours at all even when it made sense.
+  if (c.hours) {
     extras.open_badge_html = openClosedBadge(c.hours);
-  }
-
-  if (config.showHoursGrid && c.hours) {
     extras.hours_grid_html = buildHoursGridHtml(c.hours);
   }
 
@@ -1651,6 +2245,42 @@ async function buildTemplateExtras(c, site, config, env) {
       `<div><b>${esc(String(s.value || s.number || ''))}</b><span>${esc(s.label || '')}</span></div>`
     ).join('\n');
   }
+
+  // Reviews — generic across every template, same design as hours above:
+  // compute here unconditionally, a template that never references
+  // {{show_reviews_section}}/{{reviews_section_html}} simply won't show
+  // them. Only APPROVED reviews are ever exposed publicly; pending/
+  // rejected ones stay invisible to visitors and are only ever seen by
+  // the owner in the editor's Reviews panel.
+  //
+  // Deliberately ONE flat token (reviews_section_html) covering the whole
+  // section — heading, card grid, and submission form together — rather
+  // than separate has_reviews/review_grid/form pieces requiring a nested
+  // {{#if}} in every template. Nested conditionals are exactly what broke
+  // creative-studio's gallery earlier (see buildReviewsSectionHtml/
+  // buildReviewFormHtml comments) — this shape makes that class of bug
+  // impossible to reintroduce while retrofitting 14 more templates.
+  // reviews_enabled defaults to true (undefined !== false) — an owner has
+  // to explicitly turn it off, not opt in.
+  const allReviews = Array.isArray(c.reviews) ? c.reviews : [];
+  const approvedReviews = allReviews.filter(r => r && r.status === 'approved');
+  extras.show_reviews_section = (c.reviews_enabled !== false) ? 'true' : '';
+  extras.reviews_section_html = buildReviewsSectionHtml(site.id || '', approvedReviews, c.business_name || c.name || '');
+
+  // Press mentions — same generic-everywhere design as Reviews, but owner-
+  // authored (added in the editor, not visitor-submitted) so there's no
+  // public write endpoint and no approval state. Unlike reviews_enabled
+  // (which stays on even with zero reviews, to invite the first one), an
+  // empty press list has nothing to show and no CTA to offer, so the
+  // section is gated on BOTH the toggle and having at least one mention.
+  const pressMentions = Array.isArray(c.press_mentions) ? c.press_mentions : [];
+  extras.show_press_section = (c.press_enabled !== false && pressMentions.length > 0) ? 'true' : '';
+  extras.press_section_html = buildPressSectionHtml(pressMentions);
+
+  // Blog — nav-only flag (the blog pages themselves are served directly
+  // by handlePublic's /blog routing, not through any template markup).
+  const publishedArticleCount = Array.isArray(c.articles) ? c.articles.filter(a => a && a.status === 'published').length : 0;
+  extras.has_blog = (c.articles_enabled !== false && publishedArticleCount > 0) ? 'true' : '';
 
   // -- ADVISORY-FIRM ----------------------------------------------------------
   if (templateId === 'advisory-firm' || templateId === 'consultant') {
@@ -1717,11 +2347,52 @@ async function buildTemplateExtras(c, site, config, env) {
         </div>
         <h3>${svcName}</h3>
         <p>${svcDuration} min${svcPrice ? ` &middot; ${svcPrice}` : ''}</p>
-        <button type="button" class="btn-outline wcz-slot-book-trigger" style="margin-top:14px;width:100%;justify-content:center" data-service-id="${esc(s.service_id)}" data-service-name="${svcName}" data-duration-min="${svcDuration}" data-price="${svcPrice}" data-staff-mode="${staffMode}">Book</button>
+        ${svcDepositLabel(s) ? `<p class="wcz-deposit-note">${esc(svcDepositLabel(s))}</p>` : ''}
+        <button type="button" class="btn-outline wcz-slot-book-trigger" style="margin-top:14px;width:100%;justify-content:center" data-service-id="${esc(s.service_id)}" data-service-name="${svcName}" data-duration-min="${svcDuration}" data-price="${svcPrice}" data-staff-mode="${staffMode}" ${svcDepositAttrs(s)}>Book</button>
       </div>`;
     }).join('');
 
     extras.has_bookable_services = syncedBookableServices.length > 0 ? 'true' : '';
+
+    // has_team was referenced in the nav ({{#if has_team}}) but never
+    // actually computed anywhere in this block, so the Team link could
+    // never appear regardless of whether the owner added team members.
+    extras.has_team = (Array.isArray(c.team) && c.team.length > 0) ? 'true' : '';
+
+    // Toggle + reorder (see buildSectionOrderHelpers) — previously nothing
+    // here read content.theme.sections, so the Page Sections list had no
+    // effect on the live page.
+    const { sectionOn: afSectionOn, orderOf: afOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'services', 'book-consultation', 'credentials', 'team', 'why', 'testimonials', 'reviews', 'press', 'contact'],
+      ['hero', 'services', 'contact']);
+    extras.has_team = (extras.has_team === 'true' && afSectionOn('team')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && afSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && afSectionOn('press')) ? 'true' : '';
+    extras.order_services = String(afOrderOf('services'));
+    extras.order_book_consultation = String(afOrderOf('book-consultation'));
+    extras.order_credentials = String(afOrderOf('credentials'));
+    extras.order_team = String(afOrderOf('team'));
+    extras.order_why = String(afOrderOf('why'));
+    extras.order_testimonials = String(afOrderOf('testimonials'));
+    extras.order_reviews = String(afOrderOf('reviews'));
+    extras.order_press = String(afOrderOf('press'));
+    extras.order_contact = String(afOrderOf('contact'));
+
+    // Dynamic nav — previously hardcoded to Services/Team/Why us/Contact
+    // with Reviews and Press never linked regardless of content.
+    const afNavItems = [
+      { on: true, href: '#services', label: 'Services' },
+      { on: extras.has_team === 'true', href: '#team', label: 'Our team' },
+      { on: true, href: '#why', label: 'Why us' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#contact', label: 'Contact' },
+    ];
+    extras.nav_links_html = afNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n      ');
+    extras.mobile_nav_links_html = afNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}" onclick="closeMobileMenu()">${esc(i.label)}</a>`).join('\n  ');
   }
 
   // -- PROPERTY-ESTATE --------------------------------------------------------
@@ -1797,6 +2468,41 @@ async function buildTemplateExtras(c, site, config, env) {
 </div>`;
       }).join('');
     }
+
+    // has_agents was referenced in the nav ({{#if has_agents}}) but never
+    // actually computed anywhere in this block, so the "Our agents" link
+    // could never appear regardless of whether the owner added any.
+    extras.has_agents = (Array.isArray(c.team) && c.team.length > 0) ? 'true' : '';
+
+    // Toggle + reorder — previously nothing here read content.theme.sections.
+    const { sectionOn: peSectionOn, orderOf: peOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'listings', 'agents', 'sell', 'reviews', 'press', 'contact'],
+      ['hero', 'listings', 'contact']);
+    extras.has_agents = (extras.has_agents === 'true' && peSectionOn('agents')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && peSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && peSectionOn('press')) ? 'true' : '';
+    extras.order_listings = String(peOrderOf('listings'));
+    extras.order_agents = String(peOrderOf('agents'));
+    extras.order_sell = String(peOrderOf('sell'));
+    extras.order_reviews = String(peOrderOf('reviews'));
+    extras.order_press = String(peOrderOf('press'));
+    extras.order_contact = String(peOrderOf('contact'));
+
+    // Dynamic nav — previously hardcoded to Listings/Agents/Sell/Contact
+    // with Reviews and Press never linked regardless of content.
+    const peNavItems = [
+      { on: true, href: '#listings', label: 'Listings' },
+      { on: extras.has_agents === 'true', href: '#agents', label: 'Our agents' },
+      { on: true, href: '#sell', label: 'Sell with us' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#contact', label: 'Contact' },
+    ];
+    extras.nav_links_html = peNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n      ');
+    extras.mobile_nav_links_html = peNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}" onclick="closeMobileMenu()">${esc(i.label)}</a>`).join('\n  ');
   }
 
   // -- GRILL-HOUSE ------------------------------------------------------------
@@ -1812,6 +2518,50 @@ async function buildTemplateExtras(c, site, config, env) {
 
     const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
     extras.whatsapp_clean = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
+
+    // Toggle + reorder — the Design tab's Page Sections list previously
+    // updated content.theme.sections but nothing here ever read it, so
+    // toggling/reordering had zero effect on the live page. Every existing
+    // has_X flag now ALSO requires the section be switched on; order_X
+    // values drive a real CSS order once the template wraps its sections
+    // in the flex container.
+    const { sectionOn: ghSectionOn, orderOf: ghOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'menu', 'about', 'video', 'gallery', 'team', 'hours', 'testimonials', 'reviews', 'press', 'contact'],
+      ['hero', 'menu', 'contact']);
+    extras.has_team = (extras.has_team === 'true' && ghSectionOn('team')) ? 'true' : '';
+    extras.has_gallery = (extras.has_gallery === 'true' && ghSectionOn('gallery')) ? 'true' : '';
+    extras.has_testimonials = (extras.has_testimonials === 'true' && ghSectionOn('testimonials')) ? 'true' : '';
+    extras.has_hours = (extras.has_hours === 'true' && ghSectionOn('hours')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && ghSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && ghSectionOn('press')) ? 'true' : '';
+    extras.order_menu = String(ghOrderOf('menu'));
+    extras.order_about = String(ghOrderOf('about'));
+    extras.order_video = String(ghOrderOf('video'));
+    extras.order_gallery = String(ghOrderOf('gallery'));
+    extras.order_team = String(ghOrderOf('team'));
+    extras.order_hours = String(ghOrderOf('hours'));
+    extras.order_testimonials = String(ghOrderOf('testimonials'));
+    extras.order_reviews = String(ghOrderOf('reviews'));
+    extras.order_press = String(ghOrderOf('press'));
+    extras.order_contact = String(ghOrderOf('contact'));
+
+    // Dynamic nav — previously hardcoded to Menu/Team/Hours/Contact with
+    // Gallery, Testimonials, Reviews and Press never linked at all
+    // regardless of whether they had content. Now built from whichever
+    // sections actually have something to show.
+    const ghNavItems = [
+      { on: true, href: '#menu', label: 'Menu' },
+      { on: extras.has_gallery === 'true', href: '#gallery', label: 'Gallery' },
+      { on: extras.has_team === 'true', href: '#team', label: 'Team' },
+      { on: extras.has_testimonials === 'true', href: '#testimonials', label: 'Testimonials' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: extras.has_hours === 'true', href: '#hours', label: 'Hours' },
+      { on: true, href: '#contact', label: 'Visit us' },
+    ];
+    extras.nav_links_html = ghNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n      ');
   }
 
   // -- BEAUTY-SALON -----------------------------------------------------------
@@ -1891,9 +2641,10 @@ async function buildTemplateExtras(c, site, config, env) {
         <div class="svc-item-body">
           <div class="svc-name">${svcName}</div>
           <div class="svc-desc">${svcDuration} min</div>
+          ${svcDepositLabel(s) ? `<div class="svc-desc wcz-deposit-note">${esc(svcDepositLabel(s))}</div>` : ''}
         </div>
         ${svcPrice ? `<div class="svc-price">${svcPrice}</div>` : ''}
-        <button type="button" class="wcz-slot-book-trigger wcz-slot-book-standalone" data-service-id="${esc(s.service_id)}" data-service-name="${svcName}" data-duration-min="${svcDuration}" data-price="${svcPrice}" data-staff-mode="${staffMode}">Book</button>
+        <button type="button" class="wcz-slot-book-trigger wcz-slot-book-standalone" data-service-id="${esc(s.service_id)}" data-service-name="${svcName}" data-duration-min="${svcDuration}" data-price="${svcPrice}" data-staff-mode="${staffMode}" ${svcDepositAttrs(s)}>Book</button>
       </div>`;
     }).join('');
 
@@ -1948,7 +2699,7 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.has_map = extras.map_embed_url ? 'true' : '';
 
     // Shop / Products
-    const shopProducts = Array.isArray(c.products) ? c.products : [];
+    const shopProducts = await getStoreProducts(env, site.id, c.products);
     const hasShop = shopProducts.length > 0;
     extras.show_shop = hasShop ? 'true' : '';
 
@@ -1956,7 +2707,10 @@ async function buildTemplateExtras(c, site, config, env) {
       const shopCtx = {
         waNum: extras.wa_phone || '',
         bizName: c.business_name || c.name || '',
-        addonActive: whatsappStoreActive
+        addonActive: whatsappStoreActive,
+        storePaymentsEnabled,
+        siteId: site.id,
+        checkoutApiBase
       };
 
       const commerce = env && env.COMMERCE_SDK ?
@@ -1975,6 +2729,411 @@ async function buildTemplateExtras(c, site, config, env) {
       extras.bs_shop_products_html = '';
       extras.bs_shop_filters_html = '';
     }
+
+    // Toggle + reorder — previously nothing here read content.theme.sections.
+    const { sectionOn: bsSectionOn, orderOf: bsOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'services', 'book-appointment', 'gallery', 'team', 'shop', 'reviews', 'press', 'visit'],
+      ['hero', 'services', 'visit']);
+    extras.has_gallery = (extras.has_gallery === 'true' && bsSectionOn('gallery')) ? 'true' : '';
+    extras.has_team = (extras.has_team === 'true' && bsSectionOn('team')) ? 'true' : '';
+    extras.show_shop = (extras.show_shop === 'true' && bsSectionOn('shop')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && bsSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && bsSectionOn('press')) ? 'true' : '';
+    extras.order_services = String(bsOrderOf('services'));
+    extras.order_book_appointment = String(bsOrderOf('book-appointment'));
+    extras.order_gallery = String(bsOrderOf('gallery'));
+    extras.order_team = String(bsOrderOf('team'));
+    extras.order_shop = String(bsOrderOf('shop'));
+    extras.order_reviews = String(bsOrderOf('reviews'));
+    extras.order_press = String(bsOrderOf('press'));
+    extras.order_visit = String(bsOrderOf('visit'));
+
+    // Dynamic nav — previously fully static (Gallery/Team always shown
+    // regardless of content), Reviews/Press never linked.
+    const bsNavItems = [
+      { on: true, href: '#services', label: 'Services' },
+      { on: extras.has_gallery === 'true', href: '#gallery', label: 'Gallery' },
+      { on: extras.has_team === 'true', href: '#team', label: 'Team' },
+      { on: extras.show_shop === 'true', href: '#shop', label: 'Shop' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#visit', label: 'Visit' },
+    ];
+    extras.nav_links_html = bsNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n      ');
+  }
+
+  // -- MEDICAL-CLINIC ----------------------------------------------------------
+  if (templateId === 'medical-clinic' || templateId === 'clinic') {
+    const bookableServices = Array.isArray(c.booking_services) ? c.booking_services : [];
+    const syncedBookableServices = bookableServices.filter(s => s && s.service_id);
+
+    extras.bookable_services_html = syncedBookableServices.map(s => {
+      const svcName = esc(s.name || '');
+      const svcPrice = s.price ? esc(String(s.price)) : '';
+      const svcDuration = parseInt(s.duration_min, 10) || 30;
+      const staffMode = s.staff_mode === 'any' ? 'any' : 'choose';
+      return `<div class="mc-book-card">
+      <h3>${svcName}</h3>
+      <p>${svcDuration} min${svcPrice ? ` &middot; ${svcPrice}` : ''}</p>
+      ${svcDepositLabel(s) ? `<p class="wcz-deposit-note">${esc(svcDepositLabel(s))}</p>` : ''}
+      <button type="button" class="wcz-slot-book-trigger" data-service-id="${esc(s.service_id)}" data-service-name="${svcName}" data-duration-min="${svcDuration}" data-price="${svcPrice}" data-staff-mode="${staffMode}" ${svcDepositAttrs(s)}>Book Appointment</button>
+    </div>`;
+    }).join('');
+
+    extras.has_bookable_services = syncedBookableServices.length > 0 ? 'true' : '';
+
+    // These were previously "list_present" conditionals reading raw
+    // content directly (config.json), bypassing extras entirely -- which
+    // meant there was no way to also gate them on the Page Sections
+    // toggle. Computed explicitly here instead so they can be ANDed with
+    // sectionOn() below, same as every other template in this batch.
+    extras.has_services = (Array.isArray(c.services) && c.services.length > 0) ? 'true' : '';
+    extras.has_team = (Array.isArray(c.team) && c.team.length > 0) ? 'true' : '';
+    extras.has_testimonials = (Array.isArray(c.testimonials) && c.testimonials.length > 0) ? 'true' : '';
+    extras.has_gallery = (Array.isArray(c.gallery) && c.gallery.length > 0) ? 'true' : '';
+    extras.has_insurance = (Array.isArray(c.insurance) && c.insurance.length > 0) ? 'true' : '';
+
+    const { sectionOn: mcSectionOn, orderOf: mcOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'services', 'team', 'insurance', 'testimonials', 'gallery', 'reviews', 'press', 'contact'],
+      ['hero', 'contact']);
+    extras.has_services = (extras.has_services === 'true' && mcSectionOn('services')) ? 'true' : '';
+    extras.has_team = (extras.has_team === 'true' && mcSectionOn('team')) ? 'true' : '';
+    extras.has_insurance = (extras.has_insurance === 'true' && mcSectionOn('insurance')) ? 'true' : '';
+    extras.has_testimonials = (extras.has_testimonials === 'true' && mcSectionOn('testimonials')) ? 'true' : '';
+    extras.has_gallery = (extras.has_gallery === 'true' && mcSectionOn('gallery')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && mcSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && mcSectionOn('press')) ? 'true' : '';
+    extras.order_services = String(mcOrderOf('services'));
+    extras.order_team = String(mcOrderOf('team'));
+    extras.order_insurance = String(mcOrderOf('insurance'));
+    extras.order_testimonials = String(mcOrderOf('testimonials'));
+    extras.order_gallery = String(mcOrderOf('gallery'));
+    extras.order_reviews = String(mcOrderOf('reviews'));
+    extras.order_press = String(mcOrderOf('press'));
+    extras.order_contact = String(mcOrderOf('contact'));
+
+    // Dynamic nav — previously covered Services/Team/Insurance already,
+    // but Testimonials/Gallery/Reviews/Press were never linked at all.
+    const mcNavItems = [
+      { on: extras.has_services === 'true', href: '#services', label: 'Services' },
+      { on: extras.has_team === 'true', href: '#team', label: 'Our Team' },
+      { on: extras.has_insurance === 'true', href: '#insurance', label: 'Insurance' },
+      { on: extras.has_testimonials === 'true', href: '#testimonials', label: 'Testimonials' },
+      { on: extras.has_gallery === 'true', href: '#gallery', label: 'Gallery' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#contact', label: 'Contact' },
+    ];
+    extras.nav_links_html = mcNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n      ');
+    extras.mobile_nav_links_html = mcNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n  ');
+  }
+
+  // -- PERSONAL-PORTFOLIO -------------------------------------------------------
+  if (templateId === 'personal-portfolio') {
+    // Bookable services (speaking engagements, consulting sessions, etc.)
+    const bookableServices = Array.isArray(c.booking_services) ? c.booking_services : [];
+    const syncedBookableServices = bookableServices.filter(s => s && s.service_id);
+
+    extras.bookable_services_html = syncedBookableServices.map(s => {
+      const svcName = esc(s.name || '');
+      const svcPrice = s.price ? esc(String(s.price)) : '';
+      const svcDuration = parseInt(s.duration_min, 10) || 30;
+      const staffMode = s.staff_mode === 'any' ? 'any' : 'choose';
+      return `<div class="pp-book-card">
+      <h3>${svcName}</h3>
+      <p>${svcDuration} min${svcPrice ? ` &middot; ${svcPrice}` : ''}</p>
+      ${svcDepositLabel(s) ? `<p class="wcz-deposit-note">${esc(svcDepositLabel(s))}</p>` : ''}
+      <button type="button" class="wcz-slot-book-trigger" data-service-id="${esc(s.service_id)}" data-service-name="${svcName}" data-duration-min="${svcDuration}" data-price="${svcPrice}" data-staff-mode="${staffMode}" ${svcDepositAttrs(s)}>Book a Slot</button>
+    </div>`;
+    }).join('');
+    extras.has_bookable_services = syncedBookableServices.length > 0 ? 'true' : '';
+
+    // Socials — LinkedIn specifically has never had a home on any existing
+    // template despite being a recognized key in the socials object already.
+    const ppSocials = c.socials || {};
+    extras.linkedin_url = ppSocials.linkedin || c.linkedin_url || '';
+    extras.instagram_url = ppSocials.instagram || c.instagram_url || '';
+    extras.facebook_url = ppSocials.facebook || c.facebook_url || '';
+    extras.has_linkedin = extras.linkedin_url ? 'true' : '';
+    extras.has_instagram = extras.instagram_url ? 'true' : '';
+    extras.has_facebook = extras.facebook_url ? 'true' : '';
+
+    // Shop — merch / digital products via the Universal Commerce SDK,
+    // identical pattern to bold-retail/church's shop sections.
+    const ppProducts = await getStoreProducts(env, site.id, c.products);
+    if (ppProducts.length) {
+      const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
+      const waNum = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
+      const whatsappStoreActive = await checkAddonActive(env, site.id, 'whatsapp_store');
+      const shopCtx = { waNum, bizName: c.business_name || c.name || '', addonActive: whatsappStoreActive, storePaymentsEnabled, siteId: site.id, checkoutApiBase };
+
+      try {
+        const commerce = env && env.COMMERCE_SDK ?
+          await callCommerceSDK(env, ppProducts, templateId, c.theme || {}, shopCtx) :
+          buildCommerceModule(ppProducts, templateId, c.theme || {}, shopCtx);
+
+        extras.pp_products_html = commerce.gridHtml || '<p class="wcz-prod-empty">No products available.</p>';
+        extras.fr_category_filters_html = commerce.filterHtml || '';
+        extras.wcz_qv_drawer_html = commerce.drawerHtml || '';
+        extras.wcz_lb_html = commerce.lbHtml || '';
+        extras.wcz_products_script = commerce.scriptHtml || '';
+        extras.wcz_commerce_css = env && env.COMMERCE_SDK ?
+          await callCommerceCSS(env).catch(() => buildCommerceCSS()) :
+          buildCommerceCSS();
+      } catch (err) {
+        console.error('Commerce SDK error for personal-portfolio:', err);
+        extras.pp_products_html = '<p class="wcz-prod-empty">Error loading products.</p>';
+        extras.fr_category_filters_html = '';
+      }
+    } else {
+      extras.pp_products_html = '';
+      extras.fr_category_filters_html = '';
+    }
+
+    // These were previously "list_present" conditionals reading raw
+    // content directly, bypassing extras -- computed explicitly here so
+    // they can be gated by the Page Sections toggle like every other
+    // template in this batch.
+    extras.has_experience = (Array.isArray(c.experience) && c.experience.length > 0) ? 'true' : '';
+    extras.has_awards = (Array.isArray(c.awards) && c.awards.length > 0) ? 'true' : '';
+    extras.has_services = (Array.isArray(c.services) && c.services.length > 0) ? 'true' : '';
+    extras.has_products = ppProducts.length > 0 ? 'true' : '';
+    extras.has_testimonials = (Array.isArray(c.testimonials) && c.testimonials.length > 0) ? 'true' : '';
+    extras.has_gallery = (Array.isArray(c.gallery) && c.gallery.length > 0) ? 'true' : '';
+
+    const { sectionOn: ppSectionOn, orderOf: ppOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'about', 'stats', 'experience', 'awards', 'services', 'shop', 'testimonials', 'gallery', 'reviews', 'press', 'contact'],
+      ['hero', 'about', 'contact']);
+    extras.has_stats = (Array.isArray(c.stats) && c.stats.length > 0 && ppSectionOn('stats')) ? 'true' : '';
+    extras.order_stats = String(ppOrderOf('stats'));
+    extras.has_experience = (extras.has_experience === 'true' && ppSectionOn('experience')) ? 'true' : '';
+    extras.has_awards = (extras.has_awards === 'true' && ppSectionOn('awards')) ? 'true' : '';
+    extras.has_services = (extras.has_services === 'true' && ppSectionOn('services')) ? 'true' : '';
+    extras.has_products = (extras.has_products === 'true' && ppSectionOn('shop')) ? 'true' : '';
+    extras.has_testimonials = (extras.has_testimonials === 'true' && ppSectionOn('testimonials')) ? 'true' : '';
+    extras.has_gallery = (extras.has_gallery === 'true' && ppSectionOn('gallery')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && ppSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && ppSectionOn('press')) ? 'true' : '';
+    extras.order_about = String(ppOrderOf('about'));
+    extras.order_experience = String(ppOrderOf('experience'));
+    extras.order_awards = String(ppOrderOf('awards'));
+    extras.order_services = String(ppOrderOf('services'));
+    extras.order_shop = String(ppOrderOf('shop'));
+    extras.order_testimonials = String(ppOrderOf('testimonials'));
+    extras.order_gallery = String(ppOrderOf('gallery'));
+    extras.order_reviews = String(ppOrderOf('reviews'));
+    extras.order_press = String(ppOrderOf('press'));
+    extras.order_contact = String(ppOrderOf('contact'));
+
+    // Dynamic nav — previously covered Experience/Awards/Shop already,
+    // but Services/Testimonials/Gallery/Reviews/Press were never linked.
+    const ppNavItems = [
+      { on: extras.has_experience === 'true', href: '#experience', label: 'Experience' },
+      { on: extras.has_awards === 'true', href: '#awards', label: 'Awards' },
+      { on: extras.has_services === 'true', href: '#services', label: 'Services' },
+      { on: extras.has_products === 'true', href: '#shop', label: 'Shop' },
+      { on: extras.has_testimonials === 'true', href: '#testimonials', label: 'Testimonials' },
+      { on: extras.has_gallery === 'true', href: '#gallery', label: 'Gallery' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#contact', label: 'Contact' },
+    ];
+    extras.nav_links_html = ppNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n      ');
+    extras.mobile_nav_links_html = ppNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n  ');
+  }
+
+  // -- CREATIVE-STUDIO ----------------------------------------------------------
+  if (templateId === 'creative-studio') {
+    // Section toggle + reorder — the Design tab's checkboxes/arrows write
+    // to content.theme.sections (an ordered array of active section keys),
+    // but this template's conditionals used to check content presence
+    // directly and never looked at that array at all, so the toggles were
+    // a no-op. csSectionOn() now gates every optional section on both
+    // "is it turned on" AND "is there content", and csOrderOf() drives the
+    // actual on-page order via a flex `order` style (see page-sections
+    // wrapper in the template) — sections never added to theme.sections
+    // sort to the end in their default relative order rather than vanishing.
+    const CS_DEFAULT_SECTIONS = ['hero', 'gallery', 'about', 'rooms', 'booking-services', 'testimonials', 'reviews', 'press', 'hours', 'contact'];
+    const CS_REQUIRED = new Set(['hero', 'contact']);
+    const csSections = (c.theme && Array.isArray(c.theme.sections) && c.theme.sections.length) ?
+      c.theme.sections : CS_DEFAULT_SECTIONS;
+    const csSectionOn = (key) => CS_REQUIRED.has(key) || csSections.includes(key);
+    const csOrderOf = (key) => { const i = csSections.indexOf(key); return i === -1 ? 999 : i; };
+    extras.order_gallery = String(csOrderOf('gallery'));
+    extras.order_about = String(csOrderOf('about'));
+    extras.order_packages = String(csOrderOf('rooms'));
+    extras.order_sessions = String(csOrderOf('booking-services'));
+    extras.order_testimonials = String(csOrderOf('testimonials'));
+    extras.order_reviews = String(csOrderOf('reviews'));
+    extras.order_press = String(csOrderOf('press'));
+    extras.order_hours = String(csOrderOf('hours'));
+    extras.order_contact = String(csOrderOf('contact'));
+
+    // Reviews/Press are computed generically above (every template gets
+    // them), but creative-studio ALSO has a real Page Sections reorder UI
+    // — so here, unlike the other 14 templates, the toggle is a genuine
+    // AND with the Design tab's own on/off switch, not just each panel's
+    // own separate checkbox.
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && csSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && csSectionOn('press')) ? 'true' : '';
+
+    extras.has_about = csSectionOn('about') ? 'true' : '';
+
+    // Hours — the generic top-of-function block above already computed
+    // open_badge_html/hours_grid_html for every template whenever c.hours
+    // exists, with no way to hide them. Respect the toggle here: clear
+    // them (and the section's own has_hours flag) if hours was turned off.
+    if (!csSectionOn('hours')) {
+      extras.open_badge_html = '';
+      extras.hours_grid_html = '';
+    }
+    extras.has_hours = (csSectionOn('hours') && c.hours) ? 'true' : '';
+
+    // Packages — full-day / multi-day coverage, date-range booking.
+    // Reads from content.rooms (not content.packages) deliberately — this
+    // lets creative-studio share the exact same editor UI, sync logic,
+    // and bookings-worker resource machinery hospitality-inn's Rooms panel
+    // already uses, relabeled "Packages" for this template. Using
+    // content.packages here would collide with hospitality-inn's own
+    // "packages" field, which means something different for that template
+    // (bundled deals, not individually bookable).
+    const packages = Array.isArray(c.rooms) ? c.rooms : [];
+    extras.has_packages = (csSectionOn('rooms') && packages.length > 0) ? 'true' : '';
+    extras.packages_html = packages.map((p) => {
+      const resourceId = p.resource_id || p.resourceId || p.id || '';
+      const tag = (p.tag || p.badge || '').trim();
+      const featClass = p.featured ? ' featured' : '';
+      const priceUnit = p.price_unit || p.unit || '';
+      const bookBtn = resourceId
+        ? `<button type="button" class="wcz-book-trigger">Check Availability</button>`
+        : '';
+      return `<div class="cs-pkg-card${featClass}" data-resource-id="${esc(resourceId)}" data-room-name="${esc(p.name || '')}">
+      ${tag ? `<span class="cs-pkg-tag">${esc(tag)}</span>` : ''}
+      <h3>${esc(p.name || '')}</h3>
+      ${p.price ? `<div class="cs-pkg-price">${esc(p.price)}${priceUnit ? `<span>${esc(priceUnit)}</span>` : ''}</div>` : ''}
+      ${p.description ? `<p class="cs-pkg-desc">${esc(p.description)}</p>` : ''}
+      ${bookBtn}
+    </div>`;
+    }).join('');
+
+    // Sessions — shorter, time-slot bookings.
+    const bookableServices = Array.isArray(c.booking_services) ? c.booking_services : [];
+    const syncedBookableServices = bookableServices.filter(s => s && s.service_id);
+    extras.has_bookable_services = (csSectionOn('booking-services') && syncedBookableServices.length > 0) ? 'true' : '';
+    extras.bookable_services_html = syncedBookableServices.map(s => {
+      const svcName = esc(s.name || '');
+      const svcPrice = s.price ? esc(String(s.price)) : '';
+      const svcDuration = parseInt(s.duration_min, 10) || 30;
+      const staffMode = s.staff_mode === 'any' ? 'any' : 'choose';
+      return `<div class="cs-session-card">
+      <h3>${svcName}</h3>
+      <p>${svcDuration} min${svcPrice ? ` &middot; ${svcPrice}` : ''}</p>
+      ${svcDepositLabel(s) ? `<p class="wcz-deposit-note">${esc(svcDepositLabel(s))}</p>` : ''}
+      <button type="button" class="wcz-slot-book-trigger" data-service-id="${esc(s.service_id)}" data-service-name="${svcName}" data-duration-min="${svcDuration}" data-price="${svcPrice}" data-staff-mode="${staffMode}" ${svcDepositAttrs(s)}>Book Session</button>
+    </div>`;
+    }).join('');
+
+    // Instagram — the one social platform that actually matters most for
+    // this audience, surfaced as its own CTA rather than a small icon.
+    const csSocials = c.socials || {};
+    extras.instagram_url = csSocials.instagram || c.instagram_url || '';
+    extras.has_instagram = extras.instagram_url ? 'true' : '';
+
+    // NOTE ON NESTED {{#if}} — this template's conditionals must never be
+    // nested inside one another. The engine's {{#if}}/{{/if}} matching is
+    // a simple non-greedy regex per flag, processed one flag at a time —
+    // it has no concept of matching pairs, so a nested {{#if inner}} steals
+    // the outer flag's {{/if}}, silently truncating or deleting real
+    // content (this is exactly what was deleting the whole gallery grid).
+    // Every conditional block below is precomputed as a flat HTML string
+    // here and emitted via a plain {{token}}, never a nested {{#if}}.
+
+    // About section — photo, credentials, and Instagram link are each
+    // optional; precomputed here instead of nested inside {{#if has_about}}.
+    extras.about_photo_html = c.hero_image_url ?
+      `<img src="${esc(c.hero_image_url)}" alt="${esc(c.business_name || c.name || '')}">` : '';
+    extras.about_social_html = extras.instagram_url ?
+      `<div class="cs-about-social"><a href="${esc(extras.instagram_url)}" target="_blank" rel="noopener">Follow on Instagram</a></div>` : '';
+
+    const csTestimonials = Array.isArray(c.testimonials) ? c.testimonials : [];
+    extras.has_testimonials = (csSectionOn('testimonials') && csTestimonials.length > 0) ? 'true' : '';
+
+    // Hero — resolves to a playable embed (YouTube/Vimeo iframe, or a
+    // direct file <video>) with autoplay/mute/loop so it behaves like a
+    // silent looping background video either way. {{video_url}} in the
+    // template previously had nothing promoting it into a real token, and
+    // even when present a raw <video><source> tag can't play YouTube/Vimeo
+    // links, which is what this audience will paste almost every time.
+    // The whole hero <section> — video, image, or slim fallback — is built
+    // as one block here rather than as nested {{#if}}s in the template.
+    const csTypeLabel = (config.typeLabels || {})[templateId] || c.business_type_label || config.defaultTypeLabel || '';
+    const csBizName = esc(c.business_name || c.name || '');
+    let csHeroMediaHtml = '';
+    if (c.video_url) {
+      const heroInfo = hospVideoInfo(c.video_url);
+      if (heroInfo.type === 'youtube') {
+        const idMatch = heroInfo.embedUrl.match(/embed\/([A-Za-z0-9_-]+)/);
+        const vid = idMatch ? idMatch[1] : '';
+        const bg = `${heroInfo.embedUrl}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1${vid ? '&playlist=' + vid : ''}`;
+        csHeroMediaHtml = `<iframe src="${esc(bg)}" style="width:100%;height:100%;border:0;pointer-events:none" allow="autoplay; fullscreen" title="${csBizName}"></iframe>`;
+      } else if (heroInfo.type === 'vimeo') {
+        const bg = `${heroInfo.embedUrl}?autoplay=1&muted=1&loop=1&background=1`;
+        csHeroMediaHtml = `<iframe src="${esc(bg)}" style="width:100%;height:100%;border:0;pointer-events:none" allow="autoplay; fullscreen" title="${csBizName}"></iframe>`;
+      } else if (heroInfo.embedUrl) {
+        csHeroMediaHtml = `<video autoplay muted loop playsinline poster="${esc(c.hero_image_url || '')}"><source src="${esc(heroInfo.embedUrl)}" type="video/mp4"></video>`;
+      }
+    }
+    if (!csHeroMediaHtml && c.hero_image_url) {
+      csHeroMediaHtml = `<img src="${esc(c.hero_image_url)}" alt="${csBizName}">`;
+    }
+    if (csHeroMediaHtml) {
+      extras.hero_section_class = 'cs-hero';
+      extras.hero_section_html = `<div class="cs-hero-media">${csHeroMediaHtml}</div>
+  <div class="cs-hero-scrim"></div>
+  <div class="wrap cs-hero-content">
+    <div class="cs-hero-eyebrow">${esc(csTypeLabel)}</div>
+    <h1 class="cs-hero-name">${csBizName}</h1>
+  </div>
+  <div class="cs-hero-scroll">Scroll<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>`;
+    } else {
+      extras.hero_section_class = 'cs-hero-slim';
+      extras.hero_section_html = `<div class="wrap">
+    <div class="cs-hero-eyebrow">${esc(csTypeLabel)}</div>
+    <h1 class="cs-hero-name">${csBizName}</h1>
+  </div>`;
+    }
+
+    // Portfolio gallery — resolves each video item's pasted URL into a real
+    // embed URL + type, so every gallery item can independently be a
+    // YouTube, Vimeo, or direct-file video (not just one hero slot), and
+    // builds the filter-chip bar from whatever categories the owner
+    // actually used (skips the bar entirely below one real category).
+    // The whole filter bar (or nothing) is precomputed as one block rather
+    // than a nested {{#if has_gallery_filters}} inside {{#if has_gallery}}.
+    const csGallery = Array.isArray(c.gallery) ? c.gallery : [];
+    c.gallery = csGallery.map(item => {
+      if (item && item.type === 'video' && item.video_url) {
+        const info = hospVideoInfo(item.video_url);
+        return { ...item, video_url: info.embedUrl || item.video_url, embed_type: info.type || 'file' };
+      }
+      return item;
+    });
+    extras.has_gallery = (csSectionOn('gallery') && c.gallery.length > 0) ? 'true' : '';
+
+    const csCategories = [...new Set(c.gallery.map(i => (i && i.category || '').trim()).filter(Boolean))];
+    extras.gallery_filters_bar_html = csCategories.length > 1 ?
+      `<div class="cs-filters" id="cs-filters">
+        <button type="button" class="cs-filter active" data-filter="">All</button>
+        ${csCategories.map(cat => `<button type="button" class="cs-filter" data-filter="${esc(cat)}">${esc(cat)}</button>`).join('')}
+      </div>` : '';
   }
 
   // -- SCHOOL-INSTITUTION -----------------------------------------------------
@@ -1985,7 +3144,7 @@ async function buildTemplateExtras(c, site, config, env) {
   ) {
     const theme = c.theme || {};
     const sections = Array.isArray(theme.sections) ? theme.sections :
-      ['hero', 'about', 'programmes', 'team', 'events', 'gallery', 'testimonials', 'contact'];
+      ['hero', 'about', 'programmes', 'team', 'events', 'gallery', 'testimonials', 'reviews', 'press', 'contact'];
 
     extras.stat_1_number = c.stat_1_number || c.students_count || '1 000';
     extras.stat_1_label = c.stat_1_label || 'Students Enrolled';
@@ -2002,9 +3161,11 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.show_events = (sections.includes('events') || sections.includes('products')) ? 'true' : '';
     extras.show_gallery = sections.includes('gallery') ? 'true' : '';
     extras.show_testimonials = sections.includes('testimonials') ? 'true' : '';
+    extras.show_reviews = sections.includes('reviews') ? 'true' : '';
+    extras.show_press = (sections.includes('press') && extras.show_press_section) ? 'true' : '';
 
     // Shop / Products
-    const shopProducts = Array.isArray(c.products) ? c.products : [];
+    const shopProducts = await getStoreProducts(env, site.id, c.products);
     const hasShop = shopProducts.length > 0 && sections.includes('shop');
     extras.show_shop = hasShop ? 'true' : '';
 
@@ -2014,7 +3175,10 @@ async function buildTemplateExtras(c, site, config, env) {
       const shopCtx = {
         waNum: waNum || '',
         bizName: c.business_name || c.name || '',
-        addonActive: whatsappStoreActive
+        addonActive: whatsappStoreActive,
+        storePaymentsEnabled,
+        siteId: site.id,
+        checkoutApiBase
       };
 
       const commerce = env && env.COMMERCE_SDK ?
@@ -2075,8 +3239,42 @@ async function buildTemplateExtras(c, site, config, env) {
   inj('siEvents',${JSON.stringify(eventsHtml)});
   inj('siGallery',${JSON.stringify(galleryHtml)});
   inj('siTestimonials',${JSON.stringify(testiHtml)});
+  inj('siReviews',${JSON.stringify(extras.reviews_section_html)});
+  inj('siPress',${JSON.stringify(extras.press_section_html)});
 })();
 <\/script>`;
+
+    // Reorder — sections.indexOf gives each section's position directly
+    // since `sections` is already the resolved theme.sections array above.
+    const siOrderOf = (key) => { const i = sections.indexOf(key); return i === -1 ? 999 : i; };
+    extras.order_about = String(siOrderOf('about'));
+    extras.order_programmes = String(siOrderOf('programmes'));
+    extras.order_team = String(siOrderOf('team'));
+    extras.order_events = String(siOrderOf('events'));
+    extras.order_gallery = String(siOrderOf('gallery'));
+    extras.order_shop = String(siOrderOf('shop'));
+    extras.order_testimonials = String(siOrderOf('testimonials'));
+    extras.order_reviews = String(siOrderOf('reviews'));
+    extras.order_press = String(siOrderOf('press'));
+    extras.order_contact = String(siOrderOf('contact'));
+
+    // Dynamic nav — Programmes/Team/Events/Shop were already conditional;
+    // Gallery, Testimonials, Reviews, and Press were never linked at all.
+    const siNavItems = [
+      { on: extras.show_programmes === 'true', href: '#programmes', label: 'Programmes' },
+      { on: extras.show_team === 'true', href: '#team', label: 'Our Team' },
+      { on: extras.show_events === 'true', href: '#events', label: 'Events' },
+      { on: extras.show_gallery === 'true', href: '#gallery', label: 'Gallery' },
+      { on: extras.show_shop === 'true', href: '#shop', label: 'Shop' },
+      { on: extras.show_testimonials === 'true', href: '#testimonials', label: 'Testimonials' },
+      { on: extras.show_reviews === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+    ];
+    extras.nav_links_html = siNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n    ');
+    extras.mobile_nav_links_html = siNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}" onclick="closeMobileMenu()">${esc(i.label)}</a>`).join('\n  ');
   }
 
   // -- BOUTIQUE-FASHION -------------------------------------------------------
@@ -2125,7 +3323,7 @@ async function buildTemplateExtras(c, site, config, env) {
     }
 
     const bServices = Array.isArray(c.services) ? c.services : [];
-    const bProducts = Array.isArray(c.products) ? c.products : [];
+    const bProducts = await getStoreProducts(env, site.id, c.products);
     const bTestimonials = Array.isArray(c.testimonials) ? c.testimonials : [];
     extras.has_services = bServices.length ? 'true' : '';
     extras.has_products = bProducts.length ? 'true' : '';
@@ -2144,9 +3342,10 @@ async function buildTemplateExtras(c, site, config, env) {
 </div>`;
     }).join('');
 
+    const shopCtx = { waNum, bizName: bName, addonActive: whatsappStoreActive, storePaymentsEnabled, siteId: site.id, checkoutApiBase };
     const commerce = env && env.COMMERCE_SDK ?
-      await callCommerceSDK(env, bProducts, 'boutique-fashion', c.theme || {}, { waNum, bizName: bName, addonActive: whatsappStoreActive }) :
-      buildCommerceModule(bProducts, 'boutique-fashion', c.theme || {}, { waNum, bizName: bName, addonActive: whatsappStoreActive });
+      await callCommerceSDK(env, bProducts, 'boutique-fashion', c.theme || {}, shopCtx) :
+      buildCommerceModule(bProducts, 'boutique-fashion', c.theme || {}, shopCtx);
     extras.bf_products_html = commerce.gridHtml;
     extras.fr_category_filters_html = commerce.filterHtml;
     extras.wcz_qv_drawer_html = commerce.drawerHtml;
@@ -2184,6 +3383,43 @@ async function buildTemplateExtras(c, site, config, env) {
   </div>
 </div>`;
     }).join('');
+
+    // Toggle + reorder — previously nothing here read content.theme.sections.
+    const { sectionOn: bfSectionOn, orderOf: bfOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'about', 'services', 'products', 'gallery', 'testimonials', 'reviews', 'press', 'contact'],
+      ['hero', 'contact']);
+    extras.has_services = (extras.has_services === 'true' && bfSectionOn('services')) ? 'true' : '';
+    extras.has_products = (extras.has_products === 'true' && bfSectionOn('products')) ? 'true' : '';
+    extras.has_gallery = (extras.has_gallery === 'true' && bfSectionOn('gallery')) ? 'true' : '';
+    extras.has_testimonials = (extras.has_testimonials === 'true' && bfSectionOn('testimonials')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && bfSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && bfSectionOn('press')) ? 'true' : '';
+    extras.order_about = String(bfOrderOf('about'));
+    extras.order_services = String(bfOrderOf('services'));
+    extras.order_products = String(bfOrderOf('products'));
+    extras.order_gallery = String(bfOrderOf('gallery'));
+    extras.order_testimonials = String(bfOrderOf('testimonials'));
+    extras.order_reviews = String(bfOrderOf('reviews'));
+    extras.order_press = String(bfOrderOf('press'));
+    extras.order_contact = String(bfOrderOf('contact'));
+
+    // Dynamic nav — previously fully static (Collections/Drops/Gallery/
+    // Contact always shown regardless of whether there was content),
+    // Testimonials/Reviews/Press never linked at all.
+    const bfNavItems = [
+      { on: extras.has_services === 'true', href: '#collections', label: 'Collections' },
+      { on: extras.has_products === 'true', href: '#drops', label: 'Drops' },
+      { on: extras.has_gallery === 'true', href: '#gallery', label: 'Gallery' },
+      { on: extras.has_testimonials === 'true', href: '#testimonials', label: 'Testimonials' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#contact', label: 'Contact' },
+    ];
+    extras.nav_links_html = bfNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n    ');
+    extras.mobile_nav_links_html = bfNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}" class="mob-link">${esc(i.label)}</a>`).join('\n  ');
   }
 
   // -- FASHION-RETAIL ---------------------------------------------------------
@@ -2213,10 +3449,11 @@ async function buildTemplateExtras(c, site, config, env) {
     const frGal0 = frGallery[0];
     extras.gallery_0_url = typeof frGal0 === 'string' ? frGal0 : (frGal0?.url || frGal0?.src || '');
 
-    const frProducts = Array.isArray(c.products) ? c.products : [];
+    const frProducts = await getStoreProducts(env, site.id, c.products);
+    const shopCtx = { waNum, bizName: c.business_name || c.name || '', addonActive: whatsappStoreActive, storePaymentsEnabled, siteId: site.id, checkoutApiBase };
     const commerce = env && env.COMMERCE_SDK ?
-      await callCommerceSDK(env, frProducts, templateId, c.theme || {}, { waNum, bizName: c.business_name || c.name || '', addonActive: whatsappStoreActive }) :
-      buildCommerceModule(frProducts, templateId, c.theme || {}, { waNum, bizName: c.business_name || c.name || '', addonActive: whatsappStoreActive });
+      await callCommerceSDK(env, frProducts, templateId, c.theme || {}, shopCtx) :
+      buildCommerceModule(frProducts, templateId, c.theme || {}, shopCtx);
 
     extras.fr_products_html = commerce.gridHtml;
     extras.fr_category_filters_html = commerce.filterHtml;
@@ -2226,6 +3463,32 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.wcz_commerce_css = env && env.COMMERCE_SDK ?
       await callCommerceCSS(env) :
       buildCommerceCSS();
+
+    // Toggle + reorder — previously nothing here read content.theme.sections.
+    const { sectionOn: frSectionOn, orderOf: frOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'shop', 'about', 'reviews', 'press', 'contact'],
+      ['hero', 'shop', 'contact']);
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && frSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && frSectionOn('press')) ? 'true' : '';
+    extras.order_shop = String(frOrderOf('shop'));
+    extras.order_about = String(frOrderOf('about'));
+    extras.order_reviews = String(frOrderOf('reviews'));
+    extras.order_press = String(frOrderOf('press'));
+    extras.order_contact = String(frOrderOf('contact'));
+
+    // Dynamic nav — Reviews/Press were never linked at all.
+    const frNavItems = [
+      { on: true, href: '#fr-shop', label: 'Shop' },
+      { on: true, href: '#fr-about', label: 'About' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#fr-contact', label: 'Contact' },
+    ];
+    extras.nav_links_html = frNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n    ');
+    extras.mobile_nav_links_html = frNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n  ');
   }
 
   // -- GROCERY-STORE ------------------------------------------------------
@@ -2238,7 +3501,7 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.hero_headline = c.hero_headline || 'Fresh today. Family priced.';
     extras.hero_subtext = c.hero_subtext || c.about || 'Vegetables, groceries and household essentials, stocked daily.';
 
-    const products = Array.isArray(c.products) ? c.products : [];
+    const products = await getStoreProducts(env, site.id, c.products);
     const cats = Array.isArray(c.categories) && c.categories.length ?
       c.categories :
       [...new Set(products.map(p => (p.category || '').trim()).filter(Boolean))];
@@ -2262,7 +3525,7 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.delivery_areas = c.delivery_areas || '';
     extras.has_delivery = (c.delivery_note || c.delivery_areas) ? 'true' : '';
 
-    const shopCtx = { waNum, bizName, addonActive: whatsappStoreActive };
+    const shopCtx = { waNum, bizName, addonActive: whatsappStoreActive, storePaymentsEnabled, siteId: site.id, checkoutApiBase };
     const commerce = env && env.COMMERCE_SDK ?
       await callCommerceSDK(env, products, templateId, c.theme || {}, shopCtx) :
       buildCommerceModule(products, templateId, c.theme || {}, shopCtx);
@@ -2277,6 +3540,31 @@ async function buildTemplateExtras(c, site, config, env) {
       buildCommerceCSS();
 
     extras.has_logo = (c.images?.logo || c.logo_url) ? 'true' : '';
+
+    // Toggle + reorder — previously nothing here read content.theme.sections.
+    const { sectionOn: grSectionOn, orderOf: grOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'specials', 'products', 'reviews', 'press', 'visit'],
+      ['hero', 'products', 'visit']);
+    extras.has_specials = (extras.has_specials === 'true' && grSectionOn('specials')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && grSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && grSectionOn('press')) ? 'true' : '';
+    extras.order_specials = String(grOrderOf('specials'));
+    extras.order_products = String(grOrderOf('products'));
+    extras.order_reviews = String(grOrderOf('reviews'));
+    extras.order_press = String(grOrderOf('press'));
+    extras.order_visit = String(grOrderOf('visit'));
+
+    // Dynamic nav — Reviews/Press were never linked at all.
+    const grNavItems = [
+      { on: extras.has_specials === 'true', href: '#specials', label: 'Specials' },
+      { on: true, href: '#products', label: 'Shop' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#visit', label: 'Visit' },
+    ];
+    extras.nav_links_html = grNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n    ');
   }
 
   // -- HARDWARE-STORE ------------------------------------------------------
@@ -2336,10 +3624,10 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.has_specials = (Array.isArray(c.specials) && c.specials.length) ? 'true' : '';
     extras.has_hero = (c.images?.hero || c.hero_image_url || c.hero_image) ? 'true' : '';
 
-    const products = Array.isArray(c.products) ? c.products : [];
+    const products = await getStoreProducts(env, site.id, c.products);
     console.log('📦 Hardware products count:', products.length);
 
-    const shopCtx = { waNum, bizName, addonActive: whatsappStoreActive };
+    const shopCtx = { waNum, bizName, addonActive: whatsappStoreActive, storePaymentsEnabled, siteId: site.id, checkoutApiBase };
 
     let commerce;
     try {
@@ -2412,10 +3700,8 @@ async function buildTemplateExtras(c, site, config, env) {
       `;
     }
 
-    if (config.showOpenBadge && c.hours) {
+    if (c.hours) {
       extras.open_badge_html = openClosedBadge(c.hours);
-    }
-    if (config.showHoursGrid && c.hours) {
       extras.hours_grid_html = buildHoursGridHtml(c.hours);
     }
 
@@ -2426,20 +3712,95 @@ async function buildTemplateExtras(c, site, config, env) {
       extras.wa_href_order = '#';
       extras.wa_href_general = '#';
     }
+
+    // Toggle + reorder — previously nothing here read content.theme.sections.
+    const { sectionOn: hwSectionOn, orderOf: hwOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'products', 'specials', 'about', 'reviews', 'press', 'contact'],
+      ['hero', 'products', 'contact']);
+    extras.has_specials = (extras.has_specials === 'true' && hwSectionOn('specials')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && hwSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && hwSectionOn('press')) ? 'true' : '';
+    extras.order_products = String(hwOrderOf('products'));
+    extras.order_specials = String(hwOrderOf('specials'));
+    extras.order_about = String(hwOrderOf('about'));
+    extras.order_reviews = String(hwOrderOf('reviews'));
+    extras.order_press = String(hwOrderOf('press'));
+    extras.order_contact = String(hwOrderOf('contact'));
+
+    // Dynamic nav — Reviews/Press were never linked at all.
+    const hwNavItems = [
+      { on: true, href: '#products', label: 'Products' },
+      { on: extras.has_specials === 'true', href: '#specials', label: 'Specials' },
+      { on: true, href: '#about', label: 'About' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#contact', label: 'Contact' },
+    ];
+    extras.nav_links_html = hwNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n      ');
   }
 
   // -- HOSPITALITY-INN (Lodges, B&Bs, Hotels) ---------------------------------
+  // hospitality-sands and hospitality-wild are premium skins ($15 one-time,
+  // see addons table) -- same content schema, same buildHospitalityExtras(),
+  // different index.html/config.json folder. Do NOT resolve these as aliases
+  // of 'hospitality-inn' anywhere else (e.g. TEMPLATE_ID_ALIASES) -- that
+  // would collapse the Pages fetch onto hospitality-inn's own HTML instead of
+  // each skin's real folder.
   if (templateId === 'hospitality-inn' || templateId === 'hospitality-in' ||
     templateId === 'lodge' || templateId === 'lodges' ||
-    templateId === 'hotel' || templateId === 'accommodation') {
+    templateId === 'hotel' || templateId === 'accommodation' ||
+    templateId === 'hospitality-sands' || templateId === 'hospitality-wild') {
     Object.assign(extras, buildHospitalityExtras(c, site, config));
+
+    // Toggle + reorder — previously nothing here read content.theme.sections,
+    // so the Page Sections list had no effect despite this template already
+    // having the most thorough hand-built dynamic nav in the codebase.
+    const { sectionOn: hiSectionOn, orderOf: hiOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'about', 'video', 'rooms', 'amenities', 'conference', 'packages', 'dining',
+       'menu', 'experiences', 'gallery', 'testimonials', 'reviews', 'press', 'hours', 'contact'],
+      ['hero', 'contact']);
+    for (const key of ['about', 'video', 'rooms', 'amenities', 'conference', 'packages', 'dining', 'menu', 'experiences', 'gallery', 'testimonials', 'hours']) {
+      const flag = 'has_' + key;
+      extras[flag] = (extras[flag] === 'true' && hiSectionOn(key)) ? 'true' : '';
+    }
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && hiSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && hiSectionOn('press')) ? 'true' : '';
+    extras.order_about = String(hiOrderOf('about'));
+    extras.order_video = String(hiOrderOf('video'));
+    extras.order_rooms = String(hiOrderOf('rooms'));
+    extras.order_amenities = String(hiOrderOf('amenities'));
+    extras.order_conference = String(hiOrderOf('conference'));
+    extras.order_packages = String(hiOrderOf('packages'));
+    extras.order_dining = String(hiOrderOf('dining'));
+    extras.order_menu = String(hiOrderOf('menu'));
+    extras.order_experiences = String(hiOrderOf('experiences'));
+    extras.order_gallery = String(hiOrderOf('gallery'));
+    extras.order_testimonials = String(hiOrderOf('testimonials'));
+    extras.order_reviews = String(hiOrderOf('reviews'));
+    extras.order_press = String(hiOrderOf('press'));
+    extras.order_hours = String(hiOrderOf('hours'));
+    extras.order_contact = String(hiOrderOf('contact'));
+
+    // The existing Testimonials section used id="reviews" (a naming mix-up
+    // predating the real Reviews feature), which collided with the new
+    // review section's own id="reviews" once both existed on the same
+    // page -- duplicate ids break anchor links. Real fix lives in the
+    // template (id renamed to "testimonials"); these two flags let the
+    // template point Reviews/Press nav links at the right anchors.
+    extras.reviews_press_nav_html = [
+      extras.show_reviews_section === 'true' ? `<a href="#reviews">Reviews</a>` : '',
+      extras.show_press_section === 'true' ? `<a href="#press">Press</a>` : '',
+      extras.has_blog === 'true' ? `<a href="/blog">Blog</a>` : '',
+    ].filter(Boolean).join('\n      ');
   }
 
   // ── BOLD-RETAIL (General Business) ──────────────────────────────────────
   if (templateId === 'bold-retail' || templateId === 'retail' || templateId === 'general' || templateId === 'general-business') {
     const sectionOrder = (c.theme && Array.isArray(c.theme.sections)) ?
       c.theme.sections :
-      ['hero', 'about', 'services', 'products', 'video', 'team', 'testimonials', 'gallery', 'contact'];
+      ['hero', 'about', 'services', 'products', 'video', 'team', 'testimonials', 'gallery', 'reviews', 'press', 'contact'];
 
     const nameParts = (c.business_name || c.name || '').trim().split(/\s+/);
     const half = Math.ceil(nameParts.length / 2);
@@ -2475,7 +3836,7 @@ async function buildTemplateExtras(c, site, config, env) {
       </div>`;
     }).join('');
 
-    const brProducts = Array.isArray(c.products) ? c.products : [];
+    const brProducts = await getStoreProducts(env, site.id, c.products);
     const hasProducts = brProducts.length > 0;
     extras.has_products = hasProducts ? 'true' : '';
 
@@ -2485,7 +3846,10 @@ async function buildTemplateExtras(c, site, config, env) {
       const shopCtx = {
         waNum: waNum || '',
         bizName: c.business_name || c.name || '',
-        addonActive: whatsappStoreActive
+        addonActive: whatsappStoreActive,
+        storePaymentsEnabled,
+        siteId: site.id,
+        checkoutApiBase
       };
 
       try {
@@ -2817,6 +4181,28 @@ async function buildTemplateExtras(c, site, config, env) {
           }
           break;
 
+        case 'reviews':
+          orderedSectionsHtml += `
+<!-- REVIEWS -->
+<section id="reviews" class="pane">
+  <div class="wrap">
+    ${extras.reviews_section_html}
+  </div>
+</section>`;
+          break;
+
+        case 'press':
+          if (extras.show_press_section) {
+            orderedSectionsHtml += `
+<!-- PRESS -->
+<section id="press" class="pane">
+  <div class="wrap">
+    ${extras.press_section_html}
+  </div>
+</section>`;
+          }
+          break;
+
         case 'contact':
           orderedSectionsHtml += `
 <!-- CONTACT -->
@@ -2870,6 +4256,57 @@ async function buildTemplateExtras(c, site, config, env) {
     }
 
     extras.br_ordered_sections_html = orderedSectionsHtml;
+
+    // Real toggle + reorder. The switch-statement machinery above
+    // (orderedSectionsHtml) was built to drive this, but the template file
+    // never actually references {{br_ordered_sections_html}} anywhere --
+    // it has its own fixed, hardcoded section order (Hero, About, Services,
+    // Products, Video, Team, Testimonials, Gallery, Contact), so that whole
+    // computation was dead code and reordering never worked regardless of
+    // what the Design tab said. This uses the same proven flex-order
+    // pattern as every other template instead.
+    const { sectionOn: brSectionOn, orderOf: brOrderOf } = buildSectionOrderHelpers(c,
+      ['hero', 'about', 'services', 'products', 'video', 'team', 'testimonials', 'gallery', 'reviews', 'press', 'contact'],
+      ['hero', 'contact']);
+    extras.has_about = brSectionOn('about') ? 'true' : '';
+    extras.has_services = (extras.has_services === 'true' && brSectionOn('services')) ? 'true' : '';
+    extras.has_products = (extras.has_products === 'true' && brSectionOn('products')) ? 'true' : '';
+    extras.has_video = (extras.has_video === 'true' && brSectionOn('video')) ? 'true' : '';
+    extras.has_team = (extras.has_team === 'true' && brSectionOn('team')) ? 'true' : '';
+    extras.has_testimonials = (extras.has_testimonials === 'true' && brSectionOn('testimonials')) ? 'true' : '';
+    extras.has_gallery = (extras.has_gallery === 'true' && brSectionOn('gallery')) ? 'true' : '';
+    extras.show_reviews_section = (extras.show_reviews_section === 'true' && brSectionOn('reviews')) ? 'true' : '';
+    extras.show_press_section = (extras.show_press_section === 'true' && brSectionOn('press')) ? 'true' : '';
+    extras.order_about = String(brOrderOf('about'));
+    extras.order_hero = String(brOrderOf('hero'));
+    extras.order_services = String(brOrderOf('services'));
+    extras.order_products = String(brOrderOf('products'));
+    extras.order_video = String(brOrderOf('video'));
+    extras.order_team = String(brOrderOf('team'));
+    extras.order_testimonials = String(brOrderOf('testimonials'));
+    extras.order_gallery = String(brOrderOf('gallery'));
+    extras.order_reviews = String(brOrderOf('reviews'));
+    extras.order_press = String(brOrderOf('press'));
+    extras.order_contact = String(brOrderOf('contact'));
+
+    // Dynamic nav — previously only Products/Team were ever linked.
+    const brNavItems = [
+      { on: extras.has_about === 'true', href: '#about', label: 'About' },
+      { on: extras.has_services === 'true', href: '#services', label: 'Services' },
+      { on: extras.has_products === 'true', href: '#work', label: 'Work' },
+      { on: extras.has_video === 'true', href: '#video', label: 'Video' },
+      { on: extras.has_team === 'true', href: '#team', label: 'Team' },
+      { on: extras.has_testimonials === 'true', href: '#testimonials', label: 'Testimonials' },
+      { on: extras.has_gallery === 'true', href: '#gallery', label: 'Gallery' },
+      { on: extras.show_reviews_section === 'true', href: '#reviews', label: 'Reviews' },
+      { on: extras.show_press_section === 'true', href: '#press', label: 'Press' },
+      { on: extras.has_blog === 'true', href: '/blog', label: 'Blog' },
+      { on: true, href: '#contact', label: 'Contact' },
+    ];
+    extras.nav_links_html = brNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}">${esc(i.label)}</a>`).join('\n    ');
+    extras.mobile_nav_links_html = brNavItems.filter(i => i.on)
+      .map(i => `<a href="${esc(i.href)}" class="mob-link">${esc(i.label)}</a>`).join('\n  ');
   }
 
   // ── CHURCH ──────────────────────────────────────────────────────────────────
@@ -2878,7 +4315,7 @@ async function buildTemplateExtras(c, site, config, env) {
 
     const sectionOrder = (c.theme && Array.isArray(c.theme.sections)) ?
       c.theme.sections :
-      ['hero', 'about', 'services', 'ministries', 'events', 'give', 'products', 'team', 'testimonials', 'gallery', 'contact'];
+      ['hero', 'about', 'services', 'ministries', 'events', 'give', 'products', 'team', 'testimonials', 'gallery', 'reviews', 'press', 'contact'];
 
     const churchName = c.business_name || c.name || '';
     const nameParts = churchName.trim().split(/\s+/);
@@ -3079,7 +4516,7 @@ async function buildTemplateExtras(c, site, config, env) {
       return `<div class="g-item"><img src="${esc(src)}" alt="${esc(alt)}" loading="lazy"></div>`;
     }).filter(Boolean).join('');
 
-    const brProducts = Array.isArray(c.products) ? c.products : [];
+    const brProducts = await getStoreProducts(env, site.id, c.products);
     const hasProducts = brProducts.length > 0;
     extras.has_products = hasProducts ? 'true' : '';
 
@@ -3089,7 +4526,10 @@ async function buildTemplateExtras(c, site, config, env) {
       const shopCtx = {
         waNum: waNum || '',
         bizName: c.business_name || c.name || '',
-        addonActive: whatsappStoreActive
+        addonActive: whatsappStoreActive,
+        storePaymentsEnabled,
+        siteId: site.id,
+        checkoutApiBase
       };
 
       try {
@@ -3121,8 +4561,7 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.phone = c.phone || c.contact?.phone || '';
     extras.email = c.email || c.contact?.email || '';
     extras.address = c.address || c.location || c.contact?.address || '';
-    extras.map_embed_url = c.map_embed_url || c.contact?.map_embed_url || '';
-    extras.has_map = extras.map_embed_url ? 'true' : '';
+    extras.has_map = extras.address ? 'true' : '';
 
     const socials = c.socials || {};
     extras.facebook_url = socials.facebook || c.facebook_url || '';
@@ -3348,6 +4787,28 @@ async function buildTemplateExtras(c, site, config, env) {
           }
           break;
 
+        case 'reviews':
+          orderedSectionsHtml += `
+<!-- REVIEWS -->
+<section id="reviews" class="pane pane-alt">
+  <div class="wrap">
+    ${extras.reviews_section_html}
+  </div>
+</section>`;
+          break;
+
+        case 'press':
+          if (extras.show_press_section) {
+            orderedSectionsHtml += `
+<!-- PRESS -->
+<section id="press" class="pane pane-alt">
+  <div class="wrap">
+    ${extras.press_section_html}
+  </div>
+</section>`;
+          }
+          break;
+
         case 'contact':
           orderedSectionsHtml += `
 <!-- CONTACT -->
@@ -3360,7 +4821,7 @@ async function buildTemplateExtras(c, site, config, env) {
     </div>
     <div class="location-grid reveal">
       <div class="location-map">
-        ${extras.has_map ? `<iframe src="${esc(extras.map_embed_url)}" loading="lazy" title="Location Map"></iframe>` : `<div class="map-placeholder">📍</div>`}
+        ${extras.address ? `<div class="location-directions"><p class="location-address-text">📍 ${esc(extras.address)}</p><a href="${esc(buildDirectionsHref(extras.address))}" class="btn btn-wa" target="_blank" rel="noopener">Get Directions</a></div>` : ''}
       </div>
       <div class="address-box">
         <h3>Plan your visit</h3>
@@ -3646,6 +5107,7 @@ const SITE_PALETTES = {
   'clean-white': { primary: '#1a1a1a', accent1: '#1a1a1a', accent2: '#3d3d3d', bg: '#ffffff', surface: '#f6f6f4' },
   'warm-terracotta': { primary: '#3a1606', accent1: '#c0440e', accent2: '#a03a0a', bg: '#fdf6f0', surface: '#fff' },
   'ember-cream': { primary: '#221A14', accent1: '#D2541F', accent2: '#E0A12E', bg: '#FBF4E9', surface: '#fff' },
+  'onyx-gold': { primary: '#0a0908', accent1: '#c9a961', accent2: '#8a6d3b', bg: '#0a0908', surface: '#141210' },
   'blush-plum': { primary: '#2d1620', accent1: '#c96a7e', accent2: '#B08D57', bg: '#ffffff', surface: '#F7ECEC' },
   'soft-pink': { primary: '#3a0f24', accent1: '#e91e8c', accent2: '#c0156e', bg: '#fff9fb', surface: '#fdeef3' },
   'navy-gold': { primary: '#0a2540', accent1: '#C99A2E', accent2: '#a87d1a', bg: '#ffffff', surface: '#EAF1F9' },
@@ -3656,6 +5118,8 @@ const SITE_PALETTES = {
   'bright-orange': { primary: '#2b1400', accent1: '#ea580c', accent2: '#c04800', bg: '#ffffff', surface: '#fff8f3' },
   'utility-slate': { primary: '#0f1729', accent1: '#1a56db', accent2: '#1447b8', bg: '#f7f8fa', surface: '#ffffff' },
   'warm-cream': { primary: '#2C1A0E', accent1: '#C07A2B', accent2: '#E09A3B', bg: '#FAF5EE', surface: '#ffffff' },
+  'sand-clay': { primary: '#2A2521', accent1: '#A87F52', accent2: '#8C6A42', bg: '#FAF6EF', surface: '#F0E6D6' },
+  'void-ember': { primary: '#0E0D0C', accent1: '#C4472A', accent2: '#DD6644', bg: '#0E0D0C', surface: '#1A1815' },
 };
 
 function paletteFor(t) {
@@ -3686,8 +5150,13 @@ function paletteFor(t) {
     'lodge': 'navy-gold',
     'hotel': 'navy-gold',
     'accommodation': 'navy-gold',
+    'hospitality-sands': 'sand-clay',
+    'hospitality-wild': 'void-ember',
     'faith': 'warm-cream',
     'church-institution': 'warm-cream',
+    'medical-clinic': 'medical-teal',
+    'personal-portfolio': 'deep-teal',
+    'creative-studio': 'onyx-gold',
   };
   return m[t] || 'clean-white';
 }
@@ -3720,8 +5189,13 @@ function fontFor(t) {
     'hospitality-inn': 'playfair-jakarta',
     'lodge': 'playfair-jakarta',
     'hotel': 'playfair-jakarta',
+    'hospitality-sands': 'fraunces-work',
+    'hospitality-wild': 'bricolage-inter',
     'faith': 'playfair-jakarta',
     'church-institution': 'playfair-jakarta',
+    'medical-clinic': 'grotesk-serif',
+    'personal-portfolio': 'grotesk-serif',
+    'creative-studio': 'garamond-jost',
   };
   return m[t] || 'grotesk-serif';
 }
@@ -3746,6 +5220,11 @@ const TEMPLATE_VAR_MAP = {
   'hospitality-in': { primary: '--ink', accent1: '--gold', accent2: '--gold-light', bg: '--cream', brand: '--gold' },
   'lodge': { primary: '--ink', accent1: '--gold', accent2: '--gold-light', bg: '--cream', brand: '--gold' },
   'hotel': { primary: '--ink', accent1: '--gold', accent2: '--gold-light', bg: '--cream', brand: '--gold' },
+  // hospitality-sands is always light -- primary maps to its ink/text color, not a dark bg.
+  'hospitality-sands': { primary: '--ink', accent1: '--clay', accent2: '--clay', bg: '--paper', brand: '--clay' },
+  // hospitality-wild is deliberately always dark -- no light background to swap, so bg is
+  // omitted (buildPaletteOverride skips any unset slot rather than writing an empty rule).
+  'hospitality-wild': { primary: '--void', accent1: '--ember', accent2: '--ember-light', brand: '--ember' },
   'grocery-fmcg': { primary: '--green', accent1: '--sun', accent2: '--green2', brand: '--green' },
   'grocery': { primary: '--green', accent1: '--sun', accent2: '--green2', brand: '--green' },
   'hardware-store': { primary: '--primary', accent1: '--accent', accent2: '--accent-light', brand: '--accent' },
@@ -3754,6 +5233,9 @@ const TEMPLATE_VAR_MAP = {
   'retail': { primary: '--ink', accent1: '--signal', accent2: '--signal-deep', bg: '--paper', brand: '--signal' },
   'general': { primary: '--ink', accent1: '--signal', accent2: '--signal-deep', bg: '--paper', brand: '--signal' },
   'general-business': { primary: '--ink', accent1: '--signal', accent2: '--signal-deep', bg: '--paper', brand: '--signal' },
+  'medical-clinic': { primary: '--ink', accent1: '--teal', accent2: '--teal-dk', bg: '--bg', brand: '--teal' },
+  'personal-portfolio': { primary: '--ink', accent1: '--teal', accent2: '--teal-dk', bg: '--bg', brand: '--teal' },
+  'creative-studio': { primary: '--ink', accent1: '--gold', accent2: '--bronze', bg: '--bg', brand: '--gold' },
 };
 
 function resolvePalette(paletteKey, customAccent) {
@@ -3796,14 +5278,35 @@ const FONT_MAP = {
   'garamond-jost': { url: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Jost:wght@400;500;600;700&display=swap', body: '"Jost",system-ui,sans-serif', head: '"Cormorant Garamond",Georgia,serif' },
   'sports-sans': { url: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap', body: '"Barlow",system-ui,sans-serif', head: '"Barlow Condensed",system-ui,sans-serif' },
   'display-mono': { url: 'https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap', body: '"DM Sans",system-ui,sans-serif', head: '"DM Mono",monospace' },
+  'fraunces-work': { url: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500&display=swap', body: '"Work Sans",system-ui,sans-serif', head: '"Fraunces",Georgia,serif' },
+  'bricolage-inter': { url: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Inter:wght@300;400;500;600&display=swap', body: '"Inter",system-ui,sans-serif', head: '"Bricolage Grotesque",system-ui,sans-serif' },
 };
 
-function buildFontOverride(fontPairKey) {
+// Templates whose CSS drives typography through custom properties (e.g.
+// var(--display)) rather than plain element selectors need those specific
+// variables overridden too -- a class rule like .hero-h1{font-family:
+// var(--display)} always beats a plain "h1{font-family:...}" override on
+// specificity alone, regardless of source order, so the generic override
+// below silently loses to the template's own CSS. Add an entry here for
+// any template where the font selector doesn't visibly take effect.
+const FONT_VAR_MAP = {
+  'bold-retail': { body: '--sans', head: '--display' },
+  'retail': { body: '--sans', head: '--display' },
+  'general': { body: '--sans', head: '--display' },
+  'general-business': { body: '--sans', head: '--display' },
+  'hospitality-inn': { body: '--font-body', head: '--font-display' },
+  'hospitality-sands': { body: '--font-body', head: '--font-display' },
+  'hospitality-wild': { body: '--font-body', head: '--font-display' },
+};
+
+function buildFontOverride(fontPairKey, templateId) {
   if (!fontPairKey) return { styleBlock: '', fontsUrl: '' };
   const f = FONT_MAP[fontPairKey];
   if (!f) return { styleBlock: '', fontsUrl: '' };
+  const varMap = FONT_VAR_MAP[templateId];
+  const varOverride = varMap ? `:root{${varMap.body}:${f.body};${varMap.head}:${f.head}}` : '';
   return {
-    styleBlock: `<style>body,button,input,select,textarea{font-family:${f.body}}h1,h2,h3,h4{font-family:${f.head}}</style>`,
+    styleBlock: `<style>body,button,input,select,textarea{font-family:${f.body}}h1,h2,h3,h4{font-family:${f.head}}${varOverride}</style>`,
     fontsUrl: f.url,
   };
 }
@@ -3970,13 +5473,345 @@ function buildHoursGridHtml(hours) {
   }).filter(Boolean).join('');
 }
 
+// --- PRESS MENTIONS SECTION (self-contained) ----------------------------------
+// =============================================================================
+// ARTICLES / BLOG
+// =============================================================================
+//
+// Same design as Reviews/Press: no new D1 table, articles live in
+// content.articles (owner-authored, so no public write endpoint needed --
+// moderation isn't a concern here, just the normal authenticated save flow).
+// The blog pages themselves are deliberately template-independent: one
+// clean, self-contained layout using the site's own resolved palette,
+// logo, and business name, served at /blog and /blog/:slug regardless of
+// which of the 15 templates the site is built on. This avoids needing to
+// retrofit blog markup into every template individually, and gives every
+// site a consistent, readable article layout out of the box.
+
+function paragraphsHtml(body) {
+  const text = String(body || '').trim();
+  if (!text) return '';
+  return text.split(/\n\s*\n/).map(para =>
+    `<p>${esc(para.trim()).replace(/\n/g, '<br>')}</p>`
+  ).join('\n');
+}
+
+function formatArticleDate(ts) {
+  if (!ts) return '';
+  try {
+    return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch (err) {
+    return '';
+  }
+}
+
+function buildBlogLayout(site, content, opts) {
+  const pal = resolvePalette(content.theme?.palette || '', content.theme?.custom_accent || '');
+  const businessName = esc(content.business_name || content.name || 'Blog');
+  const logoUrl = content.images?.logo || content.logo_url || '';
+  const siteHref = '/';
+  const pageTitle = esc(opts.pageTitle || businessName);
+  const metaDescription = esc(opts.metaDescription || `Articles from ${businessName}`);
+  const ogImage = opts.ogImage ? `<meta property="og:image" content="${esc(opts.ogImage)}">` : '';
+  const canonical = esc(opts.canonical || '');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${pageTitle}</title>
+<meta name="description" content="${metaDescription}">
+<meta property="og:title" content="${pageTitle}">
+<meta property="og:description" content="${metaDescription}">
+${ogImage}
+${canonical ? `<link rel="canonical" href="${canonical}">` : ''}
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--primary:${pal.primary};--accent:${pal.accent1};--bg:${pal.bg};--surface:${pal.surface}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg,#fafafa);color:#1a1a1a;line-height:1.65}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+header.blog-hdr{padding:26px 0;border-bottom:1px solid rgba(0,0,0,.08)}
+.blog-hdr .wrap{max-width:900px;display:flex;align-items:center;gap:12px}
+.blog-hdr img{height:32px;width:auto}
+.blog-hdr .name{font-weight:700;font-size:1.05rem}
+.blog-crumb{font-size:.8rem;opacity:.55;margin-left:auto}
+.blog-crumb a{color:var(--accent,#333);font-weight:600}
+main{padding:56px 0 90px}
+.blog-index-head{max-width:900px;margin:0 auto 44px;padding:0 24px}
+.blog-index-head h1{font-family:"Fraunces",Georgia,serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:700;margin-bottom:10px}
+.blog-index-head p{opacity:.6;font-size:1rem}
+.blog-grid{max-width:900px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:28px}
+.blog-card{display:block}
+.blog-card-img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;background:var(--surface,#eee);margin-bottom:16px}
+.blog-card-date{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;opacity:.5;margin-bottom:8px}
+.blog-card h2{font-family:"Fraunces",Georgia,serif;font-size:1.3rem;font-weight:700;line-height:1.3;margin-bottom:8px}
+.blog-card p{font-size:.92rem;opacity:.65}
+.blog-empty{max-width:900px;margin:0 auto;padding:0 24px;opacity:.55}
+.article-cover{width:100%;max-height:440px;object-fit:cover;border-radius:12px;margin-bottom:36px}
+.article-date{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;opacity:.5;margin-bottom:14px}
+.article-title{font-family:"Fraunces",Georgia,serif;font-size:clamp(1.9rem,4vw,2.7rem);font-weight:700;line-height:1.15;margin-bottom:28px}
+.article-body p{margin-bottom:22px;font-size:1.05rem}
+.article-back{display:inline-block;margin-top:48px;font-weight:600;color:var(--accent,#333)}
+footer.blog-ftr{border-top:1px solid rgba(0,0,0,.08);padding:28px 0;text-align:center;font-size:.8rem;opacity:.5}
+</style>
+</head>
+<body>
+<header class="blog-hdr">
+  <div class="wrap">
+    ${logoUrl ? `<img src="${esc(logoUrl)}" alt="${businessName}">` : ''}
+    <span class="name">${businessName}</span>
+    <span class="blog-crumb"><a href="${siteHref}">&larr; Back to site</a></span>
+  </div>
+</header>
+<main>
+${opts.bodyHtml}
+</main>
+<footer class="blog-ftr">&copy; ${new Date().getFullYear()} ${businessName} &middot; Built with websites.co.zw</footer>
+</body>
+</html>`;
+}
+
+function handleBlogIndex(site, content) {
+  const articles = (Array.isArray(content.articles) ? content.articles : [])
+    .filter(a => a && a.status === 'published')
+    .sort((a, b) => (b.published_at || 0) - (a.published_at || 0));
+
+  const businessName = content.business_name || content.name || 'Blog';
+  const bodyHtml = `
+<div class="blog-index-head">
+  <h1>Articles</h1>
+  <p>News, updates, and stories from ${esc(businessName)}.</p>
+</div>
+${articles.length ? `<div class="blog-grid">${articles.map(a => `
+  <a class="blog-card" href="/blog/${esc(a.slug || a.id)}">
+    ${a.cover_image ? `<img class="blog-card-img" src="${esc(a.cover_image)}" alt="${esc(a.title || '')}">` : `<div class="blog-card-img"></div>`}
+    <div class="blog-card-date">${esc(formatArticleDate(a.published_at))}</div>
+    <h2>${esc(a.title || 'Untitled')}</h2>
+    <p>${esc(a.excerpt || '')}</p>
+  </a>`).join('')}</div>` :
+    `<div class="blog-empty"><p>No articles published yet — check back soon.</p></div>`}`;
+
+  const html = buildBlogLayout(site, content, {
+    pageTitle: `Articles — ${businessName}`,
+    metaDescription: `Articles and updates from ${businessName}.`,
+    bodyHtml,
+  });
+  return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+}
+
+function handleBlogArticle(site, content, slug) {
+  const articles = Array.isArray(content.articles) ? content.articles : [];
+  const article = articles.find(a => a && a.status === 'published' && (a.slug === slug || a.id === slug));
+  if (!article) return render404();
+
+  const businessName = content.business_name || content.name || 'Blog';
+  const bodyHtml = `
+<article class="wrap">
+  ${article.cover_image ? `<img class="article-cover" src="${esc(article.cover_image)}" alt="${esc(article.title || '')}">` : ''}
+  <div class="article-date">${esc(formatArticleDate(article.published_at))}</div>
+  <h1 class="article-title">${esc(article.title || 'Untitled')}</h1>
+  <div class="article-body">${paragraphsHtml(article.body)}</div>
+  <a class="article-back" href="/blog">&larr; All articles</a>
+</article>`;
+
+  const html = buildBlogLayout(site, content, {
+    pageTitle: `${article.seo_title || article.title || 'Article'} — ${businessName}`,
+    metaDescription: article.seo_description || article.excerpt || '',
+    ogImage: article.cover_image || '',
+    canonical: '',
+    bodyHtml,
+  });
+  return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+}
+
+// =============================================================================
+// END ARTICLES / BLOG
+// =============================================================================
+
+function buildPressSectionHtml(mentions) {
+  if (!mentions.length) return '';
+  const itemsHtml = mentions.map(m => {
+    const outlet = esc(m.outlet || '');
+    const url = m.url ? esc(m.url) : '#';
+    const titleAttr = esc(m.title || outlet);
+    const inner = m.logo_url ?
+      `<img src="${esc(m.logo_url)}" alt="${outlet}">` :
+      `<span>${outlet}</span>`;
+    return `<a class="wcz-press-item" href="${url}" target="_blank" rel="noopener nofollow" title="${titleAttr}">${inner}</a>`;
+  }).join('');
+
+  return `<div class="wcz-press-section">
+<style>
+.wcz-press-section{max-width:1080px;margin:0 auto;text-align:center}
+.wcz-press-eyebrow{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--gold,#c9a961);margin-bottom:24px}
+.wcz-press-row{display:flex;flex-wrap:wrap;gap:36px;justify-content:center;align-items:center;opacity:.85}
+.wcz-press-item{display:inline-flex;align-items:center}
+.wcz-press-item img{max-height:32px;width:auto;filter:grayscale(1) brightness(1.4);transition:filter .2s,opacity .2s;opacity:.75}
+.wcz-press-item:hover img{filter:grayscale(0) brightness(1);opacity:1}
+.wcz-press-item span{font-weight:700;font-size:.95rem;letter-spacing:.02em;color:inherit;opacity:.8;transition:opacity .2s}
+.wcz-press-item:hover span{opacity:1;color:var(--gold,#c9a961)}
+</style>
+<div class="wcz-press-eyebrow">As Featured In</div>
+<div class="wcz-press-row">${itemsHtml}</div>
+</div>`;
+}
+
+// --- REVIEWS SECTION (grid + form, self-contained) ----------------------------
+function buildReviewsSectionHtml(siteId, reviews, businessName) {
+  const starSvg = (filled) => `<svg viewBox="0 0 24 24" width="15" height="15" fill="${filled ? 'currentColor' : 'rgba(140,140,140,.35)'}" stroke="none" style="display:inline-block"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>`;
+  const cardsHtml = reviews.map(r => {
+    const n = Math.max(1, Math.min(5, parseInt(r.rating, 10) || 5));
+    let stars = '';
+    for (let i = 0; i < 5; i++) stars += starSvg(i < n);
+    return `<div class="wcz-rev-card">
+      <div class="wcz-rev-card-stars">${stars}</div>
+      <p class="wcz-rev-card-text">&ldquo;${esc(r.text || '')}&rdquo;</p>
+      <div class="wcz-rev-card-name">${esc(r.name || 'Anonymous')}</div>
+    </div>`;
+  }).join('');
+  const gridOrEmpty = reviews.length ?
+    `<div class="wcz-rev-grid">${cardsHtml}</div>` :
+    `<p class="wcz-rev-empty">Be the first to share your experience with ${esc(businessName || 'us')}.</p>`;
+
+  return `<div class="wcz-rev-section">
+<style>
+.wcz-rev-section{max-width:1080px;margin:0 auto}
+.wcz-rev-section .wcz-rev-eyebrow{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--gold,#c9a961);margin-bottom:8px}
+.wcz-rev-section .wcz-rev-heading{font-size:clamp(1.7rem,3vw,2.3rem);font-weight:700;margin:0 0 32px}
+.wcz-rev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-bottom:44px}
+.wcz-rev-card{padding:22px;border-radius:10px;border:1px solid var(--line,rgba(0,0,0,.1));background:var(--paper,rgba(0,0,0,.02))}
+.wcz-rev-card-stars{display:flex;gap:2px;margin-bottom:10px;color:var(--gold,#c9a961)}
+.wcz-rev-card-text{font-size:.92rem;line-height:1.6;opacity:.85;margin:0 0 12px}
+.wcz-rev-card-name{font-size:.85rem;font-weight:700}
+.wcz-rev-empty{opacity:.6;font-size:.9rem;margin-bottom:32px}
+</style>
+<div class="wcz-rev-eyebrow">Client Reviews</div>
+<h2 class="wcz-rev-heading">What People Are Saying</h2>
+${gridOrEmpty}
+${buildReviewFormHtml(siteId)}
+</div>`;
+}
+
+// --- REVIEW SUBMISSION FORM ---------------------------------------------------
+// Self-contained on purpose: its own scoped <style> (falls back to sensible
+// colors via var(--gold,#c9a961) etc. so it looks reasonable even on a
+// template with no matching CSS variables) and its own inline <script>, so
+// any template can drop it in with just {{review_form_html}} — no template-
+// specific CSS or JS wiring required.
+function buildReviewFormHtml(siteId) {
+  const sid = esc(siteId);
+  return `<div class="wcz-rev-form-wrap">
+<style>
+.wcz-rev-form-wrap{max-width:520px}
+.wcz-rev-star-row{display:flex;gap:6px;margin:6px 0 16px}
+.wcz-rev-star{width:34px;height:34px;cursor:pointer;color:rgba(150,150,150,.4);transition:color .15s,transform .1s;background:none;border:none;padding:0}
+.wcz-rev-star:hover{transform:scale(1.1)}
+.wcz-rev-star.on{color:var(--gold,#c9a961)}
+.wcz-rev-field{margin-bottom:14px}
+.wcz-rev-field label{display:block;font-size:.78rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.6;margin-bottom:6px}
+.wcz-rev-field input[type=text],.wcz-rev-field textarea{width:100%;padding:11px 13px;border-radius:6px;border:1.5px solid var(--line,rgba(0,0,0,.15));background:var(--paper,rgba(0,0,0,.03));color:inherit;font:inherit;font-size:.9rem;box-sizing:border-box}
+.wcz-rev-field textarea{resize:vertical;min-height:90px}
+.wcz-rev-field input:focus,.wcz-rev-field textarea:focus{outline:none;border-color:var(--gold,#c9a961)}
+.wcz-rev-hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+.wcz-rev-submit{padding:12px 24px;border-radius:999px;border:none;background:var(--gold,#c9a961);color:var(--bg,#1a1a1a);font-weight:700;font-size:.85rem;cursor:pointer;transition:opacity .2s}
+.wcz-rev-submit:hover{opacity:.88}
+.wcz-rev-submit:disabled{opacity:.5;cursor:not-allowed}
+.wcz-rev-msg{margin-top:12px;font-size:.85rem;padding:10px 13px;border-radius:6px;display:none}
+.wcz-rev-msg.show{display:block}
+.wcz-rev-msg.ok{background:rgba(34,197,94,.14);color:#1a8a4c}
+.wcz-rev-msg.err{background:rgba(220,38,38,.12);color:#c0392b}
+</style>
+<div class="wcz-rev-star-row" id="wcz-rev-stars" role="radiogroup" aria-label="Rating">
+  <button type="button" class="wcz-rev-star" data-val="1" aria-label="1 star"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></button>
+  <button type="button" class="wcz-rev-star" data-val="2" aria-label="2 stars"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></button>
+  <button type="button" class="wcz-rev-star" data-val="3" aria-label="3 stars"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></button>
+  <button type="button" class="wcz-rev-star" data-val="4" aria-label="4 stars"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></button>
+  <button type="button" class="wcz-rev-star" data-val="5" aria-label="5 stars"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></button>
+</div>
+<div class="wcz-rev-field"><label>Your name</label><input type="text" id="wcz-rev-name" maxlength="80" placeholder="Jane Moyo"></div>
+<div class="wcz-rev-field"><label>Your review</label><textarea id="wcz-rev-text" maxlength="600" placeholder="Tell us about your experience…"></textarea></div>
+<input type="text" id="wcz-rev-hp" class="wcz-rev-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+<button type="button" class="wcz-rev-submit" id="wcz-rev-submit">Submit Review</button>
+<div class="wcz-rev-msg" id="wcz-rev-msg"></div>
+</div>
+<script>
+(function(){
+  var siteId = "${sid}";
+  var rating = 0;
+  var stars = document.querySelectorAll('#wcz-rev-stars .wcz-rev-star');
+  stars.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      rating = parseInt(btn.getAttribute('data-val'), 10);
+      stars.forEach(function(s){ s.classList.toggle('on', parseInt(s.getAttribute('data-val'),10) <= rating); });
+    });
+  });
+  var submitBtn = document.getElementById('wcz-rev-submit');
+  var msg = document.getElementById('wcz-rev-msg');
+  if (!submitBtn) return;
+  submitBtn.addEventListener('click', function(){
+    var nameEl = document.getElementById('wcz-rev-name');
+    var textEl = document.getElementById('wcz-rev-text');
+    var hpEl = document.getElementById('wcz-rev-hp');
+    var name = nameEl ? nameEl.value.trim() : '';
+    var text = textEl ? textEl.value.trim() : '';
+    if (!name) { msg.className = 'wcz-rev-msg err show'; msg.textContent = 'Please add your name.'; return; }
+    if (!rating) { msg.className = 'wcz-rev-msg err show'; msg.textContent = 'Please select a star rating.'; return; }
+    if (text.length < 10) { msg.className = 'wcz-rev-msg err show'; msg.textContent = 'Please write a little more detail.'; return; }
+    submitBtn.disabled = true; submitBtn.textContent = 'Sending…';
+    msg.className = 'wcz-rev-msg'; msg.textContent = '';
+    fetch('/api/reviews/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ site_id: siteId, name: name, rating: rating, text: text, website: hpEl ? hpEl.value : '' })
+    }).then(function(r){ return r.json().then(function(d){ return { ok: r.ok, data: d }; }); })
+      .then(function(res){
+        if (!res.ok || !res.data || !res.data.ok) {
+          msg.className = 'wcz-rev-msg err show';
+          msg.textContent = (res.data && res.data.error) || "Couldn't submit your review — please try again.";
+          submitBtn.disabled = false; submitBtn.textContent = 'Submit Review';
+          return;
+        }
+        msg.className = 'wcz-rev-msg ok show';
+        msg.textContent = 'Thank you! Your review has been submitted and will appear once approved.';
+        submitBtn.textContent = 'Submitted ✓';
+        if (nameEl) nameEl.value = '';
+        if (textEl) textEl.value = '';
+        rating = 0;
+        stars.forEach(function(s){ s.classList.remove('on'); });
+      })
+      .catch(function(){
+        msg.className = 'wcz-rev-msg err show';
+        msg.textContent = 'Network error — please try again.';
+        submitBtn.disabled = false; submitBtn.textContent = 'Submit Review';
+      });
+  });
+})();
+</script>`;
+}
+
 // --- CONTENT NORMALIZATION ----------------------------------------------------
 
 const HOSP_TEMPLATE_IDS = new Set([
-  'hospitality-inn', 'hospitality-in', 'lodge', 'lodges', 'hotel', 'accommodation'
+  'hospitality-inn', 'hospitality-in', 'lodge', 'lodges', 'hotel', 'accommodation',
+  'hospitality-sands', 'hospitality-wild'
 ]);
 
-const SALON_TEMPLATE_IDS = new Set(['beauty-salon']);
+const DAY_BOOKING_TEMPLATE_IDS = new Set(['hospitality-inn', 'creative-studio', 'hospitality-sands', 'hospitality-wild']);
+
+const SLOT_BOOKING_TEMPLATE_IDS = new Set(['beauty-salon', 'advisory-firm', 'medical-clinic', 'personal-portfolio', 'creative-studio']);
+
+const SLOT_BOOKING_CONFIG = {
+  'beauty-salon':   { accentColor: '#C96A7E', resourceLabel: 'stylist' },
+  'advisory-firm':  { accentColor: '#C08A2D', resourceLabel: 'advisor' },
+  'medical-clinic': { accentColor: '#0891b2', resourceLabel: 'practitioner' },
+  'creative-studio': { accentColor: '#c9a961', resourceLabel: 'time slot' },
+  'personal-portfolio': { accentColor: '#0891b2', resourceLabel: 'time slot' },
+};
 
 const GROCERY_TEMPLATE_IDS = new Set(['grocery-fmcg', 'grocery']);
 const GROCERY_EXTRA_KEYS = [
@@ -4488,6 +6323,14 @@ function buildSlotBookingWidgetAssets(site, options) {
 .wcz-sb-loading{text-align:center;padding:30px 0;font-size:.82rem;opacity:.5}
 .wcz-sb-continue{margin-top:4px;padding:12px 18px;border-radius:8px;border:none;background:${accent};color:#fff;font-weight:700;font-size:.85rem;cursor:pointer;width:100%}
 .wcz-sb-continue:disabled{opacity:.4;cursor:not-allowed}
+.wcz-sb-deposit-badge{margin:0 0 14px;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,.04);border:1px dashed rgba(0,0,0,.15);font-size:.8rem;font-weight:600}
+.wcz-sb-pay-wait{text-align:center;padding:24px 4px 8px}
+.wcz-sb-pay-spinner{width:34px;height:34px;margin:0 auto 16px;border:3px solid rgba(0,0,0,.1);border-top-color:${accent};border-radius:50%;animation:wczsbspin .8s linear infinite}
+@keyframes wczsbspin{to{transform:rotate(360deg)}}
+.wcz-sb-pay-wait h4{font-size:.98rem;font-weight:700;margin-bottom:6px}
+.wcz-sb-pay-wait p{font-size:.82rem;opacity:.6;line-height:1.5;margin-bottom:16px}
+.wcz-sb-pay-recheck{background:none;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;padding:9px 16px;font-size:.8rem;font-weight:600;cursor:pointer;color:inherit;display:none}
+.wcz-sb-pay-recheck.show{display:inline-block}
 </style>`;
 
   const js = `<script>(function(){
@@ -4499,11 +6342,66 @@ var DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 var DAY_COUNT = 14;
 
 var sb = { service:null, stylist:null, resourceId:null, resources:[], date:null, time:null, slot:null };
+var sbPollTimer = null;
+var sbPollAttempts = 0;
+var SB_POLL_MAX_ATTEMPTS = 20;
+var wczSbCurrency = 'USD';
+var wczSbCurrencyFetched = false;
+
+// Lazily fetches which currency the owner's connected Paynow account is in
+// (USD or ZiG) -- only called when a service actually requires payment, so
+// a customer browsing a site with no paid services never triggers this
+// extra request. This is a DISPLAY hint only; the authoritative currency
+// is whatever payments-worker actually charges in (see POST /bookings/slot
+// response), which submitBooking() also picks up once available.
+function ensureCurrency(cb){
+  if (wczSbCurrencyFetched) { cb(); return; }
+  var done = false;
+  function finish(currency){
+    if (done) return; // guards against both the fetch AND the timeout firing
+    done = true;
+    wczSbCurrency = currency === 'ZIG' ? 'ZIG' : 'USD';
+    wczSbCurrencyFetched = true;
+    cb();
+  }
+  // Hard 2.5s ceiling -- this is a DISPLAY hint only (see comment above),
+  // never worth blocking the entire booking flow over. Whatever goes
+  // wrong -- the route missing, a slow network, anything -- the modal
+  // must still be usable, just defaulting to USD until the real
+  // authoritative currency comes back from payments-worker at charge time.
+  var timeoutId = setTimeout(function(){ finish('USD'); }, 2500);
+  fetch(WCZ_SB_API + '/bookings/currency?site_id=' + encodeURIComponent(WCZ_SB_SITE_ID))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      clearTimeout(timeoutId);
+      finish(d && d.currency);
+    })
+    .catch(function(){
+      clearTimeout(timeoutId);
+      finish('USD');
+    });
+}
+
+function depositLabelFor(svc){
+  if (!svc) return '';
+  var symbol = wczSbCurrency === 'ZIG' ? 'ZiG ' : String.fromCharCode(36);
+  if (svc.commitmentLevel === 'full') {
+    return svc.price ? ('Full payment (' + svc.price + ') required to book') : 'Full payment required to book';
+  }
+  if (svc.commitmentLevel === 'deposit') {
+    if (svc.depositAmount) return 'Deposit required: ' + symbol + svc.depositAmount;
+    if (svc.depositPercent && svc.price) return 'Deposit required: ' + svc.depositPercent + '% of ' + svc.price;
+    if (svc.depositPercent) return 'Deposit required: ' + svc.depositPercent + '%';
+    return 'Deposit required to book';
+  }
+  return '';
+}
 
 function pad2(n){ return n < 10 ? '0'+n : ''+n; }
 function fmtDate(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
 function todayDate(){ var t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); }
 function addDays(d,n){ var r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function h(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
 function ensureModal(){
   if (document.getElementById('wcz-sb-overlay')) return;
@@ -4540,6 +6438,9 @@ function openBooking(trigger){
     durationMin: parseInt(trigger.getAttribute('data-duration-min'), 10) || 30,
     price: trigger.getAttribute('data-price') || '',
     staffMode: trigger.getAttribute('data-staff-mode') || 'choose',
+    commitmentLevel: trigger.getAttribute('data-commitment-level') || 'none',
+    depositAmount: trigger.getAttribute('data-deposit-amount') || '',
+    depositPercent: trigger.getAttribute('data-deposit-percent') || '',
   };
   sb.stylist = null; sb.resourceId = null; sb.resources = []; sb.date = null; sb.time = null; sb.slot = null;
   document.getElementById('wcz-sb-title').textContent = sb.service.name;
@@ -4547,12 +6448,16 @@ function openBooking(trigger){
   document.getElementById('wcz-sb-overlay').classList.add('open');
   document.getElementById('wcz-sb-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
-  resolveStaffStep();
+  if (sb.service.commitmentLevel !== 'none') { ensureCurrency(resolveStaffStep); } else { resolveStaffStep(); }
 }
 
 function renderServiceBrowseStep(){
   var body = document.getElementById('wcz-sb-body');
   body.innerHTML = '<div class="wcz-sb-loading">Loading services\\u2026</div>';
+  // Currency is fetched alongside the service list (not after) so the very
+  // first render of the browse list already shows the right symbol, rather
+  // than USD flashing before a re-render.
+  ensureCurrency(function(){
   fetch(WCZ_SB_API + '/services?site_id=' + encodeURIComponent(WCZ_SB_SITE_ID))
     .then(function(r){ return r.json(); })
     .then(function(data){
@@ -4564,8 +6469,9 @@ function renderServiceBrowseStep(){
       var html = '<div class="wcz-sb-crumb">Choose a service</div><div class="wcz-sb-grid">';
       services.forEach(function(s){
         var priceLabel = s.price ? ' \\u00b7 ' + s.price : '';
-        html += '<div class="wcz-sb-svc-card" data-sid="' + s.id + '" data-sname="' + s.name + '" data-sdur="' + s.duration_min + '" data-sprice="' + (s.price || '') + '" data-smode="' + s.staff_mode + '">' +
-          '<div><div class="wcz-sb-svc-name">' + s.name + '</div><div class="wcz-sb-svc-meta">' + s.duration_min + ' min' + priceLabel + '</div></div>' +
+        var depositLabel = depositLabelFor({ commitmentLevel: s.commitment_level, depositAmount: s.deposit_amount, depositPercent: s.deposit_percent, price: s.price });
+        html += '<div class="wcz-sb-svc-card" data-sid="' + s.id + '" data-sname="' + s.name + '" data-sdur="' + s.duration_min + '" data-sprice="' + (s.price || '') + '" data-smode="' + s.staff_mode + '" data-scommit="' + (s.commitment_level || 'none') + '" data-sdepamt="' + (s.deposit_amount || '') + '" data-sdeppct="' + (s.deposit_percent || '') + '">' +
+          '<div><div class="wcz-sb-svc-name">' + s.name + '</div><div class="wcz-sb-svc-meta">' + s.duration_min + ' min' + priceLabel + (depositLabel ? ' \\u00b7 ' + depositLabel : '') + '</div></div>' +
           '</div>';
       });
       html += '</div>';
@@ -4578,6 +6484,9 @@ function renderServiceBrowseStep(){
             durationMin: parseInt(card.getAttribute('data-sdur'), 10) || 30,
             price: card.getAttribute('data-sprice') || '',
             staffMode: card.getAttribute('data-smode') || 'choose',
+            commitmentLevel: card.getAttribute('data-scommit') || 'none',
+            depositAmount: card.getAttribute('data-sdepamt') || '',
+            depositPercent: card.getAttribute('data-sdeppct') || '',
           };
           document.getElementById('wcz-sb-title').textContent = sb.service.name;
           document.getElementById('wcz-sb-subtitle').textContent = sb.service.durationMin + ' min' + (sb.service.price ? ' \\u00b7 ' + sb.service.price : '');
@@ -4588,6 +6497,7 @@ function renderServiceBrowseStep(){
     .catch(function(){
       body.innerHTML = '<div class="wcz-sb-empty">Could not load services \\u2014 please try again.</div>';
     });
+  });
 }
 
 function closeBooking(){
@@ -4708,13 +6618,17 @@ function loadTimes(){
 function renderConfirmStep(){
   var body = document.getElementById('wcz-sb-body');
   var withWhom = sb.stylist ? sb.stylist.name : ('our next available ' + WCZ_SB_LABEL);
+  var depositLabel = depositLabelFor(sb.service);
+  var submitLabel = depositLabel ? 'Continue to payment' : 'Request booking';
   body.innerHTML =
     '<button type="button" class="wcz-sb-back" id="wcz-sb-back-2">&#8249; Back</button>' +
     '<div class="wcz-sb-summary"><strong>' + sb.service.name + '</strong><br>With ' + withWhom + '<br>' + sb.date + ' at ' + sb.time + '</div>' +
+    (depositLabel ? '<div class="wcz-sb-deposit-badge">' + depositLabel + '</div>' : '') +
     '<div class="wcz-sb-form">' +
       '<input type="text" id="wcz-sb-name" placeholder="Your full name" maxlength="80">' +
-      '<input type="tel" id="wcz-sb-phone" placeholder="WhatsApp / phone number" maxlength="30">' +
-      '<button type="button" class="wcz-sb-submit" id="wcz-sb-submit">Request booking</button>' +
+      '<input type="tel" id="wcz-sb-phone" placeholder="' + (depositLabel ? 'EcoCash / WhatsApp number' : 'WhatsApp / phone number') + '" maxlength="30">' +
+      (depositLabel ? '<input type="email" id="wcz-sb-email" placeholder="Email (for your payment receipt)" maxlength="120">' : '') +
+      '<button type="button" class="wcz-sb-submit" id="wcz-sb-submit">' + submitLabel + '</button>' +
     '</div>' +
     '<div class="wcz-sb-msg" id="wcz-sb-msg"></div>';
   document.getElementById('wcz-sb-back-2').addEventListener('click', function(){
@@ -4729,12 +6643,22 @@ function renderConfirmStep(){
 function submitBooking(){
   var nameEl = document.getElementById('wcz-sb-name');
   var phoneEl = document.getElementById('wcz-sb-phone');
+  var emailEl = document.getElementById('wcz-sb-email');
   var msg = document.getElementById('wcz-sb-msg');
   var submitBtn = document.getElementById('wcz-sb-submit');
   var name = nameEl ? nameEl.value.trim() : '';
   var phone = phoneEl ? phoneEl.value.trim() : '';
+  var email = emailEl ? emailEl.value.trim() : '';
+  var depositLabel = depositLabelFor(sb.service);
   if (!name || !phone) {
     if (msg) { msg.className = 'wcz-sb-msg err show'; msg.textContent = 'Please add your name and phone number.'; }
+    return;
+  }
+  // Email is only shown (and only required) when a payment is actually
+  // needed -- Paynow needs a real authemail to send the EcoCash push and
+  // the payment receipt to. A no-payment booking never asked for one.
+  if (depositLabel && (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))) {
+    if (msg) { msg.className = 'wcz-sb-msg err show'; msg.textContent = 'Please add a valid email \\u2014 needed to send your payment receipt.'; }
     return;
   }
   submitBtn.disabled = true; submitBtn.textContent = 'Sending\\u2026';
@@ -4747,6 +6671,7 @@ function submitBooking(){
     customer_name: name,
     customer_phone: phone,
   };
+  if (email) payload.customer_email = email;
   if (sb.resourceId) payload.resource_id = sb.resourceId;
   fetch(WCZ_SB_API + '/bookings/slot', {
     method: 'POST',
@@ -4763,17 +6688,102 @@ function submitBooking(){
         var dayBtn = document.querySelector('.wcz-sb-day[data-date="' + sb.date + '"]');
         if (dayBtn) dayBtn.click();
       } else {
-        if (msg) { msg.className = 'wcz-sb-msg err show'; msg.textContent = (res.data && res.data.error) || "Couldn't send your request \\u2014 please try again."; }
+        // Show the real underlying reason (res.data.detail) when present,
+        // not just the generic error code -- "paynow_error" alone tells a
+        // customer (or a developer testing this) nothing actionable.
+        var errText = (res.data && (res.data.detail || res.data.message || res.data.error)) || "Couldn't send your request \\u2014 please try again.";
+        if (msg) { msg.className = 'wcz-sb-msg err show'; msg.textContent = errText; }
         submitBtn.disabled = false; submitBtn.textContent = 'Request booking';
       }
+      return;
+    }
+    if (res.data && res.data.payment && res.data.payment.reference && res.data.payment.poll_url) {
+      // Deposit/full payment required — bookings-worker already fired the
+      // EcoCash push via payments-worker using the OWNER's own connected
+      // Paynow account (see bookings-worker v1.17 createSlotBooking()).
+      // payments-worker's charge response is the AUTHORITATIVE currency
+      // (the pre-submit label was only ever a display estimate) — reconcile
+      // in case it differs for any reason before showing the wait screen.
+      if (res.data.payment.currency === 'ZIG' || res.data.payment.currency === 'USD') {
+        wczSbCurrency = res.data.payment.currency;
+      }
+      // Switch to a waiting screen instead of the plain "request sent"
+      // message, and poll GET /bookings/deposit-status until it resolves.
+      renderPayWaitStep(res.data.payment.reference, phone);
       return;
     }
     if (msg) { msg.className = 'wcz-sb-msg ok show'; msg.textContent = 'Request sent! We will confirm shortly on WhatsApp.'; }
     submitBtn.textContent = 'Requested \\u2713';
   }).catch(function(){
     if (msg) { msg.className = 'wcz-sb-msg err show'; msg.textContent = 'Network error \\u2014 please try again.'; }
-    submitBtn.disabled = false; submitBtn.textContent = 'Request booking';
+    submitBtn.disabled = false; submitBtn.textContent = depositLabelFor(sb.service) ? 'Continue to payment' : 'Request booking';
   });
+}
+
+function renderPayWaitStep(reference, phone){
+  var body = document.getElementById('wcz-sb-body');
+  document.getElementById('wcz-sb-subtitle').textContent = 'Approve the payment prompt';
+  body.innerHTML =
+    '<div class="wcz-sb-pay-wait" id="wcz-sb-pay-wait">' +
+      '<div class="wcz-sb-pay-spinner"></div>' +
+      '<h4>Check your phone</h4>' +
+      '<p>We sent an EcoCash approval prompt to ' + h(phone) + '.<br>Approve it, then wait a moment here.</p>' +
+      '<button type="button" class="wcz-sb-pay-recheck" id="wcz-sb-pay-recheck">Check again</button>' +
+    '</div>' +
+    '<div class="wcz-sb-msg" id="wcz-sb-msg"></div>';
+  sbPollAttempts = 0;
+  var recheckBtn = document.getElementById('wcz-sb-pay-recheck');
+  recheckBtn.addEventListener('click', function(){ pollPaymentStatus(reference, true); });
+  pollPaymentStatus(reference, false);
+  sbPollTimer = setInterval(function(){ pollPaymentStatus(reference, false); }, 3000);
+}
+
+function pollPaymentStatus(reference, manual){
+  sbPollAttempts++;
+  fetch(WCZ_SB_API + '/bookings/deposit-status?ref=' + encodeURIComponent(reference))
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var status = data && data.status;
+      if (status === 'paid') {
+        if (sbPollTimer) { clearInterval(sbPollTimer); sbPollTimer = null; }
+        showPayResult(true, 'Payment confirmed! Your booking is in \\u2014 we will confirm shortly on WhatsApp.');
+        return;
+      }
+      if (status === 'cancelled' || status === 'failed') {
+        if (sbPollTimer) { clearInterval(sbPollTimer); sbPollTimer = null; }
+        showPayResult(false, 'The payment was cancelled or failed. Please try booking again.');
+        return;
+      }
+      // still pending
+      if (sbPollAttempts >= SB_POLL_MAX_ATTEMPTS) {
+        if (sbPollTimer) { clearInterval(sbPollTimer); sbPollTimer = null; }
+        var wait = document.getElementById('wcz-sb-pay-wait');
+        if (wait) {
+          var p = wait.querySelector('p');
+          if (p) p.innerHTML = "Taking longer than expected. If you haven't approved the prompt on your phone yet, do that now, then tap below.";
+          var btn = document.getElementById('wcz-sb-pay-recheck');
+          if (btn) btn.classList.add('show');
+        }
+      }
+    })
+    .catch(function(){
+      if (manual) {
+        var wait = document.getElementById('wcz-sb-pay-wait');
+        if (wait) {
+          var p = wait.querySelector('p');
+          if (p) p.textContent = "Couldn't check just now \\u2014 please try again.";
+        }
+      }
+    });
+}
+
+function showPayResult(ok, text){
+  var body = document.getElementById('wcz-sb-body');
+  body.innerHTML =
+    '<div class="wcz-sb-pay-wait">' +
+      '<h4>' + (ok ? '\\u2705 Booked' : '\\u26a0\\ufe0f Payment not completed') + '</h4>' +
+      '<p>' + h(text) + '</p>' +
+    '</div>';
 }
 
 document.addEventListener('click', function(e){
@@ -4811,9 +6821,13 @@ function normalizeContent(raw, templateId) {
   const images = inner.images || {};
 
   const gallery = Array.isArray(inner.gallery) ?
-    inner.gallery :
+    inner.gallery.map(g => (typeof g === 'string' ?
+      { url: g, thumbnail: g, caption: '' } :
+      { ...g, thumbnail: g.thumbnail || g.url || '' })) :
     Array.isArray(images.gallery) ?
-    images.gallery.map(u => (typeof u === 'string' ? { url: u, caption: '' } : u)) :
+    images.gallery.map(u => (typeof u === 'string' ?
+      { url: u, thumbnail: u, caption: '' } :
+      { ...u, thumbnail: u.thumbnail || u.url || '' })) :
     [];
 
   const normalized = {
@@ -4834,6 +6848,7 @@ function normalizeContent(raw, templateId) {
     gallery,
     services: normalizeServices(normalizeItemImages(inner.services)),
     services_intro: inner.services_intro || '',
+    booking_services: Array.isArray(inner.booking_services) ? inner.booking_services : [],
     menu: normalizeItemImages(inner.menu),
     products: normalizeItemImages(inner.products),
     rooms: normalizeItemImages(inner.rooms),
@@ -4846,6 +6861,9 @@ function normalizeContent(raw, templateId) {
     listings: normalizeItemImages(inner.listings),
     team: normalizeItemImages(inner.team),
     testimonials: inner.testimonials || [],
+    reviews: Array.isArray(inner.reviews) ? inner.reviews : [],
+    press_mentions: Array.isArray(inner.press_mentions) ? inner.press_mentions : [],
+    articles: Array.isArray(inner.articles) ? inner.articles : [],
     stats: inner.stats || [],
     events: inner.events || inner.schedule || [],
     hours: normalizeHours(inner.hours) || null,
@@ -4857,6 +6875,8 @@ function normalizeContent(raw, templateId) {
     credentials: inner.credentials || [],
     brands: inner.brands || [],
     clients: inner.clients || inner.partners || [],
+    experience: Array.isArray(inner.experience) ? inner.experience : [],
+    awards: normalizeItemImages(inner.awards),
     deal: inner.deal || null,
     badge: inner.badge || null,
     video_url: (typeof inner.video === 'string' ? inner.video : inner.video?.url) || inner.video_url || null,
@@ -5018,7 +7038,6 @@ function buildHospitalityExtras(c, site, config) {
   const hero = c.hero_image_url || c.hero_image || c.images?.hero || site.hero_image_url || '';
   const address = c.address || c.location || c.contact?.address || '';
   const email = c.email || c.contact?.email || '';
-  const map = c.map_embed_url || c.contact?.map_embed_url || '';
   const fb = c.socials?.facebook || c.facebook_url || '';
   const ig = c.socials?.instagram || c.instagram_url || '';
 
@@ -5040,7 +7059,7 @@ function buildHospitalityExtras(c, site, config) {
   extras.has_address = t(address);
   extras.has_phone = t(phone);
   extras.has_email = t(email);
-  extras.has_map = t(map);
+  extras.has_map = t(address);
   extras.has_facebook = t(fb);
   extras.has_instagram = t(ig);
   extras.has_rooms = t(rooms.length);
@@ -5054,6 +7073,7 @@ function buildHospitalityExtras(c, site, config) {
   extras.has_testimonials = t(testimonials.length);
   extras.has_about = t(c.about);
   extras.has_hours = t(c.hours);
+  extras.has_menu = t(Array.isArray(c.menu) && c.menu.length > 0);
 
   const L = (key, def) => (c[key] != null && c[key] !== '' ? c[key] : def);
   extras.nav_rooms_label = L('nav_rooms_label', 'Rooms');
@@ -5369,8 +7389,8 @@ function buildHospitalityExtras(c, site, config) {
   if (phone) det.push(`<div class="location-detail"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.24h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l1.09-1.09a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.73 16l.2.92z"/></svg><a href="tel:${esc(phone)}">${esc(phone)}</a></div>`);
   if (email) det.push(`<div class="location-detail"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><a href="mailto:${esc(email)}">${esc(email)}</a></div>`);
   extras.location_details_html = det.join('');
-  extras.location_map_html = map ?
-    `<iframe src="${esc(map)}" allowfullscreen loading="lazy" title="Location Map"></iframe>` :
+  extras.location_map_html = address ?
+    `<div class="location-directions"><a href="${esc(buildDirectionsHref(address))}" class="btn-reserve-outline" target="_blank" rel="noopener">Get Directions ${HOSP_ARROW}</a></div>` :
     `<div class="location-map-ph"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>`;
 
   extras.cta_bg_html = hero ? `<div class="booking-cta-bg" style="background-image: url('${esc(hero)}');"></div>` : '';
