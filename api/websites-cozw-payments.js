@@ -1,6 +1,12 @@
 /**
- * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.12
+ * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.13
  * ---------------------------------------------------------------------------
+ * v1.13 — added GET /addon-status?site_id=&addon_type= : a generic,
+ * read-only, browser-reachable check for whether an addon is currently
+ * owned. Needed because orders-worker's /addon-check is service-binding
+ * only (worker-to-worker, unreachable from client JS) and bookings-worker's
+ * /bookings/tier is bookings-specific. Built for the editor's template
+ * picker to show locked/unlocked state, but works for any addon_type.
  * v1.12 — one-time billing for template unlocks. Two new $15 SKUs
  * ('template:hospitality-sands', 'template:hospitality-wild'), tier fixed
  * to 'unlock' so handlePayAddon()'s existing validation needed zero changes.
@@ -175,6 +181,12 @@ export default {
       if (request.method === "POST" && pathname === "/paynow/result") return await handleWebhook(request, env);
       if (request.method === "GET" && pathname === "/pay/status") return await handleStatus(url, env);
       if (request.method === "GET" && pathname === "/pricing") return await handlePricing(env);
+      // Generic, read-only, browser-reachable addon status check. Distinct
+      // from orders-worker's /addon-check (service-binding only, worker-to-
+      // worker, unreachable from client JS) and from bookings-worker's own
+      // /bookings/tier (bookings-specific). Any addon_type can use this --
+      // added for template unlocks, but not template-specific.
+      if (request.method === "GET" && pathname === "/addon-status") return await handleAddonStatus(url, env);
 
       // v1.6 — owner Paynow credential management + deposit charging
       if (request.method === "POST" && pathname === "/merchant-credentials/connect") return await handleConnectMerchant(request, env);
@@ -1966,6 +1978,35 @@ async function confirmPaidAddon(env, payment) {
 }
 // 2592000 = 30 days in seconds, computed entirely in SQL as an INTEGER --
 // no TEXT round-trip via date('now','+30 days') anymore.
+
+async function handleAddonStatus(url, env) {
+  const site_id = url.searchParams.get("site_id");
+  const addon_type = url.searchParams.get("addon_type");
+  if (!site_id || !addon_type) return json({ error: "missing_params" }, 400, env);
+
+  const row = await env.DB.prepare(
+    "SELECT status, tier, price_usd, billing_cycle, expires_at FROM addons WHERE site_id = ?1 AND addon_type = ?2"
+  ).bind(site_id, addon_type).first();
+
+  if (!row) return json({ owned: false }, 200, env);
+
+  const now = Math.floor(Date.now() / 1000);
+  // NULL expires_at = permanent (matches the platform-wide convention used by
+  // renewal-cron's addons sweep). A non-NULL expires_at that's already passed
+  // means the row is stale and the cron hasn't swept it to grace/suspended
+  // yet -- don't report it as owned just because status still says active.
+  const notExpired = row.expires_at === null || row.expires_at > now;
+  const owned = (row.status === "active" || row.status === "grace") && notExpired;
+
+  return json({
+    owned,
+    status: row.status,
+    tier: row.tier,
+    price_usd: row.price_usd,
+    billing_cycle: row.billing_cycle,
+    permanent: row.expires_at === null,
+  }, 200, env);
+}
 
 /* ========================================================================= *
  * Small DB helpers
