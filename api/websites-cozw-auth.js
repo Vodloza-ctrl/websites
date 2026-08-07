@@ -1,7 +1,67 @@
 /**
- * websites.co.zw — Auth + Dashboard API Worker  v5.6
+ * websites.co.zw — Auth + Dashboard API Worker  v5.10
  * Deploy as: websites-cozw-auth
  * Custom domain: app.websites.co.zw
+ *
+ * v5.10 CHANGE — PREMIUM TEMPLATE ENFORCEMENT:
+ *   Added PREMIUM_TEMPLATE_IDS + checkTemplateEntitlement(), gating both
+ *   entry points that can set a site's template_id:
+ *     - saveSite() (PUT /api/sites/:id) -- this is the ACTUAL endpoint the
+ *       editor's Save button hits; template_id rides along with a regular
+ *       content save via editor.html's onSave() flow (confirmed against the
+ *       live editor.html, not assumed).
+ *     - switchTemplate() (PUT /api/sites/:id/template) -- a separate,
+ *       dedicated endpoint that exists in this file but isn't called by the
+ *       current editor UI. Gated anyway in case anything else calls it.
+ *   Both call checkTemplateEntitlement(), which hits payments-worker's new
+ *   GET /addon-status (v1.13+) via the existing PAYMENTS_WORKER service
+ *   binding. Fails CLOSED on any error -- unreachable payments-worker means
+ *   "not owned", never "owned". This is the real enforcement boundary; the
+ *   editor's lock badges are UX on top of it, not a substitute for it.
+ *   createSite() now hard-rejects premium template_ids outright (not an
+ *   entitlement check -- a site can't own an addon scoped to a site_id
+ *   that doesn't exist yet). Premium templates are switch-only upgrades
+ *   for existing sites, never a creation-time option.
+ *   Bonus fix: hospitality-inn itself was missing from this file's own
+ *   paletteFor()/fontFor()/defaultSectionsFor() (silently falling back to
+ *   clean-white/grotesk-serif/a generic 4-section list for any site
+ *   touching those paths) -- added it alongside the two new premium skins.
+ *
+ * v5.9 CHANGE — SECRETS CONFIGURATION CHECK (admin-only):
+ *   Added GET /api/admin/secrets-check — reports true/false for whether
+ *   each security-relevant secret is actually set on this Worker, NEVER
+ *   the value itself. This exists because OTP_HMAC_SECRET and
+ *   SESSION_SECRET both silently fall back to a hardcoded dev string
+ *   ("dev-secret") if never configured — everything still *works* in that
+ *   state, it just works insecurely, which makes it an easy thing to miss.
+ *   Same pattern already used in zvakho-universal-store-api's root route
+ *   (env.GOOGLE_CLIENT_ID ? "enabled" : "disabled"). Requires ADMIN_SECRET
+ *   bearer auth, same as every other /api/admin/* route.
+ *
+ * v5.8 CHANGE — ACCOUNT-BOUND EMAIL OTP DESTINATION:
+ *   handleRequestOtp() no longer trusts an arbitrary email in the request
+ *   body for the "email" channel. Existing accounts (matched by phone)
+ *   only ever receive the code at the email already on file — any email
+ *   submitted in the request is ignored. Accounts with no email on file
+ *   are refused on the email channel (use WhatsApp, or add an email from
+ *   an authenticated session first). Brand-new phones (no account yet)
+ *   may supply an email, which is bound to the new account on verify.
+ *   This closes the takeover vector where knowing someone's phone number
+ *   was enough to redirect their login code to an attacker's inbox.
+ *   REQUIRES migration 005_otp_email.sql (adds otp_codes.email) — run
+ *   this BEFORE deploying this file, or request-otp will start failing.
+ *
+ * v5.7 CHANGE — OG METADATA FETCH:
+ *   Added GET /api/og?url=<facebook page url> — fetches a public Facebook
+ *   Page's og:title / og:image / og:description server-side (browsers can't
+ *   do this directly: no CORS from facebook.com, and Facebook shows a login
+ *   wall to most non-Facebook traffic). Used by the landing page's "Fetch
+ *   info" button to seed the mock preview with the real business name and
+ *   cover photo when available. No auth required — this is called by
+ *   anonymous visitors on the public landing page before they have a
+ *   session, and it never touches D1. Facebook will still block a fraction
+ *   of requests; the endpoint returns { error: ... } in that case and the
+ *   frontend falls back to manual entry.
  *
  * v5.6 CHANGE — DOMAIN SEARCH & REGISTRATION ENHANCEMENTS:
  *   Added domain search API for .com availability checking
@@ -39,6 +99,7 @@
  *   POST /api/sites/:id/upload-url
  *   PUT  /api/sites/:id/template
  *   POST /api/sites/:id/domain-wish   (Enhanced for .com and .co.zw)
+ *   POST /api/sites/:id/own-domain    (NEW: customer brings their own domain)
  *   GET  /api/sites/:id/domain-wish
  *   GET  /api/sites/:id/email-routes
  *   POST /api/sites/:id/email-routes
@@ -46,6 +107,7 @@
  *   DELETE /api/sites/:id/email-routes/:rid
  *   GET  /api/payments/:ref           (thin proxy to payments Worker)
  *   GET  /api/admin/stats
+ *   GET  /api/admin/secrets-check     (NEW: reports true/false per secret, never values)
  *   GET  /api/admin/sites
  *   PUT  /api/admin/sites/:id
  *   PUT  /api/admin/owners/:id
@@ -53,6 +115,7 @@
  *   PUT  /api/admin/domain-queue/:id  (Enhanced with .com registration)
  *   PUT  /api/admin/email-routes/:id/verify
  *   POST /api/domain/search           (NEW: Domain availability search)
+ *   GET  /api/og                      (NEW: Open Graph metadata fetch, no auth)
  *
  * Bindings: DB (D1), ASSETS (R2 bucket: websites-cozw-assets),
  *           AI_WORKER (Service binding -> websites-cozw-ai),
@@ -75,16 +138,53 @@ const RATE_LIMIT_WIN = 5 * 60;
 const RATE_LIMIT_MAX = 3;
 const GEN_CAP_STARTER = 5;
 
-// Domain pricing
-const DOMAIN_PRICES = {
-  com: 12.00,  // USD per year
-  cozw: 10.00, // USD per year (manual registration fee)
-};
+// Plan pricing — the ONLY prices ever shown to a client. Domains are never
+// priced or sold separately: Starter includes one free .co.zw domain
+// (3-choice admin queue); Pro includes both a free .com AND a free .co.zw
+// domain bundled in. Never expose per-domain cost fields in any API response.
+const PLAN_PRICES = { starter: 30, pro: 50 };
 
 // These fields are always preserved from the existing site when AI regenerates.
 const OWNER_ASSET_FIELDS = ["team", "gallery", "images", "testimonials", "products", "menu", "listings", "agents", "services"];
 
+// Premium template unlocks ($15 one-time each, via the addons table).
+// A template_id in this map cannot be switched to (or created with) unless
+// checkTemplateEntitlement() confirms the site already owns the matching
+// addon_type. Deliberately NOT offered in the new-site wizard (see
+// createSite() below) -- these are upgrades for existing paying customers,
+// not a paywall on someone's first template pick.
+const PREMIUM_TEMPLATE_IDS = {
+  "hospitality-sands": { addon_type: "template:hospitality-sands", price: 15 },
+  "hospitality-wild":  { addon_type: "template:hospitality-wild",  price: 15 },
+};
+
+// Checks ownership via payments-worker's GET /addon-status (v1.13+), using
+// the same PAYMENTS_WORKER service binding already used elsewhere in this
+// file. Fails CLOSED -- any network error, non-OK response, or missing
+// PAYMENTS_WORKER binding is treated as "not owned", never as "owned".
+// This is the only real enforcement boundary for premium templates; the
+// editor's lock badges are UX, not security.
+async function checkTemplateEntitlement(env, siteId, templateId) {
+  const premium = PREMIUM_TEMPLATE_IDS[templateId];
+  if (!premium) return { premium: false, owned: true }; // not a premium template -- nothing to check
+  try {
+    const qs = "site_id=" + encodeURIComponent(siteId) + "&addon_type=" + encodeURIComponent(premium.addon_type);
+    const resp = env.PAYMENTS_WORKER
+      ? await env.PAYMENTS_WORKER.fetch(new Request("https://internal/addon-status?" + qs))
+      : await fetch(paymentsApiBase(env) + "/addon-status?" + qs);
+    if (!resp.ok) return { premium: true, owned: false, price: premium.price };
+    const data = await resp.json().catch(() => ({}));
+    return { premium: true, owned: !!data.owned, price: premium.price };
+  } catch (e) {
+    return { premium: true, owned: false, price: premium.price };
+  }
+}
+
 const PAGES_DASHBOARD = "https://www.websites.co.zw/dashboard";
+
+// Hosts allowed for the /api/og fetch — keeps this from becoming an open
+// URL-fetch proxy.
+const OG_ALLOWED_HOSTS = ["facebook.com", "m.facebook.com", "web.facebook.com"];
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 export default {
@@ -99,7 +199,7 @@ export default {
 
     // ── Health check ─────────────────────────────────────────────────────────
     if (path === "/health")
-      return respond({ ok: true, service: "websites-cozw-auth", version: "5.6" }, 200, origin);
+      return respond({ ok: true, service: "websites-cozw-auth", version: "5.10" }, 200, origin);
 
     // ── Dashboard HTML → redirect to Pages ──────────────────────────────────
     if (path === "/dashboard" || path === "/dashboard/")
@@ -123,6 +223,8 @@ export default {
     try {
       if (path === "/api/admin/stats" && method === "GET")
         return await adminStats(request, env, origin);
+      if (path === "/api/admin/secrets-check" && method === "GET")
+        return await adminSecretsCheck(request, env, origin);
       if (path === "/api/admin/sites" && method === "GET")
         return await adminListSites(request, env, origin);
       const mAdminSite = path.match(/^\/api\/admin\/sites\/([^/]+)$/);
@@ -145,7 +247,12 @@ export default {
 
     // ── Dashboard / payment API routes ────────────────────────────────────────
     try {
-      // Domain Search - NEW
+      // OG Metadata fetch — Public/anonymous — no auth check, this is called
+      // from the landing page before the visitor has a session.
+      if (path === "/api/og" && method === "GET")
+        return await fetchOGMetadata(request, env, origin);
+
+      // Domain Search
       if (path === "/api/domain/search" && method === "POST")
         return await domainSearch(request, env, origin);
 
@@ -196,6 +303,11 @@ export default {
       const mDW = path.match(/^\/api\/sites\/([^/]+)\/domain-wish$/);
       if (mDW && method === "POST") return await submitDomainWish(request, env, origin, mDW[1]);
       if (mDW && method === "GET")  return await getDomainWish(request, env, origin, mDW[1]);
+
+      // Own domain — customer already owns a domain and wants to point it
+      // here instead of using the free bundled .com/.co.zw
+      const mOwnDomain = path.match(/^\/api\/sites\/([^/]+)\/own-domain$/);
+      if (mOwnDomain && method === "POST") return await submitOwnDomain(request, env, origin, mOwnDomain[1]);
 
       // Email routes
       const mERList = path.match(/^\/api\/sites\/([^/]+)\/email-routes$/);
@@ -250,20 +362,46 @@ async function handleRequestOtp(request, env) {
     .bind(phone, now - RATE_LIMIT_WIN).first();
   if (recent && recent.n >= RATE_LIMIT_MAX) return { error: "too_many_requests", _status: 429 };
 
+  // ── v5.8: resolve the account-bound email destination BEFORE anything is
+  // sent. The email channel must never let the request body redirect an
+  // existing account's code to an arbitrary address.
+  let emailToUse = null;
+  if (channel === "email") {
+    const existingOwner = await env.DB.prepare("SELECT email FROM owners WHERE phone=?1").bind(phone).first();
+    if (existingOwner) {
+      // Existing account: ONLY ever send to the address already on file.
+      // Any email present in the request body is silently ignored — this
+      // is what closes the takeover vector (knowing the phone number is
+      // no longer enough to redirect the code to an attacker's inbox).
+      if (!existingOwner.email) {
+        return { error: "email_not_on_file", _status: 400 };
+      }
+      emailToUse = existingOwner.email;
+    } else {
+      // Brand-new phone, no account yet — no existing owner to redirect
+      // away from, so the supplied email is trusted and gets bound to the
+      // new account on verify.
+      const suppliedEmail = String(body.email || "").trim();
+      if (!suppliedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(suppliedEmail)) {
+        return { error: "email_required", _status: 400 };
+      }
+      emailToUse = suppliedEmail;
+    }
+  }
+
   const code     = String(Math.floor(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
   const codeHash = await hmac(env.OTP_HMAC_SECRET || "dev-secret", phone + ":" + code);
   const otpId    = "otp_" + uid();
 
   await env.DB.prepare(
-    "INSERT INTO otp_codes (id,phone,code_hash,channel,expires_at,created_at) VALUES (?1,?2,?3,?4,?5,?6)"
-  ).bind(otpId, phone, codeHash, channel, now + OTP_TTL, now).run();
+    "INSERT INTO otp_codes (id,phone,code_hash,channel,email,expires_at,created_at) VALUES (?1,?2,?3,?4,?5,?6,?7)"
+  ).bind(otpId, phone, codeHash, channel, emailToUse, now + OTP_TTL, now).run();
 
   let sent = false;
   if (channel === "whatsapp") {
     sent = await sendWhatsApp(env, phone, code);
   } else {
-    const email = String(body.email || "").trim();
-    if (email) sent = await sendEmail(env, email, code);
+    sent = await sendEmail(env, emailToUse, code);
   }
 
   const devCode = (!sent || env.DEV_MODE === "1") ? code : undefined;
@@ -280,7 +418,7 @@ async function handleVerifyOtp(request, env) {
 
   const now = nowSec();
   const otp = await env.DB.prepare(
-    "SELECT id, code_hash, attempts FROM otp_codes " +
+    "SELECT id, code_hash, attempts, email FROM otp_codes " +
     "WHERE phone=?1 AND consumed_at IS NULL AND expires_at > ?2 ORDER BY created_at DESC LIMIT 1"
   ).bind(phone, now).first();
 
@@ -299,10 +437,13 @@ async function handleVerifyOtp(request, env) {
   ).bind(phone).first();
 
   if (!owner) {
+    // v5.8: bind the email the person supplied at request-otp time (if
+    // any) to the brand-new account, so a first-time email-channel signup
+    // actually ends up with an email on file for next time.
     const ownerId = "usr_" + uid();
-    await env.DB.prepare("INSERT INTO owners (id, phone, created_at) VALUES (?1, ?2, ?3)")
-      .bind(ownerId, phone, now).run();
-    owner = { id: ownerId, phone, name: null, email: null };
+    await env.DB.prepare("INSERT INTO owners (id, phone, email, created_at) VALUES (?1, ?2, ?3, ?4)")
+      .bind(ownerId, phone, otp.email || null, now).run();
+    owner = { id: ownerId, phone, name: null, email: otp.email || null };
   }
 
   const token     = uid(48);
@@ -366,6 +507,17 @@ async function createSite(request, env, origin) {
   const body       = await readJson(request);
   const siteName   = clamp(body.site_name, 120) || "Untitled site";
   const templateId = body.template_id || "bold-retail";
+  // Premium templates can't be owned by a site that doesn't exist yet
+  // (addons are scoped to a real site_id) -- this isn't an entitlement
+  // check, it's a hard rule: these are switch-only upgrades for existing
+  // sites, reached via the editor's picker after purchase, never a
+  // creation-time option.
+  if (PREMIUM_TEMPLATE_IDS[templateId]) {
+    return jsonResp({
+      error: "premium_template_not_available_at_creation",
+      message: "This template is a paid upgrade for existing sites. Create your site first, then switch to it from the editor.",
+    }, 400, origin);
+  }
   const id         = "site_" + uid(8);
   const slug       = await uniqueSlug(env, slugify(siteName), null);
   const content    = JSON.stringify({
@@ -391,7 +543,7 @@ async function getSite(request, env, origin, id) {
 async function saveSite(request, env, origin, id) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
-  const row = await env.DB.prepare("SELECT owner_id, status FROM sites WHERE id=?1").bind(id).first();
+  const row = await env.DB.prepare("SELECT owner_id, status, template_id FROM sites WHERE id=?1").bind(id).first();
   if (!row) return jsonResp({ error: "site_not_found" }, 404, origin);
   if (row.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
   const body = await readJson(request);
@@ -400,6 +552,24 @@ async function saveSite(request, env, origin, id) {
   const siteName   = clamp(body.site_name, 120);
   const contentStr = JSON.stringify(body.content);
   const templateId = clamp(body.template_id, 40);
+
+  // Premium template gate. This is the endpoint the editor's actual Save
+  // button hits (template_id rides along with the regular content save,
+  // not through the dedicated switchTemplate() endpoint below) -- so this
+  // is the real enforcement point, not that one. Only checked when the
+  // template_id is actually changing.
+  if (templateId && templateId !== row.template_id) {
+    const entitlement = await checkTemplateEntitlement(env, id, templateId);
+    if (entitlement.premium && !entitlement.owned) {
+      return jsonResp({
+        error: "template_not_unlocked",
+        template_id: templateId,
+        price: entitlement.price,
+        message: `This is a premium template ($${entitlement.price}, one-time). Unlock it first to switch to it.`,
+      }, 402, origin);
+    }
+  }
+
   if (siteName && templateId) {
     await env.DB.prepare("UPDATE sites SET site_name=?2,content=?3,template_id=?4,updated_at=unixepoch() WHERE id=?1 AND owner_id=?5")
       .bind(id, siteName, contentStr, templateId, ownerId).run();
@@ -482,66 +652,146 @@ async function deleteSite(request, env, origin, id) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DOMAIN WISH SYSTEM - ENHANCED
+// OG METADATA FETCH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * GET /api/og?url=<facebook page url>
+ *
+ * No auth required — called by anonymous visitors on the public landing
+ * page. Fetches the target page server-side (avoids the browser CORS
+ * problem) with a crawler-style User-Agent, and extracts og:title /
+ * og:image / og:description via HTMLRewriter.
+ *
+ * Facebook still shows a login wall to a meaningful fraction of non-Facebook
+ * traffic even with this UA — that's expected, not a bug. Callers should
+ * treat any { error: ... } response as "fall back to manual entry", not as
+ * a failure worth surfacing loudly to the visitor.
+ *
+ * Only facebook.com / m.facebook.com / web.facebook.com hosts are allowed,
+ * so this endpoint can't be used as an open URL-fetch proxy.
+ */
+async function fetchOGMetadata(request, env, origin) {
+  const url       = new URL(request.url);
+  const targetUrl = url.searchParams.get("url");
+  if (!targetUrl) return jsonResp({ error: "url_required" }, 400, origin);
+
+  let parsed;
+  try {
+    parsed = new URL(targetUrl);
+  } catch {
+    return jsonResp({ error: "invalid_url" }, 400, origin);
+  }
+
+  const host = parsed.hostname.replace(/^www\./, "");
+  if (!OG_ALLOWED_HOSTS.includes(host)) {
+    return jsonResp({ error: "unsupported_host", message: "Only facebook.com page links are supported." }, 400, origin);
+  }
+
+  const meta = { title: null, image: null, description: null };
+
+  try {
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 6000);
+
+    const resp = await fetch(parsed.toString(), {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    });
+    clearTimeout(timeoutId);
+
+    if (!resp.ok) {
+      return jsonResp({ error: "fetch_failed", status: resp.status }, 502, origin);
+    }
+
+    const rewriter = new HTMLRewriter()
+      .on('meta[property="og:title"]', {
+        element(el) { meta.title = el.getAttribute("content") || meta.title; },
+      })
+      .on('meta[property="og:image"]', {
+        element(el) { if (!meta.image) meta.image = el.getAttribute("content"); },
+      })
+      .on('meta[property="og:description"]', {
+        element(el) { meta.description = el.getAttribute("content") || meta.description; },
+      });
+
+    await rewriter.transform(resp).arrayBuffer();
+  } catch (err) {
+    return jsonResp({ error: "fetch_error", detail: String(err && err.message || err) }, 502, origin);
+  }
+
+  if (!meta.title && !meta.image) {
+    return jsonResp(
+      { error: "no_og_data", message: "Facebook didn't return public preview data for this page (likely a login wall)." },
+      404,
+      origin
+    );
+  }
+
+  return jsonResp({ ok: true, title: meta.title, image: meta.image, description: meta.description }, 200, origin);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DOMAIN WISH SYSTEM
 // ═══════════════════════════════════════════════════════════════════════════════
 
 async function submitDomainWish(request, env, origin, siteId) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
-  
+
   const site = await env.DB.prepare(
     "SELECT owner_id, plan, status FROM sites WHERE id=?1"
   ).bind(siteId).first();
-  
+
   if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
   if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
-  
+
   const body = await readJson(request);
   const choice1 = sanitizeSlug(body.choice_1);
   const choice2 = sanitizeSlug(body.choice_2);
   const choice3 = sanitizeSlug(body.choice_3);
-  
+
   if (!choice1) {
-    return jsonResp({ 
-      error: "choice_1_required", 
-      message: "Enter at least one domain name preference." 
+    return jsonResp({
+      error: "choice_1_required",
+      message: "Enter at least one domain name preference."
     }, 400, origin);
   }
 
-  // Determine TLD based on plan or user selection
   const tld = body.tld || (site.plan === 'pro' ? '.com' : '.co.zw');
   const plan = site.plan || 'starter';
   const now = nowSec();
-  
+
   const existing = await env.DB.prepare(
     "SELECT id FROM domain_wishes WHERE site_id=?1"
   ).bind(siteId).first();
-  
+
   const wishId = existing?.id || "dwsh_" + uid(8);
-  
+
   if (existing) {
     await env.DB.prepare(
-      `UPDATE domain_wishes SET 
+      `UPDATE domain_wishes SET
         choice_1=?2, choice_2=?3, choice_3=?4,
-        tld=?5, plan=?6, status='pending', notes=NULL, updated_at=?7 
+        tld=?5, plan=?6, status='pending', notes=NULL, updated_at=?7
        WHERE id=?1`
     ).bind(wishId, choice1, choice2 || null, choice3 || null, tld, plan, now).run();
   } else {
     await env.DB.prepare(
-      `INSERT INTO domain_wishes 
-        (id, site_id, owner_id, plan, tld, choice_1, choice_2, choice_3, status, created_at, updated_at) 
+      `INSERT INTO domain_wishes
+        (id, site_id, owner_id, plan, tld, choice_1, choice_2, choice_3, status, created_at, updated_at)
        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 'pending', ?9, ?9)`
     ).bind(wishId, siteId, ownerId, plan, tld, choice1, choice2 || null, choice3 || null, now).run();
   }
 
-  // Build preview
   const preview = {
     choice_1: choice1 + tld,
     choice_2: choice2 ? choice2 + tld : null,
     choice_3: choice3 ? choice3 + tld : null,
   };
 
-  // If this is .com, we can check availability now
   if (tld === '.com') {
     const domainCheck = await checkDomainAvailability(choice1 + '.com', env);
     if (domainCheck.available) {
@@ -551,9 +801,7 @@ async function submitDomainWish(request, env, origin, siteId) {
         preview,
         auto_register_available: true,
         domain: choice1 + '.com',
-        price: DOMAIN_PRICES.com,
-        currency: 'USD',
-        message: `✅ ${choice1}.com is available! We'll register it automatically after payment.`,
+        message: `✅ ${choice1}.com is available! It's included free with your plan — we'll register it automatically after payment.`,
         requires_payment: true
       }, 200, origin);
     } else {
@@ -568,15 +816,62 @@ async function submitDomainWish(request, env, origin, siteId) {
     }
   }
 
-  // For .co.zw - manual registration
   return jsonResp({
     ok: true,
     wish_id: wishId,
     preview,
-    price: DOMAIN_PRICES.cozw,
-    currency: 'USD',
-    message: "Your domain preferences have been saved. We'll check availability and register your top available choice within 1-2 business days.",
+    message: "Your domain preferences have been saved. It's included free with your plan — we'll check availability and register your top available choice within 1-2 business days.",
     manual_registration: true
+  }, 200, origin);
+}
+
+async function submitOwnDomain(request, env, origin, siteId) {
+  const ownerId = await resolveOwner(request, env);
+  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+
+  const site = await env.DB.prepare(
+    "SELECT owner_id, plan, status FROM sites WHERE id=?1"
+  ).bind(siteId).first();
+
+  if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
+  if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
+
+  const body = await readJson(request);
+  const domainName = sanitizeDomainName(body.domain);
+
+  if (!domainName || !/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(domainName)) {
+    return jsonResp({ error: "invalid_domain", message: "Enter a valid domain, e.g. mybusiness.com" }, 400, origin);
+  }
+
+  const plan = site.plan || 'starter';
+  const now = nowSec();
+
+  const existing = await env.DB.prepare(
+    "SELECT id FROM domain_wishes WHERE site_id=?1"
+  ).bind(siteId).first();
+
+  const wishId = existing?.id || "dwsh_" + uid(8);
+
+  if (existing) {
+    await env.DB.prepare(
+      `UPDATE domain_wishes SET
+        choice_1=?2, choice_2=NULL, choice_3=NULL,
+        tld='own', plan=?3, status='pending_auto', notes=NULL, updated_at=?4
+       WHERE id=?1`
+    ).bind(wishId, domainName, plan, now).run();
+  } else {
+    await env.DB.prepare(
+      `INSERT INTO domain_wishes
+        (id, site_id, owner_id, plan, tld, choice_1, status, created_at, updated_at)
+       VALUES (?1, ?2, ?3, ?4, 'own', ?5, 'pending_auto', ?6, ?6)`
+    ).bind(wishId, siteId, ownerId, plan, domainName, now).run();
+  }
+
+  return jsonResp({
+    ok: true,
+    wish_id: wishId,
+    domain: domainName,
+    message: `Got it — we'll connect ${domainName} to your site once payment is confirmed, and send you DNS instructions on WhatsApp.`,
   }, 200, origin);
 }
 
@@ -589,28 +884,33 @@ async function getDomainWish(request, env, origin, siteId) {
   return jsonResp({ wish: wish || null }, 200, origin);
 }
 
-// ── Helper: Check domain availability ──────────────────────────────────────
 async function checkDomainAvailability(domain, env) {
   if (!env.CF_API_TOKEN) {
     return { available: false, error: "CF_API_TOKEN not configured" };
   }
+  if (!env.CF_ACCOUNT_ID) {
+    return { available: false, error: "CF_ACCOUNT_ID not configured" };
+  }
   try {
     const cfResp = await fetch(
-      `https://api.cloudflare.com/client/v4/registrar/domains/check`,
+      `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/registrar/domain-check`,
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${env.CF_API_TOKEN}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ domain_name: domain })
+        body: JSON.stringify({ domains: [domain] })
       }
     );
     const data = await cfResp.json();
+    if (!cfResp.ok || !data.success) {
+      return { available: false, error: data.errors?.[0]?.message || `Cloudflare API error (${cfResp.status})` };
+    }
+    const result = (data.result?.domains || [])[0];
     return {
-      available: data.success && data.result?.available || false,
-      price: data.result?.price || DOMAIN_PRICES.com,
-      currency: 'USD'
+      available: !!result?.registrable,
+      reason: result?.registrable ? null : (result?.reason || null),
     };
   } catch (e) {
     return { available: false, error: String(e?.message || e) };
@@ -618,7 +918,7 @@ async function checkDomainAvailability(domain, env) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DOMAIN SEARCH API - .com domain availability checking
+// DOMAIN SEARCH API
 // ═══════════════════════════════════════════════════════════════════════════════
 
 async function domainSearch(request, env, origin) {
@@ -628,103 +928,117 @@ async function domainSearch(request, env, origin) {
   const body = await readJson(request);
   const query = body.query?.toLowerCase().trim();
   const tld = body.tld || 'com';
-  
+
   if (!query || query.length < 2) {
     return jsonResp({ error: "query_too_short", min: 2 }, 400, origin);
   }
 
-  // Use Cloudflare Registrar API for .com
   if (tld === 'com') {
+    if (!env.CF_API_TOKEN || !env.CF_ACCOUNT_ID) {
+      return jsonResp({ error: "cf_registrar_not_configured", detail: "CF_API_TOKEN and CF_ACCOUNT_ID must both be set on this Worker." }, 500, origin);
+    }
     try {
       const domainName = `${query}.${tld}`;
-      
-      // Check availability via Cloudflare API
+      const accountBase = `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/registrar`;
+
       const cfResp = await fetch(
-        `https://api.cloudflare.com/client/v4/registrar/domains/check`,
+        `${accountBase}/domain-check`,
         {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${env.CF_API_TOKEN}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ domain_name: domainName })
+          body: JSON.stringify({ domains: [domainName] })
         }
       );
-      
+
       const data = await cfResp.json();
-      
+
       if (!cfResp.ok || !data.success) {
-        return jsonResp({ 
-          error: "cf_api_error", 
-          detail: data.errors?.[0]?.message || "Cloudflare API error" 
+        return jsonResp({
+          error: "cf_api_error",
+          detail: data.errors?.[0]?.message || `Cloudflare API error (${cfResp.status})`
         }, 502, origin);
       }
 
-      // Generate suggestions
+      const checkResult = (data.result?.domains || [])[0];
+      const exactAvailable = !!checkResult?.registrable;
+
       const suggestions = [];
-      
-      // Add the exact match
+
       suggestions.push({
         domain: domainName,
-        available: data.result?.available || false,
-        price: data.result?.price || DOMAIN_PRICES.com,
-        currency: 'USD'
+        available: exactAvailable
       });
 
-      // Generate alternative suggestions if not available
-      if (!data.result?.available) {
-        const prefixes = ['get', 'my', 'the', 'go', 'try'];
-        const suffixes = ['hub', 'spot', 'place', 'zone', 'co'];
-        
-        for (const prefix of prefixes) {
-          const alt = `${prefix}${query}`;
-          if (alt.length > 3 && alt.length < 30) {
-            const altDomain = `${alt}.${tld}`;
-            try {
-              const checkResp = await fetch(
-                `https://api.cloudflare.com/client/v4/registrar/domains/check`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${env.CF_API_TOKEN}`,
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ domain_name: altDomain })
-                }
-              );
-              const checkData = await checkResp.json();
-              if (checkData.success && checkData.result?.available) {
-                suggestions.push({
-                  domain: altDomain,
-                  available: true,
-                  price: checkData.result?.price || DOMAIN_PRICES.com,
-                  currency: 'USD',
-                  alternative: true
-                });
-                if (suggestions.length >= 5) break;
-              }
-            } catch (e) { continue; }
+      if (!exactAvailable) {
+        try {
+          const searchResp = await fetch(
+            `${accountBase}/domain-search?q=${encodeURIComponent(query)}&limit=10`,
+            { headers: { 'Authorization': `Bearer ${env.CF_API_TOKEN}` } }
+          );
+          const searchData = await searchResp.json();
+          if (searchResp.ok && searchData.success) {
+            for (const d of (searchData.result?.domains || [])) {
+              if (d.name === domainName) continue;
+              if (!d.name.endsWith('.com')) continue;
+              if (!d.registrable) continue;
+              suggestions.push({ domain: d.name, available: true, alternative: true });
+              if (suggestions.length >= 6) break;
+            }
           }
-        }
+        } catch (e) { /* best-effort */ }
       }
 
-      return jsonResp({ 
-        ok: true, 
-        query, 
+      return jsonResp({
+        ok: true,
+        query,
         tld,
         suggestions: suggestions.slice(0, 10)
       }, 200, origin);
-      
+
     } catch (e) {
-      return jsonResp({ 
-        error: "search_failed", 
-        detail: String(e?.message || e) 
+      return jsonResp({
+        error: "search_failed",
+        detail: String(e?.message || e)
       }, 500, origin);
     }
   }
 
-  // For .co.zw, we don't have an automated search API
-  // Return a message asking for 3 choices
+  if (tld === 'cozw' || tld === 'co.zw') {
+    const domainName = `${query}.co.zw`;
+    try {
+      const dnsResp = await fetch(
+        `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domainName)}&type=NS`,
+        { headers: { 'Accept': 'application/dns-json' } }
+      );
+      const dnsData = await dnsResp.json();
+      const hasRecords = Array.isArray(dnsData.Answer) && dnsData.Answer.length > 0;
+
+      return jsonResp({
+        ok: true,
+        tld: 'co.zw',
+        domain: domainName,
+        checked: true,
+        likely_taken: hasRecords,
+        message: hasRecords
+          ? `${domainName} already has active nameservers — it's very likely already registered. Try a different name.`
+          : `${domainName} doesn't show any active nameservers — it's likely available, but this isn't a guarantee. We confirm and register your top choice during processing.`,
+        requires_choices: true
+      }, 200, origin);
+    } catch (e) {
+      return jsonResp({
+        ok: true,
+        tld: 'co.zw',
+        domain: domainName,
+        checked: false,
+        message: 'Could not run a quick check right now — our team will confirm availability during registration.',
+        requires_choices: true
+      }, 200, origin);
+    }
+  }
+
   return jsonResp({
     ok: true,
     tld: 'co.zw',
@@ -845,7 +1159,7 @@ async function deleteEmailRoute(request, env, origin, siteId, routeId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ADMIN HANDLERS - ENHANCED
+// ADMIN HANDLERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function resolveAdmin(request, env) {
@@ -872,6 +1186,28 @@ async function adminStats(request, env, origin) {
     payments: { paid_count: paidPayments?.n || 0, revenue_usd: paidPayments?.total || 0 },
     ai: { total_generations: aiRow?.total || 0, total_cost_usd: aiRow?.cost || 0 },
     generated_at: nowSec(),
+  }, 200, origin);
+}
+
+// GET /api/admin/secrets-check — booleans only, NEVER secret values.
+// The two most load-bearing ones (OTP_HMAC_SECRET, SESSION_SECRET) both
+// have silent insecure fallbacks in this file if unset, so "it works" is
+// not proof they're actually configured — this makes that checkable.
+async function adminSecretsCheck(request, env, origin) {
+  if (!resolveAdmin(request, env)) return jsonResp({ error: "unauthorized" }, 401, origin);
+  return jsonResp({
+    ok: true,
+    secrets: {
+      otp_hmac_secret:     env.OTP_HMAC_SECRET     ? "set" : "MISSING — falling back to insecure hardcoded value",
+      session_secret:      env.SESSION_SECRET      ? "set" : "MISSING — not currently used to sign anything, but should be set",
+      resend_api_key:      env.RESEND_API_KEY      ? "set" : "missing — email OTP channel will silently fail to send",
+      manychat_api_token:  env.MANYCHAT_API_TOKEN  ? "set" : "missing — WhatsApp OTP channel will silently fail to send",
+      admin_secret:        env.ADMIN_SECRET        ? "set" : "MISSING — every /api/admin/* route is unreachable without it",
+      ai_service_secret:   env.AI_SERVICE_SECRET   ? "set" : "missing — AI generation routes will return ai_not_configured",
+      cf_api_token:        env.CF_API_TOKEN        ? "set" : "missing — domain search/registration and email routing will fail",
+    },
+    dev_mode: env.DEV_MODE === "1" ? "ON — OTP codes are echoed in API responses on delivery failure. Turn this OFF before real customer traffic." : "off",
+    checked_at: nowSec(),
   }, 200, origin);
 }
 
@@ -928,97 +1264,87 @@ async function adminUpdateOwner(request, env, origin, id) {
   return jsonResp({ ok: true, owner_id: id, phone: owner.phone, is_demo: body.is_demo }, 200, origin);
 }
 
-// ENHANCED: Admin domain queue - includes both .co.zw wishes and .com registrations
 async function adminGetDomainQueue(request, env, origin) {
   if (!resolveAdmin(request, env)) return jsonResp({ error: "unauthorized" }, 401, origin);
-  
+
   const url = new URL(request.url);
   const status = url.searchParams.get("status") || "pending";
   const limit = Math.min(parseInt(url.searchParams.get("limit") || "100"), 500);
-  
-  // Get domain wishes (both .com and .co.zw)
+
   let query = "SELECT dw.*, s.site_name, s.draft_subdomain, s.custom_domain FROM domain_wishes dw LEFT JOIN sites s ON s.id=dw.site_id";
   const binds = [];
   if (status !== "all") { query += " WHERE dw.status=?1"; binds.push(status); }
   query += ` ORDER BY dw.created_at DESC LIMIT ${limit}`;
   const wishes = await (binds.length ? env.DB.prepare(query).bind(...binds).all() : env.DB.prepare(query).all());
-  
-  // Get pending .com domain registrations from domains table
+
   const pendingDomains = await env.DB.prepare(
-    `SELECT d.*, s.site_name, s.draft_subdomain 
-     FROM domains d 
-     LEFT JOIN sites s ON s.id = d.site_id 
+    `SELECT d.*, s.site_name, s.draft_subdomain
+     FROM domains d
+     LEFT JOIN sites s ON s.id = d.site_id
      WHERE d.verified = 0 AND d.ssl_status = 'pending'
      ORDER BY d.created_at DESC`
   ).all();
-  
+
   return jsonResp({
     wishes: wishes?.results || [],
     pending_domains: pendingDomains?.results || []
   }, 200, origin);
 }
 
-// ENHANCED: Admin update domain wish - now handles .com registration too
 async function adminUpdateDomainWish(request, env, origin, wishId) {
   if (!resolveAdmin(request, env)) return jsonResp({ error: "unauthorized" }, 401, origin);
-  
+
   const wish = await env.DB.prepare("SELECT * FROM domain_wishes WHERE id=?1").bind(wishId).first();
   if (!wish) return jsonResp({ error: "wish_not_found" }, 404, origin);
-  
+
   const body = await readJson(request);
   const status = body.status || wish.status;
   const assigned = body.assigned || wish.assigned || null;
   const notes = body.notes || wish.notes || null;
-  
+
   await env.DB.prepare(
     "UPDATE domain_wishes SET status=?2, assigned=?3, notes=?4, updated_at=unixepoch() WHERE id=?1"
   ).bind(wishId, status, assigned, notes).run();
 
   if (status === "active" && assigned) {
-    // Update site's custom_domain field
     await env.DB.prepare(
       "UPDATE sites SET custom_domain=?2, custom_domain_status='pending', updated_at=unixepoch() WHERE id=?1"
     ).bind(wish.site_id, assigned).run();
 
-    // Check if it's a .com domain - try to auto-provision
     const isCom = assigned.endsWith('.com') || assigned.endsWith('.dev') || assigned.endsWith('.app');
     let cfResult = null;
-    
+
     if (isCom && env.CF_API_TOKEN) {
-      // Try to register the domain via Cloudflare Registrar API
       cfResult = await registerDomainWithCloudflare(env, assigned, wish);
     } else {
-      // For .co.zw or if CF not configured, provision as custom hostname
       cfResult = await cfProvisionHostname(env, assigned);
     }
-    
+
     if (cfResult && cfResult.ok) {
       await env.DB.prepare(
         "UPDATE sites SET cf_hostname_id=?2, updated_at=unixepoch() WHERE id=?1"
       ).bind(wish.site_id, cfResult.hostname_id).run().catch(() => {});
     }
 
-    // Notify owner via WhatsApp with DNS instructions
     const owner = await env.DB.prepare("SELECT phone FROM owners WHERE id=?1").bind(wish.owner_id).first();
     if (owner?.phone) {
-      const isCom = assigned.endsWith('.com');
+      const isComForMsg = assigned.endsWith('.com');
       const dnsMsg = cfResult && cfResult.ok
-        ? `✅ Your domain ${assigned} ${isCom ? 'has been registered and' : 'has been'} configured! To connect it to your site, add this DNS record:\n\nCNAME: ${assigned} → websites.co.zw\n\nOnce added, your site will be live within a few hours.`
+        ? `✅ Your domain ${assigned} ${isComForMsg ? 'has been registered and' : 'has been'} configured! To connect it to your site, add this DNS record:\n\nCNAME: ${assigned} → websites.co.zw\n\nOnce added, your site will be live within a few hours.`
         : `✅ Your domain ${assigned} has been registered! Contact support to complete the setup.`;
       await sendWhatsApp(env, owner.phone, dnsMsg).catch(() => {});
     }
   }
 
-  // If .com domain was successfully registered, also update the domains table
   if (status === "active" && assigned && assigned.endsWith('.com')) {
     try {
       const existing = await env.DB.prepare(
         "SELECT id FROM domains WHERE hostname = ?1"
       ).bind(assigned).first();
-      
+
       if (!existing) {
         await env.DB.prepare(
-          `INSERT INTO domains (id, site_id, hostname, verified, ssl_status, created_at) 
+          `INSERT INTO domains (id, site_id, hostname, verified, ssl_status, created_at)
            VALUES (?1, ?2, ?3, 1, 'active', CURRENT_TIMESTAMP)`
         ).bind('dom_' + uid(8), wish.site_id, assigned).run();
       }
@@ -1033,16 +1359,37 @@ async function adminUpdateDomainWish(request, env, origin, wishId) {
   }, 200, origin);
 }
 
-// ── Helper: Register domain with Cloudflare Registrar API ──────────────────
 async function registerDomainWithCloudflare(env, domainName, wish) {
   if (!env.CF_API_TOKEN) {
     return { ok: false, error: "CF_API_TOKEN not configured" };
   }
-  
+  if (!env.CF_ACCOUNT_ID) {
+    return { ok: false, error: "CF_ACCOUNT_ID not configured" };
+  }
+
   try {
-    // First check if domain is available
+    const accountBase = `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/registrar`;
+
     const checkResp = await fetch(
-      `https://api.cloudflare.com/client/v4/registrar/domains/check`,
+      `${accountBase}/domain-check`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.CF_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ domains: [domainName] })
+      }
+    );
+    const checkData = await checkResp.json();
+    const checkResult = (checkData.result?.domains || [])[0];
+
+    if (!checkResp.ok || !checkData.success || !checkResult?.registrable) {
+      return { ok: false, error: checkResult?.reason || "Domain not available for registration" };
+    }
+
+    const registerResp = await fetch(
+      `${accountBase}/registrations`,
       {
         method: 'POST',
         headers: {
@@ -1052,49 +1399,23 @@ async function registerDomainWithCloudflare(env, domainName, wish) {
         body: JSON.stringify({ domain_name: domainName })
       }
     );
-    const checkData = await checkResp.json();
-    
-    if (!checkData.success || !checkData.result?.available) {
-      return { ok: false, error: "Domain not available for registration" };
-    }
-    
-    // Get owner details for registrant contact
-    const owner = await env.DB.prepare(
-      "SELECT email, phone, name FROM owners WHERE id = ?1"
-    ).bind(wish.owner_id).first();
-    
-    // Register the domain
-    const registerResp = await fetch(
-      `https://api.cloudflare.com/client/v4/registrar/domains`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.CF_API_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          domain_name: domainName,
-          registrant_contact: {
-            email: owner?.email || 'noreply@websites.co.zw',
-            phone: owner?.phone || '+2630000000',
-            name: owner?.name || 'Website Owner'
-          },
-          use_default_contact: true,
-          privacy: true
-        })
-      }
-    );
-    
     const registerData = await registerResp.json();
-    
-    if (!registerResp.ok) {
-      return { ok: false, error: registerData.errors?.[0]?.message || "Registration failed" };
+
+    if (!registerResp.ok || !registerData.success) {
+      return { ok: false, error: registerData.errors?.[0]?.message || registerData.result?.error?.message || "Registration failed" };
     }
-    
+    const state = registerData.result?.state;
+    if (state === "failed" || state === "blocked") {
+      return { ok: false, error: registerData.result?.error?.message || `Registration ${state}` };
+    }
+
+    const hostCf = await cfProvisionHostname(env, domainName);
+
     return {
       ok: true,
-      hostname_id: registerData.result?.id || 'registered',
-      domain: domainName
+      domain: domainName,
+      pending: state === "in_progress",
+      hostname_id: hostCf.ok ? hostCf.hostname_id : null,
     };
   } catch (e) {
     return { ok: false, error: String(e?.message || e) };
@@ -1110,23 +1431,23 @@ async function adminVerifyEmailRoute(request, env, origin, routeId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PUBLISH / RENEW / PAYMENTS — ENHANCED with domain support
+// PUBLISH / RENEW / PAYMENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function paymentsApiBase(env) {
   return (env.PAYMENTS_API_URL || "https://api.websites.co.zw").replace(/\/+$/, "");
 }
 
-// ENHANCED: Delegate to payments worker with domain data
-async function delegateToPaymentsWorker(env, origin, siteId, currency, purpose, email, domainData) {
+async function delegateToPaymentsWorker(env, origin, siteId, currency, purpose, email, phone, domainData) {
   const payload = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ 
-      site_id: siteId, 
-      currency, 
-      purpose, 
+    body: JSON.stringify({
+      site_id: siteId,
+      currency,
+      purpose,
       email,
+      phone,
       domain_data: domainData || null
     }),
   };
@@ -1139,15 +1460,14 @@ async function delegateToPaymentsWorker(env, origin, siteId, currency, purpose, 
     return jsonResp({ error: "payments_worker_unreachable", detail: String(e?.message) }, 502, origin);
   }
   const data = await resp.json().catch(() => ({}));
-  if (!resp.ok) return jsonResp({ error: data.error || "payments_worker_error", detail: data }, resp.status, origin);
-  return jsonResp({ ok: true, payment_url: data.redirect_url, poll_url: data.poll_url, reference: data.reference }, 200, origin);
+  if (!resp.ok) return jsonResp({ error: data.error || "payments_worker_error", detail: data.detail || data }, resp.status, origin);
+  return jsonResp({ ok: true, poll_url: data.poll_url, reference: data.reference }, 200, origin);
 }
 
-// ENHANCED: Publish site with domain selection
 async function publishSite(request, env, origin, id) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
-  
+
   const site = await loadSite(env, id);
   if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
   if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
@@ -1158,61 +1478,52 @@ async function publishSite(request, env, origin, id) {
   const body = await readJson(request);
   const plan = (body.plan === "pro") ? "pro" : "starter";
   const currency = (body.currency === "ZIG" || body.currency === "zig") ? "ZIG" : "USD";
+  const phone = String(body.phone || "").trim();
+  const email = String(body.email || "").trim();
+  if (!phone) return jsonResp({ error: "missing_phone", message: "Enter the phone number you'll approve the EcoCash prompt on." }, 400, origin);
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return jsonResp({ error: "missing_or_invalid_email", message: "Enter a valid email for your Paynow receipt." }, 400, origin);
 
-  // Persist the chosen plan
   await env.DB.prepare("UPDATE sites SET plan=?2, updated_at=unixepoch() WHERE id=?1")
     .bind(id, plan).run();
 
-  // Handle domain selection from the request
   const domainData = body.domain_data;
-  let domainCost = 0;
-  
+
   if (domainData) {
     if (domainData.type === 'com' && domainData.name) {
-      // .com domain - cost depends on registrar
-      domainCost = DOMAIN_PRICES.com;
-      
-      // Save to domains table
       await env.DB.prepare(
-        `INSERT INTO domains (id, site_id, hostname, verified, ssl_status, created_at) 
+        `INSERT INTO domains (id, site_id, hostname, verified, ssl_status, created_at)
          VALUES (?1, ?2, ?3, 0, 'pending', CURRENT_TIMESTAMP)`
       ).bind('dom_' + uid(8), id, domainData.name).run();
-      
-      // Also save to domain_wishes for tracking
+
       await env.DB.prepare(
-        `INSERT INTO domain_wishes 
-          (id, site_id, owner_id, plan, tld, choice_1, status, created_at, updated_at) 
+        `INSERT INTO domain_wishes
+          (id, site_id, owner_id, plan, tld, choice_1, status, created_at, updated_at)
          VALUES (?1, ?2, ?3, ?4, '.com', ?5, 'pending_auto', unixepoch(), unixepoch())`
       ).bind('dwsh_' + uid(8), id, ownerId, plan, domainData.name).run();
-      
+
     } else if (domainData.type === 'cozw' && domainData.choices) {
-      // .co.zw - save to domain_wishes table
       const choices = domainData.choices;
-      domainCost = DOMAIN_PRICES.cozw;
-      
+
       await env.DB.prepare(
-        `INSERT INTO domain_wishes 
-          (id, site_id, owner_id, plan, tld, choice_1, choice_2, choice_3, status, created_at, updated_at) 
+        `INSERT INTO domain_wishes
+          (id, site_id, owner_id, plan, tld, choice_1, choice_2, choice_3, status, created_at, updated_at)
          VALUES (?1, ?2, ?3, ?4, '.co.zw', ?5, ?6, ?7, 'pending', unixepoch(), unixepoch())`
       ).bind(
-        'dwsh_' + uid(8), 
-        id, 
-        ownerId, 
-        plan, 
-        choices[0] || '', 
-        choices[1] || null, 
+        'dwsh_' + uid(8),
+        id,
+        ownerId,
+        plan,
+        choices[0] || '',
+        choices[1] || null,
         choices[2] || null
       ).run();
-      
-      // Notify admin team about the .co.zw request
+
       await notifyAdminForDomainRegistration(env, id, choices);
     } else if (domainData.type === 'own' && domainData.name) {
-      // User has their own domain - just save it
       await env.DB.prepare(
         "UPDATE sites SET custom_domain=?2, custom_domain_status='pending', updated_at=unixepoch() WHERE id=?1"
       ).bind(id, domainData.name).run();
-      
-      // Provision custom hostname via Cloudflare for SaaS
+
       const cfResult = await cfProvisionHostname(env, domainData.name);
       if (cfResult.ok) {
         await env.DB.prepare(
@@ -1222,21 +1533,17 @@ async function publishSite(request, env, origin, id) {
     }
   }
 
-  // Calculate total amount
-  const baseAmount = plan === 'pro' ? 60 : 30;
-  const totalAmount = baseAmount + domainCost;
+  await env.DB.prepare(
+    "UPDATE owners SET email=?2 WHERE id=?1 AND (email IS NULL OR email='')"
+  ).bind(ownerId, email).run().catch(() => {});
 
-  const owner = await env.DB.prepare("SELECT email FROM owners WHERE id=?1").bind(ownerId).first();
-  
-  // Build domain data for the payment worker
   const paymentDomainData = {
     name: domainData?.name || null,
     type: domainData?.type || null,
-    cost: domainCost,
     choices: domainData?.choices || null
   };
-  
-  return delegateToPaymentsWorker(env, origin, id, currency, "publish", owner?.email || undefined, paymentDomainData);
+
+  return delegateToPaymentsWorker(env, origin, id, currency, "publish", email, phone, paymentDomainData);
 }
 
 async function renewSite(request, env, origin, id) {
@@ -1248,24 +1555,28 @@ async function renewSite(request, env, origin, id) {
 
   const body     = await readJson(request);
   const currency = (body.currency === "ZIG" || body.currency === "zig") ? "ZIG" : "USD";
+  const phone    = String(body.phone || "").trim();
+  const email    = String(body.email || "").trim();
+  if (!phone) return jsonResp({ error: "missing_phone", message: "Enter the phone number you'll approve the EcoCash prompt on." }, 400, origin);
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return jsonResp({ error: "missing_or_invalid_email", message: "Enter a valid email for your Paynow receipt." }, 400, origin);
 
-  const owner = await env.DB.prepare("SELECT email FROM owners WHERE id=?1").bind(ownerId).first();
-  return delegateToPaymentsWorker(env, origin, id, currency, "renewal", owner?.email || undefined);
+  await env.DB.prepare(
+    "UPDATE owners SET email=?2 WHERE id=?1 AND (email IS NULL OR email='')"
+  ).bind(ownerId, email).run().catch(() => {});
+
+  return delegateToPaymentsWorker(env, origin, id, currency, "renewal", email, phone);
 }
 
-// ── Helper: Notify admin about .co.zw domain request ──────────────────────
 async function notifyAdminForDomainRegistration(env, siteId, choices) {
   try {
     const site = await env.DB.prepare(
       "SELECT site_name, draft_subdomain FROM sites WHERE id=?1"
     ).bind(siteId).first();
-    
+
     const message = `📧 New .co.zw domain request for site "${site?.site_name || siteId}"\n\nChoices:\n1. ${choices[0] || ''}.co.zw\n2. ${choices[1] || ''}.co.zw\n3. ${choices[2] || ''}.co.zw\n\nSite: https://${site?.draft_subdomain || ''}.websites.co.zw\n\nPlease register the domain and update the domain wish status.`;
-    
-    // You can send this to Slack, email, or your admin dashboard
+
     console.log('Domain registration request:', { siteId, choices, message });
-    
-    // If you have a Slack webhook, you can send it there
+
     if (env.SLACK_WEBHOOK) {
       await fetch(env.SLACK_WEBHOOK, {
         method: 'POST',
@@ -1278,7 +1589,75 @@ async function notifyAdminForDomainRegistration(env, siteId, choices) {
   }
 }
 
-// GET /api/payments/:ref — thin proxy to the payments Worker
+async function autoRegisterComDomainIfPending(env, siteId) {
+  try {
+    const wish = await env.DB.prepare(
+      "SELECT * FROM domain_wishes WHERE site_id=?1 AND tld='.com' AND status='pending_auto' ORDER BY created_at DESC LIMIT 1"
+    ).bind(siteId).first();
+    if (!wish || !wish.choice_1) return null;
+
+    const domainName = wish.choice_1 + '.com';
+
+    const check = await checkDomainAvailability(domainName, env);
+    if (!check.available) {
+      await env.DB.prepare(
+        "UPDATE domain_wishes SET status='failed', notes=?2, updated_at=unixepoch() WHERE id=?1"
+      ).bind(wish.id, `${domainName} became unavailable before payment confirmed — needs manual follow-up with the owner.`).run();
+      await notifyAdminForDomainRegistration(env, siteId, [wish.choice_1]).catch(() => {});
+      return { ok: false, reason: "domain_no_longer_available", domain: domainName };
+    }
+
+    const cfReg = await registerDomainWithCloudflare(env, domainName, wish);
+    if (!cfReg.ok) {
+      await env.DB.prepare(
+        "UPDATE domain_wishes SET status='failed', notes=?2, updated_at=unixepoch() WHERE id=?1"
+      ).bind(wish.id, `Auto-registration failed: ${cfReg.error}`).run();
+      return { ok: false, reason: cfReg.error, domain: domainName };
+    }
+
+    await env.DB.prepare(
+      "UPDATE sites SET custom_domain=?2, custom_domain_status='pending', updated_at=unixepoch() WHERE id=?1"
+    ).bind(siteId, domainName).run();
+
+    const hostCf = await cfProvisionHostname(env, domainName);
+    if (hostCf.ok) {
+      await env.DB.prepare(
+        "UPDATE sites SET cf_hostname_id=?2, updated_at=unixepoch() WHERE id=?1"
+      ).bind(siteId, hostCf.hostname_id).run().catch(() => {});
+    }
+
+    await env.DB.prepare(
+      "UPDATE domain_wishes SET status='active', assigned=?2, updated_at=unixepoch() WHERE id=?1"
+    ).bind(wish.id, domainName).run();
+
+    try {
+      const existing = await env.DB.prepare("SELECT id FROM domains WHERE hostname=?1").bind(domainName).first();
+      if (!existing) {
+        await env.DB.prepare(
+          `INSERT INTO domains (id, site_id, hostname, verified, ssl_status, created_at)
+           VALUES (?1, ?2, ?3, 1, 'active', CURRENT_TIMESTAMP)`
+        ).bind('dom_' + uid(8), siteId, domainName).run();
+      } else {
+        await env.DB.prepare("UPDATE domains SET verified=1, ssl_status='active' WHERE id=?1").bind(existing.id).run();
+      }
+    } catch (e) { console.error('domains table sync failed:', e?.message); }
+
+    const owner = await env.DB.prepare(
+      "SELECT phone FROM owners WHERE id=(SELECT owner_id FROM sites WHERE id=?1)"
+    ).bind(siteId).first();
+    if (owner?.phone) {
+      await sendWhatsApp(env, owner.phone,
+        `🎉 Your domain ${domainName} has been registered automatically! To connect it, add this DNS record with your DNS provider:\n\nCNAME: ${domainName} → websites.co.zw\n\nCheck your dashboard for full setup steps.`
+      ).catch(() => {});
+    }
+
+    return { ok: true, domain: domainName, hostname_id: hostCf.ok ? hostCf.hostname_id : null };
+  } catch (e) {
+    console.error("autoRegisterComDomainIfPending failed for", siteId, e?.message);
+    return { ok: false, reason: String(e?.message || e) };
+  }
+}
+
 async function pollPayment(request, env, origin, ref) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1288,13 +1667,19 @@ async function pollPayment(request, env, origin, ref) {
       : await fetch(paymentsApiBase(env) + "/pay/status?ref=" + encodeURIComponent(ref));
     const data = await resp.json().catch(() => ({}));
     if (!resp.ok) return jsonResp(data, resp.status, origin);
+
+    if (data.status === "paid" && data.purpose === "publish" && data.site_id) {
+      await autoRegisterComDomainIfPending(env, data.site_id).catch((e) => {
+        console.error("auto-register hook failed:", e?.message);
+      });
+    }
+
     return jsonResp({ payment: data }, 200, origin);
   } catch (e) {
     return jsonResp({ error: "payments_worker_unreachable", detail: String(e?.message) }, 502, origin);
   }
 }
 
-// ── PREVIEW TOKEN ──────────────────────────────────────────────────────────────
 async function getPreviewToken(request, env, origin, id) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1386,6 +1771,22 @@ async function switchTemplate(request, env, origin, id) {
   const body = await readJson(request);
   const newTemplateId = clamp(body.template_id, 40);
   if (!newTemplateId) return jsonResp({ error: "template_id_required" }, 400, origin);
+
+  // Premium template gate -- the real enforcement boundary. Switching
+  // *away* from a premium template is always allowed (only entering one
+  // costs anything); only check when moving TO a premium ID.
+  if (newTemplateId !== row.template_id) {
+    const entitlement = await checkTemplateEntitlement(env, id, newTemplateId);
+    if (entitlement.premium && !entitlement.owned) {
+      return jsonResp({
+        error: "template_not_unlocked",
+        template_id: newTemplateId,
+        price: entitlement.price,
+        message: `This is a premium template ($${entitlement.price}, one-time). Unlock it first to switch to it.`,
+      }, 402, origin);
+    }
+  }
+
   let currentDoc = {}; try { currentDoc = JSON.parse(row.content || "{}"); } catch {}
   const currentContent = currentDoc.content || currentDoc;
   const preserved = {
@@ -1411,6 +1812,9 @@ function defaultSectionsFor(t) {
     "boutique-fashion":    ["hero","products","about","gallery","contact"],
     "grocery-fmcg":        ["hero","products","about","contact"],
     "hardware-store":      ["hero","products","services","about","contact"],
+    "hospitality-inn":     ["hero","about","video","rooms","amenities","conference","packages","dining","menu","experiences","gallery","testimonials","reviews","press","hours","contact"],
+    "hospitality-sands":   ["hero","about","video","rooms","amenities","conference","packages","dining","menu","experiences","gallery","testimonials","reviews","press","hours","contact"],
+    "hospitality-wild":    ["hero","about","video","rooms","amenities","conference","packages","dining","menu","experiences","gallery","testimonials","reviews","press","hours","contact"],
   };
   return d[t] || ["hero","about","services","contact"];
 }
@@ -1539,6 +1943,16 @@ async function readJson(request) { try { return await request.json(); } catch { 
 function clamp(v, max) { const s = String(v == null ? "" : v).trim(); return s.length > max ? s.slice(0, max) : s || null; }
 function slugify(s) { return String(s || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "site"; }
 function sanitizeSlug(v) { if (!v) return null; return String(v).toLowerCase().trim().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "").slice(0, 63) || null; }
+function sanitizeDomainName(v) {
+  if (!v) return null;
+  const cleaned = String(v).toLowerCase().trim()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "")
+    .replace(/[^a-z0-9.-]/g, "")
+    .replace(/^[.-]+|[.-]+$/g, "")
+    .slice(0, 253);
+  return cleaned || null;
+}
 
 async function uniqueSlug(env, base, excludeSiteId) {
   base = base || "site";
@@ -1580,7 +1994,13 @@ function paletteFor(t) {
     "fmcg":               "market-fresh",
     "hardware-store":     "utility-slate",
     "hardware":           "utility-slate",
-    "retail":             "utility-slate"
+    "retail":             "utility-slate",
+    "hospitality-inn":    "navy-gold",
+    "lodge":              "navy-gold",
+    "hotel":              "navy-gold",
+    "accommodation":      "navy-gold",
+    "hospitality-sands":  "sand-clay",
+    "hospitality-wild":   "void-ember"
   };
   return m[t] || "clean-white";
 }
@@ -1609,7 +2029,13 @@ function fontFor(t) {
     "hardware-store":     "display-mono",
     "hardware":           "display-mono",
     "retail":             "display-mono",
-    "sports":             "sports-sans"
+    "sports":             "sports-sans",
+    "hospitality-inn":    "playfair-jakarta",
+    "lodge":              "playfair-jakarta",
+    "hotel":              "playfair-jakarta",
+    "accommodation":      "playfair-jakarta",
+    "hospitality-sands":  "fraunces-work",
+    "hospitality-wild":   "bricolage-inter"
   };
   return m[t] || "grotesk-serif";
 }
@@ -1637,6 +2063,7 @@ async function sendWhatsApp(env, phone, code) {
 
 async function sendEmail(env, email, code) {
   if (!env.RESEND_API_KEY) return false;
+  if (!email) return false;
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -1652,7 +2079,6 @@ async function sendEmail(env, email, code) {
   } catch { return false; }
 }
 
-// ── PREVIEW TOKEN MINTING ────────────────────────────────────────────────────
 async function mintPreviewToken(env, ownerId, siteId) {
   const token = "pvt_" + uid(24);
   const now   = nowSec();
@@ -1663,7 +2089,7 @@ async function mintPreviewToken(env, ownerId, siteId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PHASE 4 — CLOUDFLARE FOR SAAS CUSTOM HOSTNAME PROVISIONING
+// CLOUDFLARE FOR SAAS CUSTOM HOSTNAME PROVISIONING
 // ═══════════════════════════════════════════════════════════════════════════════
 
 async function cfProvisionHostname(env, hostname) {
@@ -1765,7 +2191,6 @@ async function cfDeleteHostname(env, hostnameId) {
   } catch {}
 }
 
-// ── Customer-facing: POST /api/sites/:id/custom-hostname ─────────────────────
 async function provisionCustomHostname(request, env, origin, siteId) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1774,7 +2199,7 @@ async function provisionCustomHostname(request, env, origin, siteId) {
   if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
   if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
   if (site.plan !== "pro")
-    return jsonResp({ error: "pro_required", message: "Custom domains require the Pro plan ($60/yr)." }, 403, origin);
+    return jsonResp({ error: "pro_required", message: "Custom domains require the Pro plan ($50/yr)." }, 403, origin);
   if (!site.custom_domain)
     return jsonResp({ error: "no_domain", message: "No domain assigned to this site yet." }, 400, origin);
 
@@ -1799,7 +2224,6 @@ async function provisionCustomHostname(request, env, origin, siteId) {
   }, 200, origin);
 }
 
-// ── Customer-facing: GET /api/sites/:id/custom-hostname ──────────────────────
 async function getCustomHostname(request, env, origin, siteId) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1834,7 +2258,6 @@ async function getCustomHostname(request, env, origin, siteId) {
   }, 200, origin);
 }
 
-// ── Customer-facing: POST /api/sites/:id/custom-hostname/check ───────────────
 async function checkCustomHostname(request, env, origin, siteId) {
   const ownerId = await resolveOwner(request, env);
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
@@ -1875,7 +2298,6 @@ async function checkCustomHostname(request, env, origin, siteId) {
   }, 200, origin);
 }
 
-// ── Build DNS instructions for the customer ───────────────────────────────────
 function buildDnsInstructions(hostname, cf) {
   const instructions = {
     cname: {
