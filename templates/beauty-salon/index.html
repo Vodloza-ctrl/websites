@@ -87,13 +87,23 @@ section{padding:76px 0}
 .svc-tab:hover{color:var(--plum)}
 /* Service panels */
 .svc-panel{display:none}.svc-panel.active{display:grid;grid-template-columns:repeat(2,1fr);gap:0 48px}
-.svc-item{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0;border-bottom:1px dashed var(--line);gap:12px;position:relative}
+.svc-item{display:flex;align-items:center;padding:18px 0;border-bottom:1px dashed var(--line);gap:16px;position:relative}
+/* Optional photo (renderSvcItem adds this when a service has item.photo/item.image).
+   Fixed square thumbnail that never shrinks, so it can't eat the text column. */
+.svc-photo{width:80px;height:80px;border-radius:var(--radius);object-fit:cover;flex-shrink:0;background:var(--blush)}
+/* Wraps name+desc. This is the piece that was missing: without flex:1/min-width:0
+   here, the text column had no defined width and collapsed to a sliver next to
+   the photo, wrapping one word per line. */
+.svc-item-body{flex:1 1 auto;min-width:0}
 .svc-name{font-family:"Playfair Display",serif;font-size:1.2rem;font-weight:500}
 .svc-desc{font-size:.82rem;color:var(--mink);margin-top:3px}
-.svc-price{font-family:"Playfair Display",serif;font-size:1.25rem;font-weight:700;color:var(--gold);white-space:nowrap;flex-shrink:0}
+.svc-price{font-family:"Playfair Display",serif;font-size:1.25rem;font-weight:700;color:var(--gold);white-space:nowrap;flex-shrink:0;margin-left:auto;padding-left:12px}
 .svc-book-row{text-align:center;margin-top:36px}
 /* All services fallback (no categories) */
 .svc-flat{display:grid;grid-template-columns:repeat(2,1fr);gap:0 48px}
+/* A lone service in a tab/category shouldn't leave an empty second grid column */
+.svc-panel.active .svc-item:only-child,
+.svc-flat .svc-item:only-child{grid-column:1/-1}
 
 /* ── GALLERY ── */
 .gallery-section{}
@@ -199,10 +209,14 @@ footer{background:var(--ink);color:rgba(255,255,255,.45);padding:36px 0;font-siz
   .foot-links{justify-content:center}
 }
 /* ── FEATURED ITEM ── */
-.feat-badge{position:absolute;top:50%;right:0;transform:translateY(-50%);background:var(--primary-color,#c96a7e);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;z-index:2;white-space:nowrap;pointer-events:none}
-.svc-item.highlighted{border-bottom:2px solid var(--primary-color,#c96a7e);background:rgba(201,106,126,.04);margin:0 -12px;padding:18px 12px}
-.svc-item.highlighted .svc-name{color:var(--primary-color,#c96a7e);font-weight:700}
+.feat-badge{position:absolute;top:-9px;right:14px;background:var(--accent,var(--gold));color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;z-index:2;white-space:nowrap;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.svc-item.highlighted{border-bottom:2px solid var(--accent,var(--gold));background:rgba(201,106,126,.04);margin:0 -12px;padding:18px 12px}
+.svc-item.highlighted .svc-name{color:var(--accent,var(--gold));font-weight:700}
 .has-featured .svc-item:not(.highlighted){opacity:.88}
+@media(max-width:640px){
+  .svc-photo{width:60px;height:60px}
+  .svc-item{gap:12px}
+}
 </style>
 </head>
 <body>
