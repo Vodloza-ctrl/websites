@@ -243,6 +243,11 @@ img{display:block;max-width:100%}
 .tpl-card-icon{display:flex;align-items:center;justify-content:center;margin-bottom:5px;color:var(--ink2)}
 .tpl-card-name{font-size:13px;font-weight:700;margin-bottom:3px}
 .tpl-card-desc{font-size:11.5px;color:var(--ink3);line-height:1.4}
+.tpl-card-locked{position:relative;border-color:#e8d4a8;background:linear-gradient(135deg,#fdf9f0,#f9f0dc)}
+.tpl-card-locked:hover{border-color:#c99a2e;background:linear-gradient(135deg,#fdf9f0,#f5e8c8)}
+.tpl-card-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.02em;padding:2px 7px;border-radius:999px;vertical-align:middle;margin-left:4px}
+.tpl-card-badge.tpl-locked{background:#c99a2e;color:#fff}
+.tpl-card-badge.tpl-owned{background:var(--green);color:#fff}
 .preview-actions{display:flex;gap:4px;align-items:center}
 .rep-upload-zone{border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface);transition:border-color .15s}
 .rep-upload-zone:hover{border-color:var(--green)}
@@ -1003,7 +1008,14 @@ window.onSave = async function() {
         content: built
       })
     });
-    if (!r.ok) { toast("Couldn't save — try again", "err"); return; }
+    if (!r.ok) {
+      if (r.data && r.data.error === "template_not_unlocked") {
+        toast("That template needs to be unlocked first ($" + r.data.price + ") — open the template picker to unlock it.", "err");
+      } else {
+        toast("Couldn't save — try again", "err");
+      }
+      return;
+    }
     state.dirty = false;
     if (r.data.site) state.site = r.data.site;
     var savedSlug = state.site && state.site.draft_subdomain;
@@ -1147,7 +1159,7 @@ function populateForm(){
     set("f_services",Array.isArray(svcs)?svcs.map(function(s){return typeof s==="string"?s:(s.title||"");}).filter(Boolean).join("\n"):"");
   }else{set("f_name",c.business_name||state.site.site_name||"");set("f_tagline",c.tagline||"");set("f_city",c.location||"");}
   if(state.site.template_id)set("f_template",state.site.template_id);
-  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","fashion-retail":"Fashion Retail Store","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel","medical-clinic":"Medical Clinic","personal-portfolio":"Personal Portfolio"};
+  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","fashion-retail":"Fashion Retail Store","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel","medical-clinic":"Medical Clinic","personal-portfolio":"Personal Portfolio","hospitality-sands":"Sands (Premium)","hospitality-wild":"Wild (Premium)"};
   var tlabel=document.getElementById("currentTemplateLabel");
   if(tlabel)tlabel.textContent=templateNames[state.site.template_id]||state.site.template_id||"General Business";
   set("f_services_eyebrow",c.services_eyebrow||"");set("f_services_heading",c.services_heading||"");
@@ -1716,8 +1728,8 @@ window.uploadToR2=uploadToR2;
 
 function toast(msg,type){var wrap=document.getElementById("toastWrap"),t=document.createElement("div");t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);requestAnimationFrame(function(){t.classList.add("show");});setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);}
 
-function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","fashion-retail":"fashion","grocery-fmcg":"market-fresh","grocery":"market-fresh","hardware-store":"utility-slate","hardware":"utility-slate","hospitality-inn":"navy-gold","medical-clinic":"medical-teal","personal-portfolio":"deep-teal"};return m[t]||"clean-white";}
-function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","hardware-store":"display-mono","hospitality-inn":"playfair-jakarta","medical-clinic":"grotesk-serif","personal-portfolio":"grotesk-serif"};return m[t]||"grotesk-serif";}
+function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","fashion-retail":"fashion","grocery-fmcg":"market-fresh","grocery":"market-fresh","hardware-store":"utility-slate","hardware":"utility-slate","hospitality-inn":"navy-gold","medical-clinic":"medical-teal","personal-portfolio":"deep-teal","hospitality-sands":"sand-clay","hospitality-wild":"void-ember"};return m[t]||"clean-white";}
+function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","hardware-store":"display-mono","hospitality-inn":"playfair-jakarta","medical-clinic":"grotesk-serif","personal-portfolio":"grotesk-serif","hospitality-sands":"fraunces-work","hospitality-wild":"bricolage-inter"};return m[t]||"grotesk-serif";}
 var PALETTES_UI=[{key:"black-white-gold",name:"Dark Gold",bg:"#0c0c0c",surface:"#161616",accent:"#c8a24a",dark:"#0c0c0c"},{key:"midnight-purple",name:"Midnight Purple",bg:"#0d0a14",surface:"#17121f",accent:"#a855f7",dark:"#0d0a14"},{key:"deep-teal",name:"Deep Teal",bg:"#061a1a",surface:"#0d2828",accent:"#14b8a6",dark:"#061a1a"},{key:"sky-blue",name:"Sky Blue",bg:"#0f1b2d",surface:"#16263d",accent:"#3da5e0",dark:"#0f1b2d"},{key:"elite-sports",name:"Sports Green",bg:"#0a0a0a",surface:"#151515",accent:"#16a34a",dark:"#0a0a0a"},{key:"rose-noir",name:"Rose Noir",bg:"#0e0b0d",surface:"#1a1318",accent:"#e8a0b0",dark:"#0e0b0d"},{key:"clean-white",name:"Clean White",bg:"#ffffff",surface:"#f6f6f4",accent:"#1a1a1a",dark:"#141414"},{key:"warm-terracotta",name:"Terracotta",bg:"#fdf6f0",surface:"#fff",accent:"#c0440e",dark:"#3a1606"},{key:"ember-cream",name:"Ember Cream",bg:"#FBF4E9",surface:"#fff",accent:"#D2541F",dark:"#3a1708"},{key:"blush-plum",name:"Blush Plum",bg:"#ffffff",surface:"#F7ECEC",accent:"#B08D57",dark:"#2d1620"},{key:"soft-pink",name:"Soft Pink",bg:"#fff9fb",surface:"#fdeef3",accent:"#e91e8c",dark:"#3a0f24"},{key:"navy-gold",name:"Navy Gold",bg:"#ffffff",surface:"#EAF1F9",accent:"#C99A2E",dark:"#0a2540"},{key:"slate-gold",name:"Slate Gold",bg:"#ffffff",surface:"#F4F6FA",accent:"#C08A2D",dark:"#20262f"},{key:"medical-teal",name:"Medical Teal",bg:"#f4fbfb",surface:"#e8f6f6",accent:"#0891b2",dark:"#063a3f"},{key:"forest-cream",name:"Forest Cream",bg:"#F6F1E7",surface:"#fff",accent:"#B0852F",dark:"#1f3320"},{key:"market-fresh",name:"Market Fresh",bg:"#ffffff",surface:"#f4faf5",accent:"#1e8c3a",dark:"#0f3d1a"},{key:"bright-orange",name:"Bright Orange",bg:"#ffffff",surface:"#fff8f3",accent:"#ea580c",dark:"#2b1400"},{key:"utility-slate",name:"Utility Slate",bg:"#f7f8fa",surface:"#ffffff",accent:"#1a56db",dark:"#0f1729"},{key:"onyx-gold",name:"Onyx Gold",bg:"#0a0908",surface:"#141210",accent:"#c9a961",dark:"#0a0908"},{key:"warm-cream",name:"Warm Cream",bg:"#FAF5EE",surface:"#ffffff",accent:"#C07A2B",dark:"#2C1A0E"}];
 var FONTS_UI=[{key:"clean-sans",name:"Clean Sans",preview:"Modern & Clear",style:"font-family:'Space Grotesk',sans-serif"},{key:"grotesk-serif",name:"Grotesk Serif",preview:"Editorial Mix",style:"font-family:'Fraunces',serif"},{key:"playfair-jakarta",name:"Playfair",preview:"Classic & Elegant",style:"font-family:'Playfair Display',serif"},{key:"garamond-jost",name:"Garamond Jost",preview:"Refined & Light",style:"font-family:'Cormorant Garamond',serif"},{key:"sports-sans",name:"Sports Sans",preview:"Bold & Condensed",style:"font-family:'Barlow Condensed',sans-serif;font-weight:700"},{key:"display-mono",name:"Display Mono",preview:"Technical & Clean",style:"font-family:'DM Mono',monospace"}];
 
@@ -1769,6 +1781,8 @@ var ALL_SECS_V3 = {
   "grocery-fmcg": [{key:"hero",label:"Hero banner"},{key:"specials",label:"Today's specials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"visit",label:"Visit / Contact"}],
   "hardware-store": [{key:"hero",label:"Hero banner"},{key:"products",label:"Products / Catalogue"},{key:"specials",label:"Special offers"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "hospitality-inn": [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"rooms",label:"Rooms"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"packages",label:"Packages"},{key:"dining",label:"Dining"},{key:"menu",label:"Menu"},{key:"experiences",label:"Experiences"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
+  "hospitality-sands": [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"rooms",label:"Rooms"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"packages",label:"Packages"},{key:"dining",label:"Dining"},{key:"menu",label:"Menu"},{key:"experiences",label:"Experiences"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
+  "hospitality-wild": [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"video",label:"Video"},{key:"rooms",label:"Rooms"},{key:"amenities",label:"Amenities"},{key:"conference",label:"Conferencing"},{key:"packages",label:"Packages"},{key:"dining",label:"Dining"},{key:"menu",label:"Menu"},{key:"experiences",label:"Experiences"},{key:"gallery",label:"Gallery"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"hours",label:"Opening hours"},{key:"contact",label:"Contact"}],
   "medical-clinic": [{key:"hero",label:"Hero banner"},{key:"services",label:"Services"},{key:"team",label:"Practitioners"},{key:"insurance",label:"Insurance / Medical Aid"},{key:"testimonials",label:"Patient reviews"},{key:"gallery",label:"Facility photos"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "personal-portfolio": [{key:"hero",label:"Hero banner"},{key:"about",label:"About"},{key:"stats",label:"Numbers / Stats"},{key:"experience",label:"Experience"},{key:"awards",label:"Awards"},{key:"services",label:"What I offer"},{key:"shop",label:"Shop"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "fashion-retail": [{key:"hero",label:"Hero banner"},{key:"shop",label:"Shop"},{key:"about",label:"About us"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
@@ -1825,6 +1839,8 @@ var TEMPLATES_V3=[
   {id:"grocery-fmcg",icon:TPL_ICO.grocery,name:"Grocery & Spaza",desc:"Category nav, stock badges, WhatsApp cart"},
   {id:"hardware-store",icon:TPL_ICO.hardware,name:"Hardware & Retail",desc:"Dense catalogue, quote builder"},
   {id:"hospitality-inn",icon:TPL_ICO.hospitality,name:"Lodge / B&B / Hotel",desc:"Room cards, WhatsApp booking, availability badges, gallery, reviews"},
+  {id:"hospitality-sands",icon:TPL_ICO.hospitality,name:"Sands",desc:"Premium — airy coastal minimalist, asymmetric photo pairs, quiet luxury",premium:true,price:15},
+  {id:"hospitality-wild",icon:TPL_ICO.hospitality,name:"Wild",desc:"Premium — bold cinematic, ember accents, full-bleed hero with watch-the-film card",premium:true,price:15},
   {id:"medical-clinic",icon:TPL_ICO.medical,name:"Medical Clinic",desc:"Practitioners, appointment booking, insurance accepted"},
   {id:"personal-portfolio",icon:TPL_ICO.personal,name:"Personal Portfolio",desc:"CV, awards, speaking bookings, shop your own merch"},
   {id:"creative-studio",icon:TPL_ICO.creative,name:"Creative Studio",desc:"Photography & film — masonry gallery, full-day and session booking"}
@@ -1842,6 +1858,8 @@ var TPL_CFG={
   "grocery-fmcg":{services:0,menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Services"},
   "hardware-store":{services:"Our Services",menu:0,listings:0,hours:1,stats:0,events:0,team:0,teamLbl:"Team",servicesLbl:"Our Services"},
   "hospitality-inn":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,packages:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"},
+  "hospitality-sands":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,packages:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"},
+  "hospitality-wild":{services:0,menu:0,listings:0,rooms:1,amenities:1,conference:1,dining:1,experiences:1,packages:1,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Rooms"},
   "medical-clinic":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Practitioners",servicesLbl:"Services",bookingServices:1},
   "personal-portfolio":{services:"What I Offer",menu:0,listings:0,hours:1,stats:1,events:0,team:0,teamLbl:"Team",servicesLbl:"What I Offer",bookingServices:1},
   "creative-studio":{services:0,menu:0,listings:0,rooms:1,hours:1,stats:0,events:0,team:1,teamLbl:"Team",bookingServices:1}
@@ -2226,6 +2244,22 @@ async function persistSyncedContent(siteId) {
 }
 
 var bookingsState = { list: [], filter: "all", loaded: false, tier: null };
+// Premium template unlock state ($15 one-time each). Keyed by template_id.
+// owned[id] is undefined until loaded -- treat undefined as NOT owned
+// (fail closed) anywhere this gates a switch, same as bookingsState.tier
+// being null blocks Pro-only fields until the real check comes back.
+var templateEntitlements = { owned: {}, loaded: false };
+
+async function fetchTemplateEntitlements() {
+  if (!siteId) { templateEntitlements.owned = {}; templateEntitlements.loaded = true; return; }
+  var premiumIds = TEMPLATES_V3.filter(function(t){ return t.premium; }).map(function(t){ return t.id; });
+  await Promise.all(premiumIds.map(async function(id) {
+    var r = await paymentsApi("/addon-status?site_id=" + encodeURIComponent(siteId) + "&addon_type=" + encodeURIComponent("template:" + id));
+    templateEntitlements.owned[id] = !!(r.ok && r.data && r.data.owned);
+  }));
+  templateEntitlements.loaded = true;
+}
+window.fetchTemplateEntitlements = fetchTemplateEntitlements;
 
 function bookingRoomName(resourceId) {
   if (!resourceId) return "All resources";
@@ -2742,9 +2776,89 @@ function showNavItem(id,show){
   var dockEl=document.getElementById(id.replace("nav-v3-","dock-v3-"));
   if(dockEl)dockEl.style.display=show?"":"none";
 }
-window.openTplModalV3=function(){var curTpl=g("f_template")||"bold-retail";var mbody=document.getElementById("tplModalBody");if(!mbody)return;mbody.innerHTML=TEMPLATES_V3.map(function(t){return'<div class="tpl-card'+(t.id===curTpl?" current":"")+'" onclick="selectTemplateV3(\''+t.id+'\')"><div class="tpl-card-icon">'+t.icon+'</div><div class="tpl-card-name">'+t.name+'</div><div class="tpl-card-desc">'+t.desc+'</div></div>';}).join("");document.getElementById("tplModal").classList.add("open");};
+window.openTplModalV3=async function(){
+  document.getElementById("tplModal").classList.add("open");
+  var mbody=document.getElementById("tplModalBody");
+  if (mbody && !templateEntitlements.loaded) mbody.innerHTML='<div class="empty-state"><p>Loading templates…</p></div>';
+  if(!templateEntitlements.loaded) await fetchTemplateEntitlements();
+  renderTplGrid();
+};
 window.closeTplModal=function(){document.getElementById("tplModal").classList.remove("open");};
 window.closeTplModalOutside=function(e){if(e.target===document.getElementById("tplModal"))closeTplModal();};
+
+function renderTplGrid(){
+  var curTpl=g("f_template")||"bold-retail";
+  var mbody=document.getElementById("tplModalBody");
+  if(!mbody)return;
+  mbody.innerHTML=TEMPLATES_V3.map(function(t){
+    var locked = !!(t.premium && !templateEntitlements.owned[t.id]);
+    var owned  = !!(t.premium && templateEntitlements.owned[t.id]);
+    var badge  = locked ? ' <span class="tpl-card-badge tpl-locked">🔒 $'+t.price+'</span>'
+               : owned  ? ' <span class="tpl-card-badge tpl-owned">✓ Unlocked</span>' : '';
+    return '<div class="tpl-card'+(t.id===curTpl?" current":"")+(locked?" tpl-card-locked":"")+'" onclick="onTplCardClick(\''+t.id+'\')">'
+      +'<div class="tpl-card-icon">'+t.icon+'</div>'
+      +'<div class="tpl-card-name">'+t.name+badge+'</div>'
+      +'<div class="tpl-card-desc">'+t.desc+'</div>'
+    +'</div>';
+  }).join("");
+}
+
+window.onTplCardClick=function(tpl){
+  var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};
+  var locked = !!(tmeta.premium && !templateEntitlements.owned[tpl]);
+  if (locked) { renderTplPurchaseView(tmeta); return; }
+  selectTemplateV3(tpl);
+};
+
+// Real, working purchase flow -- calls payments-worker's generic POST /pay
+// directly (same pattern as Store Payments' paymentsApi() usage), and
+// WczCheckout.renderPricingSection() for the actual UI, matching Bookings/
+// Store Payments exactly rather than inventing a new pattern. The real
+// enforcement is server-side in auth-worker's saveSite()/switchTemplate();
+// this UI is what makes the purchase possible in the first place.
+function renderTplPurchaseView(tmeta){
+  var mbody=document.getElementById("tplModalBody");
+  if(!mbody)return;
+  var savedEmail = ((window.state && window.state.content && window.state.content.content && window.state.content.content.contact) || {}).email;
+  mbody.innerHTML =
+    '<button class="btn btn-ghost btn-sm" style="margin-bottom:12px" onclick="renderTplGrid()">← Back to templates</button>'
+    + '<div style="text-align:center;margin-bottom:16px">'
+    +   '<div class="tpl-card-icon" style="font-size:32px">'+tmeta.icon+'</div>'
+    +   '<h3 style="margin:8px 0 4px">'+tmeta.name+'</h3>'
+    +   '<p style="color:var(--ink3);font-size:13px">'+tmeta.desc+'</p>'
+    + '</div>'
+    + '<div id="tplPurchaseSection"></div>';
+  if (typeof WczCheckout === 'undefined' || !WczCheckout.renderPricingSection) {
+    mbody.innerHTML += '<p class="fld-hint">Checkout isn\'t available right now — try refreshing the page.</p>';
+    return;
+  }
+  WczCheckout.renderPricingSection({
+    namespace: "template-" + tmeta.id,
+    containerId: "tplPurchaseSection",
+    currentTier: null,
+    prefillEmail: savedEmail || null,
+    toast: toast,
+    tiers: [
+      { key: "unlock", label: tmeta.name, price: tmeta.price, isTopTier: true,
+        features: ["Permanent unlock for this site", "One-time payment, no subscription", "Switch to it any time from here"] }
+    ],
+    purchase: async function (tier, phone, email) {
+      return await paymentsApi("/pay", {
+        method: "POST",
+        body: JSON.stringify({ kind: "addon", site_id: siteId, addon_type: "template:" + tmeta.id, tier: "unlock", phone: phone, email: email })
+      });
+    },
+    pollStatus: async function (reference) {
+      return await paymentsApi("/pay/status?ref=" + encodeURIComponent(reference));
+    },
+    onActivated: async function () {
+      templateEntitlements.owned[tmeta.id] = true;
+      toast(tmeta.name + " unlocked!", "ok");
+      selectTemplateV3(tmeta.id);
+    }
+  });
+}
+
 window.selectTemplateV3=function(tpl){var cur=g("f_template")||"bold-retail";if(tpl===cur){closeTplModal();return;}var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};if(!confirm("Switch to "+tmeta.name+" template?\n\nYour content is preserved — only the design changes."))return;set("f_template",tpl);applyTemplateConfigV3(tpl);buildSectionsList();window.markDirty();closeTplModal();toast("Template switched — save to apply","ok");};
 var DAYS_V3=[{k:"mon",l:"Mon"},{k:"tue",l:"Tue"},{k:"wed",l:"Wed"},{k:"thu",l:"Thu"},{k:"fri",l:"Fri"},{k:"sat",l:"Sat"},{k:"sun",l:"Sun"}];
 function renderHoursGrid(){var grid=document.getElementById("hours-grid-wrap");if(!grid)return;grid.querySelectorAll(".hr-row").forEach(function(r){r.remove();});DAYS_V3.forEach(function(d){var h=v3state.hours[d.k]||{};var grp=document.createElement("div");grp.className="hr-row";grp.style.display="contents";grp.innerHTML='<div class="hours-day-lbl">'+d.l+'</div><input type="time" id="hv3_'+d.k+'_open" value="'+(h.open||"08:00")+'" '+(h.closed?"disabled":"")+' onchange="updateHoursV3(\''+d.k+'\')"><input type="time" id="hv3_'+d.k+'_close" value="'+(h.close||"17:00")+'" '+(h.closed?"disabled":"")+' onchange="updateHoursV3(\''+d.k+'\')"><label class="hours-closed-lbl"><input type="checkbox" '+(h.closed?"checked":"")+' onchange="toggleDayClosedV3(\''+d.k+'\',this.checked)"> Closed</label>';grid.appendChild(grp);});}
