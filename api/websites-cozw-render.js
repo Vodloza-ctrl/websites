@@ -480,6 +480,7 @@ const KNOWN_TEMPLATE_IDS = new Set([
   'medical-clinic', 'personal-portfolio', 'creative-studio',
   'hospitality-sands', 'hospitality-wild',
   'beauty-atelier', 'beauty-maison',
+  'grill-noir', 'grill-market',
 ]);
 
 const PREVIEW_RIBBON = `<div style="position:fixed;bottom:14px;right:14px;z-index:99999;background:rgba(13,15,20,.92);color:#fff;font:600 11px/1 system-ui,sans-serif;letter-spacing:.02em;padding:8px 14px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none">✨ Preview — claim it to make it yours</div>`;
@@ -2507,9 +2508,28 @@ async function buildTemplateExtras(c, site, config, env) {
   }
 
   // -- GRILL-HOUSE ------------------------------------------------------------
-  if (templateId === 'grill-house' || templateId === 'restaurant') {
+  // grill-noir and grill-market are premium skins ($15 one-time, see addons
+  // table) -- same content schema as grill-house, different index.html/
+  // config.json folder. Do NOT resolve these as aliases of 'grill-house'
+  // anywhere else (e.g. TEMPLATE_ID_ALIASES) -- that would collapse the
+  // Pages fetch onto grill-house's own HTML instead of each skin's real
+  // folder.
+  if (templateId === 'grill-house' || templateId === 'restaurant' ||
+    templateId === 'grill-noir' || templateId === 'grill-market') {
     const ghTheme = c.theme || {};
-    const ghPalette = resolvePalette(ghTheme.palette || 'ember-cream', ghTheme.custom_accent || '');
+    // Was hardcoded to grill-house's own default ('ember-cream') regardless
+    // of templateId -- harmless while this block only served grill-house,
+    // but grill-noir/grill-market sites without an explicit theme.palette
+    // would otherwise silently render in grill-house's colors instead of
+    // their own. Same class of bug as beauty-atelier/beauty-maison's
+    // primary_color fallback -- branch by templateId here too.
+    const GRILL_PALETTE_DEFAULTS = {
+      'grill-house': 'ember-cream',
+      'restaurant': 'ember-cream',
+      'grill-noir': 'noir-wine',
+      'grill-market': 'market-citrus',
+    };
+    const ghPalette = resolvePalette(ghTheme.palette || GRILL_PALETTE_DEFAULTS[templateId] || 'ember-cream', ghTheme.custom_accent || '');
     const grillConfig = Object.assign({}, config, {
       paletteTokens: { ember_color: ghPalette.accent1, amber_color: ghPalette.accent2 },
       defaultPrimaryColor: ghPalette.primary,
@@ -5140,6 +5160,8 @@ const SITE_PALETTES = {
   'void-ember': { primary: '#0E0D0C', accent1: '#C4472A', accent2: '#DD6644', bg: '#0E0D0C', surface: '#1A1815' },
   'stone-terracotta': { primary: '#1C1A17', accent1: '#B5502E', accent2: '#8C3D22', bg: '#F7F4EF', surface: '#EFE9DF' },
   'rose-clay': { primary: '#2E1B14', accent1: '#C97B54', accent2: '#A85D3A', bg: '#FBF3EA', surface: '#F3E4D6' },
+  'noir-wine': { primary: '#0E0C0A', accent1: '#8B2635', accent2: '#C9A961', bg: '#F5F0E8', surface: '#FFFFFF' },
+  'market-citrus': { primary: '#2B1B0E', accent1: '#E8871E', accent2: '#5FA05C', bg: '#FFF8ED', surface: '#FFFFFF' },
 };
 
 function paletteFor(t) {
@@ -5174,6 +5196,8 @@ function paletteFor(t) {
     'hospitality-wild': 'void-ember',
     'beauty-atelier': 'stone-terracotta',
     'beauty-maison': 'rose-clay',
+    'grill-noir': 'noir-wine',
+    'grill-market': 'market-citrus',
     'faith': 'warm-cream',
     'church-institution': 'warm-cream',
     'medical-clinic': 'medical-teal',
@@ -5215,6 +5239,8 @@ function fontFor(t) {
     'hospitality-wild': 'bricolage-inter',
     'beauty-atelier': 'instrument-manrope',
     'beauty-maison': 'caslon-sora',
+    'grill-noir': 'garamond-jost',
+    'grill-market': 'fredoka-inter',
     'faith': 'playfair-jakarta',
     'church-institution': 'playfair-jakarta',
     'medical-clinic': 'grotesk-serif',
@@ -5229,6 +5255,8 @@ function fontFor(t) {
 const TEMPLATE_VAR_MAP = {
   'grill-house': { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
   'restaurant': { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
+  'grill-noir': { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
+  'grill-market': { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
   'beauty-salon': { primary: '--primary-color', accent1: '--primary-color', accent2: '--accent-color', brand: '--primary-color' },
   'school-institution': { primary: '--navy', accent1: '--gold', accent2: '--gold-lt', brand: '--navy' },
   'church': { primary: '--warm', accent1: '--amber', accent2: '--amber2', bg: '--cream', brand: '--amber' },
@@ -5308,6 +5336,7 @@ const FONT_MAP = {
   'bricolage-inter': { url: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Inter:wght@300;400;500;600&display=swap', body: '"Inter",system-ui,sans-serif', head: '"Bricolage Grotesque",system-ui,sans-serif' },
   'instrument-manrope': { url: 'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap', body: '"Manrope",system-ui,sans-serif', head: '"Instrument Serif",Georgia,serif' },
   'caslon-sora': { url: 'https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Sora:wght@300;400;500;600;700&display=swap', body: '"Sora",system-ui,sans-serif', head: '"Libre Caslon Display",Georgia,serif' },
+  'fredoka-inter': { url: 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap', body: '"Inter",system-ui,sans-serif', head: '"Fredoka",system-ui,sans-serif' },
 };
 
 // Templates whose CSS drives typography through custom properties (e.g.

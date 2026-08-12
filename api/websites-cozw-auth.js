@@ -170,6 +170,8 @@ const PREMIUM_TEMPLATE_IDS = {
   "hospitality-wild":  { addon_type: "template:hospitality-wild",  price: 15 },
   "beauty-atelier":    { addon_type: "template:beauty-atelier",    price: 15 },
   "beauty-maison":     { addon_type: "template:beauty-maison",     price: 15 },
+  "grill-noir":        { addon_type: "template:grill-noir",        price: 15 },
+  "grill-market":      { addon_type: "template:grill-market",      price: 15 },
 };
 
 // Checks ownership via payments-worker's GET /addon-status (v1.13+), using
@@ -1852,6 +1854,8 @@ function defaultSectionsFor(t) {
     "hospitality-wild":    ["hero","about","video","rooms","amenities","conference","packages","dining","menu","experiences","gallery","testimonials","reviews","press","hours","contact"],
     "beauty-atelier":      ["hero","services","about","gallery","contact"],
     "beauty-maison":       ["hero","services","about","gallery","contact"],
+    "grill-noir":          ["hero","menu","about","gallery","contact"],
+    "grill-market":        ["hero","menu","about","gallery","contact"],
   };
   return d[t] || ["hero","about","services","contact"];
 }
@@ -2039,7 +2043,9 @@ function paletteFor(t) {
     "hospitality-sands":  "sand-clay",
     "hospitality-wild":   "void-ember",
     "beauty-atelier":     "stone-terracotta",
-    "beauty-maison":      "rose-clay"
+    "beauty-maison":      "rose-clay",
+    "grill-noir":         "noir-wine",
+    "grill-market":       "market-citrus"
   };
   return m[t] || "clean-white";
 }
@@ -2076,7 +2082,9 @@ function fontFor(t) {
     "hospitality-sands":  "fraunces-work",
     "hospitality-wild":   "bricolage-inter",
     "beauty-atelier":     "instrument-manrope",
-    "beauty-maison":      "caslon-sora"
+    "beauty-maison":      "caslon-sora",
+    "grill-noir":         "garamond-jost",
+    "grill-market":       "fredoka-inter"
   };
   return m[t] || "grotesk-serif";
 }

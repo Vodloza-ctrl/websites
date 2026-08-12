@@ -1,6 +1,9 @@
 /**
- * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.14
+ * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.15
  * ---------------------------------------------------------------------------
+ * v1.15 — two more one-time $15 template SKUs: 'template:grill-noir' and
+ * 'template:grill-market'. Same 'unlock' tier / one_time billing path as
+ * every other template SKU below -- zero new logic needed.
  * v1.14 — two more one-time $15 template SKUs: 'template:beauty-atelier'
  * and 'template:beauty-maison'. Same 'unlock' tier / one_time billing path
  * as the hospitality-sands/wild SKUs below -- zero new logic needed.
@@ -172,6 +175,8 @@ const ADDON_USD_PRICE = {
   'template:hospitality-wild': { unlock: 15 },
   'template:beauty-atelier': { unlock: 15 },
   'template:beauty-maison': { unlock: 15 },
+  'template:grill-noir': { unlock: 15 },
+  'template:grill-market': { unlock: 15 },
 };
 
 export default {

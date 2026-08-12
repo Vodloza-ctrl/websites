@@ -1,0 +1,114 @@
+{
+  "templateId": "grill-noir",
+  "premium": true,
+  "premiumPrice": 15,
+  "premiumBillingType": "one_time",
+  "defaultPrimaryColor": "#0E0C0A",
+  "defaultTypeLabel": "Fine Dining \u00b7 Zimbabwe",
+  "bodyClass": "tpl-grill-noir",
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Jost:wght@300;400;500;600;700&display=swap",
+  "navTextColor": "#fff",
+  "navCtaLabel": "Order online",
+  "navLinks": [
+    "#menu:Menu",
+    "#team:Team",
+    "#hours:Hours",
+    "#contact:Visit us"
+  ],
+  "showOpenBadge": true,
+  "showHoursGrid": true,
+  "paletteTokens": {
+    "ember_color": "#8B2635",
+    "amber_color": "#C9A961"
+  },
+  "typeLabels": {
+    "grill-noir": "Fine Dining \u00b7 Zimbabwe",
+    "restaurant": "Restaurant \u00b7 Zimbabwe",
+    "takeaway": "Takeaway & Delivery"
+  },
+  "extraTokens": {
+    "order_cta_text": "Build your order below, then send it straight to our kitchen on WhatsApp."
+  },
+  "lists": [
+    {
+      "key": "team",
+      "itemTemplate": "<div class=\"team-card reveal\" data-name=\"{{item.name}}\" data-role=\"{{item.role}}\" data-bio=\"{{item.bio}}\" data-photo=\"{{item.photo}}\" onclick=\"tlbOpenFromCard(this)\"><div class=\"team-photo\">{{#if item.photo}}<img src=\"{{item.photo}}\" alt=\"{{item.name}}\" loading=\"lazy\">{{else}}<svg viewBox=\"0 0 24 24\" width=\"48\" height=\"48\" fill=\"none\" stroke=\"rgba(210,84,31,.4)\" stroke-width=\"1.5\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></svg>{{/if}}</div><div class=\"team-name\">{{item.name}}</div><div class=\"team-role\">{{item.role}}</div></div>"
+    },
+    {
+      "key": "gallery",
+      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\" loading=\"lazy\" onclick=\"lbOpenPhoto(this.src,this.alt)\">"
+    },
+    {
+      "key": "testimonials",
+      "itemTemplate": "<div class=\"testi-card reveal\"><span class=\"testi-quote\">&ldquo;</span><p class=\"testi-text\">{{item.text}}</p><div class=\"testi-author\"><div class=\"testi-avatar\">{{item.name_initial}}</div><div><div class=\"testi-name\">{{item.name}}</div><div class=\"testi-role\">{{item.role}}</div></div></div></div>"
+    }
+  ],
+  "conditionals": [
+    {
+      "flag": "logo_url",
+      "type": "computed",
+      "token": "logo_url"
+    },
+    {
+      "flag": "hero_image_url",
+      "type": "computed",
+      "token": "hero_image_url"
+    },
+    {
+      "flag": "has_menu",
+      "type": "list_present",
+      "field": "menu"
+    },
+    {
+      "flag": "has_team",
+      "type": "list_present",
+      "field": "team"
+    },
+    {
+      "flag": "has_gallery",
+      "type": "list_present",
+      "field": "gallery"
+    },
+    {
+      "flag": "has_testimonials",
+      "type": "list_present",
+      "field": "testimonials"
+    },
+    {
+      "flag": "has_hours",
+      "type": "field_present",
+      "field": "hours"
+    },
+    {
+      "flag": "phone",
+      "type": "field_present",
+      "field": "phone"
+    },
+    {
+      "flag": "email",
+      "type": "field_present",
+      "field": "email"
+    },
+    {
+      "flag": "location",
+      "type": "field_present",
+      "field": "location"
+    },
+    {
+      "flag": "map_embed_url",
+      "type": "field_present",
+      "field": "map_embed_url"
+    },
+    {
+      "flag": "show_reviews_section",
+      "type": "computed",
+      "token": "show_reviews_section"
+    },
+    {
+      "flag": "show_press_section",
+      "type": "computed",
+      "token": "show_press_section"
+    }
+  ],
+  "selfContainedNav": true
+}
