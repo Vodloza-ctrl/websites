@@ -2839,7 +2839,7 @@ function renderTplPurchaseView(tmeta){
     prefillEmail: savedEmail || null,
     toast: toast,
     tiers: [
-      { key: "unlock", label: tmeta.name, price: tmeta.price, isTopTier: true,
+      { key: "unlock", label: tmeta.name, price: tmeta.price, isTopTier: true, oneTime: true,
         features: ["Permanent unlock for this site", "One-time payment, no subscription", "Switch to it any time from here"] }
     ],
     purchase: async function (tier, phone, email) {
