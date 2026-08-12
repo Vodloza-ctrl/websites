@@ -168,6 +168,8 @@ const OWNER_ASSET_FIELDS = ["team", "gallery", "images", "testimonials", "produc
 const PREMIUM_TEMPLATE_IDS = {
   "hospitality-sands": { addon_type: "template:hospitality-sands", price: 15 },
   "hospitality-wild":  { addon_type: "template:hospitality-wild",  price: 15 },
+  "beauty-atelier":    { addon_type: "template:beauty-atelier",    price: 15 },
+  "beauty-maison":     { addon_type: "template:beauty-maison",     price: 15 },
 };
 
 // Checks ownership via payments-worker's GET /addon-status (v1.13+), using
@@ -1848,6 +1850,8 @@ function defaultSectionsFor(t) {
     "hospitality-inn":     ["hero","about","video","rooms","amenities","conference","packages","dining","menu","experiences","gallery","testimonials","reviews","press","hours","contact"],
     "hospitality-sands":   ["hero","about","video","rooms","amenities","conference","packages","dining","menu","experiences","gallery","testimonials","reviews","press","hours","contact"],
     "hospitality-wild":    ["hero","about","video","rooms","amenities","conference","packages","dining","menu","experiences","gallery","testimonials","reviews","press","hours","contact"],
+    "beauty-atelier":      ["hero","services","about","gallery","contact"],
+    "beauty-maison":       ["hero","services","about","gallery","contact"],
   };
   return d[t] || ["hero","about","services","contact"];
 }
@@ -2033,7 +2037,9 @@ function paletteFor(t) {
     "hotel":              "navy-gold",
     "accommodation":      "navy-gold",
     "hospitality-sands":  "sand-clay",
-    "hospitality-wild":   "void-ember"
+    "hospitality-wild":   "void-ember",
+    "beauty-atelier":     "stone-terracotta",
+    "beauty-maison":      "rose-clay"
   };
   return m[t] || "clean-white";
 }
@@ -2068,7 +2074,9 @@ function fontFor(t) {
     "hotel":              "playfair-jakarta",
     "accommodation":      "playfair-jakarta",
     "hospitality-sands":  "fraunces-work",
-    "hospitality-wild":   "bricolage-inter"
+    "hospitality-wild":   "bricolage-inter",
+    "beauty-atelier":     "instrument-manrope",
+    "beauty-maison":      "caslon-sora"
   };
   return m[t] || "grotesk-serif";
 }

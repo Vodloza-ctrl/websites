@@ -1,6 +1,9 @@
 /**
- * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.13
+ * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.14
  * ---------------------------------------------------------------------------
+ * v1.14 — two more one-time $15 template SKUs: 'template:beauty-atelier'
+ * and 'template:beauty-maison'. Same 'unlock' tier / one_time billing path
+ * as the hospitality-sands/wild SKUs below -- zero new logic needed.
  * v1.13 — added GET /addon-status?site_id=&addon_type= : a generic,
  * read-only, browser-reachable check for whether an addon is currently
  * owned. Needed because orders-worker's /addon-check is service-binding
@@ -167,6 +170,8 @@ const ADDON_USD_PRICE = {
   bookings: { basic: 12, pro: 25 },
   'template:hospitality-sands': { unlock: 15 },
   'template:hospitality-wild': { unlock: 15 },
+  'template:beauty-atelier': { unlock: 15 },
+  'template:beauty-maison': { unlock: 15 },
 };
 
 export default {

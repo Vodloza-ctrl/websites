@@ -1,0 +1,72 @@
+{
+  "templateId": "beauty-atelier",
+  "name": "Atelier",
+  "premium": true,
+  "premiumPrice": 15,
+  "premiumBillingType": "one_time",
+  "description": "A quiet, clinical-editorial skin & beauty template — huge whitespace, a restrained serif, and a results-driven story instead of a busy price list.",
+  "defaultPalette": "stone-terracotta",
+  "defaultPrimaryColor": "#B5502E",
+  "defaultTypeLabel": "Studio",
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap",
+  "bodyClass": "beauty-atelier",
+  "navTextColor": "#1C1A17",
+  "navCtaLabel": "Book now",
+  "selfContainedNav": true,
+  "sections": ["hero", "process", "services", "book-appointment", "gallery", "team", "shop", "reviews", "press", "visit"],
+  "typeLabels": {
+    "beauty-atelier": "Studio"
+  },
+  "lists": [
+    {
+      "key": "services",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"svc-item\"><div class=\"svc-item-body\"><div class=\"svc-name\">{{item.name}}</div>{{#if item.description}}<div class=\"svc-desc\">{{item.description}}</div>{{/if}}</div>{{#if item.price}}<div class=\"svc-price\">{{item.price}}</div>{{/if}}</div>"
+    },
+    {
+      "key": "gallery",
+      "emptyHtml": "",
+      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\">"
+    },
+    {
+      "key": "team",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"team-card\">{{#if item.photo}}<img class=\"team-photo\" src=\"{{item.photo}}\" alt=\"{{item.name}}\">{{/if}}<div class=\"team-name\">{{item.name}}</div>{{#if item.role}}<div class=\"team-role\">{{item.role}}</div>{{/if}}{{#if item.bio}}<div class=\"team-bio\">{{item.bio}}</div>{{/if}}</div>"
+    }
+  ],
+  "conditionals": [
+    { "flag": "has_gallery", "type": "list_present", "field": "gallery" },
+    { "flag": "has_team", "type": "list_present", "field": "team" },
+    { "flag": "has_map", "type": "field_present", "field": "map_embed_url" },
+    { "flag": "show_shop", "type": "list_present", "field": "products" }
+  ],
+  "tokens": {
+    "site_name": "Atelier Studio",
+    "tagline": "Skin · Face · Form",
+    "logo_url": "",
+    "hero_image_url": "",
+    "hero_eyebrow": "By appointment",
+    "hero_headline": "Considered skin, quietly delivered.",
+    "hero_subtext": "A calmer kind of beauty studio — precise treatments, honest consultations, results you can actually see.",
+    "hero_badge": "Consultations included · Tue–Sat",
+    "process_eyebrow": "How it works",
+    "process_heading": "Built for progress, not just a visit",
+    "services_intro": "Every price is the real price. No surprises at the till.",
+    "team_heading": "The hands you're trusting",
+    "team_subtext": "Every practitioner here is trained, certified, and genuinely invested in your result.",
+    "cta_heading": "Ready to start?",
+    "cta_subtext": "Book your consultation on WhatsApp — we'll confirm your slot right away.",
+    "address": "",
+    "phone": "",
+    "wa_phone": "",
+    "hours_text": "Tue – Sat · 9am – 6pm",
+    "map_embed_url": "",
+    "primary_color": "#B5502E"
+  },
+  "flags": {
+    "show_gallery": true,
+    "show_team": true,
+    "show_shop": true,
+    "show_map": true
+  }
+}

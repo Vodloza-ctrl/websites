@@ -479,6 +479,7 @@ const KNOWN_TEMPLATE_IDS = new Set([
   'boutique-fashion', 'bold-retail', 'hospitality-inn', 'fashion-retail',
   'medical-clinic', 'personal-portfolio', 'creative-studio',
   'hospitality-sands', 'hospitality-wild',
+  'beauty-atelier', 'beauty-maison',
 ]);
 
 const PREVIEW_RIBBON = `<div style="position:fixed;bottom:14px;right:14px;z-index:99999;background:rgba(13,15,20,.92);color:#fff;font:600 11px/1 system-ui,sans-serif;letter-spacing:.02em;padding:8px 14px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none">✨ Preview — claim it to make it yours</div>`;
@@ -2173,7 +2174,7 @@ function buildCommerceCSS() {
 
 // Template IDs that render products via the Universal Commerce SDK
 const STORE_TEMPLATE_IDS = new Set([
-  'beauty-salon',
+  'beauty-salon', 'beauty-atelier', 'beauty-maison',
   'school-institution', 'school', 'church', 'sports',
   'boutique-fashion', 'boutique', 'fashion',
   'fashion-retail',
@@ -2565,7 +2566,13 @@ async function buildTemplateExtras(c, site, config, env) {
   }
 
   // -- BEAUTY-SALON -----------------------------------------------------------
-  if (templateId === 'beauty-salon') {
+  // beauty-atelier and beauty-maison are premium skins ($15 one-time, see
+  // addons table) -- same content schema as beauty-salon, different
+  // index.html/config.json folder. Do NOT resolve these as aliases of
+  // 'beauty-salon' anywhere else (e.g. TEMPLATE_ID_ALIASES) -- that would
+  // collapse the Pages fetch onto beauty-salon's own HTML instead of each
+  // skin's real folder.
+  if (templateId === 'beauty-salon' || templateId === 'beauty-atelier' || templateId === 'beauty-maison') {
     const svcs = Array.isArray(c.services) ? c.services : [];
 
     const isOldGrouped = svcs.length > 0 && Array.isArray(svcs[0].items);
@@ -5120,6 +5127,8 @@ const SITE_PALETTES = {
   'warm-cream': { primary: '#2C1A0E', accent1: '#C07A2B', accent2: '#E09A3B', bg: '#FAF5EE', surface: '#ffffff' },
   'sand-clay': { primary: '#2A2521', accent1: '#A87F52', accent2: '#8C6A42', bg: '#FAF6EF', surface: '#F0E6D6' },
   'void-ember': { primary: '#0E0D0C', accent1: '#C4472A', accent2: '#DD6644', bg: '#0E0D0C', surface: '#1A1815' },
+  'stone-terracotta': { primary: '#1C1A17', accent1: '#B5502E', accent2: '#8C3D22', bg: '#F7F4EF', surface: '#EFE9DF' },
+  'rose-clay': { primary: '#2E1B14', accent1: '#C97B54', accent2: '#A85D3A', bg: '#FBF3EA', surface: '#F3E4D6' },
 };
 
 function paletteFor(t) {
@@ -5152,6 +5161,8 @@ function paletteFor(t) {
     'accommodation': 'navy-gold',
     'hospitality-sands': 'sand-clay',
     'hospitality-wild': 'void-ember',
+    'beauty-atelier': 'stone-terracotta',
+    'beauty-maison': 'rose-clay',
     'faith': 'warm-cream',
     'church-institution': 'warm-cream',
     'medical-clinic': 'medical-teal',
@@ -5191,6 +5202,8 @@ function fontFor(t) {
     'hotel': 'playfair-jakarta',
     'hospitality-sands': 'fraunces-work',
     'hospitality-wild': 'bricolage-inter',
+    'beauty-atelier': 'instrument-manrope',
+    'beauty-maison': 'caslon-sora',
     'faith': 'playfair-jakarta',
     'church-institution': 'playfair-jakarta',
     'medical-clinic': 'grotesk-serif',
@@ -5236,6 +5249,8 @@ const TEMPLATE_VAR_MAP = {
   'medical-clinic': { primary: '--ink', accent1: '--teal', accent2: '--teal-dk', bg: '--bg', brand: '--teal' },
   'personal-portfolio': { primary: '--ink', accent1: '--teal', accent2: '--teal-dk', bg: '--bg', brand: '--teal' },
   'creative-studio': { primary: '--ink', accent1: '--gold', accent2: '--bronze', bg: '--bg', brand: '--gold' },
+  'beauty-atelier': { primary: '--ink', accent1: '--terracotta', accent2: '--terracotta', bg: '--paper', brand: '--terracotta' },
+  'beauty-maison': { primary: '--espresso', accent1: '--clay', accent2: '--clay2', bg: '--cream', brand: '--clay' },
 };
 
 function resolvePalette(paletteKey, customAccent) {
@@ -5280,6 +5295,8 @@ const FONT_MAP = {
   'display-mono': { url: 'https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap', body: '"DM Sans",system-ui,sans-serif', head: '"DM Mono",monospace' },
   'fraunces-work': { url: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Work+Sans:wght@300;400;500&display=swap', body: '"Work Sans",system-ui,sans-serif', head: '"Fraunces",Georgia,serif' },
   'bricolage-inter': { url: 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Inter:wght@300;400;500;600&display=swap', body: '"Inter",system-ui,sans-serif', head: '"Bricolage Grotesque",system-ui,sans-serif' },
+  'instrument-manrope': { url: 'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap', body: '"Manrope",system-ui,sans-serif', head: '"Instrument Serif",Georgia,serif' },
+  'caslon-sora': { url: 'https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Sora:wght@300;400;500;600;700&display=swap', body: '"Sora",system-ui,sans-serif', head: '"Libre Caslon Display",Georgia,serif' },
 };
 
 // Templates whose CSS drives typography through custom properties (e.g.
@@ -5297,6 +5314,8 @@ const FONT_VAR_MAP = {
   'hospitality-inn': { body: '--font-body', head: '--font-display' },
   'hospitality-sands': { body: '--font-body', head: '--font-display' },
   'hospitality-wild': { body: '--font-body', head: '--font-display' },
+  'beauty-atelier': { body: '--font-body', head: '--font-display' },
+  'beauty-maison': { body: '--font-body', head: '--font-display' },
 };
 
 function buildFontOverride(fontPairKey, templateId) {
@@ -5803,10 +5822,12 @@ const HOSP_TEMPLATE_IDS = new Set([
 
 const DAY_BOOKING_TEMPLATE_IDS = new Set(['hospitality-inn', 'creative-studio', 'hospitality-sands', 'hospitality-wild']);
 
-const SLOT_BOOKING_TEMPLATE_IDS = new Set(['beauty-salon', 'advisory-firm', 'medical-clinic', 'personal-portfolio', 'creative-studio']);
+const SLOT_BOOKING_TEMPLATE_IDS = new Set(['beauty-salon', 'beauty-atelier', 'beauty-maison', 'advisory-firm', 'medical-clinic', 'personal-portfolio', 'creative-studio']);
 
 const SLOT_BOOKING_CONFIG = {
   'beauty-salon':   { accentColor: '#C96A7E', resourceLabel: 'stylist' },
+  'beauty-atelier': { accentColor: '#B5502E', resourceLabel: 'stylist' },
+  'beauty-maison':  { accentColor: '#C97B54', resourceLabel: 'stylist' },
   'advisory-firm':  { accentColor: '#C08A2D', resourceLabel: 'advisor' },
   'medical-clinic': { accentColor: '#0891b2', resourceLabel: 'practitioner' },
   'creative-studio': { accentColor: '#c9a961', resourceLabel: 'time slot' },

@@ -405,6 +405,8 @@ img{display:block;max-width:100%}
                 <option value="bold-retail">General Business</option>
                 <option value="grill-house">Restaurant / Café / Grill</option>
                 <option value="beauty-salon">Salon / Spa / Clinic</option>
+                <option value="beauty-atelier">Salon — Atelier (Premium)</option>
+                <option value="beauty-maison">Salon — Maison (Premium)</option>
                 <option value="advisory-firm">Consultant / Law / Accounting</option>
                 <option value="property-estate">Property / Real Estate</option>
                 <option value="medical-clinic">Medical / Dental / Healthcare Clinic</option>
@@ -1161,7 +1163,7 @@ function populateForm(){
     set("f_services",Array.isArray(svcs)?svcs.map(function(s){return typeof s==="string"?s:(s.title||"");}).filter(Boolean).join("\n"):"");
   }else{set("f_name",c.business_name||state.site.site_name||"");set("f_tagline",c.tagline||"");set("f_city",c.location||"");}
   if(state.site.template_id)set("f_template",state.site.template_id);
-  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","fashion-retail":"Fashion Retail Store","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel","medical-clinic":"Medical Clinic","personal-portfolio":"Personal Portfolio","hospitality-sands":"Sands (Premium)","hospitality-wild":"Wild (Premium)"};
+  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","fashion-retail":"Fashion Retail Store","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel","medical-clinic":"Medical Clinic","personal-portfolio":"Personal Portfolio","hospitality-sands":"Sands (Premium)","hospitality-wild":"Wild (Premium)","beauty-atelier":"Atelier (Premium)","beauty-maison":"Maison (Premium)"};
   var tlabel=document.getElementById("currentTemplateLabel");
   if(tlabel)tlabel.textContent=templateNames[state.site.template_id]||state.site.template_id||"General Business";
   set("f_services_eyebrow",c.services_eyebrow||"");set("f_services_heading",c.services_heading||"");
@@ -1730,8 +1732,8 @@ window.uploadToR2=uploadToR2;
 
 function toast(msg,type){var wrap=document.getElementById("toastWrap"),t=document.createElement("div");t.className="toast"+(type?" "+type:"");t.textContent=msg;wrap.appendChild(t);requestAnimationFrame(function(){t.classList.add("show");});setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},300);},3000);}
 
-function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","fashion-retail":"fashion","grocery-fmcg":"market-fresh","grocery":"market-fresh","hardware-store":"utility-slate","hardware":"utility-slate","hospitality-inn":"navy-gold","medical-clinic":"medical-teal","personal-portfolio":"deep-teal","hospitality-sands":"sand-clay","hospitality-wild":"void-ember"};return m[t]||"clean-white";}
-function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","hardware-store":"display-mono","hospitality-inn":"playfair-jakarta","medical-clinic":"grotesk-serif","personal-portfolio":"grotesk-serif","hospitality-sands":"fraunces-work","hospitality-wild":"bricolage-inter"};return m[t]||"grotesk-serif";}
+function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","fashion-retail":"fashion","grocery-fmcg":"market-fresh","grocery":"market-fresh","hardware-store":"utility-slate","hardware":"utility-slate","hospitality-inn":"navy-gold","medical-clinic":"medical-teal","personal-portfolio":"deep-teal","hospitality-sands":"sand-clay","hospitality-wild":"void-ember","beauty-atelier":"stone-terracotta","beauty-maison":"rose-clay"};return m[t]||"clean-white";}
+function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","hardware-store":"display-mono","hospitality-inn":"playfair-jakarta","medical-clinic":"grotesk-serif","personal-portfolio":"grotesk-serif","hospitality-sands":"fraunces-work","hospitality-wild":"bricolage-inter","beauty-atelier":"instrument-manrope","beauty-maison":"caslon-sora"};return m[t]||"grotesk-serif";}
 // Exposed on window because selectTemplateV3 (a separate <script> block /
 // closure entirely) needs to call these -- same cross-closure scoping
 // issue as the renderTplGrid fix. Unqualified calls to paletteFor(...)
@@ -1788,6 +1790,8 @@ var ALL_SECS_V3 = {
   "bold-retail": [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"video",label:"Video"},{key:"team",label:"Team"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "grill-house": [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "beauty-salon": [{key:"hero",label:"Hero banner"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"shop",label:"Shop"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"visit",label:"Visit / Contact"}],
+  "beauty-atelier": [{key:"hero",label:"Hero banner"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"shop",label:"Shop"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"visit",label:"Visit / Contact"}],
+  "beauty-maison": [{key:"hero",label:"Hero banner"},{key:"gallery",label:"Gallery"},{key:"team",label:"Our stylists"},{key:"shop",label:"Shop"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"visit",label:"Visit / Contact"}],
   "school-institution": [{key:"hero",label:"Hero banner"},{key:"stats",label:"Key stats"},{key:"about",label:"About us"},{key:"services",label:"Programmes"},{key:"team",label:"Leadership"},{key:"events",label:"Term dates"},{key:"video",label:"Video"},{key:"gallery",label:"Gallery"},{key:"shop",label:"Shop"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
   "church": [{key:"hero",label:"Hero banner"},{key:"times",label:"Service Times"},{key:"about",label:"About us"},{key:"values",label:"Our Values"},{key:"pastor",label:"Pastor / Leadership"},{key:"services",label:"Ministries"},{key:"events",label:"Events"},{key:"give",label:"Giving"},{key:"video",label:"Video"},{key:"products",label:"Shop"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "advisory-firm": [{key:"hero",label:"Hero banner"},{key:"services",label:"Practice areas"},{key:"team",label:"The team"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
@@ -1845,6 +1849,8 @@ var TEMPLATES_V3=[
   {id:"bold-retail",icon:TPL_ICO.general,name:"General Business",desc:"Any SME — split hero, service cards, team"},
   {id:"grill-house",icon:TPL_ICO.food,name:"Restaurant & Food",desc:"Full-bleed hero, menu tabs, live hours"},
   {id:"beauty-salon",icon:TPL_ICO.beauty,name:"Beauty & Wellness",desc:"Price list, before/after slider"},
+  {id:"beauty-atelier",icon:TPL_ICO.beauty,name:"Atelier",desc:"Premium — clinical-editorial, numbered process story, quiet whitespace",premium:true,price:15},
+  {id:"beauty-maison",icon:TPL_ICO.beauty,name:"Maison",desc:"Premium — warm boutique spa, rounded photo cards, magazine gallery",premium:true,price:15},
   {id:"school-institution",icon:TPL_ICO.education,name:"School & Academy",desc:"Stats bar, programmes, term dates"},
   {id:"church",icon:TPL_ICO.church,name:"Church / Ministry",desc:"Sermon highlights, events, community focus"},
   {id:"advisory-firm",icon:TPL_ICO.professional,name:"Consultant & Legal",desc:"Minimal hero, accordion services"},
@@ -1864,6 +1870,8 @@ var TPL_CFG={
   "bold-retail":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Team",servicesLbl:"Services"},
   "grill-house":{services:0,menu:1,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Services"},
   "beauty-salon":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Stylists",servicesLbl:"Services & Pricing",bookingServices:1},
+  "beauty-atelier":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Stylists",servicesLbl:"Services & Pricing",bookingServices:1},
+  "beauty-maison":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Stylists",servicesLbl:"Services & Pricing",bookingServices:1},
   "school-institution":{services:"Programmes",menu:0,listings:0,hours:1,stats:1,events:1,team:1,teamLbl:"Staff",servicesLbl:"Programmes"},
   "church":{services:"Ministries",menu:0,listings:0,hours:1,stats:0,events:1,team:1,teamLbl:"Leadership",servicesLbl:"Ministries",pageCopy:0},
   "advisory-firm":{services:"Practice Areas",menu:0,listings:0,hours:1,stats:1,events:0,team:1,teamLbl:"Our People",servicesLbl:"Practice Areas",bookingServices:1,pageCopy:1},
@@ -2153,7 +2161,7 @@ window.__syncRoomsToBookingsWorker = async function(siteId) {
   if (assignedNewIds) { await persistSyncedContent(siteId); }
 };
 
-var SLOT_BOOKING_TEMPLATE_IDS = ["beauty-salon", "advisory-firm", "medical-clinic", "personal-portfolio"];
+var SLOT_BOOKING_TEMPLATE_IDS = ["beauty-salon", "beauty-atelier", "beauty-maison", "advisory-firm", "medical-clinic", "personal-portfolio"];
 // Templates using date-range (day-level) booking via the rooms/resources
 // machinery — creative-studio's full-day packages deliberately reuse this
 // exact mechanism rather than a parallel one. See the render-worker

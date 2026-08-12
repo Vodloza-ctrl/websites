@@ -1,0 +1,70 @@
+{
+  "templateId": "beauty-maison",
+  "name": "Maison",
+  "premium": true,
+  "premiumPrice": 15,
+  "premiumBillingType": "one_time",
+  "description": "A warm, boutique spa template — magazine-style asymmetric photography, a soft clay palette, and a slower, more indulgent feel than a standard price list.",
+  "defaultPalette": "rose-clay",
+  "defaultPrimaryColor": "#C97B54",
+  "defaultTypeLabel": "Maison",
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Sora:wght@300;400;500;600;700&display=swap",
+  "bodyClass": "beauty-maison",
+  "navTextColor": "#2E1B14",
+  "navCtaLabel": "Reserve",
+  "selfContainedNav": true,
+  "sections": ["hero", "services", "book-appointment", "gallery", "team", "shop", "reviews", "press", "visit"],
+  "typeLabels": {
+    "beauty-maison": "Maison"
+  },
+  "lists": [
+    {
+      "key": "services",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"svc-item\"><div class=\"svc-item-body\"><div class=\"svc-name\">{{item.name}}</div>{{#if item.description}}<div class=\"svc-desc\">{{item.description}}</div>{{/if}}</div>{{#if item.price}}<div class=\"svc-price\">{{item.price}}</div>{{/if}}</div>"
+    },
+    {
+      "key": "gallery",
+      "emptyHtml": "",
+      "itemTemplate": "<img src=\"{{item.url}}\" alt=\"{{item.caption}}\">"
+    },
+    {
+      "key": "team",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"team-card\">{{#if item.photo}}<img class=\"team-photo\" src=\"{{item.photo}}\" alt=\"{{item.name}}\">{{/if}}<div class=\"team-name\">{{item.name}}</div>{{#if item.role}}<div class=\"team-role\">{{item.role}}</div>{{/if}}{{#if item.bio}}<div class=\"team-bio\">{{item.bio}}</div>{{/if}}</div>"
+    }
+  ],
+  "conditionals": [
+    { "flag": "has_gallery", "type": "list_present", "field": "gallery" },
+    { "flag": "has_team", "type": "list_present", "field": "team" },
+    { "flag": "has_map", "type": "field_present", "field": "map_embed_url" },
+    { "flag": "show_shop", "type": "list_present", "field": "products" }
+  ],
+  "tokens": {
+    "site_name": "Maison Studio",
+    "tagline": "Hair · Skin · Spa",
+    "logo_url": "",
+    "hero_image_url": "",
+    "hero_eyebrow": "A slower kind of beautiful",
+    "hero_headline": "Come in tired. Leave yourself.",
+    "hero_subtext": "A warm, unhurried studio for hair, skin and spa rituals — booked in minutes, felt for weeks.",
+    "hero_badge": "Walk-ins welcome · Mon–Sat",
+    "services_intro": "Honest prices, warmly delivered. Ask us anything before you book.",
+    "team_heading": "Meet your stylists",
+    "team_subtext": "A small team, chosen for craft and care in equal measure.",
+    "cta_heading": "Your seat is waiting.",
+    "cta_subtext": "Reserve on WhatsApp and we'll confirm your time the same day.",
+    "address": "",
+    "phone": "",
+    "wa_phone": "",
+    "hours_text": "Mon – Sat · 9am – 6pm",
+    "map_embed_url": "",
+    "primary_color": "#C97B54"
+  },
+  "flags": {
+    "show_gallery": true,
+    "show_team": true,
+    "show_shop": true,
+    "show_map": true
+  }
+}
