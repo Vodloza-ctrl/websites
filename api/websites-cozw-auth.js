@@ -1,7 +1,19 @@
 /**
- * websites.co.zw — Auth + Dashboard API Worker  v5.10
+ * websites.co.zw — Auth + Dashboard API Worker  v5.11
  * Deploy as: websites-cozw-auth
  * Custom domain: app.websites.co.zw
+ *
+ * v5.11 CHANGE — CACHE PURGE ON SAVE:
+ *   saveSite() (the endpoint every editor Save click actually hits) and
+ *   switchTemplate() now purge render-worker's public cache when the
+ *   target site is published/grace. Previously ONLY adminUpdateSite()'s
+ *   publish transition and custom-hostname activation purged this cache --
+ *   a regular owner edit to an already-live site (photos, prices, copy,
+ *   template switches, anything) could keep serving the old version for
+ *   up to render-worker's 5-minute cache / 1-hour stale-while-revalidate
+ *   window. Surfaced by testing a template switch that "didn't work" --
+ *   it had worked, the live URL was just stale. The in-editor Preview
+ *   button was never affected (already no-store).
  *
  * v5.10 CHANGE — PREMIUM TEMPLATE ENFORCEMENT:
  *   Added PREMIUM_TEMPLATE_IDS + checkTemplateEntitlement(), gating both
@@ -199,7 +211,7 @@ export default {
 
     // ── Health check ─────────────────────────────────────────────────────────
     if (path === "/health")
-      return respond({ ok: true, service: "websites-cozw-auth", version: "5.10" }, 200, origin);
+      return respond({ ok: true, service: "websites-cozw-auth", version: "5.11" }, 200, origin);
 
     // ── Dashboard HTML → redirect to Pages ──────────────────────────────────
     if (path === "/dashboard" || path === "/dashboard/")
@@ -585,6 +597,21 @@ async function saveSite(request, env, origin, id) {
     await env.DB.prepare("UPDATE sites SET draft_subdomain=?2 WHERE id=?1 AND status='draft'")
       .bind(id, newSlug).run().catch(() => {});
   }
+
+  // Purge the public cache for any already-live site. render-worker caches
+  // public responses for 5 minutes (stale-while-revalidate up to an hour --
+  // see handlePublic()'s Cache-Control header), and until now nothing
+  // purged that cache on a regular owner save -- only adminUpdateSite()'s
+  // publish transition and custom-hostname activation did. Every saved
+  // edit to a published/grace site was liable to keep showing the old
+  // version for up to an hour. Both functions handle their own errors
+  // internally (never throw), matching how adminUpdateSite() calls them.
+  if (row.status === "published" || row.status === "grace") {
+    await purgePublicCache(env, id);
+    const freshSite = await env.DB.prepare("SELECT custom_domain FROM sites WHERE id=?1").bind(id).first();
+    if (freshSite && freshSite.custom_domain) await purgeCustomDomainCache(env, freshSite.custom_domain);
+  }
+
   return jsonResp({ ok: true, site: await loadSite(env, id) }, 200, origin);
 }
 
@@ -1798,6 +1825,12 @@ async function switchTemplate(request, env, origin, id) {
   const newTheme = { palette: paletteFor(newTemplateId), font_pair: fontFor(newTemplateId), variant: "hero-centered", sections: defaultSectionsFor(newTemplateId) };
   const newContent = JSON.stringify({ theme: newTheme, content: preserved });
   await env.DB.prepare("UPDATE sites SET template_id=?2, content=?3, updated_at=unixepoch() WHERE id=?1 AND owner_id=?4").bind(id, newTemplateId, newContent, ownerId).run();
+  // Same cache-purge gap as saveSite() -- see that function's comment.
+  if (row.status === "published" || row.status === "grace") {
+    await purgePublicCache(env, id);
+    const freshSite = await env.DB.prepare("SELECT custom_domain FROM sites WHERE id=?1").bind(id).first();
+    if (freshSite && freshSite.custom_domain) await purgeCustomDomainCache(env, freshSite.custom_domain);
+  }
   return jsonResp({ ok: true, site: await loadSite(env, id) }, 200, origin);
 }
 
