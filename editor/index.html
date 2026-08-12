@@ -2786,7 +2786,7 @@ window.openTplModalV3=async function(){
 window.closeTplModal=function(){document.getElementById("tplModal").classList.remove("open");};
 window.closeTplModalOutside=function(e){if(e.target===document.getElementById("tplModal"))closeTplModal();};
 
-function renderTplGrid(){
+window.renderTplGrid=function renderTplGrid(){
   var curTpl=g("f_template")||"bold-retail";
   var mbody=document.getElementById("tplModalBody");
   if(!mbody)return;
