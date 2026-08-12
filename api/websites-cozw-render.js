@@ -2700,7 +2700,18 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.cta_heading = c.cta_heading || 'Ready to treat yourself?';
     extras.cta_subtext = c.cta_subtext || "Book on WhatsApp and we'll confirm your slot right away.";
     extras.map_embed_url = c.map_embed_url || c.contact?.map_embed_url || '';
-    extras.primary_color = c.primary_color || c.theme?.accent || '#C96A7E';
+    // Was hardcoded to beauty-salon's own default (#C96A7E) regardless of
+    // templateId -- harmless while this block only served beauty-salon, but
+    // once beauty-atelier/beauty-maison started sharing it, any site on
+    // those skins without an explicit primary_color would silently render
+    // in beauty-salon's pink instead of its own template's accent. Branch
+    // the fallback by templateId so each skin's own default actually holds.
+    const BEAUTY_PRIMARY_DEFAULTS = {
+      'beauty-salon': '#C96A7E',
+      'beauty-atelier': '#B5502E',
+      'beauty-maison': '#C97B54',
+    };
+    extras.primary_color = c.primary_color || c.theme?.accent || BEAUTY_PRIMARY_DEFAULTS[templateId] || '#C96A7E';
     extras.has_gallery = gallery.length > 0 ? 'true' : '';
     extras.has_team = teamMembers.length > 0 ? 'true' : '';
     extras.has_map = extras.map_embed_url ? 'true' : '';
