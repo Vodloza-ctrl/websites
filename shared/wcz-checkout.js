@@ -50,6 +50,13 @@
  *       { key: "pro", label: "Bookings Pro", price: 25, isTopTier: true,
  *         features: ["Everything in Basic", "Manual entry", ...] },
  *     ],
+ *     // For a one-time purchase instead of a subscription (e.g. a $15
+ *     // permanent template unlock), set oneTime: true on the tier. This
+ *     // drops the "/mo" suffix on the price and button, and always shows
+ *     // "Unlock" instead of "Subscribe"/"Upgrade to X" -- currentTier's
+ *     // subscribe-vs-upgrade distinction doesn't apply to a one-time buy.
+ *     //   tiers: [{ key: "unlock", label: "Sands", price: 15, oneTime: true,
+ *     //             isTopTier: true, features: [...] }]
  *     prefillEmail: savedContactEmail,    // optional, or null
  *     purchase: async function(tier, phone, email) {
  *       // caller owns auth/routing -- return the same shape purchaseBookingsAddon() does
@@ -151,9 +158,14 @@
 
   function buildCardHtml(ns, tier, currentTier) {
     var isTop = !!tier.isTopTier;
+    var isOneTime = !!tier.oneTime;
     var accent = isTop ? "var(--pro)" : "var(--green)";
     var btnClass = isTop ? "btn-pro" : "btn-green";
-    var btnLabel = currentTier && !isTop ? "Subscribe" : (currentTier ? "Upgrade to " + esc(tier.label) : "Subscribe");
+    var btnLabel = isOneTime ? "Unlock" : (currentTier && !isTop ? "Subscribe" : (currentTier ? "Upgrade to " + esc(tier.label) : "Subscribe"));
+    var priceSuffix = isOneTime
+      ? '<span style="font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em"> one-time</span>'
+      : '<span style="font-size:13px;font-weight:500;color:var(--ink3)">/mo</span>';
+    var btnPriceSuffix = isOneTime ? "" : "/mo";
     var featuresHtml = (tier.features || []).map(function (f) {
       return '<div style="font-size:12.5px;color:var(--ink2);display:flex;gap:6px"><span style="color:' + accent + '">\u2713</span>' + f + "</div>";
     }).join("");
@@ -161,12 +173,12 @@
     return '<div class="panel" style="border:2px solid ' + accent + ';box-shadow:none;margin-bottom:0">'
       + '<div class="panel-body">'
       + '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:' + accent + ';margin-bottom:6px">' + esc(tier.label) + (isTop ? " \u2b50" : "") + "</div>"
-      + '<div style="font-family:var(--font-head);font-size:24px;font-weight:800;line-height:1;margin-bottom:10px">$' + tier.price + '<span style="font-size:13px;font-weight:500;color:var(--ink3)">/mo</span></div>'
+      + '<div style="font-family:var(--font-head);font-size:24px;font-weight:800;line-height:1;margin-bottom:10px">$' + tier.price + priceSuffix + "</div>"
       + '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">' + featuresHtml + "</div>"
       + '<div class="fld-group" style="margin-bottom:8px"><label class="fld-label">EcoCash number</label><input class="fld-input" id="' + ns + "-phone-" + tier.key + '" placeholder="0772 000 000" style="font-size:13px"></div>'
       + '<div class="fld-group" style="margin-bottom:8px"><label class="fld-label">Email <span class="fld-hint">\u2014 for your payment receipt</span></label><input class="fld-input" id="' + ns + "-email-" + tier.key + '" type="email" placeholder="you@email.com" style="font-size:13px"></div>'
       + '<div id="' + ns + "-status-" + tier.key + '" style="font-size:12px;color:var(--ink3);margin-bottom:6px;display:none"></div>'
-      + '<button type="button" class="btn ' + btnClass + '" style="width:100%" id="' + ns + "-buy-" + tier.key + '">' + btnLabel + " \u2014 $" + tier.price + "/mo</button>"
+      + '<button type="button" class="btn ' + btnClass + '" style="width:100%" id="' + ns + "-buy-" + tier.key + '">' + btnLabel + " \u2014 $" + tier.price + btnPriceSuffix + "</button>"
       + "</div></div>";
   }
 
@@ -241,6 +253,7 @@
   }
 
   function buyLabel(tier, currentTier) {
+    if (tier.oneTime) return "Unlock \u2014 $" + tier.price;
     var isTop = !!tier.isTopTier;
     var label = currentTier && !isTop ? "Subscribe" : (currentTier ? "Upgrade to " + tier.label : "Subscribe");
     return label + " \u2014 $" + tier.price + "/mo";
