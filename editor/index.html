@@ -1732,6 +1732,13 @@ function toast(msg,type){var wrap=document.getElementById("toastWrap"),t=documen
 
 function paletteFor(t){var m={"grill-house":"ember-cream","restaurant":"ember-cream","beauty-salon":"blush-plum","salon":"blush-plum","school-institution":"navy-gold","school":"navy-gold","church":"navy-gold","advisory-firm":"slate-gold","consultant":"slate-gold","property-estate":"forest-cream","realestate":"forest-cream","boutique-fashion":"rose-noir","boutique":"rose-noir","fashion-retail":"fashion","grocery-fmcg":"market-fresh","grocery":"market-fresh","hardware-store":"utility-slate","hardware":"utility-slate","hospitality-inn":"navy-gold","medical-clinic":"medical-teal","personal-portfolio":"deep-teal","hospitality-sands":"sand-clay","hospitality-wild":"void-ember"};return m[t]||"clean-white";}
 function fontFor(t){var m={"grill-house":"playfair-jakarta","restaurant":"playfair-jakarta","beauty-salon":"garamond-jost","salon":"garamond-jost","sports":"sports-sans","school-institution":"grotesk-serif","boutique-fashion":"garamond-jost","grocery-fmcg":"clean-sans","hardware-store":"display-mono","hospitality-inn":"playfair-jakarta","medical-clinic":"grotesk-serif","personal-portfolio":"grotesk-serif","hospitality-sands":"fraunces-work","hospitality-wild":"bricolage-inter"};return m[t]||"grotesk-serif";}
+// Exposed on window because selectTemplateV3 (a separate <script> block /
+// closure entirely) needs to call these -- same cross-closure scoping
+// issue as the renderTplGrid fix. Unqualified calls to paletteFor(...)
+// from anywhere else in the page still resolve to these via the normal
+// global-fallback lookup once they're window properties.
+window.paletteFor = paletteFor;
+window.fontFor = fontFor;
 var PALETTES_UI=[{key:"black-white-gold",name:"Dark Gold",bg:"#0c0c0c",surface:"#161616",accent:"#c8a24a",dark:"#0c0c0c"},{key:"midnight-purple",name:"Midnight Purple",bg:"#0d0a14",surface:"#17121f",accent:"#a855f7",dark:"#0d0a14"},{key:"deep-teal",name:"Deep Teal",bg:"#061a1a",surface:"#0d2828",accent:"#14b8a6",dark:"#061a1a"},{key:"sky-blue",name:"Sky Blue",bg:"#0f1b2d",surface:"#16263d",accent:"#3da5e0",dark:"#0f1b2d"},{key:"elite-sports",name:"Sports Green",bg:"#0a0a0a",surface:"#151515",accent:"#16a34a",dark:"#0a0a0a"},{key:"rose-noir",name:"Rose Noir",bg:"#0e0b0d",surface:"#1a1318",accent:"#e8a0b0",dark:"#0e0b0d"},{key:"clean-white",name:"Clean White",bg:"#ffffff",surface:"#f6f6f4",accent:"#1a1a1a",dark:"#141414"},{key:"warm-terracotta",name:"Terracotta",bg:"#fdf6f0",surface:"#fff",accent:"#c0440e",dark:"#3a1606"},{key:"ember-cream",name:"Ember Cream",bg:"#FBF4E9",surface:"#fff",accent:"#D2541F",dark:"#3a1708"},{key:"blush-plum",name:"Blush Plum",bg:"#ffffff",surface:"#F7ECEC",accent:"#B08D57",dark:"#2d1620"},{key:"soft-pink",name:"Soft Pink",bg:"#fff9fb",surface:"#fdeef3",accent:"#e91e8c",dark:"#3a0f24"},{key:"navy-gold",name:"Navy Gold",bg:"#ffffff",surface:"#EAF1F9",accent:"#C99A2E",dark:"#0a2540"},{key:"slate-gold",name:"Slate Gold",bg:"#ffffff",surface:"#F4F6FA",accent:"#C08A2D",dark:"#20262f"},{key:"medical-teal",name:"Medical Teal",bg:"#f4fbfb",surface:"#e8f6f6",accent:"#0891b2",dark:"#063a3f"},{key:"forest-cream",name:"Forest Cream",bg:"#F6F1E7",surface:"#fff",accent:"#B0852F",dark:"#1f3320"},{key:"market-fresh",name:"Market Fresh",bg:"#ffffff",surface:"#f4faf5",accent:"#1e8c3a",dark:"#0f3d1a"},{key:"bright-orange",name:"Bright Orange",bg:"#ffffff",surface:"#fff8f3",accent:"#ea580c",dark:"#2b1400"},{key:"utility-slate",name:"Utility Slate",bg:"#f7f8fa",surface:"#ffffff",accent:"#1a56db",dark:"#0f1729"},{key:"onyx-gold",name:"Onyx Gold",bg:"#0a0908",surface:"#141210",accent:"#c9a961",dark:"#0a0908"},{key:"warm-cream",name:"Warm Cream",bg:"#FAF5EE",surface:"#ffffff",accent:"#C07A2B",dark:"#2C1A0E"}];
 var FONTS_UI=[{key:"clean-sans",name:"Clean Sans",preview:"Modern & Clear",style:"font-family:'Space Grotesk',sans-serif"},{key:"grotesk-serif",name:"Grotesk Serif",preview:"Editorial Mix",style:"font-family:'Fraunces',serif"},{key:"playfair-jakarta",name:"Playfair",preview:"Classic & Elegant",style:"font-family:'Playfair Display',serif"},{key:"garamond-jost",name:"Garamond Jost",preview:"Refined & Light",style:"font-family:'Cormorant Garamond',serif"},{key:"sports-sans",name:"Sports Sans",preview:"Bold & Condensed",style:"font-family:'Barlow Condensed',sans-serif;font-weight:700"},{key:"display-mono",name:"Display Mono",preview:"Technical & Clean",style:"font-family:'DM Mono',monospace"}];
 
@@ -1746,6 +1753,12 @@ window.clearAccent=function(){document.getElementById("f_custom_accent").value="
 function applyAccent(val){if(!state.content)state.content={};if(!state.content.theme)state.content.theme={};state.content.theme.custom_accent=val;document.getElementById("clearAccentBtn").style.display="";markDirty();updateFaviconPreview();}
 function updateFaviconPreview(){var canvas=document.getElementById("faviconCanvas");if(!canvas)return;var ctx2=canvas.getContext("2d");var name=g("f_name")||(state.site&&state.site.site_name)||"W";var accent=(state.content&&state.content.theme&&state.content.theme.custom_accent)||currentPaletteAccent()||"#15924B";var initials=name.trim().split(/\s+/).map(function(w){return w[0]||"";}).join("").toUpperCase().slice(0,2)||"W";var lum=luminanceFromHex(accent);var fg=lum>0.35?"#0d0f14":"#ffffff";ctx2.clearRect(0,0,64,64);ctx2.fillStyle=accent;roundRect(ctx2,0,0,64,64,14);ctx2.fill();ctx2.fillStyle=fg;ctx2.font="700 "+(initials.length>1?"22":"28")+"px system-ui,sans-serif";ctx2.textAlign="center";ctx2.textBaseline="middle";ctx2.fillText(initials,32,33);
 window._storedFavicon = canvas.toDataURL("image/png");}
+// Exposed on window -- selectTemplateV3 (separate script block/closure)
+// calls all three to refresh the Design tab's swatches immediately after
+// a template switch. Same cross-closure pattern as paletteFor/fontFor above.
+window.buildPaletteGrid = buildPaletteGrid;
+window.buildFontGrid = buildFontGrid;
+window.updateFaviconPreview = updateFaviconPreview;
 function currentPaletteAccent(){var palette=(state.content&&state.content.theme&&state.content.theme.palette)||"";var found=PALETTES_UI.find(function(p){return p.key===palette;});return found?found.accent:"#15924B";}
 function roundRect(ctx2,x,y,w,h,r){ctx2.beginPath();ctx2.moveTo(x+r,y);ctx2.lineTo(x+w-r,y);ctx2.quadraticCurveTo(x+w,y,x+w,y+r);ctx2.lineTo(x+w,y+h-r);ctx2.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx2.lineTo(x+r,y+h);ctx2.quadraticCurveTo(x,y+h,x,y+h-r);ctx2.lineTo(x,y+r);ctx2.quadraticCurveTo(x,y,x+r,y);ctx2.closePath();}
 function luminanceFromHex(hex){if(!hex||hex.length<7)return 0;var r=parseInt(hex.slice(1,3),16)/255,gv=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;var toL=function(c){return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);};return 0.2126*toL(r)+0.7152*toL(gv)+0.0722*toL(b);}
@@ -2861,7 +2874,23 @@ function renderTplPurchaseView(tmeta){
   });
 }
 
-window.selectTemplateV3=function(tpl){var cur=g("f_template")||"bold-retail";if(tpl===cur){closeTplModal();return;}var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};if(!confirm("Switch to "+tmeta.name+" template?\n\nYour content is preserved — only the design changes."))return;set("f_template",tpl);applyTemplateConfigV3(tpl);buildSectionsList();window.markDirty();closeTplModal();toast("Template switched — save to apply","ok");};
+window.selectTemplateV3=function(tpl){var cur=g("f_template")||"bold-retail";if(tpl===cur){closeTplModal();return;}var tmeta=TEMPLATES_V3.find(function(t){return t.id===tpl;})||{};if(!confirm("Switch to "+tmeta.name+" template?\n\nYour content is preserved — only the design changes."))return;set("f_template",tpl);
+  // The confirm dialog above promises "only the design changes" -- that
+  // means palette/font should actually follow the new template, not
+  // silently carry forward whatever the site's theme happened to be
+  // before. This function previously never touched state.content.theme
+  // at all, so a stale palette (e.g. Iris Hotel's leftover "clean-white"
+  // fallback from before hospitality-inn was properly registered) would
+  // persist through every future template switch forever, even onto a
+  // template it was never designed for. custom_accent (a manual brand-
+  // color override) is left untouched -- resolvePaletteColors() applies
+  // it on top of whichever palette key is active regardless, so it still
+  // survives the switch as intended.
+  if(!state.content)state.content={};
+  if(!state.content.theme)state.content.theme={};
+  state.content.theme.palette=paletteFor(tpl);
+  state.content.theme.font_pair=fontFor(tpl);
+  applyTemplateConfigV3(tpl);buildSectionsList();buildPaletteGrid();buildFontGrid();updateFaviconPreview();window.markDirty();closeTplModal();toast("Template switched — save to apply","ok");};
 var DAYS_V3=[{k:"mon",l:"Mon"},{k:"tue",l:"Tue"},{k:"wed",l:"Wed"},{k:"thu",l:"Thu"},{k:"fri",l:"Fri"},{k:"sat",l:"Sat"},{k:"sun",l:"Sun"}];
 function renderHoursGrid(){var grid=document.getElementById("hours-grid-wrap");if(!grid)return;grid.querySelectorAll(".hr-row").forEach(function(r){r.remove();});DAYS_V3.forEach(function(d){var h=v3state.hours[d.k]||{};var grp=document.createElement("div");grp.className="hr-row";grp.style.display="contents";grp.innerHTML='<div class="hours-day-lbl">'+d.l+'</div><input type="time" id="hv3_'+d.k+'_open" value="'+(h.open||"08:00")+'" '+(h.closed?"disabled":"")+' onchange="updateHoursV3(\''+d.k+'\')"><input type="time" id="hv3_'+d.k+'_close" value="'+(h.close||"17:00")+'" '+(h.closed?"disabled":"")+' onchange="updateHoursV3(\''+d.k+'\')"><label class="hours-closed-lbl"><input type="checkbox" '+(h.closed?"checked":"")+' onchange="toggleDayClosedV3(\''+d.k+'\',this.checked)"> Closed</label>';grid.appendChild(grp);});}
 window.toggleDayClosedV3=function(day,closed){if(!v3state.hours[day])v3state.hours[day]={};v3state.hours[day].closed=closed;var op=document.getElementById("hv3_"+day+"_open"),cl=document.getElementById("hv3_"+day+"_close");if(op)op.disabled=closed;if(cl)cl.disabled=closed;window.markDirty();};
