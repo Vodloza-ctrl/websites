@@ -78,9 +78,9 @@ img{display:block;max-width:100%}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(43,27,14,.92) 8%,rgba(43,27,14,.35) 55%,rgba(43,27,14,.15) 100%)}
 .hero-inner{position:relative;z-index:2;text-align:center;max-width:640px;margin:0 auto;padding:36px 20px 32px}
 .hero .open-badge{margin-bottom:18px}
+.hero-eyebrow{display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;font-family:var(--font-body);font-weight:700;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:7px 14px;border-radius:999px;margin-bottom:14px}
 .hero h1{font-size:clamp(2.1rem,5.5vw,3.2rem);color:#fff}
 .hero h1 .accent{color:var(--express)}
-.hero p{color:rgba(255,255,255,.78);margin-top:12px;font-size:1rem}
 .hero-btns{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap}
 .btn-express,.btn-wa,.btn-ghost{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:.92rem;padding:15px 28px;border-radius:14px;cursor:pointer;transition:.15s;border:none}
 .btn-express{background:var(--express);color:#fff;box-shadow:0 6px 20px rgba(232,135,30,.35)}
@@ -94,6 +94,7 @@ img{display:block;max-width:100%}
 .sec{padding:56px 0}
 .sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:10px}
 .sec-head h2{font-size:1.7rem}
+.about-note{color:var(--ink);opacity:.55;font-size:.85rem;max-width:52ch;margin:8px auto 0;line-height:1.6}
 .sec-head .sub{color:var(--ink-soft);font-size:.86rem;font-weight:600}
 
 /* ── MENU — dense shop-style product grid, category pill filters ── */
@@ -255,7 +256,7 @@ footer{background:var(--ink);color:rgba(250,243,232,.5);padding:28px 0}
 <!-- STICKY CART BAR — the whole point: cart is never more than a glance away -->
 <div class="cart-bar">
   <div class="cart-bar-inner">
-    <span class="cart-bar-msg">🔥 Order for pickup on WhatsApp &middot; {{business_name_first}}</span>
+    <span class="cart-bar-msg">🔥 {{business_name_first}} &middot; ORDER NOW ON WHATSAPP</span>
     <button class="cart-bar-cta" id="cartbar-cta" onclick="ghNavCta()">View order <span id="cartbar-count"></span></button>
   </div>
 </div>
@@ -306,8 +307,8 @@ footer{background:var(--ink);color:rgba(250,243,232,.5);padding:28px 0}
   <div class="hero-overlay"></div>
   <div class="wrap hero-inner">
     {{open_badge_html}}
+    <div class="hero-eyebrow">ORDER ONLINE &middot; SKIP THE QUEUE</div>
     <h1>Hungry? <span class="accent">{{business_name_first}}</span> delivers.</h1>
-    <p>{{about}}</p>
     <div class="hero-btns">
       <button class="btn-express" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Order Now</button>
       <a href="{{wa_href_order}}" class="btn-wa" target="_blank" rel="noopener">WhatsApp Order</a>
@@ -444,6 +445,7 @@ footer{background:var(--ink);color:rgba(250,243,232,.5);padding:28px 0}
   <div class="wrap">
     <div class="sec-head" style="justify-content:center;text-align:center">
       <h2>Find us</h2>
+      {{#if about}}<p class="about-note">{{about}}</p>{{/if}}
     </div>
     <div class="contact-grid reveal">
       {{#if phone}}
