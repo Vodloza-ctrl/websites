@@ -407,7 +407,7 @@ img{display:block;max-width:100%}
                 <option value="bold-retail">General Business</option>
                 <option value="grill-house">Restaurant / Café / Grill</option>
                 <option value="grill-noir">Restaurant — Trattoria (Premium)</option>
-                <option value="grill-market">Restaurant — Market (Premium)</option>
+                <option value="grill-market">Restaurant — Express (Premium)</option>
                 <option value="beauty-salon">Salon / Spa / Clinic</option>
                 <option value="beauty-atelier">Salon — Atelier (Premium)</option>
                 <option value="beauty-maison">Salon — Maison (Premium)</option>
@@ -1167,7 +1167,7 @@ function populateForm(){
     set("f_services",Array.isArray(svcs)?svcs.map(function(s){return typeof s==="string"?s:(s.title||"");}).filter(Boolean).join("\n"):"");
   }else{set("f_name",c.business_name||state.site.site_name||"");set("f_tagline",c.tagline||"");set("f_city",c.location||"");}
   if(state.site.template_id)set("f_template",state.site.template_id);
-  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","fashion-retail":"Fashion Retail Store","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel","medical-clinic":"Medical Clinic","personal-portfolio":"Personal Portfolio","hospitality-sands":"Sands (Premium)","hospitality-wild":"Wild (Premium)","beauty-atelier":"Atelier (Premium)","beauty-maison":"Maison (Premium)","grill-noir":"Trattoria (Premium)","grill-market":"Market (Premium)"};
+  var templateNames={"bold-retail":"General Business","grill-house":"Restaurant & Food","beauty-salon":"Beauty & Wellness","school-institution":"School & Academy","church":"Church / Ministry","advisory-firm":"Consultant & Legal","property-estate":"Property & Real Estate","boutique-fashion":"Fashion & Boutique","fashion-retail":"Fashion Retail Store","grocery-fmcg":"Grocery & Spaza","hardware-store":"Hardware & Retail","hospitality-inn":"Lodge / B&B / Hotel","medical-clinic":"Medical Clinic","personal-portfolio":"Personal Portfolio","hospitality-sands":"Sands (Premium)","hospitality-wild":"Wild (Premium)","beauty-atelier":"Atelier (Premium)","beauty-maison":"Maison (Premium)","grill-noir":"Trattoria (Premium)","grill-market":"Express (Premium)"};
   var tlabel=document.getElementById("currentTemplateLabel");
   if(tlabel)tlabel.textContent=templateNames[state.site.template_id]||state.site.template_id||"General Business";
   set("f_services_eyebrow",c.services_eyebrow||"");set("f_services_heading",c.services_heading||"");
@@ -1855,7 +1855,7 @@ var TEMPLATES_V3=[
   {id:"bold-retail",icon:TPL_ICO.general,name:"General Business",desc:"Any SME — split hero, service cards, team"},
   {id:"grill-house",icon:TPL_ICO.food,name:"Restaurant & Food",desc:"Full-bleed hero, menu tabs, live hours"},
   {id:"grill-noir",icon:TPL_ICO.food,name:"Trattoria",desc:"Premium — best for Italian & family-style full-service restaurants. Warm, story-led, numbered printed-menu feel",premium:true,price:15,demoUrl:"https://demo-grill-noir.websites.co.zw"},
-  {id:"grill-market",icon:TPL_ICO.food,name:"Market",desc:"Premium — best for cafés & casual eateries. Bold, bright, market-fresh energy",premium:true,price:15,demoUrl:"https://demo-grill-market.websites.co.zw"},
+  {id:"grill-market",icon:TPL_ICO.food,name:"Express",desc:"Premium — best for fast food, takeaways & delivery-first spots. Menu is the homepage, cart always in view, built to convert",premium:true,price:15,demoUrl:"https://demo-grill-market.websites.co.zw"},
   {id:"beauty-salon",icon:TPL_ICO.beauty,name:"Beauty & Wellness",desc:"Price list, before/after slider"},
   {id:"beauty-atelier",icon:TPL_ICO.beauty,name:"Atelier",desc:"Premium — best for skin clinics & medspas. Quiet, clinical feel with a results-driven story",premium:true,price:15,demoUrl:"https://demo-salon-atelier.websites.co.zw"},
   {id:"beauty-maison",icon:TPL_ICO.beauty,name:"Maison",desc:"Premium — best for hair salons & day spas. Warm boutique feel, magazine-style gallery",premium:true,price:15,demoUrl:"https://demo-salon-maison.websites.co.zw"},

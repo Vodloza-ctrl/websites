@@ -3,15 +3,15 @@
   "premium": true,
   "premiumPrice": 15,
   "premiumBillingType": "one_time",
-  "defaultPrimaryColor": "#2B1B0E",
-  "defaultTypeLabel": "Fresh & Casual \u00b7 Zimbabwe",
-  "bodyClass": "tpl-grill-market",
-  "googleFonts": "https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap",
+  "defaultPrimaryColor": "#E8871E",
+  "defaultTypeLabel": "Order Online \u00b7 Zimbabwe",
+  "bodyClass": "tpl-express",
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap",
   "navTextColor": "#fff",
-  "navCtaLabel": "Order online",
+  "navCtaLabel": "My Order",
   "navLinks": [
-    "#menu:Menu",
-    "#team:Team",
+    "#menu:Full Menu",
+    "#deal:Today's Deal",
     "#hours:Hours",
     "#contact:Visit us"
   ],
@@ -22,12 +22,12 @@
     "amber_color": "#5FA05C"
   },
   "typeLabels": {
-    "grill-market": "Fresh & Casual \u00b7 Zimbabwe",
+    "grill-market": "Order Online \u00b7 Zimbabwe",
     "restaurant": "Restaurant \u00b7 Zimbabwe",
     "takeaway": "Takeaway & Delivery"
   },
   "extraTokens": {
-    "order_cta_text": "Build your order below, then send it straight to our kitchen on WhatsApp."
+    "order_cta_text": "Add items below, then send your order straight through on WhatsApp."
   },
   "lists": [
     {
