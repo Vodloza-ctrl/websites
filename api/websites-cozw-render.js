@@ -480,7 +480,7 @@ const KNOWN_TEMPLATE_IDS = new Set([
   'medical-clinic', 'personal-portfolio', 'creative-studio',
   'hospitality-sands', 'hospitality-wild',
   'beauty-atelier', 'beauty-maison',
-  'grill-noir', 'grill-market',
+  'grill-noir', 'grill-market', 'grill-frame',
 ]);
 
 const PREVIEW_RIBBON = `<div style="position:fixed;bottom:14px;right:14px;z-index:99999;background:rgba(13,15,20,.92);color:#fff;font:600 11px/1 system-ui,sans-serif;letter-spacing:.02em;padding:8px 14px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none">✨ Preview — claim it to make it yours</div>`;
@@ -2515,7 +2515,7 @@ async function buildTemplateExtras(c, site, config, env) {
   // Pages fetch onto grill-house's own HTML instead of each skin's real
   // folder.
   if (templateId === 'grill-house' || templateId === 'restaurant' ||
-    templateId === 'grill-noir' || templateId === 'grill-market') {
+    templateId === 'grill-noir' || templateId === 'grill-market' || templateId === 'grill-frame') {
     const ghTheme = c.theme || {};
     // Was hardcoded to grill-house's own default ('ember-cream') regardless
     // of templateId -- harmless while this block only served grill-house,
@@ -2528,6 +2528,7 @@ async function buildTemplateExtras(c, site, config, env) {
       'restaurant': 'ember-cream',
       'grill-noir': 'trattoria-terracotta',
       'grill-market': 'market-citrus',
+      'grill-frame': 'noir-chartreuse',
     };
     const ghPalette = resolvePalette(ghTheme.palette || GRILL_PALETTE_DEFAULTS[templateId] || 'ember-cream', ghTheme.custom_accent || '');
     const grillConfig = Object.assign({}, config, {
@@ -5162,6 +5163,7 @@ const SITE_PALETTES = {
   'rose-clay': { primary: '#2E1B14', accent1: '#C97B54', accent2: '#A85D3A', bg: '#FBF3EA', surface: '#F3E4D6' },
   'trattoria-terracotta': { primary: '#2B1F16', accent1: '#B23A2E', accent2: '#6B7A4F', bg: '#FAF3E8', surface: '#FFFFFF' },
   'market-citrus': { primary: '#2B1B0E', accent1: '#E8871E', accent2: '#5FA05C', bg: '#FFF8ED', surface: '#FFFFFF' },
+  'noir-chartreuse': { primary: '#0A0A0A', accent1: '#D8FF3D', accent2: '#FF3B30', bg: '#0A0A0A', surface: '#141414' },
 };
 
 function paletteFor(t) {
@@ -5198,6 +5200,7 @@ function paletteFor(t) {
     'beauty-maison': 'rose-clay',
     'grill-noir': 'trattoria-terracotta',
     'grill-market': 'market-citrus',
+    'grill-frame': 'noir-chartreuse',
     'faith': 'warm-cream',
     'church-institution': 'warm-cream',
     'medical-clinic': 'medical-teal',
@@ -5241,6 +5244,7 @@ function fontFor(t) {
     'beauty-maison': 'caslon-sora',
     'grill-noir': 'bodoni-nunito',
     'grill-market': 'fredoka-inter',
+    'grill-frame': 'bebas-inter',
     'faith': 'playfair-jakarta',
     'church-institution': 'playfair-jakarta',
     'medical-clinic': 'grotesk-serif',
@@ -5257,6 +5261,7 @@ const TEMPLATE_VAR_MAP = {
   'restaurant': { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
   'grill-noir': { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
   'grill-market': { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
+  'grill-frame': { primary: '--char', accent1: '--ember', accent2: '--amber', bg: '--cream', brand: '--char' },
   'beauty-salon': { primary: '--primary-color', accent1: '--primary-color', accent2: '--accent-color', brand: '--primary-color' },
   'school-institution': { primary: '--navy', accent1: '--gold', accent2: '--gold-lt', brand: '--navy' },
   'church': { primary: '--warm', accent1: '--amber', accent2: '--amber2', bg: '--cream', brand: '--amber' },
@@ -5338,6 +5343,7 @@ const FONT_MAP = {
   'caslon-sora': { url: 'https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Sora:wght@300;400;500;600;700&display=swap', body: '"Sora",system-ui,sans-serif', head: '"Libre Caslon Display",Georgia,serif' },
   'fredoka-inter': { url: 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap', body: '"Inter",system-ui,sans-serif', head: '"Fredoka",system-ui,sans-serif' },
   'bodoni-nunito': { url: 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,500;0,600;1,500;1,600;1,700&family=Nunito+Sans:wght@300;400;600;700;800&display=swap', body: '"Nunito Sans",system-ui,sans-serif', head: '"Bodoni Moda",Georgia,serif' },
+  'bebas-inter': { url: 'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap', body: '"Inter",system-ui,sans-serif', head: '"Bebas Neue",Impact,sans-serif' },
 };
 
 // Templates whose CSS drives typography through custom properties (e.g.
