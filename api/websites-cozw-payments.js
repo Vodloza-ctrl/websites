@@ -1,6 +1,15 @@
 /**
- * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.16
+ * websites.co.zw — payments Worker (SELF-CONTAINED, no imports)  v1.17
  * ---------------------------------------------------------------------------
+ * v1.17 — confirmStorePurchasePaid() now purges the public cache after
+ * decrementing stock, same pattern confirmPaid()'s site_plan branch
+ * already used. Was missing entirely: a real customer purchase could sell
+ * out a product and the public storefront would keep showing it as
+ * available/orderable for up to render-worker's cache window (5 min,
+ * stale-while-revalidate up to an hour), letting a second customer
+ * attempt to buy something already sold out. Found via a repo-wide
+ * cache-purge exposure audit -- see also websites-products-worker.js's
+ * matching fix for the owner-edit side of this same gap.
  * v1.16 — one more one-time $15 template SKU: 'template:grill-frame'.
  * Same 'unlock' tier / one_time billing path as every other template SKU
  * below -- zero new logic needed.
@@ -1608,6 +1617,19 @@ async function confirmStorePurchasePaid(env, payment) {
       console.error('Digital delivery WhatsApp send failed:', err);
     }
   }
+
+  // v1.17 — cache purge so the storefront reflects the just-decremented
+  // stock immediately. Was missing entirely: a real customer purchase
+  // could decrement stock to zero and the public site would keep showing
+  // the item as available/orderable for up to render-worker's cache
+  // window (5 min, stale-while-revalidate up to an hour) -- letting a
+  // second customer attempt to buy something that's already sold out.
+  // Same pattern already used in confirmPaid()'s site_plan branch above.
+  try {
+    const site = await env.DB.prepare("SELECT draft_subdomain, custom_domain, custom_domain_status FROM sites WHERE id=?1").bind(order.site_id).first();
+    if (site?.draft_subdomain) await caches.default.delete(new Request(`https://${site.draft_subdomain}.websites.co.zw/`));
+    if (site?.custom_domain && site.custom_domain_status === "active") await caches.default.delete(new Request(`https://${site.custom_domain}/`));
+  } catch { /* non-fatal */ }
 }
 
 // Store Payments subscription confirmed paid — activate for 30 days.
