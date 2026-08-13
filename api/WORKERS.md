@@ -168,35 +168,17 @@ now gets its cache purged, same pattern as everywhere else.
 **Sync status:** was in the repo but missing the fix above — now current
 (v2.2) and includes it. **Needs deploy** — this fix has never been live.
 
-### `websites-cozw-dashboard` — ⚠️ status unresolved, not synced into this repo
-**What it actually is, confirmed by reading its source directly:** a
+### `websites-cozw-dashboard` — ⚠️ deprecated, pending deletion
+**What it actually was, confirmed by reading its source directly:** a
 **complete, separate, older implementation of the entire auth system** —
 its own OTP request/verify, its own session issuing, its own site
-create/read/save. It self-documents as deploying to `app.websites.co.zw`
-— the exact same custom domain `websites-cozw-auth` (the worker actively
-maintained and confirmed current throughout this whole project) is
-documented as using. Two Workers cannot both be bound to the same custom
-domain at once, so **one of these two is almost certainly not receiving
-any live traffic** — but which one is a question this repo's tools can't
-answer; Cloudflare route/custom-domain bindings aren't exposed through the
-API access available here.
+create/read/save. It self-documented as deploying to `app.websites.co.zw`
+— the same custom domain `websites-cozw-auth` (the worker actively
+maintained and confirmed current throughout this project) actually uses.
 
-**Why this matters if it turns out to still be live:** its `saveSite()`
-has no cache-purge call at all — it's an earlier version of the exact bug
-`auth.js` v5.11 already fixed. If this worker is somehow still handling
-any real traffic, it would be silently reproducing the stale-cache
-problem this whole audit was hunting for, through a code path nobody's
-been looking at.
-
-**Action needed (Cloudflare dashboard, not something I can check):** open
-Workers & Pages → `websites-cozw-dashboard` → Settings → Domains & Routes.
-If nothing is bound to it, it's dead weight — safe to delete, and doing
-so removes a confusing, unpatched duplicate of the real auth system from
-the account. If something IS bound to it, that's a live incident: it
-means real users may be hitting this old code path instead of the
-current, fixed one.
-
-Not added to this repo as an active file — doing so would misrepresent
-whether it's actually part of the running platform, which is genuinely
-unknown right now.
+**Confirmed by Lenni: deprecated, not in use.** Being deleted directly in
+the Cloudflare dashboard (Workers & Pages → this worker → Settings →
+Delete) — not something this repo's tools can do, since Worker deletion
+isn't exposed through the API access available here. No code from it was
+ever added to this repo.
 
