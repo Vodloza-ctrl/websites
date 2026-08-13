@@ -71,12 +71,16 @@ img{display:block;max-width:100%}
 .mob-order-btn{margin-top:10px;background:#25D366;color:#fff;font-family:var(--font-display);font-weight:600;padding:14px 30px;border-radius:14px;border:none;cursor:pointer}
 
 /* ── HERO — "what do you want to order", not "about us" ── */
-.hero{padding:44px 0 40px;background:linear-gradient(180deg,var(--cream),var(--paper))}
-.hero-inner{text-align:center;max-width:640px;margin:0 auto}
+.hero{position:relative;min-height:340px;max-height:52vh;display:flex;align-items:flex-end;overflow:hidden;background:var(--ink)}
+.hero-media{position:absolute;inset:0}
+.hero-media img{width:100%;height:100%;object-fit:cover}
+.hero-media-ph{width:100%;height:100%;background:linear-gradient(160deg,var(--cream),var(--paper))}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(0deg,rgba(43,27,14,.92) 8%,rgba(43,27,14,.35) 55%,rgba(43,27,14,.15) 100%)}
+.hero-inner{position:relative;z-index:2;text-align:center;max-width:640px;margin:0 auto;padding:36px 20px 32px}
 .hero .open-badge{margin-bottom:18px}
-.hero h1{font-size:clamp(2.1rem,5.5vw,3.2rem)}
+.hero h1{font-size:clamp(2.1rem,5.5vw,3.2rem);color:#fff}
 .hero h1 .accent{color:var(--express)}
-.hero p{color:var(--ink-soft);margin-top:12px;font-size:1rem}
+.hero p{color:rgba(255,255,255,.78);margin-top:12px;font-size:1rem}
 .hero-btns{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap}
 .btn-express,.btn-wa,.btn-ghost{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:600;font-size:.92rem;padding:15px 28px;border-radius:14px;cursor:pointer;transition:.15s;border:none}
 .btn-express{background:var(--express);color:#fff;box-shadow:0 6px 20px rgba(232,135,30,.35)}
@@ -112,7 +116,8 @@ img{display:block;max-width:100%}
 .dish-footer{margin-top:12px}
 .add-btn{width:100%;background:var(--ink);color:var(--cream);font-family:var(--font-display);font-weight:600;font-size:.84rem;padding:11px;border-radius:10px;border:none;cursor:pointer;transition:.15s}
 .add-btn:hover{background:var(--express)}
-.dish-badge{position:absolute;top:10px;left:10px;background:var(--express);color:#fff;font-size:9px;font-weight:800;letter-spacing:.04em;padding:5px 10px;border-radius:999px;z-index:2}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 0 rgba(232,135,30,.5)}50%{box-shadow:0 0 0 6px rgba(232,135,30,0)}}
+.dish-badge{position:absolute;top:10px;left:10px;background:var(--express);color:#fff;font-size:9px;font-weight:800;letter-spacing:.04em;padding:5px 10px;border-radius:999px;z-index:2;animation:badgePulse 2s ease-in-out infinite}
 .dish.highlighted{border-color:var(--express);border-width:2px}
 .menu-cat{}
 
@@ -291,6 +296,14 @@ footer{background:var(--ink);color:rgba(250,243,232,.5);padding:28px 0}
 
 <!-- HERO — "what do you want to order", not "about us" -->
 <section class="hero">
+  <div class="hero-media">
+    {{#if hero_image_url}}
+    <img src="{{hero_image_url}}" alt="{{business_name}}">
+    {{else}}
+    <div class="hero-media-ph"></div>
+    {{/if}}
+  </div>
+  <div class="hero-overlay"></div>
   <div class="wrap hero-inner">
     {{open_badge_html}}
     <h1>Hungry? <span class="accent">{{business_name_first}}</span> delivers.</h1>
