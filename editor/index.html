@@ -235,6 +235,10 @@ img{display:block;max-width:100%}
 .tpl-modal-overlay.open{display:flex}
 .tpl-modal-box{background:var(--card);border-radius:var(--r);width:100%;max-width:680px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
 .tpl-modal-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.tpl-cat-filters{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line)}
+.tpl-cat-chip{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;transition:.15s}
+.tpl-cat-chip.on{background:var(--accent,#2563eb);border-color:var(--accent,#2563eb);color:#fff}
+.tpl-cat-chip:hover:not(.on){border-color:var(--accent,#2563eb);color:var(--text)}
 .tpl-modal-head h2{font-family:var(--font-head);font-size:15px;font-weight:700}
 .tpl-modal-body{padding:14px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
 .tpl-card{border:2px solid var(--line);border-radius:var(--r-sm);padding:11px;cursor:pointer;transition:.15s}
@@ -250,6 +254,7 @@ img{display:block;max-width:100%}
 .tpl-card-badge.tpl-owned{background:var(--green);color:#fff}
 .tpl-card-demo-link{display:inline-block;font-size:11px;font-weight:600;color:var(--accent,#2563eb);margin-top:6px;text-decoration:none}
 .tpl-card-demo-link:hover{text-decoration:underline}
+.tpl-card-upsell{font-size:11px;font-weight:600;color:#B5850F;margin-top:6px}
 .preview-actions{display:flex;gap:4px;align-items:center}
 .rep-upload-zone{border:1.5px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--surface);transition:border-color .15s}
 .rep-upload-zone:hover{border-color:var(--green)}
@@ -759,7 +764,7 @@ img{display:block;max-width:100%}
 </nav>
 <div class="toast-wrap" id="toastWrap"></div>
 <div class="tpl-modal-overlay" id="tplModal" onclick="closeTplModalOutside(event)">
-  <div class="tpl-modal-box"><div class="tpl-modal-head"><h2>Switch Template</h2><button class="btn btn-ghost btn-sm" onclick="closeTplModal()">✕ Close</button></div><div class="tpl-modal-body" id="tplModalBody"></div></div>
+  <div class="tpl-modal-box"><div class="tpl-modal-head"><h2>Switch Template</h2><button class="btn btn-ghost btn-sm" onclick="closeTplModal()">✕ Close</button></div><div class="tpl-cat-filters" id="tplCatFilters"></div><div class="tpl-modal-body" id="tplModalBody"></div></div>
 </div>
 <div class="tpl-modal-overlay" id="manualBookingModal" onclick="closeManualBookingModalOutside(event)">
   <div class="tpl-modal-box" style="max-width:460px">
@@ -1854,29 +1859,31 @@ var TPL_ICO = {
   creative:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg>',
 };
 var TEMPLATES_V3=[
-  {id:"bold-retail",icon:TPL_ICO.general,name:"General Business",desc:"Any SME — split hero, service cards, team"},
-  {id:"grill-house",icon:TPL_ICO.food,name:"Restaurant & Food",desc:"Full-bleed hero, menu tabs, live hours"},
-  {id:"grill-noir",icon:TPL_ICO.food,name:"Trattoria",desc:"Premium — best for Italian & family-style full-service restaurants. Warm, story-led, numbered printed-menu feel",premium:true,price:15,demoUrl:"https://demo-grill-noir.websites.co.zw"},
-  {id:"grill-market",icon:TPL_ICO.food,name:"Express",desc:"Premium — best for fast food, takeaways & delivery-first spots. Menu is the homepage, cart always in view, built to convert",premium:true,price:15,demoUrl:"https://demo-grill-market.websites.co.zw"},
-  {id:"grill-frame",icon:TPL_ICO.food,name:"Frame",desc:"Premium — for brands that want their site to look like nowhere else. Monochrome, gallery-style presentation, a menu you browse like a photo book",premium:true,price:15},
-  {id:"beauty-salon",icon:TPL_ICO.beauty,name:"Beauty & Wellness",desc:"Price list, before/after slider"},
-  {id:"beauty-atelier",icon:TPL_ICO.beauty,name:"Atelier",desc:"Premium — best for skin clinics & medspas. Quiet, clinical feel with a results-driven story",premium:true,price:15,demoUrl:"https://demo-salon-atelier.websites.co.zw"},
-  {id:"beauty-maison",icon:TPL_ICO.beauty,name:"Maison",desc:"Premium — best for hair salons & day spas. Warm boutique feel, magazine-style gallery",premium:true,price:15,demoUrl:"https://demo-salon-maison.websites.co.zw"},
-  {id:"school-institution",icon:TPL_ICO.education,name:"School & Academy",desc:"Stats bar, programmes, term dates"},
-  {id:"church",icon:TPL_ICO.church,name:"Church / Ministry",desc:"Sermon highlights, events, community focus"},
-  {id:"advisory-firm",icon:TPL_ICO.professional,name:"Consultant & Legal",desc:"Minimal hero, accordion services"},
-  {id:"property-estate",icon:TPL_ICO.property,name:"Real Estate",desc:"Listings as hero, filter tabs, agent cards"},
-  {id:"boutique-fashion",icon:TPL_ICO.fashion,name:"Fashion & Boutique",desc:"Dark editorial, masonry grid"},
-  {id:"fashion-retail",icon:TPL_ICO.store,name:"Fashion Retail Store",desc:"Multi-brand catalogue, filterable grid"},
-  {id:"grocery-fmcg",icon:TPL_ICO.grocery,name:"Grocery & Spaza",desc:"Category nav, stock badges, WhatsApp cart"},
-  {id:"hardware-store",icon:TPL_ICO.hardware,name:"Hardware & Retail",desc:"Dense catalogue, quote builder"},
-  {id:"hospitality-inn",icon:TPL_ICO.hospitality,name:"Lodge / B&B / Hotel",desc:"Room cards, WhatsApp booking, availability badges, gallery, reviews"},
-  {id:"hospitality-sands",icon:TPL_ICO.hospitality,name:"Sands",desc:"Premium — airy coastal minimalist, asymmetric photo pairs, quiet luxury",premium:true,price:15,demoUrl:"https://demo-iris-sands.websites.co.zw"},
-  {id:"hospitality-wild",icon:TPL_ICO.hospitality,name:"Wild",desc:"Premium — bold cinematic, ember accents, full-bleed hero with watch-the-film card",premium:true,price:15,demoUrl:"https://demo-iris-wild.websites.co.zw"},
-  {id:"medical-clinic",icon:TPL_ICO.medical,name:"Medical Clinic",desc:"Practitioners, appointment booking, insurance accepted"},
-  {id:"personal-portfolio",icon:TPL_ICO.personal,name:"Personal Portfolio",desc:"CV, awards, speaking bookings, shop your own merch"},
-  {id:"creative-studio",icon:TPL_ICO.creative,name:"Creative Studio",desc:"Photography & film — masonry gallery, full-day and session booking"}
+  {id:"bold-retail",icon:TPL_ICO.general,cat:"general",name:"General Business",desc:"Any SME — split hero, service cards, team"},
+  {id:"grill-house",icon:TPL_ICO.food,cat:"food",name:"Restaurant & Food",desc:"Full-bleed hero, menu tabs, live hours"},
+  {id:"grill-noir",icon:TPL_ICO.food,cat:"food",name:"Trattoria",desc:"Premium — best for Italian & family-style full-service restaurants. Warm, story-led, numbered printed-menu feel",premium:true,price:15,demoUrl:"https://demo-grill-noir.websites.co.zw"},
+  {id:"grill-market",icon:TPL_ICO.food,cat:"food",name:"Express",desc:"Premium — best for fast food, takeaways & delivery-first spots. Menu is the homepage, cart always in view, built to convert",premium:true,price:15,demoUrl:"https://demo-grill-market.websites.co.zw"},
+  {id:"grill-frame",icon:TPL_ICO.food,cat:"food",name:"Frame",desc:"Premium — for brands that want their site to look like nowhere else. Monochrome, gallery-style presentation, a menu you browse like a photo book",premium:true,price:15,demoUrl:"https://demo-grill-frame.websites.co.zw"},
+  {id:"beauty-salon",icon:TPL_ICO.beauty,cat:"beauty",name:"Beauty & Wellness",desc:"Price list, before/after slider"},
+  {id:"beauty-atelier",icon:TPL_ICO.beauty,cat:"beauty",name:"Atelier",desc:"Premium — best for skin clinics & medspas. Quiet, clinical feel with a results-driven story",premium:true,price:15,demoUrl:"https://demo-salon-atelier.websites.co.zw"},
+  {id:"beauty-maison",icon:TPL_ICO.beauty,cat:"beauty",name:"Maison",desc:"Premium — best for hair salons & day spas. Warm boutique feel, magazine-style gallery",premium:true,price:15,demoUrl:"https://demo-salon-maison.websites.co.zw"},
+  {id:"school-institution",icon:TPL_ICO.education,cat:"education",name:"School & Academy",desc:"Stats bar, programmes, term dates"},
+  {id:"church",icon:TPL_ICO.church,cat:"church",name:"Church / Ministry",desc:"Sermon highlights, events, community focus"},
+  {id:"advisory-firm",icon:TPL_ICO.professional,cat:"professional",name:"Consultant & Legal",desc:"Minimal hero, accordion services"},
+  {id:"property-estate",icon:TPL_ICO.property,cat:"property",name:"Real Estate",desc:"Listings as hero, filter tabs, agent cards"},
+  {id:"boutique-fashion",icon:TPL_ICO.fashion,cat:"fashion",name:"Fashion & Boutique",desc:"Dark editorial, masonry grid"},
+  {id:"fashion-retail",icon:TPL_ICO.store,cat:"fashion",name:"Fashion Retail Store",desc:"Multi-brand catalogue, filterable grid"},
+  {id:"grocery-fmcg",icon:TPL_ICO.grocery,cat:"grocery",name:"Grocery & Spaza",desc:"Category nav, stock badges, WhatsApp cart"},
+  {id:"hardware-store",icon:TPL_ICO.hardware,cat:"hardware",name:"Hardware & Retail",desc:"Dense catalogue, quote builder"},
+  {id:"hospitality-inn",icon:TPL_ICO.hospitality,cat:"hospitality",name:"Lodge / B&B / Hotel",desc:"Room cards, WhatsApp booking, availability badges, gallery, reviews"},
+  {id:"hospitality-sands",icon:TPL_ICO.hospitality,cat:"hospitality",name:"Sands",desc:"Premium — airy coastal minimalist, asymmetric photo pairs, quiet luxury",premium:true,price:15,demoUrl:"https://demo-iris-sands.websites.co.zw"},
+  {id:"hospitality-wild",icon:TPL_ICO.hospitality,cat:"hospitality",name:"Wild",desc:"Premium — bold cinematic, ember accents, full-bleed hero with watch-the-film card",premium:true,price:15,demoUrl:"https://demo-iris-wild.websites.co.zw"},
+  {id:"medical-clinic",icon:TPL_ICO.medical,cat:"medical",name:"Medical Clinic",desc:"Practitioners, appointment booking, insurance accepted"},
+  {id:"personal-portfolio",icon:TPL_ICO.personal,cat:"personal",name:"Personal Portfolio",desc:"CV, awards, speaking bookings, shop your own merch"},
+  {id:"creative-studio",icon:TPL_ICO.creative,cat:"creative",name:"Creative Studio",desc:"Photography & film — masonry gallery, full-day and session booking"}
 ];
+var TPL_CAT_LABELS={all:"All",food:"🍽 Food & Restaurant",beauty:"💆 Beauty & Wellness",education:"🎓 Education",church:"⛪ Faith",professional:"💼 Professional",property:"🏠 Property",fashion:"👗 Fashion",grocery:"🛒 Grocery & Retail",hardware:"🔧 Hardware",hospitality:"🏨 Hospitality",medical:"🩺 Medical",personal:"👤 Personal",creative:"🎨 Creative",general:"🏢 General"};
+var tplActiveCat="all";
 var TPL_CFG={
   "bold-retail":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Team",servicesLbl:"Services"},
   "grill-house":{services:0,menu:1,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Services"},
@@ -2818,16 +2825,37 @@ window.openTplModalV3=async function(){
   var mbody=document.getElementById("tplModalBody");
   if (mbody && !templateEntitlements.loaded) mbody.innerHTML='<div class="empty-state"><p>Loading templates…</p></div>';
   if(!templateEntitlements.loaded) await fetchTemplateEntitlements();
+  var curTpl=g("f_template")||"bold-retail";
+  var curMeta=TEMPLATES_V3.find(function(t){return t.id===curTpl;});
+  tplActiveCat = curMeta ? curMeta.cat : "all";
+  renderTplCatFilters();
   renderTplGrid();
 };
 window.closeTplModal=function(){document.getElementById("tplModal").classList.remove("open");};
 window.closeTplModalOutside=function(e){if(e.target===document.getElementById("tplModal"))closeTplModal();};
 
+window.setTplCat=function(cat){
+  tplActiveCat=cat;
+  renderTplCatFilters();
+  renderTplGrid();
+};
+window.renderTplCatFilters=function renderTplCatFilters(){
+  var host=document.getElementById("tplCatFilters");
+  if(!host)return;
+  var presentCats=[];
+  TEMPLATES_V3.forEach(function(t){ if(presentCats.indexOf(t.cat)===-1) presentCats.push(t.cat); });
+  var cats=["all"].concat(presentCats);
+  host.innerHTML=cats.map(function(c){
+    var label=TPL_CAT_LABELS[c]||c;
+    return '<button class="tpl-cat-chip'+(c===tplActiveCat?" on":"")+'" onclick="setTplCat(\''+c+'\')">'+label+'</button>';
+  }).join("");
+};
 window.renderTplGrid=function renderTplGrid(){
   var curTpl=g("f_template")||"bold-retail";
   var mbody=document.getElementById("tplModalBody");
   if(!mbody)return;
-  mbody.innerHTML=TEMPLATES_V3.map(function(t){
+  var list=tplActiveCat==="all"?TEMPLATES_V3:TEMPLATES_V3.filter(function(t){return t.cat===tplActiveCat;});
+  mbody.innerHTML=list.map(function(t){
     var locked = !!(t.premium && !templateEntitlements.owned[t.id]);
     var owned  = !!(t.premium && templateEntitlements.owned[t.id]);
     var badge  = locked ? ' <span class="tpl-card-badge tpl-locked">🔒 $'+t.price+'</span>'
@@ -2835,10 +2863,15 @@ window.renderTplGrid=function renderTplGrid(){
     var demoLink = t.demoUrl
       ? '<a class="tpl-card-demo-link" href="'+t.demoUrl+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">View live demo &rarr;</a>'
       : '';
+    var premiumSiblings = !t.premium ? TEMPLATES_V3.filter(function(x){return x.cat===t.cat && x.premium;}).length : 0;
+    var upsellNudge = premiumSiblings>0
+      ? '<div class="tpl-card-upsell">✨ '+premiumSiblings+' premium '+(premiumSiblings===1?'look':'looks')+' available in this category</div>'
+      : '';
     return '<div class="tpl-card'+(t.id===curTpl?" current":"")+(locked?" tpl-card-locked":"")+'" onclick="onTplCardClick(\''+t.id+'\')">'
       +'<div class="tpl-card-icon">'+t.icon+'</div>'
       +'<div class="tpl-card-name">'+t.name+badge+'</div>'
       +'<div class="tpl-card-desc">'+t.desc+'</div>'
+      +upsellNudge
       +demoLink
     +'</div>';
   }).join("");
