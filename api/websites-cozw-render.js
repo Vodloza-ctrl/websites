@@ -2538,6 +2538,35 @@ async function buildTemplateExtras(c, site, config, env) {
     Object.assign(extras, buildGrillExtras(c, grillConfig));
     extras.primary_color = ghPalette.primary;
 
+    // Optional hero video, same convention as hospitality-wild's watch-
+    // the-film hero: c.video_url resolves via the shared hospVideoInfo()
+    // helper (handles YouTube/Vimeo/direct file), falls back to
+    // hero_image_url, then a plain gradient placeholder. Built as one
+    // ready-to-drop HTML token here rather than nested {{#if}}s in the
+    // template. Purely additive -- grill-house/grill-noir/grill-market
+    // don't reference {{hero_media_html}} in their own markup, only
+    // grill-frame does, so this has zero effect on them.
+    const ghBizName = esc(c.business_name || c.name || '');
+    let ghHeroMediaHtml = '';
+    if (c.video_url) {
+      const ghVideoInfo = hospVideoInfo(c.video_url);
+      if (ghVideoInfo.type === 'youtube') {
+        const idMatch = ghVideoInfo.embedUrl.match(/embed\/([A-Za-z0-9_-]+)/);
+        const vid = idMatch ? idMatch[1] : '';
+        const bg = `${ghVideoInfo.embedUrl}?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1${vid ? '&playlist=' + vid : ''}`;
+        ghHeroMediaHtml = `<iframe src="${esc(bg)}" style="width:100%;height:100%;border:0;pointer-events:none" allow="autoplay; fullscreen" title="${ghBizName}"></iframe>`;
+      } else if (ghVideoInfo.type === 'vimeo') {
+        const bg = `${ghVideoInfo.embedUrl}?autoplay=1&muted=1&loop=1&background=1`;
+        ghHeroMediaHtml = `<iframe src="${esc(bg)}" style="width:100%;height:100%;border:0;pointer-events:none" allow="autoplay; fullscreen" title="${ghBizName}"></iframe>`;
+      } else if (ghVideoInfo.embedUrl) {
+        ghHeroMediaHtml = `<video autoplay muted loop playsinline poster="${esc(c.hero_image_url || '')}"><source src="${esc(ghVideoInfo.embedUrl)}" type="video/mp4"></video>`;
+      }
+    }
+    if (!ghHeroMediaHtml && c.hero_image_url) {
+      ghHeroMediaHtml = `<img src="${esc(c.hero_image_url)}" alt="${ghBizName}">`;
+    }
+    extras.hero_media_html = ghHeroMediaHtml;
+
     const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
     extras.whatsapp_clean = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
 
