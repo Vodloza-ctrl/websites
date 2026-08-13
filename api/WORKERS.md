@@ -51,9 +51,9 @@ Universal Commerce SDK integration (calls out to
 in the platform by a wide margin.
 **Cache-purge relevance:** N/A — this worker *serves* the cache, it doesn't
 write to D1 in ways that need purging.
-**Sync status:** deployed version is **one commit behind** this repo as of
-writing — missing the `hero_media_html` token (Frame's hero video/photo
-support). Needs a manual redeploy.
+**Sync status:** confirmed fully current (v10.32) against live deployed
+code — verified line-for-line identical to this repo (7,526/7,526 lines
+match after normalizing line endings).
 
 ### `websites-cozw-auth` — `auth-worker.js`
 **What it does:** the account/dashboard API. OTP login, site CRUD, template
@@ -76,8 +76,8 @@ delivery.
 purged the cache on publish. **`confirmStorePurchasePaid()` did not** — a
 real customer purchase could sell a product out and the storefront would
 keep showing it as available for up to an hour. Fixed in this pass (v1.17).
-**Sync status:** confirmed current (v1.17) against live deployed code —
-this repo IS the source of truth here, the fix was made directly in it.
+**Sync status:** confirmed deployed (v1.17) — verified live against
+Cloudflare directly, cache-purge fix confirmed present and active.
 
 ### `websites-products-worker` — `websites-products-worker.js`
 **What it does:** owner-facing CRUD for the normalized product catalogue
@@ -89,8 +89,9 @@ route could change the shop grid and the public page would keep serving
 the old version for up to an hour. Fixed in this pass (v1.1) — every
 handler that writes now calls a new `purgeSiteCache()` helper, matching
 `auth.js`'s pattern.
-**Sync status:** wasn't in this repo at all before this pass. Now present
-and fixed — **needs its first-ever deploy** of this fix.
+**Sync status:** confirmed deployed (v1.1) — verified live against
+Cloudflare directly, cache-purge fix confirmed present and active on
+every mutation handler.
 
 ### `websites-bookings-worker` — `websites-bookings-worker.js`
 **What it does:** interval bookings (hospitality rooms) and slot bookings
@@ -166,19 +167,12 @@ fully-live cached page for up to an hour after being suspended. Fixed:
 every site/addon that transitions `expiredToGrace` or `graceToSuspended`
 now gets its cache purged, same pattern as everywhere else.
 **Sync status:** was in the repo but missing the fix above — now current
-(v2.2) and includes it. **Needs deploy** — this fix has never been live.
+(v2.2) and includes it. Confirmed deployed — verified live against
+Cloudflare directly, purge calls confirmed present and active on every
+status transition.
 
-### `websites-cozw-dashboard` — ⚠️ deprecated, pending deletion
-**What it actually was, confirmed by reading its source directly:** a
-**complete, separate, older implementation of the entire auth system** —
-its own OTP request/verify, its own session issuing, its own site
-create/read/save. It self-documented as deploying to `app.websites.co.zw`
-— the same custom domain `websites-cozw-auth` (the worker actively
-maintained and confirmed current throughout this project) actually uses.
-
-**Confirmed by Lenni: deprecated, not in use.** Being deleted directly in
-the Cloudflare dashboard (Workers & Pages → this worker → Settings →
-Delete) — not something this repo's tools can do, since Worker deletion
-isn't exposed through the API access available here. No code from it was
-ever added to this repo.
+### `websites-cozw-dashboard` — deleted (2026-08-13)
+Confirmed deprecated by Lenni and deleted directly in the Cloudflare
+dashboard. Verified via `workers_list` — account worker count dropped
+from 25 to 24. No code from it was ever committed to this repo.
 
