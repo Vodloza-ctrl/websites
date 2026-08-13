@@ -1,18 +1,49 @@
 /**
- * websites.co.zw — Renewal Cron Worker  v2.0
+ * websites.co.zw — Renewal Cron Worker  v2.2
  * -------------------------------------------
- * Single-file Worker. Drives the time-based half of the site lifecycle:
+ * Single-file Worker. Drives the time-based half of two lifecycles:
  *
- *   published  ──(expires_at passed)──►  grace
- *   grace      ──(grace window over)──►  suspended
+ *   SITES (annual):   published ──(expires_at passed)──► grace ──(grace window over)──► suspended
+ *   ADDONS (monthly): active    ──(expires_at passed)──► grace ──(grace window over)──► suspended
  *
- * Also sends pre-expiry WhatsApp reminders at configurable day thresholds.
+ * Also sends pre-expiry WhatsApp reminders at configurable day thresholds (sites only, for now).
  *
- * Changes from v1:
- *   - Notifications use sendContent (free text) not sendFlow — matches auth Worker
- *   - renewal_reminder_stage column is optional; reminders dedup via D1 upsert
- *   - site_name included in queries for personalised messages
- *   - Hardened against missing columns with try/catch per-site
+ * v2.2 CHANGE — CACHE PURGE ON EVERY STATUS TRANSITION:
+ *   Found via the same repo-wide cache-purge audit that fixed
+ *   websites-products-worker.js and payments.js's confirmStorePurchasePaid().
+ *   render.js's Cache-Control logic only special-cases 'grace' status as
+ *   no-store -- 'suspended' falls through to the normal 'public,
+ *   max-age=300, stale-while-revalidate=3600' branch. Combined with this
+ *   worker never purging the CDN cache when it flips a site's status, the
+ *   practical effect was: a site whose subscription lapsed and got moved
+ *   published -> grace -> suspended could keep serving its OLD cached
+ *   fully-live page for up to an hour after suspension, even though a
+ *   fresh render would correctly reflect the new status. Same risk for
+ *   addon status flips (active -> grace -> suspended) -- a suspended
+ *   Store Payments/Bookings addon wouldn't immediately stop showing that
+ *   feature on the public page either. Fixed: purgeSiteCache() (mirrors
+ *   auth.js/payments.js/websites-products-worker.js's existing pattern)
+ *   is now called for every site that transitions expiredToGrace or
+ *   graceToSuspended, and for the site behind every addon that does the
+ *   same. Skipped entirely in dryRun mode, same as every other DB write
+ *   in this sweep.
+ *
+ * Changes from v2.0:
+ *   - NEW: addons sweep (active → grace → suspended), mirroring the sites sweep.
+ *     Required because gating (getBookingsTier() etc.) reads addons.status directly
+ *     and nothing was ever flipping it after expires_at passed -- addon purchases
+ *     billed correctly once and then granted access forever.
+ *   - addons.expires_at IS NULL is treated as a PERMANENT grant and is never swept
+ *     (e.g. Iris Hotel's free Bookings Pro grant). Run the one-time migration to
+ *     mark existing permanent grants as NULL before enabling this -- see
+ *     migration-addons-expiry-normalize.sql.
+ *   - Separate, shorter grace window for addons (ADDON_GRACE_DAYS, default 5) --
+ *     monthly billing shouldn't get the same 14-day runway as an annual site plan.
+ *   - Addon sweep requires expires_at to already be an epoch INTEGER (unixepoch()),
+ *     not a date() TEXT string -- see confirmPaidAddon() patch in payments-worker.js.
+ *     Rows still holding the old TEXT format are silently skipped (a WHERE clause
+ *     on a numeric comparison against TEXT never matches in SQLite), not
+ *     mis-suspended -- but they also won't get downgraded until migrated.
  *
  * ── Bindings ──
  *   DB                   D1 database (websites-cozw)
@@ -22,20 +53,33 @@
  *   MANYCHAT_API_TOKEN   WhatsApp notification (optional — silent if missing)
  *
  * ── Vars ──
- *   GRACE_DAYS           Grace period in days (default: 14)
- *   REMINDERS_ENABLED    Set to "1" to enable pre-expiry reminders
+ *   GRACE_DAYS           Site grace period in days (default: 14)
+ *   ADDON_GRACE_DAYS     Addon grace period in days (default: 5)
+ *   REMINDERS_ENABLED    Set to "1" to enable pre-expiry reminders (sites only)
  *   REMINDER_DAYS        CSV of day thresholds (default: "14,7,1")
  *
  * ── D1 migration (run once before deploying) ──
  *   ALTER TABLE sites ADD COLUMN renewal_reminder_stage INTEGER;
+ *   -- plus migration-addons-expiry-normalize.sql (converts existing TEXT
+ *   -- expires_at/activated_at to epoch INTEGER, marks true permanent
+ *   -- grants as NULL) -- run BEFORE deploying this version.
  *
  * ── wrangler.toml cron schedule ──
  *   [triggers]
  *   crons = ["0 3 * * *"]   # runs at 3am UTC every day
  */
 
-const GRACE_DAYS_DEFAULT   = 14;
-const REMINDER_DAYS_DEFAULT = [14, 7, 1];
+const GRACE_DAYS_DEFAULT       = 14;
+const ADDON_GRACE_DAYS_DEFAULT = 5;
+const REMINDER_DAYS_DEFAULT    = [14, 7, 1];
+
+const ADDON_DISPLAY_NAME = {
+  whatsapp_store: "WhatsApp Store",
+  bookings:       "Bookings",
+  template:       "your premium template",
+  promotions:     "Promotions",
+  analytics:      "Analytics",
+};
 
 export default {
   // ── Cron trigger ─────────────────────────────────────────────────────────
@@ -52,7 +96,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/health")
-      return json({ ok: true, service: "websites-cozw-renewal-cron", version: "2.0" });
+      return json({ ok: true, service: "websites-cozw-renewal-cron", version: "2.2" });
 
     if (url.pathname === "/run") {
       const token = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
@@ -66,6 +110,38 @@ export default {
     return json({ error: "not_found" }, 404);
   },
 };
+
+// ─── CACHE PURGE (v2.2) ──────────────────────────────────────────────────────
+// Mirrors auth.js / payments.js / websites-products-worker.js's existing
+// pattern exactly, so the same site's cache gets invalidated the same way
+// regardless of which worker triggered the change. Non-fatal by design --
+// a purge failure must never abort or roll back the status transition
+// itself, same reasoning as every other best-effort side-effect on this
+// platform.
+async function purgeSiteCache(env, draftSubdomain, customDomain, customDomainStatus) {
+  try {
+    if (draftSubdomain) {
+      await caches.default.delete(new Request(`https://${draftSubdomain}.websites.co.zw/`));
+    }
+    if (customDomain && customDomainStatus === "active") {
+      await caches.default.delete(new Request(`https://${customDomain}/`));
+    }
+  } catch (e) {
+    console.error("purgeSiteCache failed:", e?.message);
+  }
+}
+
+async function purgeSiteCacheById(env, siteId) {
+  try {
+    const site = await env.DB.prepare(
+      "SELECT draft_subdomain, custom_domain, custom_domain_status FROM sites WHERE id=?1"
+    ).bind(siteId).first();
+    if (!site) return;
+    await purgeSiteCache(env, site.draft_subdomain, site.custom_domain, site.custom_domain_status);
+  } catch (e) {
+    console.error("purgeSiteCacheById failed for site", siteId, e?.message);
+  }
+}
 
 // ─── MAIN SWEEP ───────────────────────────────────────────────────────────────
 
@@ -84,14 +160,15 @@ async function runRenewalSweep(env, opts = {}) {
     expiredToGrace:   0,
     graceToSuspended: 0,
     remindersSent:    0,
+    addonsExpiredToGrace:   0,
+    addonsGraceToSuspended: 0,
     notified:         0,
+    cachePurged:      0,
     errors:           [],
   };
 
   try {
     // ── 1) published → grace ─────────────────────────────────────────────────
-    // Any published site whose expires_at is in the past moves to grace.
-    // The UPDATE is guarded by status='published' so it's idempotent.
     const expiring = await querySites(env,
       "status='published' AND expires_at IS NOT NULL AND expires_at <= ?1",
       [now]
@@ -107,10 +184,13 @@ async function runRenewalSweep(env, opts = {}) {
     summary.expiredToGrace = expiring.length;
     for (const site of expiring) {
       summary.notified += await notifyWhatsApp(env, site, "grace_started", { graceDays }, dryRun);
+      if (!dryRun) {
+        await purgeSiteCache(env, site.draft_subdomain, site.custom_domain, site.custom_domain_status);
+        summary.cachePurged++;
+      }
     }
 
     // ── 2) grace → suspended ─────────────────────────────────────────────────
-    // Once grace window has elapsed (expires_at + graceWindow < now), suspend.
     const cutoff = now - graceWindow;
     const gracing = await querySites(env,
       "status='grace' AND expires_at IS NOT NULL AND expires_at <= ?1",
@@ -127,12 +207,67 @@ async function runRenewalSweep(env, opts = {}) {
     summary.graceToSuspended = gracing.length;
     for (const site of gracing) {
       summary.notified += await notifyWhatsApp(env, site, "suspended", {}, dryRun);
+      if (!dryRun) {
+        await purgeSiteCache(env, site.draft_subdomain, site.custom_domain, site.custom_domain_status);
+        summary.cachePurged++;
+      }
     }
 
-    // ── 3) Pre-expiry renewal reminders ──────────────────────────────────────
+    // ── 3) Pre-expiry renewal reminders (sites) ──────────────────────────────
     if (env.REMINDERS_ENABLED === "1") {
       summary.remindersSent = await sendRenewalReminders(env, now, dryRun);
       summary.notified += summary.remindersSent;
+    }
+
+    // ── 4) ADDONS: active → grace → suspended ────────────────────────────────
+    // NULL expires_at = permanent grant, never swept (Iris Hotel etc.).
+    // Only touches rows where expires_at is a real epoch INTEGER -- rows still
+    // in the old date()-TEXT format are silently skipped by the numeric
+    // comparison, not mis-suspended. Run the migration to fix those first.
+    const addonGraceDays   = clampInt(env.ADDON_GRACE_DAYS, ADDON_GRACE_DAYS_DEFAULT, 0, 90);
+    const addonGraceWindow = addonGraceDays * 86400;
+
+    // price_usd > 0 is a second, independent guard alongside expires_at IS NOT
+    // NULL -- a $0 row is a grant by definition (real purchases always carry
+    // a real ADDON_USD_PRICE), so it's excluded here even if expires_at was
+    // ever accidentally left non-NULL on one.
+    const addonsExpiring = await queryAddons(env,
+      "a.status='active' AND a.price_usd > 0 AND a.expires_at IS NOT NULL AND a.expires_at <= ?1",
+      [now]
+    );
+    if (addonsExpiring.length && !dryRun) {
+      await env.DB.prepare(
+        "UPDATE addons SET status='grace', updated_at=unixepoch() " +
+        "WHERE status='active' AND price_usd > 0 AND expires_at IS NOT NULL AND expires_at <= ?1"
+      ).bind(now).run();
+    }
+    summary.addonsExpiredToGrace = addonsExpiring.length;
+    for (const addon of addonsExpiring) {
+      summary.notified += await notifyAddonWhatsApp(env, addon, "addon_grace_started", { graceDays: addonGraceDays }, dryRun);
+      if (!dryRun) {
+        await purgeSiteCacheById(env, addon.site_id);
+        summary.cachePurged++;
+      }
+    }
+
+    const addonCutoff = now - addonGraceWindow;
+    const addonsGracing = await queryAddons(env,
+      "a.status='grace' AND a.price_usd > 0 AND a.expires_at IS NOT NULL AND a.expires_at <= ?1",
+      [addonCutoff]
+    );
+    if (addonsGracing.length && !dryRun) {
+      await env.DB.prepare(
+        "UPDATE addons SET status='suspended', updated_at=unixepoch() " +
+        "WHERE status='grace' AND price_usd > 0 AND expires_at IS NOT NULL AND expires_at <= ?1"
+      ).bind(addonCutoff).run();
+    }
+    summary.addonsGraceToSuspended = addonsGracing.length;
+    for (const addon of addonsGracing) {
+      summary.notified += await notifyAddonWhatsApp(env, addon, "addon_suspended", {}, dryRun);
+      if (!dryRun) {
+        await purgeSiteCacheById(env, addon.site_id);
+        summary.cachePurged++;
+      }
     }
 
   } catch (err) {
@@ -145,14 +280,13 @@ async function runRenewalSweep(env, opts = {}) {
   return summary;
 }
 
-// ─── RENEWAL REMINDERS ────────────────────────────────────────────────────────
+// ─── RENEWAL REMINDERS (sites) ─────────────────────────────────────────────────
 
 async function sendRenewalReminders(env, now, dryRun) {
-  const thresholds = parseReminderDays(env.REMINDER_DAYS); // descending e.g. [14,7,1]
+  const thresholds = parseReminderDays(env.REMINDER_DAYS);
   const maxDays    = thresholds[0];
   const horizon    = now + maxDays * 86400;
 
-  // Sites still published, inside the reminder window, not yet expired
   const sites = await querySites(env,
     "status='published' AND expires_at > ?1 AND expires_at <= ?2",
     [now, horizon]
@@ -162,13 +296,10 @@ async function sendRenewalReminders(env, now, dryRun) {
   for (const site of sites) {
     try {
       const daysLeft = Math.ceil((site.expires_at - now) / 86400);
-      // Which threshold has this site just crossed? Take the smallest (most urgent).
       const crossed = thresholds.filter(t => daysLeft <= t);
       if (!crossed.length) continue;
       const dueStage = Math.min(...crossed);
 
-      // Check if we already sent this stage (or a more urgent one)
-      // renewal_reminder_stage column may not exist — handle gracefully
       let lastStage = null;
       try {
         const row = await env.DB.prepare(
@@ -181,7 +312,6 @@ async function sendRenewalReminders(env, now, dryRun) {
       if (alreadySent) continue;
 
       if (!dryRun) {
-        // Record stage so we don't send it again
         try {
           await env.DB.prepare(
             "UPDATE sites SET renewal_reminder_stage=?2, updated_at=unixepoch() WHERE id=?1"
@@ -190,7 +320,7 @@ async function sendRenewalReminders(env, now, dryRun) {
 
         sent += await notifyWhatsApp(env, site, "renewal_reminder", { daysLeft, dueStage }, false);
       } else {
-        sent++; // count as would-send in dry run
+        sent++;
       }
     } catch (err) {
       console.error("reminder error for site", site.id, err?.message);
@@ -200,15 +330,12 @@ async function sendRenewalReminders(env, now, dryRun) {
   return sent;
 }
 
-// ─── WHATSAPP NOTIFICATION ────────────────────────────────────────────────────
-// Uses sendContent (free text) — same pattern as the auth Worker.
-// Never throws, never blocks a lifecycle transition.
+// ─── WHATSAPP NOTIFICATION (sites) ──────────────────────────────────────────────
 
 async function notifyWhatsApp(env, site, event, extra, dryRun) {
   try {
     if (dryRun || !env.MANYCHAT_API_TOKEN) return 0;
 
-    // Resolve owner phone
     const owner = await env.DB.prepare(
       "SELECT phone FROM owners WHERE id=?1"
     ).bind(site.owner_id).first().catch(() => null);
@@ -220,47 +347,66 @@ async function notifyWhatsApp(env, site, event, extra, dryRun) {
     const text = buildMessage(event, site, extra);
     if (!text) return 0;
 
-    // Find ManyChat subscriber
-    const findResp = await fetch(
-      "https://api.manychat.com/fb/subscriber/findBySystemField?phone=" +
-        encodeURIComponent(phone),
-      { headers: { Authorization: "Bearer " + env.MANYCHAT_API_TOKEN } }
-    );
-    const found = await findResp.json().catch(() => ({}));
-    const subId = found?.data?.id;
-    if (!subId) return 0;
-
-    // Send message
-    const r = await fetch("https://api.manychat.com/fb/sending/sendContent", {
-      method: "POST",
-      headers: {
-        Authorization:  "Bearer " + env.MANYCHAT_API_TOKEN,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        subscriber_id: subId,
-        data: {
-          version: "v2",
-          content: {
-            messages: [{ type: "text", text }],
-          },
-        },
-      }),
-    });
-
-    return r.ok ? 1 : 0;
+    return await sendWhatsAppText(env, phone, text);
   } catch (err) {
     console.error("notifyWhatsApp failed (non-fatal):", event, err?.message);
     return 0;
   }
 }
 
-// ─── MESSAGE COPY ─────────────────────────────────────────────────────────────
+// ─── WHATSAPP NOTIFICATION (addons) ─────────────────────────────────────────────
+// addon rows don't carry owner_id/phone directly -- queryAddons() below joins
+// sites+owners so this has everything notifyWhatsApp() has, plus addon_type/tier.
+
+async function notifyAddonWhatsApp(env, addon, event, extra, dryRun) {
+  try {
+    if (dryRun || !env.MANYCHAT_API_TOKEN) return 0;
+    const phone = normalizePhone(addon.owner_phone);
+    if (!phone) return 0;
+
+    const text = buildAddonMessage(event, addon, extra);
+    if (!text) return 0;
+
+    return await sendWhatsAppText(env, phone, text);
+  } catch (err) {
+    console.error("notifyAddonWhatsApp failed (non-fatal):", event, err?.message);
+    return 0;
+  }
+}
+
+async function sendWhatsAppText(env, phone, text) {
+  const findResp = await fetch(
+    "https://api.manychat.com/fb/subscriber/findBySystemField?phone=" +
+      encodeURIComponent(phone),
+    { headers: { Authorization: "Bearer " + env.MANYCHAT_API_TOKEN } }
+  );
+  const found = await findResp.json().catch(() => ({}));
+  const subId = found?.data?.id;
+  if (!subId) return 0;
+
+  const r = await fetch("https://api.manychat.com/fb/sending/sendContent", {
+    method: "POST",
+    headers: {
+      Authorization:  "Bearer " + env.MANYCHAT_API_TOKEN,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      subscriber_id: subId,
+      data: {
+        version: "v2",
+        content: { messages: [{ type: "text", text }] },
+      },
+    }),
+  });
+
+  return r.ok ? 1 : 0;
+}
+
+// ─── MESSAGE COPY (sites) ───────────────────────────────────────────────────────
 
 function buildMessage(event, site, extra) {
   const name    = site.site_name || "your website";
   const slug    = site.draft_subdomain || "";
-  const url     = slug ? `https://${slug}.websites.co.zw` : "your website";
   const renewUrl = "https://app.websites.co.zw/dashboard/customer.html";
 
   switch (event) {
@@ -292,12 +438,53 @@ function buildMessage(event, site, extra) {
   }
 }
 
-// ─── DB HELPER ────────────────────────────────────────────────────────────────
+// ─── MESSAGE COPY (addons) ──────────────────────────────────────────────────────
+
+function buildAddonMessage(event, addon, extra) {
+  const label = ADDON_DISPLAY_NAME[addon.addon_type] || addon.addon_type;
+  const name  = addon.site_name || "your site";
+  const renewUrl = "https://app.websites.co.zw/dashboard/customer.html";
+
+  switch (event) {
+    case "addon_grace_started":
+      return (
+        `⚠️ *${label}* on *${name}* has expired.\n\n` +
+        `It'll keep working for the next *${extra.graceDays} days* while you renew.\n\n` +
+        `👉 Renew here: ${renewUrl}`
+      );
+
+    case "addon_suspended":
+      return (
+        `🔴 *${label}* on *${name}* has been switched off — the grace period ended without renewal.\n\n` +
+        `Renew any time to turn it back on: ${renewUrl}`
+      );
+
+    default:
+      return null;
+  }
+}
+
+// ─── DB HELPERS ───────────────────────────────────────────────────────────────
 
 async function querySites(env, where, params) {
   const res = await env.DB.prepare(
-    `SELECT id, owner_id, site_name, status, expires_at, draft_subdomain
+    `SELECT id, owner_id, site_name, status, expires_at, draft_subdomain, custom_domain, custom_domain_status
      FROM sites WHERE ${where}`
+  ).bind(...params).all();
+  return res?.results || [];
+}
+
+// Joins sites + owners so addon rows carry everything notify needs without a
+// second round trip per row. Alias `a` for addons is assumed by the WHERE
+// clauses passed in above -- keep that alias if you add more addon queries.
+async function queryAddons(env, where, params) {
+  const res = await env.DB.prepare(
+    `SELECT a.id, a.site_id, a.addon_type, a.tier, a.status, a.expires_at, a.price_usd,
+            s.site_name, o.phone AS owner_phone
+     FROM addons a
+     JOIN sites s ON s.id = a.site_id
+     JOIN owners o ON o.id = s.owner_id
+     WHERE ${where}`
   ).bind(...params).all();
   return res?.results || [];
 }

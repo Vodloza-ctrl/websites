@@ -141,24 +141,62 @@ confirmed current (v1.0) against live deployed code.
 
 ---
 
-## Not yet re-verified in this pass
+### `websites-cozw-ai` — `websites-cozw-ai.js`
+**What it does:** AI copy generation (initial site content) and AI "tune"
+(rewrite a single field — about text, a service description, a person bio,
+etc.) via the Anthropic API. Also a lightweight template recommender.
+**Cache-purge relevance:** none needed — whatever it generates is returned
+to the caller, which saves it through `auth.js`'s `saveSite()`, and that
+already purges the cache.
+**Sync status:** confirmed current (v2.1/v2.2) against live deployed code
+— repo copy already matched exactly, no changes needed.
 
-The following exist and were listed by the Cloudflare account, but weren't
-pulled/diffed in this pass due to time — flagging them explicitly rather
-than silently leaving them unchecked:
+### `websites-cozw-renewal-cron` — `websites-cozw-renewal-cron.js`
+**What it does:** the daily scheduled sweep that moves sites through
+`published → grace → suspended` and addons through `active → grace →
+suspended` once their `expires_at` passes, plus pre-expiry WhatsApp renewal
+reminders.
+**Cache-purge relevance:** yes — a third real bug, found and fixed in this
+pass (v2.2). `render.js`'s `Cache-Control` logic only special-cases
+`grace` status as `no-store`; `suspended` falls through to the normal
+`public, max-age=300, stale-while-revalidate=3600` branch. Combined with
+this worker never purging the CDN cache on a status flip, a site (or an
+addon-gated feature) whose subscription lapsed could keep serving its old,
+fully-live cached page for up to an hour after being suspended. Fixed:
+every site/addon that transitions `expiredToGrace` or `graceToSuspended`
+now gets its cache purged, same pattern as everywhere else.
+**Sync status:** was in the repo but missing the fix above — now current
+(v2.2) and includes it. **Needs deploy** — this fix has never been live.
 
-- **`websites-cozw-ai`** — AI content generation (site copy generation,
-  text tune-up). Repo copy exists but wasn't diffed against live this
-  round.
-- **`websites-cozw-renewal-cron`** — the scheduled sweep that moves
-  published sites through grace/suspended and expires addons. Repo copy
-  exists but wasn't diffed against live this round.
-- **`websites-cozw-dashboard`** — appears to be a legacy/parked worker
-  (the real dashboard is served via Pages per `auth.js`'s `/dashboard`
-  redirect routes). Worth confirming it's actually still in use before
-  spending time syncing it.
+### `websites-cozw-dashboard` — ⚠️ status unresolved, not synced into this repo
+**What it actually is, confirmed by reading its source directly:** a
+**complete, separate, older implementation of the entire auth system** —
+its own OTP request/verify, its own session issuing, its own site
+create/read/save. It self-documents as deploying to `app.websites.co.zw`
+— the exact same custom domain `websites-cozw-auth` (the worker actively
+maintained and confirmed current throughout this whole project) is
+documented as using. Two Workers cannot both be bound to the same custom
+domain at once, so **one of these two is almost certainly not receiving
+any live traffic** — but which one is a question this repo's tools can't
+answer; Cloudflare route/custom-domain bindings aren't exposed through the
+API access available here.
 
-None of these three are store/booking-mutation workers, so they're
-**unlikely** to share the cache-purge bug class this pass was hunting for
-— but "unlikely" isn't "confirmed," and they should get the same
-fetch-and-diff treatment before being trusted as accurate.
+**Why this matters if it turns out to still be live:** its `saveSite()`
+has no cache-purge call at all — it's an earlier version of the exact bug
+`auth.js` v5.11 already fixed. If this worker is somehow still handling
+any real traffic, it would be silently reproducing the stale-cache
+problem this whole audit was hunting for, through a code path nobody's
+been looking at.
+
+**Action needed (Cloudflare dashboard, not something I can check):** open
+Workers & Pages → `websites-cozw-dashboard` → Settings → Domains & Routes.
+If nothing is bound to it, it's dead weight — safe to delete, and doing
+so removes a confusing, unpatched duplicate of the real auth system from
+the account. If something IS bound to it, that's a live incident: it
+means real users may be hitting this old code path instead of the
+current, fixed one.
+
+Not added to this repo as an active file — doing so would misrepresent
+whether it's actually part of the running platform, which is genuinely
+unknown right now.
+
