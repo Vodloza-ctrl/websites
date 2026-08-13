@@ -2526,7 +2526,7 @@ async function buildTemplateExtras(c, site, config, env) {
     const GRILL_PALETTE_DEFAULTS = {
       'grill-house': 'ember-cream',
       'restaurant': 'ember-cream',
-      'grill-noir': 'noir-wine',
+      'grill-noir': 'trattoria-terracotta',
       'grill-market': 'market-citrus',
     };
     const ghPalette = resolvePalette(ghTheme.palette || GRILL_PALETTE_DEFAULTS[templateId] || 'ember-cream', ghTheme.custom_accent || '');
@@ -5160,7 +5160,7 @@ const SITE_PALETTES = {
   'void-ember': { primary: '#0E0D0C', accent1: '#C4472A', accent2: '#DD6644', bg: '#0E0D0C', surface: '#1A1815' },
   'stone-terracotta': { primary: '#1C1A17', accent1: '#B5502E', accent2: '#8C3D22', bg: '#F7F4EF', surface: '#EFE9DF' },
   'rose-clay': { primary: '#2E1B14', accent1: '#C97B54', accent2: '#A85D3A', bg: '#FBF3EA', surface: '#F3E4D6' },
-  'noir-wine': { primary: '#0E0C0A', accent1: '#8B2635', accent2: '#C9A961', bg: '#F5F0E8', surface: '#FFFFFF' },
+  'trattoria-terracotta': { primary: '#2B1F16', accent1: '#B23A2E', accent2: '#6B7A4F', bg: '#FAF3E8', surface: '#FFFFFF' },
   'market-citrus': { primary: '#2B1B0E', accent1: '#E8871E', accent2: '#5FA05C', bg: '#FFF8ED', surface: '#FFFFFF' },
 };
 
@@ -5196,7 +5196,7 @@ function paletteFor(t) {
     'hospitality-wild': 'void-ember',
     'beauty-atelier': 'stone-terracotta',
     'beauty-maison': 'rose-clay',
-    'grill-noir': 'noir-wine',
+    'grill-noir': 'trattoria-terracotta',
     'grill-market': 'market-citrus',
     'faith': 'warm-cream',
     'church-institution': 'warm-cream',
@@ -5239,7 +5239,7 @@ function fontFor(t) {
     'hospitality-wild': 'bricolage-inter',
     'beauty-atelier': 'instrument-manrope',
     'beauty-maison': 'caslon-sora',
-    'grill-noir': 'garamond-jost',
+    'grill-noir': 'bodoni-nunito',
     'grill-market': 'fredoka-inter',
     'faith': 'playfair-jakarta',
     'church-institution': 'playfair-jakarta',
@@ -5337,6 +5337,7 @@ const FONT_MAP = {
   'instrument-manrope': { url: 'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap', body: '"Manrope",system-ui,sans-serif', head: '"Instrument Serif",Georgia,serif' },
   'caslon-sora': { url: 'https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Sora:wght@300;400;500;600;700&display=swap', body: '"Sora",system-ui,sans-serif', head: '"Libre Caslon Display",Georgia,serif' },
   'fredoka-inter': { url: 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap', body: '"Inter",system-ui,sans-serif', head: '"Fredoka",system-ui,sans-serif' },
+  'bodoni-nunito': { url: 'https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,500;0,600;1,500;1,600;1,700&family=Nunito+Sans:wght@300;400;600;700;800&display=swap', body: '"Nunito Sans",system-ui,sans-serif', head: '"Bodoni Moda",Georgia,serif' },
 };
 
 // Templates whose CSS drives typography through custom properties (e.g.

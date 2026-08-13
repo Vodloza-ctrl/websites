@@ -2044,7 +2044,7 @@ function paletteFor(t) {
     "hospitality-wild":   "void-ember",
     "beauty-atelier":     "stone-terracotta",
     "beauty-maison":      "rose-clay",
-    "grill-noir":         "noir-wine",
+    "grill-noir":         "trattoria-terracotta",
     "grill-market":       "market-citrus"
   };
   return m[t] || "clean-white";
@@ -2083,7 +2083,7 @@ function fontFor(t) {
     "hospitality-wild":   "bricolage-inter",
     "beauty-atelier":     "instrument-manrope",
     "beauty-maison":      "caslon-sora",
-    "grill-noir":         "garamond-jost",
+    "grill-noir":         "bodoni-nunito",
     "grill-market":       "fredoka-inter"
   };
   return m[t] || "grotesk-serif";

@@ -3,26 +3,27 @@
   "premium": true,
   "premiumPrice": 15,
   "premiumBillingType": "one_time",
-  "defaultPrimaryColor": "#0E0C0A",
-  "defaultTypeLabel": "Fine Dining \u00b7 Zimbabwe",
-  "bodyClass": "tpl-grill-noir",
-  "googleFonts": "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Jost:wght@300;400;500;600;700&display=swap",
-  "navTextColor": "#fff",
+  "defaultPrimaryColor": "#B23A2E",
+  "defaultTypeLabel": "Trattoria \u00b7 Zimbabwe",
+  "bodyClass": "tpl-trattoria",
+  "googleFonts": "https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,500;0,600;1,500;1,600;1,700&family=Nunito+Sans:wght@300;400;600;700;800&display=swap",
+  "navTextColor": "#2B1F16",
   "navCtaLabel": "Order online",
   "navLinks": [
     "#menu:Menu",
-    "#team:Team",
+    "#story:Our Story",
+    "#team:Kitchen",
     "#hours:Hours",
     "#contact:Visit us"
   ],
   "showOpenBadge": true,
   "showHoursGrid": true,
   "paletteTokens": {
-    "ember_color": "#8B2635",
-    "amber_color": "#C9A961"
+    "ember_color": "#B23A2E",
+    "amber_color": "#6B7A4F"
   },
   "typeLabels": {
-    "grill-noir": "Fine Dining \u00b7 Zimbabwe",
+    "grill-noir": "Trattoria \u00b7 Zimbabwe",
     "restaurant": "Restaurant \u00b7 Zimbabwe",
     "takeaway": "Takeaway & Delivery"
   },
