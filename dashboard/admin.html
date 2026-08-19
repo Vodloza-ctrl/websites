@@ -418,15 +418,20 @@ function userHeaders() {
   return { "Content-Type":"application/json", "Authorization":"Bearer "+(localStorage.getItem("wcz_token")||"") };
 }
 
-// Opens a client's editor in a new tab, logged in as them, without needing
-// their phone/email OTP at all. Mints a short-lived (2hr) session token via
-// the admin-only /api/admin/impersonate endpoint, then hands it to
-// editor.html via a one-time URL param -- editor.html reads admin_token on
-// load, stores it as the normal session token, and strips it from the URL
-// immediately so it never sits in browser history or gets shared by
-// accident. Built for clients who aren't going to self-serve edit; this is
-// the "admin logs in as them" path referenced by the Edit button below.
-window.openEditSite = async function(siteId) {
+// Opens a client's content editor in a new tab, logged in as them, without
+// needing their phone/email OTP at all. Mints a short-lived (2hr) session
+// token via the admin-only /api/admin/impersonate endpoint, then hands it
+// to editor.html via a one-time URL param -- editor.html reads admin_token
+// on load, stores it as the normal session token, and strips it from the
+// URL immediately so it never sits in browser history or gets shared by
+// accident. Built for clients who aren't going to self-serve edit.
+//
+// Named distinctly from openEditSite() (below) on purpose -- that one
+// opens the site-metadata modal (status/plan/expiry/domain), a completely
+// different, pre-existing feature. An earlier version of this function
+// used the same name and silently shadowed it (last definition wins in
+// JS), so the metadata modal's Edit button appeared to do nothing.
+window.openOwnerEditor = async function(siteId) {
   var r = await fetch(ADMIN_API + "/impersonate", {
     method: "POST",
     headers: adminHeaders(),
@@ -581,6 +586,7 @@ function renderSiteTable(sites) {
         '<td style="color:var(--ink2);text-align:center">'+esc(String(s.ai_generations_used||0))+'</td>'+
         '<td><div style="display:flex;gap:5px">'+
           '<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(s.id)+')">Edit</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="openOwnerEditor('+JSON.stringify(s.id)+')">Open editor</button>'+
           '<a class="btn btn-ghost btn-sm" href="'+APP+'/preview/'+esc(slug)+'" target="_blank">Preview</a>'+
         '</div></td>'+
       '</tr>';
@@ -594,11 +600,20 @@ window.loadCustomers = async function() {
     if (r.ok) _allSites = (await r.json()).sites || [];
   }
   var ownersById = {};
-  var ownersResp = await fetch(ADMIN_API+"/owners?limit=1000", { headers: adminHeaders() });
-  if (ownersResp.ok) {
-    ((await ownersResp.json()).owners || []).forEach(function(o){ ownersById[o.id] = o; });
-  } else {
-    toast("Couldn't load owner details — check ADMIN_SECRET", "err");
+  try {
+    var ownersResp = await fetch(ADMIN_API+"/owners?limit=1000", { headers: adminHeaders() });
+    var ct = (ownersResp.headers.get("content-type")||"");
+    if (ownersResp.ok && ct.indexOf("json") > -1) {
+      ((await ownersResp.json()).owners || []).forEach(function(o){ ownersById[o.id] = o; });
+    } else if (!ownersResp.ok) {
+      toast("Couldn't load owner details — check ADMIN_SECRET", "err");
+    }
+    // else: endpoint not deployed yet (falls through to the Pages
+    // fallback and returns HTML, not JSON) -- silently skip. Phone/name/
+    // email just render as "—" until the Worker with /api/admin/owners
+    // is deployed; this must never block the rest of the table.
+  } catch (e) {
+    console.error("owners fetch failed:", e);
   }
   var byOwner = {};
   _allSites.forEach(function(s){
@@ -633,7 +648,7 @@ function renderCustomerTable(customers) {
       })[0];
       var waLink = c.phone ? '<a href="https://wa.me/'+esc(c.phone.replace(/\D/g,""))+'" target="_blank" style="color:var(--ink2)">'+esc(c.phone)+'</a>' : '<span style="color:var(--ink3)">—</span>';
       var editBtn = primarySite
-        ? '<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(primarySite.id)+')">Edit</button>'
+        ? '<button class="btn btn-ghost btn-sm" onclick="openOwnerEditor('+JSON.stringify(primarySite.id)+')">Open editor</button>'
         : '';
       return '<tr>'+
         '<td class="name" style="font-family:monospace;font-size:12px">'+esc(c.owner_id)+(c.name?'<div style="font-family:inherit;font-size:12px;color:var(--ink2);margin-top:2px">'+esc(c.name)+'</div>':'')+'</td>'+
