@@ -577,7 +577,7 @@ function siteRow(s) {
     '<td>'+badge+'</td>'+
     '<td style="color:var(--ink3);font-size:12px">'+pub+'</td>'+
     '<td><div style="display:flex;gap:5px">'+
-      '<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(s.id)+')">Edit</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick=\'openEditSite('+JSON.stringify(s.id)+')\'>Edit</button>'+
       '<a class="btn btn-ghost btn-sm" href="'+APP+'/editor/?site='+esc(s.id)+'" target="_blank">Editor</a>'+
     '</div></td>'+
   '</tr>';
@@ -625,8 +625,8 @@ function renderSiteTable(sites) {
         '<td>'+statusBadge(s.status)+'</td>'+
         '<td style="color:var(--ink2);text-align:center">'+esc(String(s.ai_generations_used||0))+'</td>'+
         '<td><div style="display:flex;gap:5px">'+
-          '<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(s.id)+')">Edit</button>'+
-          '<button class="btn btn-ghost btn-sm" onclick="openOwnerEditor('+JSON.stringify(s.id)+')">Open editor</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick=\'openEditSite('+JSON.stringify(s.id)+')\'>Edit</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick=\'openOwnerEditor('+JSON.stringify(s.id)+')\'>Open editor</button>'+
           '<a class="btn btn-ghost btn-sm" href="'+APP+'/preview/'+esc(slug)+'" target="_blank">Preview</a>'+
         '</div></td>'+
       '</tr>';
@@ -688,7 +688,7 @@ function renderCustomerTable(customers) {
       })[0];
       var waLink = c.phone ? '<a href="https://wa.me/'+esc(c.phone.replace(/\D/g,""))+'" target="_blank" style="color:var(--ink2)">'+esc(c.phone)+'</a>' : '<span style="color:var(--ink3)">—</span>';
       var editBtn = primarySite
-        ? '<button class="btn btn-ghost btn-sm" onclick="openOwnerEditor('+JSON.stringify(primarySite.id)+')">Open editor</button>'
+        ? '<button class="btn btn-ghost btn-sm" onclick=\'openOwnerEditor('+JSON.stringify(primarySite.id)+')\'>Open editor</button>'
         : '';
       return '<tr>'+
         '<td class="name" style="font-family:monospace;font-size:12px">'+esc(c.owner_id)+(c.name?'<div style="font-family:inherit;font-size:12px;color:var(--ink2);margin-top:2px">'+esc(c.name)+'</div>':'')+'</td>'+
@@ -697,8 +697,8 @@ function renderCustomerTable(customers) {
         '<td>'+(c.is_demo?'<span style="color:var(--gold)">Yes</span>':'<span style="color:var(--ink3)">No</span>')+'</td>'+
         '<td><div style="display:flex;gap:5px">'+
           editBtn+
-          '<button class="btn btn-ghost btn-sm" onclick="viewOwnerSites('+JSON.stringify(c.owner_id)+')">Sites</button>'+
-          '<button class="btn btn-ghost btn-sm" onclick="toggleDemoFlag('+JSON.stringify(c.owner_id)+')">Toggle demo</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick=\'viewOwnerSites('+JSON.stringify(c.owner_id)+')\'>Sites</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick=\'toggleDemoFlag('+JSON.stringify(c.owner_id)+')\'>Toggle demo</button>'+
         '</div></td>'+
       '</tr>';
     }).join("");
@@ -771,9 +771,9 @@ function renderDomainQueueTable(wishes) {
       '<td style="color:var(--ink3);font-size:12px">'+date+'</td>'+
       '<td>'+badge+assigned+notes+'</td>'+
       '<td><div style="display:flex;gap:5px;flex-wrap:wrap">'+
-        '<button class="btn btn-green btn-sm" onclick="openAssignDomain('+JSON.stringify(w.id)+','+JSON.stringify(w.choice_1+(w.tld||'.co.zw'))+')">Assign</button>'+
-        (w.status!=="active" ? '<button class="btn btn-ghost btn-sm" onclick="quickUpdateDomain('+JSON.stringify(w.id)+',\'checking\')">Checking</button>' : '')+
-        (w.status!=="failed" ? '<button class="btn btn-red btn-sm" onclick="quickUpdateDomain('+JSON.stringify(w.id)+',\'failed\')">Failed</button>' : '')+
+        '<button class="btn btn-green btn-sm" onclick=\'openAssignDomain('+JSON.stringify(w.id)+','+JSON.stringify(w.choice_1+(w.tld||'.co.zw'))+')\'>Assign</button>'+
+        (w.status!=="active" ? '<button class="btn btn-ghost btn-sm" onclick=\'quickUpdateDomain('+JSON.stringify(w.id)+','+JSON.stringify("checking")+')\'>Checking</button>' : '')+
+        (w.status!=="failed" ? '<button class="btn btn-red btn-sm" onclick=\'quickUpdateDomain('+JSON.stringify(w.id)+','+JSON.stringify("failed")+')\'>Failed</button>' : '')+
       '</div></td>'+
     '</tr>';
   }).join("");
@@ -867,7 +867,7 @@ function renderEmailRoutesTable(routes) {
       '<td>'+verifiedBadge+'</td>'+
       '<td>'+statusBadge2+'</td>'+
       '<td><div style="display:flex;gap:5px">'+
-        (!r.verified ? '<button class="btn btn-green btn-sm" onclick="adminVerifyEmail('+JSON.stringify(r.id)+','+JSON.stringify(r._site_id)+')">Mark verified</button>' : '')+
+        (!r.verified ? '<button class="btn btn-green btn-sm" onclick=\'adminVerifyEmail('+JSON.stringify(r.id)+','+JSON.stringify(r._site_id)+')\'>Mark verified</button>' : '')+
       '</div></td>'+
     '</tr>';
   }).join("");
@@ -1013,7 +1013,7 @@ function renderTemplateAdmin() {
       ? "background-image:url("+JSON.stringify(cfg.previewUrl)+");background-size:cover;background-position:center"
       : "background:"+t.bg;
     return '<div class="tmpl-card">'+
-      '<div class="tmpl-preview" style="'+previewStyle+'">'+
+      '<div class="tmpl-preview" style=\''+previewStyle+'\'>'+
         '<span style="font-size:22px;position:absolute;top:8px;left:10px">'+t.emoji+'</span>'+
         '<span class="tmpl-preview-label">'+esc(t.label)+'</span>'+
       '</div>'+
@@ -1022,7 +1022,7 @@ function renderTemplateAdmin() {
         '<div class="tmpl-url">'+(cfg.previewUrl?'🖼 Preview set':'⚠ No preview image')+'</div>'+
         '<div class="tmpl-url">'+(cfg.demoUrl?'🔗 <a href="'+esc(cfg.demoUrl)+'" target="_blank">'+esc(cfg.demoUrl)+'</a>':'⚠ No demo URL')+'</div>'+
         '<div class="tmpl-actions" style="margin-top:10px">'+
-          '<button class="btn btn-ghost btn-sm" onclick="openEditTemplate('+JSON.stringify(t.id)+')">Edit</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick=\'openEditTemplate('+JSON.stringify(t.id)+')\'>Edit</button>'+
           (cfg.demoUrl?'<a class="btn btn-ghost btn-sm" href="'+esc(cfg.demoUrl)+'" target="_blank">View demo</a>':'')+
         '</div>'+
       '</div>'+
