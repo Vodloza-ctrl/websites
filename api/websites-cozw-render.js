@@ -530,7 +530,53 @@ async function handlePublic(request, env, slug, customDomain) {
   if (!isPreview) {
     const canonicalTag = `<link rel="canonical" href="${esc(baseUrl + '/')}">`;
     const jsonLd = buildLocalBusinessJsonLd(content, baseUrl, templateId);
-    const headExtra = canonicalTag + (jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : '');
+
+    // Some templates already bake in their own favicon/OG tags (e.g.
+    // advisory-firm has its own emoji favicon; bold-retail already has
+    // working og:title/og:description/og:image using {{business_name}}/
+    // {{seo_description}}/{{hero_image_url}} tokens) -- checked before
+    // writing this. Only inject where the template doesn't already have
+    // one, so this never creates duplicate meta tags.
+    const hasFavicon = html.includes('rel="icon"') || html.includes("rel='icon'");
+    const hasOgTags = html.includes('property="og:') || html.includes("property='og:");
+
+    let faviconTag = '';
+    if (!hasFavicon) {
+      // raw.favicon (not content.images.favicon) -- the editor's
+      // getFaviconData() generates a colored-initials-badge PNG data URI
+      // on every save and stores it here, in the outer content wrapper
+      // (sibling to theme/content), then injects it into the editor's
+      // own preview iframe. It was never read anywhere in the actual
+      // publish/render path -- confirmed by grepping this whole file for
+      // "favicon" before writing this, zero matches until now.
+      const faviconUrl = raw.favicon || content.images?.favicon || content.images?.logo || content.logo_url
+        || 'https://assets.websites.co.zw/websites-favicon.svg';
+      faviconTag = `<link rel="icon" href="${esc(faviconUrl)}">`;
+    }
+
+    let ogTags = '';
+    if (!hasOgTags) {
+      const businessName = content.business_name || content.name || '';
+      const ogImageUrl = content.images?.og_image || content.images?.hero || content.hero_image_url
+        || content.images?.logo || content.logo_url
+        || 'https://assets.websites.co.zw/websites-og-image.png';
+      const ogDescRaw = (content.about || content.tagline || '').toString().slice(0, 200);
+      if (businessName) {
+        ogTags = `<meta property="og:type" content="website">`
+          + `<meta property="og:site_name" content="${esc(businessName)}">`
+          + `<meta property="og:title" content="${esc(businessName)}">`
+          + (ogDescRaw ? `<meta property="og:description" content="${esc(ogDescRaw)}">` : '')
+          + `<meta property="og:url" content="${esc(baseUrl + '/')}">`
+          + `<meta property="og:image" content="${esc(ogImageUrl)}">`
+          + `<meta name="twitter:card" content="summary_large_image">`
+          + `<meta name="twitter:title" content="${esc(businessName)}">`
+          + (ogDescRaw ? `<meta name="twitter:description" content="${esc(ogDescRaw)}">` : '')
+          + `<meta name="twitter:image" content="${esc(ogImageUrl)}">`;
+      }
+    }
+
+    const headExtra = canonicalTag + faviconTag + ogTags
+      + (jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : '');
     if (html.includes('</head>')) html = html.replace('</head>', headExtra + '</head>');
   }
 
