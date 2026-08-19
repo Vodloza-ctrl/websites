@@ -621,6 +621,7 @@ async function saveSite(request, env, origin, id) {
     await purgePublicCache(env, id);
     const freshSite = await env.DB.prepare("SELECT custom_domain FROM sites WHERE id=?1").bind(id).first();
     if (freshSite && freshSite.custom_domain) await purgeCustomDomainCache(env, freshSite.custom_domain);
+    await pingIndexNowForSite(env, id);
   }
 
   return jsonResp({ ok: true, site: await loadSite(env, id) }, 200, origin);
@@ -1304,7 +1305,7 @@ async function adminUpdateSite(request, env, origin, id) {
   if (!updates.length) return jsonResp({ error: "nothing_to_update" }, 400, origin);
   updates.push("updated_at=unixepoch()"); values.push(id);
   await env.DB.prepare(`UPDATE sites SET ${updates.join(",")} WHERE id=?${idx}`).bind(...values).run();
-  if (body.status === "published") await purgePublicCache(env, id);
+  if (body.status === "published") { await purgePublicCache(env, id); await pingIndexNowForSite(env, id); }
   return jsonResp({ ok: true, site: await loadSite(env, id) }, 200, origin);
 }
 
@@ -1902,6 +1903,7 @@ async function switchTemplate(request, env, origin, id) {
     await purgePublicCache(env, id);
     const freshSite = await env.DB.prepare("SELECT custom_domain FROM sites WHERE id=?1").bind(id).first();
     if (freshSite && freshSite.custom_domain) await purgeCustomDomainCache(env, freshSite.custom_domain);
+    await pingIndexNowForSite(env, id);
   }
   return jsonResp({ ok: true, site: await loadSite(env, id) }, 200, origin);
 }
@@ -2000,6 +2002,55 @@ async function purgeCustomDomainCache(env, customDomain) {
     await caches.default.delete(new Request(`https://${customDomain}/`));
   } catch (e) {
     console.error("Custom domain cache purge failed", customDomain, e?.message);
+  }
+}
+
+// IndexNow -- pushes the URL to Bing/Yandex/Seznam/Naver immediately
+// instead of waiting for their crawlers to rediscover it via sitemap.
+// Key must match the hardcoded INDEXNOW_KEY in websites-cozw-render.js
+// (that Worker serves the /{key}.txt verification file every host needs).
+// Google doesn't support IndexNow -- that side still relies on sitemap.xml
+// + Search Console, which is a one-time setup step, not per-site code.
+// Best-effort and non-fatal by design, same reasoning as every other
+// side-effect on this platform (cache purge, owner notifications): a
+// failed ping must never fail the actual save/publish.
+const INDEXNOW_KEY = "3fe3c5a5edef4924019c716d4168529d";
+
+async function pingIndexNow(hostname, urlPaths) {
+  if (!hostname || !urlPaths || !urlPaths.length) return;
+  try {
+    await fetch("https://api.indexnow.org/indexnow", {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        host: hostname,
+        key: INDEXNOW_KEY,
+        keyLocation: `https://${hostname}/${INDEXNOW_KEY}.txt`,
+        urlList: urlPaths.map(p => `https://${hostname}${p}`),
+      }),
+    });
+  } catch (e) {
+    console.error("IndexNow ping failed for", hostname, e?.message);
+  }
+}
+
+// Resolves which hostname a site is actually live on right now (prefers
+// the active custom domain, since that's the canonical one after the
+// render worker's subdomain->custom-domain redirect) and pings its
+// homepage. Called after any save/publish that leaves a site live.
+async function pingIndexNowForSite(env, siteId) {
+  try {
+    const site = await env.DB.prepare(
+      "SELECT draft_subdomain, custom_domain, custom_domain_status FROM sites WHERE id=?1"
+    ).bind(siteId).first();
+    if (!site) return;
+    const hostname = (site.custom_domain && site.custom_domain_status === "active")
+      ? site.custom_domain
+      : (site.draft_subdomain ? `${site.draft_subdomain}.websites.co.zw` : null);
+    if (!hostname) return;
+    await pingIndexNow(hostname, ["/"]);
+  } catch (e) {
+    console.error("pingIndexNowForSite failed for", siteId, e?.message);
   }
 }
 

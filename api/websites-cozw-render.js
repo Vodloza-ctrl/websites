@@ -372,17 +372,80 @@ async function handlePublic(request, env, slug, customDomain) {
     }
   }
 
+  // SEO: once a site's custom domain is active, its *.websites.co.zw
+  // subdomain must stop serving the same content directly -- two live
+  // hostnames with identical content is duplicate content, splits link
+  // equity, and risks the wrong (throwaway) URL getting indexed instead
+  // of the client's real domain. 301 (not 302) so search engines transfer
+  // ranking signals to the real domain, not just redirect visitors.
+  // Only fires for subdomain requests (slug truthy) -- a request already
+  // arriving via the custom domain skips this, so there's no redirect loop.
+  if (isLive && slug && site.custom_domain && site.custom_domain_status === 'active') {
+    const target = new URL(request.url);
+    target.protocol = 'https:';
+    target.hostname = site.custom_domain;
+    target.port = '';
+    return Response.redirect(target.toString(), 301);
+  }
+
   const raw = typeof site.content === 'string' ? JSON.parse(site.content) : site.content;
   const content = normalizeContent(raw, site.template_id);
+
+  const seoUrl = new URL(request.url);
+  const baseUrl = `${seoUrl.protocol}//${seoUrl.host}`;
+
+  // IndexNow key verification file. IndexNow requires the key to be
+  // reachable at https://{host}/{key}.txt for whichever host is being
+  // pinged. Since every tenant hostname (subdomain AND custom domain)
+  // routes through this one Worker, a single static route here covers
+  // every site, present and future, with zero per-site setup.
+  if (seoUrl.pathname === `/${INDEXNOW_KEY}.txt`) {
+    return new Response(INDEXNOW_KEY, { headers: { 'Content-Type': 'text/plain;charset=UTF-8' } });
+  }
+
+  if (seoUrl.pathname === '/robots.txt') {
+    const body = isLive
+      ? `User-agent: *\nAllow: /\nSitemap: ${baseUrl}/sitemap.xml\n`
+      : `User-agent: *\nDisallow: /\n`;
+    return new Response(body, {
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8', 'Cache-Control': 'public, max-age=3600' },
+    });
+  }
+
+  if (seoUrl.pathname === '/sitemap.xml') {
+    if (!isLive) return render404();
+    const urls = [{ loc: `${baseUrl}/`, priority: '1.0' }];
+    const blogOn = content.articles_enabled !== false;
+    const published = blogOn && Array.isArray(content.articles)
+      ? content.articles.filter(a => a && a.status === 'published')
+      : [];
+    if (published.length) {
+      urls.push({ loc: `${baseUrl}/blog`, priority: '0.7' });
+      for (const a of published) {
+        const lastmod = a.updated_at || a.published_at;
+        urls.push({
+          loc: `${baseUrl}/blog/${encodeURIComponent(a.slug || a.id)}`,
+          lastmod: lastmod ? new Date(lastmod).toISOString().slice(0, 10) : null,
+          priority: '0.6',
+        });
+      }
+    }
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+      urls.map(u => `  <url><loc>${esc(u.loc)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}<priority>${u.priority}</priority></url>`).join('\n') +
+      `\n</urlset>`;
+    return new Response(xml, {
+      headers: { 'Content-Type': 'application/xml;charset=UTF-8', 'Cache-Control': 'public, max-age=3600' },
+    });
+  }
 
   const blogUrl = new URL(request.url);
   const blogEnabled = content.articles_enabled !== false;
   if (blogEnabled && (blogUrl.pathname === '/blog' || blogUrl.pathname === '/blog/')) {
-    return handleBlogIndex(site, content);
+    return handleBlogIndex(site, content, baseUrl);
   }
   if (blogEnabled && blogUrl.pathname.startsWith('/blog/')) {
     const articleSlug = blogUrl.pathname.slice('/blog/'.length).replace(/\/$/, '');
-    return handleBlogArticle(site, content, articleSlug);
+    return handleBlogArticle(site, content, articleSlug, baseUrl);
   }
 
   const templateId = site.template_id || content.template || 'beauty-salon';
@@ -456,6 +519,19 @@ async function handlePublic(request, env, slug, customDomain) {
   } catch (err) {
     console.error('Template error:', err);
     return new Response(`Template error: ${err.message}`, { status: 500 });
+  }
+
+  // SEO: canonical tag + structured data, injected here rather than left
+  // to each template file to remember -- guarantees every template (all
+  // 15+ existing ones, any future one, any private bespoke build) gets
+  // both automatically. Skipped in preview mode (no canonical claim worth
+  // making on unpublished content, and duplicate JSON-LD across
+  // preview+live would be noise).
+  if (!isPreview) {
+    const canonicalTag = `<link rel="canonical" href="${esc(baseUrl + '/')}">`;
+    const jsonLd = buildLocalBusinessJsonLd(content, baseUrl, templateId);
+    const headExtra = canonicalTag + (jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : '');
+    if (html.includes('</head>')) html = html.replace('</head>', headExtra + '</head>');
   }
 
   return new Response(html, {
@@ -2174,6 +2250,11 @@ function buildCommerceCSS() {
 // --- TEMPLATE EXTRAS ---------------------------------------------------------
 
 // Template IDs that render products via the Universal Commerce SDK
+// IndexNow key -- public by design (the whole point is a search engine can
+// fetch /{key}.txt and confirm it matches, proving domain control). No
+// secret/env var needed; hardcoded here matches the key file route above.
+const INDEXNOW_KEY = '3fe3c5a5edef4924019c716d4168529d';
+
 const STORE_TEMPLATE_IDS = new Set([
   'beauty-salon', 'beauty-atelier', 'beauty-maison',
   'school-institution', 'school', 'church', 'sports',
@@ -5414,6 +5495,59 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// --- STRUCTURED DATA (SEO) ------------------------------------------------------
+//
+// One generic builder used by every template rather than per-template
+// authored schema -- keeps this working for private/bespoke templates too
+// (elite-bespoke, and anything added later) without extra wiring. Maps
+// template_id to a more specific schema.org type where it's an easy, safe
+// call; falls back to LocalBusiness otherwise. Deliberately conservative
+// with fields -- only emits what the site actually has, never invents
+// placeholder data (a schema field pointing at empty/fake data is worse
+// than the field being absent, for search engines and for the client).
+const SCHEMA_TYPE_BY_TEMPLATE = {
+  'grill-house': 'Restaurant', 'restaurant': 'Restaurant', 'grill-noir': 'Restaurant',
+  'grill-market': 'Restaurant', 'grill-frame': 'Restaurant',
+  'beauty-salon': 'BeautySalon', 'beauty-atelier': 'BeautySalon', 'beauty-maison': 'BeautySalon',
+  'school-institution': 'EducationalOrganization', 'school': 'EducationalOrganization', 'sports': 'SportsActivityLocation',
+  'church': 'Church',
+  'advisory-firm': 'ProfessionalService', 'consultant': 'ProfessionalService',
+  'property-estate': 'RealEstateAgent', 'realestate': 'RealEstateAgent',
+  'boutique-fashion': 'ClothingStore', 'boutique': 'ClothingStore', 'fashion-retail': 'ClothingStore',
+  'grocery-fmcg': 'GroceryStore', 'grocery': 'GroceryStore',
+  'hardware-store': 'HardwareStore', 'hardware': 'HardwareStore',
+  'hospitality-inn': 'LodgingBusiness', 'hospitality-sands': 'LodgingBusiness', 'hospitality-wild': 'LodgingBusiness',
+  'medical-clinic': 'MedicalClinic', 'clinic': 'MedicalClinic',
+};
+
+function buildLocalBusinessJsonLd(content, baseUrl, templateId) {
+  const name = content.business_name || content.name || '';
+  if (!name) return null;
+
+  const type = SCHEMA_TYPE_BY_TEMPLATE[templateId] || 'LocalBusiness';
+  const data = { '@context': 'https://schema.org', '@type': type, name, url: baseUrl + '/' };
+
+  const image = content.images?.logo || content.logo_url || content.images?.hero || content.hero_image_url || '';
+  if (image) data.image = image;
+
+  const phone = content.phone || content.contact?.phone || '';
+  if (phone) data.telephone = phone;
+
+  const address = content.address || content.location || content.contact?.address || '';
+  if (address) data.address = { '@type': 'PostalAddress', addressLocality: address, addressCountry: 'ZW' };
+
+  const about = content.about || content.tagline || '';
+  if (about) data.description = String(about).slice(0, 300);
+
+  const sameAs = [
+    content.socials?.facebook, content.socials?.instagram, content.socials?.twitter,
+    content.facebook_url, content.instagram_url,
+  ].filter(Boolean);
+  if (sameAs.length) data.sameAs = sameAs;
+
+  return JSON.stringify(data);
+}
+
 // --- VIDEO NORMALISATION -------------------------------------------------------
 
 function hospVideoInfo(url) {
@@ -5672,7 +5806,7 @@ ${opts.bodyHtml}
 </html>`;
 }
 
-function handleBlogIndex(site, content) {
+function handleBlogIndex(site, content, baseUrl) {
   const articles = (Array.isArray(content.articles) ? content.articles : [])
     .filter(a => a && a.status === 'published')
     .sort((a, b) => (b.published_at || 0) - (a.published_at || 0));
@@ -5695,17 +5829,19 @@ ${articles.length ? `<div class="blog-grid">${articles.map(a => `
   const html = buildBlogLayout(site, content, {
     pageTitle: `Articles — ${businessName}`,
     metaDescription: `Articles and updates from ${businessName}.`,
+    canonical: baseUrl ? `${baseUrl}/blog` : '',
     bodyHtml,
   });
   return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
-function handleBlogArticle(site, content, slug) {
+function handleBlogArticle(site, content, slug, baseUrl) {
   const articles = Array.isArray(content.articles) ? content.articles : [];
   const article = articles.find(a => a && a.status === 'published' && (a.slug === slug || a.id === slug));
   if (!article) return render404();
 
   const businessName = content.business_name || content.name || 'Blog';
+  const articleUrl = baseUrl ? `${baseUrl}/blog/${encodeURIComponent(article.slug || article.id)}` : '';
   const bodyHtml = `
 <article class="wrap">
   ${article.cover_image ? `<img class="article-cover" src="${esc(article.cover_image)}" alt="${esc(article.title || '')}">` : ''}
@@ -5715,13 +5851,28 @@ function handleBlogArticle(site, content, slug) {
   <a class="article-back" href="/blog">&larr; All articles</a>
 </article>`;
 
-  const html = buildBlogLayout(site, content, {
+  let html = buildBlogLayout(site, content, {
     pageTitle: `${article.seo_title || article.title || 'Article'} — ${businessName}`,
     metaDescription: article.seo_description || article.excerpt || '',
     ogImage: article.cover_image || '',
-    canonical: '',
+    canonical: articleUrl,
     bodyHtml,
   });
+
+  if (articleUrl && html.includes('</head>')) {
+    const articleLd = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: article.title || 'Untitled',
+      datePublished: article.published_at ? new Date(article.published_at).toISOString() : undefined,
+      dateModified: article.updated_at ? new Date(article.updated_at).toISOString() : undefined,
+      image: article.cover_image || undefined,
+      author: businessName ? { '@type': 'Organization', name: businessName } : undefined,
+      url: articleUrl,
+    });
+    html = html.replace('</head>', `<script type="application/ld+json">${articleLd}</script></head>`);
+  }
+
   return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
