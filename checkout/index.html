@@ -382,6 +382,7 @@ function renderCheckout() {
   var zigAvailable = zigAmount != null;
   var displayAmount = currency === "ZIG" && zigAvailable ? zigAmount : usdAmount;
   var displayUnit   = currency === "ZIG" && zigAvailable ? "ZiG" : "USD";
+  var isFirstTimePublish = (site.status === "draft" || site.status === "pending_payment") && site.plan !== "trial";
   var siteUrl    = site.draft_subdomain
     ? site.draft_subdomain + ".websites.co.zw"
     : site.id + ".websites.co.zw";
@@ -453,6 +454,16 @@ function renderCheckout() {
           '<span class="pay-label" id="payLabel">Pay ' + fmtAmount(displayAmount, displayUnit) + ' & ' + (purpose === "renewal" ? "renew" : "publish") + ' →</span>' +
           '<div class="spinner"></div>' +
         '</button>' +
+        // Free trial alternative — only offered on a genuine first-time
+        // publish (site.status is draft/pending_payment, checked live
+        // from the API, not from the purpose param, which can't tell an
+        // upgrading trial site apart from a fresh one). Never shown on
+        // renewals or when upgrading an already-published trial site.
+        (isFirstTimePublish
+          ? '<button class="btn-ghost" id="freeTrialBtn" style="width:100%;justify-content:center;margin-top:10px;padding:12px" onclick="startFreeTrial()">' +
+              'Or publish free for 14 days →' +
+            '</button>'
+          : '') +
         '<div class="security-note">🔒 Secured by Paynow · Annual billing · Cancel anytime</div>' +
       '</div>' +
     '</div>'
@@ -490,6 +501,44 @@ function inc(text) {
 // number below — there's no hosted payment page to redirect to, so once
 // the worker accepts the request we go straight to the "check your phone"
 // polling screen instead of navigating away.
+// ── Free trial publish ───────────────────────────────────────────────────
+// No phone, no email, no Paynow round-trip -- straight to the auth Worker's
+// publish-trial endpoint, which sets status='published', plan='trial', and
+// a 14-day expires_at server-side. Redirects straight to the success screen
+// on the customer dashboard, same shape as showSuccess() but with a
+// trial=1 flag so the dashboard can show trial-specific messaging instead
+// of "payment confirmed" language.
+window.startFreeTrial = async function () {
+  var btn = document.getElementById("freeTrialBtn");
+  var err = document.getElementById("errMsg");
+  if (err) { err.className = "msg"; err.innerHTML = ""; }
+  if (btn) { btn.disabled = true; btn.textContent = "Publishing…"; }
+
+  var r;
+  try {
+    r = await apiFetch(API_DASH + "/sites/" + siteId + "/publish-trial", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+  } catch (e) {
+    showFormError("Network error. Check your connection and try again.");
+    if (btn) { btn.disabled = false; btn.textContent = "Or publish free for 14 days →"; }
+    return;
+  }
+
+  if (!r.ok || !r.data.ok) {
+    var detail = r.data.error || "Couldn't publish your trial site.";
+    showFormError(detail === "already_published"
+      ? "This site is already live."
+      : "Couldn't publish: " + detail + ". Try again.");
+    if (btn) { btn.disabled = false; btn.textContent = "Or publish free for 14 days →"; }
+    return;
+  }
+
+  location.href = DASH + "customer.html?trial=1&site=" + encodeURIComponent(siteId);
+};
+
 window.startPayment = async function () {
   var btn = document.getElementById("payBtn");
   var err = document.getElementById("errMsg");

@@ -104,6 +104,7 @@
  *   POST /api/sites/:id/generate
  *   DELETE /api/sites/:id
  *   POST /api/sites/:id/publish       (delegates to payments Worker)
+ *   POST /api/sites/:id/publish-trial (NEW: free 14-day trial publish, no payment)
  *   POST /api/sites/:id/renew         (delegates to payments Worker)
  *   GET  /api/sites/:id/preview-token
  *   POST /api/recommend-template      (AI Worker proxy)
@@ -307,6 +308,9 @@ export default {
       const mPublish = path.match(/^\/api\/sites\/([^/]+)\/publish$/);
       if (mPublish && method === "POST")
         return await publishSite(request, env, origin, mPublish[1]);
+      const mPublishTrial = path.match(/^\/api\/sites\/([^/]+)\/publish-trial$/);
+      if (mPublishTrial && method === "POST")
+        return await publishTrialSite(request, env, origin, mPublishTrial[1]);
       const mRenew = path.match(/^\/api\/sites\/([^/]+)\/renew$/);
       if (mRenew && method === "POST")
         return await renewSite(request, env, origin, mRenew[1]);
@@ -1639,7 +1643,8 @@ async function publishSite(request, env, origin, id) {
   const site = await loadSite(env, id);
   if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
   if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
-  if (site.status !== "draft" && site.status !== "pending_payment") {
+  if (site.status !== "draft" && site.status !== "pending_payment" &&
+      !(site.status === "published" && site.plan === "trial")) {
     return jsonResp({ error: "already_published", status: site.status }, 400, origin);
   }
 
@@ -1712,6 +1717,62 @@ async function publishSite(request, env, origin, id) {
   };
 
   return delegateToPaymentsWorker(env, origin, id, currency, "publish", email, phone, paymentDomainData);
+}
+
+// TRIAL_DAYS: the free trial window. Kept as one named constant since the
+// same value is referenced here, in the renewal-cron sweep, and in the
+// customer-facing copy on checkout.html -- change it in one place, not
+// three, if the trial length ever moves.
+const TRIAL_DAYS = 14;
+
+// POST /api/sites/:id/publish-trial -- the one publish path that skips
+// Paynow entirely. Subdomain only: no custom domain (domainData isn't
+// accepted here at all), no premium template (checkTemplateEntitlement()
+// already gates that independently at save time, verified before writing
+// this -- it doesn't care about site status/plan, so nothing extra needed),
+// no addons (Store Payments/Bookings both require their own separate paid
+// setup regardless of site plan). plan='trial' + a real expires_at is what
+// lets the renewal-cron sweep, the dashboard countdown, and the editor
+// banner all key off the exact same signal.
+async function publishTrialSite(request, env, origin, id) {
+  const ownerId = await resolveOwner(request, env);
+  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+
+  const site = await loadSite(env, id);
+  if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
+  if (site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
+  if (site.status !== "draft" && site.status !== "pending_payment") {
+    return jsonResp({ error: "already_published", status: site.status }, 400, origin);
+  }
+  // plan stays 'trial' even after the renewal-cron sweep reverts an
+  // expired trial site's status back to 'draft' -- deliberately, so this
+  // check catches "already had a free trial" even though status alone
+  // would look identical to a genuinely fresh, never-published site.
+  // Without this, letting a trial lapse and republishing would just mint
+  // another free 14 days, indefinitely.
+  if (site.plan === "trial") {
+    return jsonResp({
+      error: "trial_already_used",
+      message: "This site already had its free trial. Publish with a paid plan to bring it back online.",
+    }, 400, origin);
+  }
+
+  const now = nowSec();
+  const expiresAt = now + TRIAL_DAYS * 86400;
+
+  await env.DB.prepare(
+    "UPDATE sites SET status='published', plan='trial', published_at=?2, expires_at=?3, updated_at=unixepoch() WHERE id=?1"
+  ).bind(id, now, expiresAt).run();
+
+  await purgePublicCache(env, id);
+  await pingIndexNowForSite(env, id);
+
+  return jsonResp({
+    ok: true,
+    site: await loadSite(env, id),
+    trial_expires_at: expiresAt,
+    trial_days: TRIAL_DAYS,
+  }, 200, origin);
 }
 
 async function renewSite(request, env, origin, id) {

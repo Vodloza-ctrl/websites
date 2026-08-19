@@ -157,6 +157,8 @@ async function runRenewalSweep(env, opts = {}) {
     trigger:          opts.trigger || "unknown",
     dryRun,
     graceDays,
+    trialsExpired:    0,
+    trialRemindersSent: 0,
     expiredToGrace:   0,
     graceToSuspended: 0,
     remindersSent:    0,
@@ -166,6 +168,63 @@ async function runRenewalSweep(env, opts = {}) {
     cachePurged:      0,
     errors:           [],
   };
+
+  try {
+    // ── 0) TRIAL sites: published (trial) → draft, no grace ──────────────────
+    // Free trial sites skip the grace/suspended pipeline entirely -- that
+    // pipeline exists to soften a billing lapse, and a trial was never
+    // billed. Straight back to draft (still fully editable, just not
+    // live) the moment the trial window closes. A short pre-expiry
+    // WhatsApp nudge fires separately below, mirroring the paid-site
+    // reminder pattern but with trial-specific copy.
+    const TRIAL_REMINDER_DAYS = 3;
+    const trialsExpiring = await querySites(env,
+      "status='published' AND plan='trial' AND expires_at IS NOT NULL AND expires_at <= ?1",
+      [now]
+    );
+    if (trialsExpiring.length && !dryRun) {
+      await env.DB.prepare(
+        "UPDATE sites SET status='draft', updated_at=unixepoch() " +
+        "WHERE status='published' AND plan='trial' AND expires_at IS NOT NULL AND expires_at <= ?1"
+      ).bind(now).run();
+    }
+    summary.trialsExpired = trialsExpiring.length;
+    for (const site of trialsExpiring) {
+      summary.notified += await notifyWhatsApp(env, site, "trial_ended", {}, dryRun);
+      if (!dryRun) {
+        await purgeSiteCache(env, site.draft_subdomain, site.custom_domain, site.custom_domain_status);
+        summary.cachePurged++;
+      }
+    }
+
+    const trialReminderHorizon = now + TRIAL_REMINDER_DAYS * 86400;
+    const trialsReminding = await querySites(env,
+      "status='published' AND plan='trial' AND expires_at IS NOT NULL " +
+      "AND expires_at > ?1 AND expires_at <= ?2 AND (renewal_reminder_stage IS NULL OR renewal_reminder_stage != -1)",
+      [now, trialReminderHorizon]
+    );
+    summary.trialRemindersSent = 0;
+    for (const site of trialsReminding) {
+      const daysLeft = Math.max(1, Math.ceil((site.expires_at - now) / 86400));
+      const sent = await notifyWhatsApp(env, site, "trial_reminder", { daysLeft }, dryRun);
+      summary.trialRemindersSent += sent;
+      summary.notified += sent;
+      if (sent && !dryRun) {
+        // Reuses the same dedup column paid-site reminders use -- safe
+        // because a site is never plan='trial' and mid paid-reminder-cycle
+        // at the same time, so there's no collision between the two
+        // meanings. -1 is a sentinel meaning "trial reminder already sent",
+        // distinct from the numeric day-threshold values paid reminders use.
+        await env.DB.prepare(
+          "UPDATE sites SET renewal_reminder_stage=-1, updated_at=unixepoch() WHERE id=?1"
+        ).bind(site.id).run().catch(() => {});
+      }
+    }
+  } catch (err) {
+    const msg = err?.message || String(err);
+    summary.errors.push("trial sweep: " + msg);
+    console.error("trial sweep error:", msg);
+  }
 
   try {
     // ── 1) published → grace ─────────────────────────────────────────────────
@@ -431,6 +490,19 @@ function buildMessage(event, site, extra) {
         `💡 Reminder: your websites.co.zw subscription for *${name}* expires in ` +
         `*${extra.daysLeft} day${extra.daysLeft === 1 ? "" : "s"}*.\n\n` +
         `Renew now to keep your site live: ${renewUrl}`
+      );
+
+    case "trial_reminder":
+      return (
+        `⏳ Your free trial for *${name}* ends in ` +
+        `*${extra.daysLeft} day${extra.daysLeft === 1 ? "" : "s"}*.\n\n` +
+        `Upgrade now to keep it live — nothing you've built will be lost:\n${renewUrl}`
+      );
+
+    case "trial_ended":
+      return (
+        `Your free trial for *${name}* has ended, so it's no longer live on the web.\n\n` +
+        `Nothing is lost — your site is saved exactly as you left it. Upgrade any time to publish it again:\n${renewUrl}`
       );
 
     default:

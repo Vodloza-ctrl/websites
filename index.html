@@ -4,17 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>websites — where Zimbabwe builds online</title>
-<meta name="description" content="Build a professional website for your Zimbabwean business in minutes. Free .co.zw domain, mobile-friendly templates, WhatsApp store, and no design skills needed. Starting at $30/year.">
+<meta name="description" content="Build a professional website for your Zimbabwean business in minutes. Publish free for 14 days — no card required. Free .co.zw domain, mobile-friendly templates, WhatsApp store.">
 <link rel="canonical" href="https://www.websites.co.zw/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="websites.co.zw">
 <meta property="og:title" content="websites — where Zimbabwe builds online">
-<meta property="og:description" content="Build a professional website for your Zimbabwean business in minutes. Free .co.zw domain, mobile-friendly templates, WhatsApp store, and no design skills needed.">
+<meta property="og:description" content="Build a professional website for your Zimbabwean business in minutes. Publish free for 14 days, no card required.">
 <meta property="og:url" content="https://www.websites.co.zw/">
 <meta property="og:image" content="https://assets.websites.co.zw/websites-og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="websites — where Zimbabwe builds online">
-<meta name="twitter:description" content="Build a professional website for your Zimbabwean business in minutes. Free .co.zw domain, mobile-friendly templates, WhatsApp store, and no design skills needed.">
+<meta name="twitter:description" content="Build a professional website for your Zimbabwean business in minutes. Publish free for 14 days, no card required.">
 <meta name="twitter:image" content="https://assets.websites.co.zw/websites-og-image.png">
 <script type="application/ld+json">
 {
@@ -179,8 +179,8 @@ svg{display:block}
 .step p{font-size:.9rem;color:var(--ink2)}
 
 /* ── Pricing ──────────────────────────────────────────────────────────── */
-.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
-@media(max-width:900px){.price-grid{grid-template-columns:1fr 1fr}} @media(max-width:640px){.price-grid{grid-template-columns:1fr}}
+.price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px}
+@media(max-width:1000px){.price-grid{grid-template-columns:1fr 1fr}} @media(max-width:640px){.price-grid{grid-template-columns:1fr}}
 .price-card{border:1px solid var(--line);border-radius:var(--r);padding:28px 24px;background:var(--card)}
 .price-card.popular{border:2px solid var(--ink);position:relative}
 .price-card .pop-tag{position:absolute;top:-10px;left:20px;background:var(--ink);color:#fff;font-size:.65rem;font-weight:700;padding:2px 16px;border-radius:20px}
@@ -334,7 +334,7 @@ footer{padding:56px 0 40px}
 <section style="background:var(--card);border-top:1px solid var(--line);padding:70px 0">
   <div class="wrap">
     <h2 style="text-align:center;font-size:2rem;margin-bottom:12px">Simple pricing</h2>
-    <p style="text-align:center;color:var(--ink2);margin-bottom:0">Start with a free domain. Upgrade only when you're ready.</p>
+    <p style="text-align:center;color:var(--ink2);margin-bottom:0">Publish free for 14 days. Upgrade only if you love it.</p>
     <div class="price-grid" id="priceGrid"></div>
   </div>
 </section>
@@ -771,18 +771,24 @@ function priceList(items) {
   return items.map(t => `<li>${icon('check', 15, 2.5)}${t}</li>`).join('');
 }
 DOM.priceGrid.innerHTML = `
+  <div class="price-card popular">
+    <span class="pop-tag">Start here</span>
+    <h3>Free Trial</h3>
+    <div class="price">$0 <span>/14 days</span></div>
+    <ul>${priceList(['Live on yourbiz.websites.co.zw', 'Full editor access', 'No card required'])}</ul>
+    <a href="#start" class="btn btn-primary" style="width:100%">Publish free</a>
+  </div>
   <div class="price-card">
     <h3>Website</h3>
     <div class="price">$30 <span>/yr</span></div>
     <ul>${priceList(['Free .co.zw domain', 'WhatsApp integration', 'Self-edit'])}</ul>
     <a href="#start" class="btn btn-ghost" style="width:100%">Start</a>
   </div>
-  <div class="price-card popular">
-    <span class="pop-tag">Popular</span>
+  <div class="price-card">
     <h3>Website + .com</h3>
     <div class="price">$50 <span>/yr</span></div>
     <ul>${priceList(['Everything in Website', 'Your own .com', 'Priority support'])}</ul>
-    <a href="#start" class="btn btn-primary" style="width:100%">Get .com</a>
+    <a href="#start" class="btn btn-ghost" style="width:100%">Get .com</a>
   </div>
   <div class="price-card">
     <h3>Online Store</h3>

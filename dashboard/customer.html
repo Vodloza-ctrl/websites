@@ -531,11 +531,15 @@
       ? '<a href="'+esc(pub)+'" target="_blank" rel="noopener">'+esc(pub.replace(/^https:\/\//,""))+'</a>'
       : '<span class="off">'+esc(pub ? pub.replace(/^https:\/\//,"") : "no address yet")+' \u00b7 not public yet</span>';
 
-    var planLabel = s.plan==="pro" ? "Pro" : "Starter";
+    var planLabel = s.plan==="trial" ? "Free Trial" : (s.plan==="pro" ? "Pro" : "Starter");
     var d = daysLeft(s);
     var expiry = s._is_demo
       ? "Demo site — no billing"
-      : (s.expires_at ? (d>0 ? "Renews in "+d+" day"+(d===1?"":"s") : "Expired") : "Not published");
+      : (s.expires_at
+          ? (d>0
+              ? (s.plan==="trial" ? "Free trial ends in "+d+" day"+(d===1?"":"s") : "Renews in "+d+" day"+(d===1?"":"s"))
+              : (s.plan==="trial" ? "Trial ended" : "Expired"))
+          : (s.plan==="trial" ? "Free trial used — upgrade to republish" : "Not published"));
 
     // ── Actions with Delete button ────────────────────────────────────────
     var actions =
@@ -551,6 +555,8 @@
     if (!s._is_demo) {
       if (s.status==="draft" || s.status==="pending_payment") {
         actions += '<button class="btn btn-gold" onclick="startPublish(\''+esc(s.id)+'\',\''+esc(s.site_name||s.id)+'\',\''+esc(s.status)+'\')">🚀 Publish</button>';
+      } else if (s.status==="published" && s.plan==="trial") {
+        actions += '<button class="btn btn-gold" onclick="startPublish(\''+esc(s.id)+'\',\''+esc(s.site_name||s.id)+'\',\''+esc(s.status)+'\')">⭐ Upgrade now</button>';
       } else if (s.status==="grace" || s.status==="suspended" || (s.status==="published" && d!=null && d<=14)) {
         actions += '<button class="btn btn-gold" onclick="startPublish(\''+esc(s.id)+'\',\''+esc(s.site_name||s.id)+'\',\''+esc(s.status)+'\')">↺ Renew</button>';
       }
@@ -1025,6 +1031,23 @@
           document.getElementById("pub-modal-title").textContent = renewed ? "Site renewed" : "Publish your site";
           document.getElementById("pub-overlay").style.display = "flex";
           renderStep3_PostPayment(siteId, renewed);
+        }
+        if (typeof doRefresh === "function") doRefresh();
+      }, 400);
+    } else if (p.get("trial") === "1") {
+      // Free trial publish -- no Paynow round-trip happened, so there's no
+      // receipt/reference to show. Simpler confirmation than the paid
+      // post-payment screen, honest that this is time-limited.
+      history.replaceState({}, "", location.pathname);
+      var trialSiteId = p.get("site") || "";
+      setTimeout(function() {
+        if (trialSiteId) {
+          document.getElementById("pub-modal-title").textContent = "Your site is live!";
+          document.getElementById("pub-overlay").style.display = "flex";
+          setBody(
+            '<p style="font-size:13.5px;color:#4a4d59;margin:0 0 16px;line-height:1.6">Your site is published free for the next <strong>14 days</strong>. Share it, show it around, see how it feels — upgrade any time to keep it live for good.</p>'+
+            '<button class="btn btn-gold" style="width:100%;justify-content:center" onclick="closePubModal()">Got it →</button>'
+          );
         }
         if (typeof doRefresh === "function") doRefresh();
       }, 400);
