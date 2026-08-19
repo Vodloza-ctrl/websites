@@ -905,6 +905,21 @@ img{display:block;max-width:100%}
 <script>
 (function(){
 "use strict";
+// Admin impersonation entry point: if an admin opened this editor via
+// admin.html's "Edit" button, the URL carries a one-time admin_token
+// (minted by POST /api/admin/impersonate). Consume it immediately, store
+// it as the normal session token so every existing api()/getToken() call
+// works unmodified, then strip it from the URL so it never sits visible
+// in the address bar, browser history, or gets shared by accident.
+(function consumeAdminToken(){
+  var params = new URLSearchParams(location.search);
+  var adminToken = params.get("admin_token");
+  if (!adminToken) return;
+  localStorage.setItem("wcz_token", adminToken);
+  params.delete("admin_token");
+  var cleanUrl = location.pathname + (params.toString() ? "?" + params.toString() : "") + location.hash;
+  history.replaceState(null, "", cleanUrl);
+})();
 var API_BASE="https://app.websites.co.zw";
 var DASH_URL="https://www.websites.co.zw/dashboard/customer.html";
 var siteId=new URLSearchParams(location.search).get("site");

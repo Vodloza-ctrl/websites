@@ -120,6 +120,7 @@
  *   GET  /api/payments/:ref           (thin proxy to payments Worker)
  *   GET  /api/admin/stats
  *   GET  /api/admin/secrets-check     (NEW: reports true/false per secret, never values)
+ *   POST /api/admin/impersonate       (NEW: mints a 2hr owner session token for admin editor access)
  *   GET  /api/admin/sites
  *   PUT  /api/admin/sites/:id
  *   PUT  /api/admin/owners/:id
@@ -258,6 +259,8 @@ export default {
       const mER = path.match(/^\/api\/admin\/email-routes\/([^/]+)\/verify$/);
       if (mER && method === "PUT")
         return await adminVerifyEmailRoute(request, env, origin, mER[1]);
+      if (path === "/api/admin/impersonate" && method === "POST")
+        return await adminImpersonate(request, env, origin);
     } catch (e) {
       return jsonResp({ error: "admin_error", detail: String(e?.message || e) }, 500, origin);
     }
@@ -1460,6 +1463,51 @@ async function adminVerifyEmailRoute(request, env, origin, routeId) {
   if (!route) return jsonResp({ error: "not_found" }, 404, origin);
   await env.DB.prepare("UPDATE email_routes SET verified=1,status='active',updated_at=unixepoch() WHERE id=?1").bind(routeId).run();
   return jsonResp({ ok: true, route_id: routeId, status: "active", verified: true }, 200, origin);
+}
+
+// POST /api/admin/impersonate  body: { owner_id } or { site_id }
+// Mints a real session token for the given owner, exactly like a normal
+// OTP login would, without needing that owner's phone or email. This is
+// the admin equivalent of logging in as the client -- built for owners
+// who aren't going to self-serve edit (many of Lenni's clients aren't
+// technical), so the admin can open their editor directly.
+//
+// Deliberately short-lived (2 hours, not the normal 30-day SESSION_TTL)
+// -- an admin-minted token sitting in a URL or browser tab is a bigger
+// blast radius than a normal login, so it should die fast on its own
+// rather than relying on someone remembering to log out.
+//
+// Auth: same ADMIN_SECRET bearer check as every other /api/admin/* route.
+// This does NOT expose or require the owner's phone/email at all.
+const ADMIN_SESSION_TTL = 2 * 3600;
+
+async function adminImpersonate(request, env, origin) {
+  if (!resolveAdmin(request, env)) return jsonResp({ error: "unauthorized" }, 401, origin);
+  const body = await readJson(request);
+  let ownerId = body.owner_id ? String(body.owner_id) : null;
+
+  if (!ownerId && body.site_id) {
+    const site = await env.DB.prepare("SELECT owner_id FROM sites WHERE id=?1").bind(String(body.site_id)).first();
+    if (!site) return jsonResp({ error: "site_not_found" }, 404, origin);
+    ownerId = site.owner_id;
+  }
+  if (!ownerId) return jsonResp({ error: "owner_id_or_site_id_required" }, 400, origin);
+
+  const owner = await env.DB.prepare("SELECT id, phone, name FROM owners WHERE id=?1").bind(ownerId).first();
+  if (!owner) return jsonResp({ error: "owner_not_found" }, 404, origin);
+
+  const token = uid(48);
+  const now = nowSec();
+  await env.DB.prepare(
+    "INSERT INTO sessions (token, owner_id, expires_at, created_at) VALUES (?1, ?2, ?3, ?4)"
+  ).bind(token, ownerId, now + ADMIN_SESSION_TTL, now).run();
+
+  return jsonResp({
+    ok: true,
+    token,
+    expires_in: ADMIN_SESSION_TTL,
+    owner: { id: owner.id, phone: owner.phone, name: owner.name },
+  }, 200, origin);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

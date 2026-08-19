@@ -418,6 +418,30 @@ function userHeaders() {
   return { "Content-Type":"application/json", "Authorization":"Bearer "+(localStorage.getItem("wcz_token")||"") };
 }
 
+// Opens a client's editor in a new tab, logged in as them, without needing
+// their phone/email OTP at all. Mints a short-lived (2hr) session token via
+// the admin-only /api/admin/impersonate endpoint, then hands it to
+// editor.html via a one-time URL param -- editor.html reads admin_token on
+// load, stores it as the normal session token, and strips it from the URL
+// immediately so it never sits in browser history or gets shared by
+// accident. Built for clients who aren't going to self-serve edit; this is
+// the "admin logs in as them" path referenced by the Edit button below.
+window.openEditSite = async function(siteId) {
+  var r = await fetch(ADMIN_API + "/impersonate", {
+    method: "POST",
+    headers: adminHeaders(),
+    body: JSON.stringify({ site_id: siteId }),
+  });
+  var data = await r.json().catch(function(){ return {}; });
+  if (!r.ok || !data.token) {
+    toast("Couldn't open editor — " + (data.error || "check ADMIN_SECRET"), "err");
+    return;
+  }
+  var url = "https://www.websites.co.zw/editor/?site=" + encodeURIComponent(siteId) +
+    "&admin_token=" + encodeURIComponent(data.token);
+  window.open(url, "_blank");
+};
+
 var token = localStorage.getItem("wcz_token");
 if (!token) {
   location.replace("/dashboard/customer.html?next="+encodeURIComponent(location.href));
