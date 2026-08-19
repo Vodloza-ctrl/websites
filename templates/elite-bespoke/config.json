@@ -1,0 +1,56 @@
+{
+  "template_id": "elite-bespoke",
+  "name": "Elite Sports Institute (Custom)",
+  "description": "Private bespoke build — not shown in the public template picker",
+  "palette": "custom",
+  "font_pair": "custom",
+  "defaultPalette": "navy-gold",
+  "defaultPrimaryColor": "#8B6B1F",
+  "sections": ["hero", "services", "about", "team", "testimonials", "contact"],
+  "tokens": {
+    "business_name": "Elite Sports Institute",
+    "tagline": "Youth Football Development \u00b7 Zimbabwe",
+    "about": "Welcome to Elite Sports Institute. The home of Elite youth football development, specialised training, international tours and sports specific products. Our mission is to give young aspiring football players the opportunity and platform to professional football training.\n\nWe provide clear pathways for players to reach their maximum potential through structured development systems. From beginners to elite level athletes, we support every stage of growth.\n\nWe believe development must start early in a professional environment that builds discipline through football. The game has the power to transform lives far beyond sport. Football builds teamwork, resilience, respect, and responsibility.\n\nWe offer structured programs for youth development focusing on technical, tactical, physical, and mental growth, with access to tournaments, camps, coaching mentorship and international exposure opportunities for serious athletes.",
+    "hero_image_url": "https://eliteinstitute.sale.co.zw/Elite-Institue-Text-.png",
+    "logo_url": "https://eliteinstitute.sale.co.zw/Elite-Institue-Text-.png",
+    "phone": "+263 71 663 7184",
+    "whatsapp": "+263716637184",
+    "email": "nyathi.mire@gmail.com",
+    "address": "Bulawayo, Zimbabwe",
+    "facebook_url": "https://www.facebook.com/p/Elite-Sports-Institute-61565788684113/"
+  },
+  "flags": {
+    "show_services": true,
+    "show_team": true,
+    "show_testimonials": true
+  },
+  "lists": [
+    {
+      "key": "services",
+      "emptyHtml": "<p style='text-align:center;padding:40px;color:var(--text-muted)'>Programs coming soon.</p>",
+      "itemTemplate": "<div class=\"elite-card\"><div class=\"elite-image\">{{#if item.photo}}<img src=\"{{item.photo}}\" alt=\"{{item.name}}\">{{/if}}</div><div class=\"elite-title\">{{item.name}}</div>{{#if item.description}}<div class=\"elite-card-desc\">{{item.description}}</div>{{/if}}</div>"
+    },
+    {
+      "key": "team",
+      "emptyHtml": "<p style='text-align:center;padding:40px;color:var(--text-muted)'>Coaching staff coming soon.</p>",
+      "itemTemplate": "<div class=\"elite-profile-card\"><div class=\"elite-image-wrapper\">{{#if item.photo}}<div class=\"elite-profile-image\" style=\"background-image:url('{{item.photo}}')\"></div>{{else}}<div class=\"elite-profile-image\"></div>{{/if}}</div><h2 class=\"elite-profile-name\">{{item.name}}</h2><div class=\"elite-divider\"></div><p class=\"elite-profile-title\">{{item.role}}</p><div class=\"elite-profile-bio\">{{item.bio}}</div></div>"
+    },
+    {
+      "key": "testimonials",
+      "emptyHtml": "",
+      "itemTemplate": "<div class=\"elite-testi-card\"><p class=\"elite-testi-label\">{{item.role}}</p><p class=\"elite-testi-text\">\u201c{{item.text}}\u201d</p><p class=\"elite-testi-name\">{{item.name}}</p><p class=\"elite-testi-sub\">Player Testimonial</p></div>"
+    }
+  ],
+  "conditionals": [
+    { "flag": "show_services", "type": "list_present", "field": "services" },
+    { "flag": "show_team", "type": "list_present", "field": "team" },
+    { "flag": "show_testimonials", "type": "list_present", "field": "testimonials" },
+    { "flag": "has_logo", "type": "field_present", "field": "logo_url" },
+    { "flag": "has_hero_image", "type": "field_present", "field": "hero_image_url" },
+    { "flag": "has_facebook", "type": "field_present", "field": "socials.facebook_url" }
+  ],
+  "typeLabels": {
+    "elite-bespoke": "Sports Academy"
+  },
+  "defaultTypeLabel": "Sports Academy"
+}

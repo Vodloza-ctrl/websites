@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{business_name}}</title>
+<meta name="description" content="{{tagline}}">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --gold: {{primary_color}};
+  --gold-light: #ffc634;
+  --sky: #6CABDD;
+  --black: #000;
+  --white: #fff;
+  --text-muted: rgba(255,255,255,0.72);
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Open Sans', sans-serif; background: var(--black); color: var(--white); line-height: 1.6; overflow-x: hidden; }
+img { display:block; max-width:100%; }
+a { text-decoration:none; color:inherit; }
+
+header { position: sticky; top: 0; z-index: 1000; background: var(--black); border-bottom: 2px solid var(--gold); box-shadow: 0 2px 18px rgba(108,171,221,0.08); }
+.nav-inner { max-width: 1400px; margin: 0 auto; padding: 0 30px; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.nav-logo img { height: 48px; width: auto; }
+.nav-logo-text { font-family:'Oswald',sans-serif; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; font-size:15px; }
+.nav-links { display: flex; list-style: none; gap: 36px; align-items: center; }
+.nav-links a { font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--white); transition: color 0.2s; }
+.nav-links a:hover { color: var(--sky); }
+.nav-cta { background: var(--gold) !important; color: var(--white) !important; padding: 9px 22px !important; letter-spacing: 1.5px !important; transition: background 0.2s !important; }
+.nav-cta:hover { background: var(--sky) !important; color: var(--black) !important; }
+.hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; background:none; border:none; padding:4px; }
+.hamburger span { display:block; width:26px; height:2px; background:var(--white); transition:all 0.3s; }
+.mobile-nav { display:none; flex-direction:column; background:#0a0a0a; border-top:1px solid var(--gold); padding:20px 30px 30px; gap:0; }
+.mobile-nav.open { display:flex; }
+.mobile-nav a { font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:2px; text-transform:uppercase; color:var(--white); padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.08); }
+
+.hero-logo-section { background: var(--black); background-image: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(108,171,221,0.10) 0%, transparent 70%); padding: 70px 20px 60px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.hero-logo-section img { max-width: 480px; width: 80%; margin: 0 auto; }
+.hero-logo-section .hero-name-fallback { font-family:'Oswald',sans-serif; font-size:clamp(2rem,6vw,3.5rem); font-weight:700; text-transform:uppercase; letter-spacing:2px; }
+.hero-tagline { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: var(--sky); }
+
+.elite-programs { padding: 0 20px 10px; max-width:1400px; margin:0 auto; }
+.elite-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+.elite-card { background:#0a0a0a; border:1px solid rgba(139,107,31,0.35); border-radius:6px; overflow:hidden; transition:transform .2s,border-color .2s; }
+.elite-card:hover { transform:translateY(-4px); border-color:var(--gold); }
+.elite-image { aspect-ratio:1/1; overflow:hidden; background:#111; }
+.elite-image img { width:100%; height:100%; object-fit:cover; }
+.elite-title { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; text-align:center; padding:16px 10px; }
+.elite-card-desc { font-size:12.5px; color:var(--text-muted); text-align:center; padding:0 14px 16px; }
+
+.elite-minimal-cta { max-width:1400px; margin:40px auto; padding:0 20px; position:relative; }
+.elite-image-wrap { border-radius:8px; overflow:hidden; max-height:420px; }
+.elite-image-wrap img { width:100%; height:100%; object-fit:cover; filter:brightness(0.55); }
+.elite-enrol-btn { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--gold); color:var(--white); font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:3px; text-transform:uppercase; padding:18px 46px; border-radius:4px; font-size:15px; transition:background .2s; }
+.elite-enrol-btn:hover { background:var(--sky); color:var(--black); }
+
+.split-section { display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:50px; max-width:1300px; margin:80px auto; padding:0 30px; }
+.split-section.reverse { direction:rtl; }
+.split-section.reverse > * { direction:ltr; }
+.split-image img { border-radius:8px; }
+.split-text h2 { font-family:'Oswald',sans-serif; font-size:2rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:18px; }
+.split-text h2 span { color:var(--gold); }
+.split-text p { color:var(--text-muted); margin-bottom:14px; white-space:pre-line; }
+
+.elite-team-section { max-width:900px; margin:80px auto; padding:0 30px; text-align:center; }
+.team-heading { font-family:'Oswald',sans-serif; font-size:2rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:40px; }
+.elite-profile-card { display:flex; flex-direction:column; align-items:center; gap:6px; margin-bottom:36px; }
+.elite-image-wrapper { margin-bottom:12px; }
+.elite-profile-image { width:150px; height:150px; border-radius:50%; background:linear-gradient(145deg,#1a1a1a,#0a0a0a); background-size:cover; background-position:center; border:3px solid var(--gold); }
+.elite-profile-name { font-family:'Oswald',sans-serif; font-size:1.4rem; text-transform:uppercase; letter-spacing:1px; }
+.elite-divider { width:40px; height:2px; background:var(--gold); margin:8px 0 4px; }
+.elite-profile-title { color:var(--sky); font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:16px; }
+.elite-profile-bio { text-align:left; color:var(--text-muted); white-space:pre-line; }
+.elite-profile-bio p { margin-bottom:12px; }
+
+.elite-testi-wrap { max-width:760px; margin:80px auto; padding:0 30px; }
+.elite-testi-card { text-align:center; border:1px solid rgba(139,107,31,0.35); border-radius:10px; padding:40px 30px; }
+.elite-testi-label { font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:18px; }
+.elite-testi-text { font-size:1.05rem; font-style:italic; color:var(--white); margin-bottom:20px; line-height:1.7; }
+.elite-testi-name { font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+.elite-testi-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+
+.contact-section { max-width:1300px; margin:80px auto; padding:0 30px; display:grid; grid-template-columns:1.2fr 1fr; gap:60px; }
+.contact-section h2 { font-family:'Oswald',sans-serif; font-size:2rem; text-transform:uppercase; margin-bottom:16px; }
+.contact-section > div:first-child p { color:var(--text-muted); margin-bottom:28px; }
+.contact-details strong { display:block; font-family:'Oswald',sans-serif; letter-spacing:1.5px; margin-bottom:14px; }
+.contact-details div { margin-bottom:10px; color:var(--text-muted); }
+.wa-btn { display:inline-block; margin-top:20px; background:var(--gold); color:var(--white); font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:2px; text-transform:uppercase; padding:14px 32px; border-radius:4px; font-size:13px; }
+.wa-btn:hover { background:var(--sky); color:var(--black); }
+
+footer { border-top:1px solid rgba(139,107,31,0.3); margin-top:60px; padding:50px 30px 30px; }
+.footer-inner { max-width:1300px; margin:0 auto; display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; }
+footer h4 { font-family:'Oswald',sans-serif; letter-spacing:1.5px; text-transform:uppercase; font-size:13px; margin-bottom:16px; color:var(--gold); }
+footer p, footer div { color:var(--text-muted); font-size:14px; margin-bottom:8px; }
+footer ul { list-style:none; }
+footer ul li { margin-bottom:8px; }
+.footer-bottom { text-align:center; padding-top:30px; margin-top:30px; border-top:1px solid rgba(255,255,255,0.08); font-size:12.5px; color:var(--text-muted); }
+
+@media (max-width:900px) {
+  .nav-links { display:none; }
+  .hamburger { display:flex; }
+  .elite-grid { grid-template-columns:repeat(2,1fr); }
+  .split-section, .split-section.reverse { grid-template-columns:1fr; direction:ltr; }
+  .contact-section { grid-template-columns:1fr; }
+  .footer-inner { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <!--WCZ:has_logo--><img src="{{logo_url}}" alt="{{business_name}}"><!--WCZ:/has_logo-->
+    </a>
+    <nav class="nav-links">
+      <a href="#about">About</a>
+      <a href="#services">Programs</a>
+      <a href="#team">Our Team</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#contact">Contact</a>
+      <a href="{{whatsapp_wa_link}}" class="nav-cta" target="_blank">Enrol Now</a>
+    </nav>
+    <button class="hamburger" id="hamburgerBtn" onclick="document.getElementById('mobileNav').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="#about">About</a>
+    <a href="#services">Programs</a>
+    <a href="#team">Our Team</a>
+    <a href="#testimonials">Testimonials</a>
+    <a href="#contact">Contact</a>
+    <a href="{{whatsapp_wa_link}}" target="_blank">Enrol Now</a>
+  </div>
+</header>
+
+<section class="hero-logo-section">
+  <!--WCZ:has_logo--><img src="{{logo_url}}" alt="{{business_name}}"><!--WCZ:/has_logo-->
+  <p class="hero-tagline">{{tagline}}</p>
+</section>
+
+<div id="services" class="elite-programs">
+  <div class="elite-grid">
+    {{#each services}}{{/each}}
+  </div>
+</div>
+
+<div class="elite-minimal-cta">
+  <div class="elite-image-wrap">
+    <!--WCZ:has_hero_image--><img src="{{hero_image_url}}" alt="{{business_name}}"><!--WCZ:/has_hero_image-->
+  </div>
+  <a href="{{whatsapp_wa_link}}" target="_blank" class="elite-enrol-btn">Enrol Now</a>
+</div>
+
+<div id="about">
+  <div class="split-section">
+    <div class="split-image"><!--WCZ:has_hero_image--><img src="{{hero_image_url}}" alt="{{business_name}}"><!--WCZ:/has_hero_image--></div>
+    <div class="split-text">
+      <h2>Who <span>We Are</span></h2>
+      <p>{{about}}</p>
+    </div>
+  </div>
+</div>
+
+<section id="team" class="elite-team-section">
+  <h2 class="team-heading">Meet Our Team</h2>
+  {{#each team}}{{/each}}
+</section>
+
+<div id="testimonials" class="elite-testi-wrap">
+  {{#each testimonials}}{{/each}}
+</div>
+
+<section id="contact" class="contact-section">
+  <div>
+    <h2>Get In Touch</h2>
+    <p>Have a question about our programs, tours, camps or elite training sessions? Send us a message and we'll get back to you shortly.</p>
+    <a href="{{whatsapp_wa_link}}" target="_blank" class="wa-btn">Send via WhatsApp</a>
+  </div>
+  <div class="contact-details">
+    <strong>{{business_name}}</strong>
+    <div>{{phone}}</div>
+    <div>{{email}}</div>
+    <div>{{address}}</div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <h4>{{business_name}}</h4>
+      <p>{{tagline}}</p>
+    </div>
+    <div>
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#services">Programs</a></li>
+        <li><a href="#team">Our Team</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact Us</h4>
+      <div>WhatsApp: {{phone}}</div>
+      <div>Email: {{email}}</div>
+      <div>Location: {{address}}</div>
+    </div>
+  </div>
+  <div class="footer-bottom">&copy; {{business_name}}. All rights reserved. &middot; Built on websites.co.zw</div>
+</footer>
+
+</body>
+</html>
