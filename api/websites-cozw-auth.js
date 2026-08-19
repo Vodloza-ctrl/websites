@@ -220,6 +220,21 @@ export default {
     if (path === "/health")
       return respond({ ok: true, service: "websites-cozw-auth", version: "5.11" }, 200, origin);
 
+    // ── Sitemap index -- one URL covering every published tenant site ────────
+    // www.websites.co.zw is bound straight to the Pages project (static files,
+    // no D1 access), so a dynamic domain-wide index can't live there. This
+    // Worker already has D1 access and its own custom hostname
+    // (app.websites.co.zw), which is a subdomain of the same
+    // websites.co.zw Domain property Lenni already verified in Search
+    // Console -- so per Google's sitemap cross-submission support (any host
+    // verified under the same account/domain can host sitemaps referencing
+    // any other verified host), one file here can legally list every
+    // tenant's own sitemap.xml. No auth: published site hostnames are
+    // already public knowledge (anyone can browse to them), and Search
+    // Console needs to fetch this without credentials.
+    if (path === "/sitemap-index.xml" && method === "GET")
+      return await sitemapIndex(env, origin);
+
     // ── Dashboard HTML → redirect to Pages ──────────────────────────────────
     if (path === "/dashboard" || path === "/dashboard/")
       return Response.redirect(PAGES_DASHBOARD + "/customer.html", 302);
@@ -370,6 +385,40 @@ export default {
 // ═══════════════════════════════════════════════════════════════════════════════
 // AUTH HANDLERS
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// GET /sitemap-index.xml -- queries every published/grace site and emits a
+// standard sitemapindex pointing at each one's own render-worker-generated
+// /sitemap.xml. Prefers the active custom domain over the subdomain (same
+// canonical-host logic as pingIndexNowForSite below) so this never points
+// Google at a URL that just 301s elsewhere. Regenerated fresh on every
+// request -- new sites appear here automatically the moment they're
+// published, with zero manual step.
+function xmlEsc(s) {
+  return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+async function sitemapIndex(env, origin) {
+  try {
+    const res = await env.DB.prepare(
+      "SELECT draft_subdomain, custom_domain, custom_domain_status FROM sites WHERE status IN ('published','grace')"
+    ).all();
+    const sites = res?.results || [];
+    const hosts = sites
+      .map(s => (s.custom_domain && s.custom_domain_status === "active")
+        ? s.custom_domain
+        : (s.draft_subdomain ? `${s.draft_subdomain}.websites.co.zw` : null))
+      .filter(Boolean);
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+      hosts.map(h => `  <sitemap><loc>${xmlEsc(`https://${h}/sitemap.xml`)}</loc></sitemap>`).join("\n") +
+      `\n</sitemapindex>`;
+    return new Response(xml, {
+      headers: { "Content-Type": "application/xml;charset=UTF-8", "Cache-Control": "public, max-age=3600" },
+    });
+  } catch (e) {
+    console.error("sitemapIndex failed:", e?.message);
+    return new Response("Sitemap index temporarily unavailable", { status: 500 });
+  }
+}
 
 async function handleRequestOtp(request, env) {
   let body;
