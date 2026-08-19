@@ -2182,6 +2182,7 @@ const STORE_TEMPLATE_IDS = new Set([
   'grocery-fmcg', 'grocery',
   'hardware-store', 'hardware', 'retail-hardware',
   'personal-portfolio',
+  'elite-bespoke',
 ]);
 
 async function buildTemplateExtras(c, site, config, env) {
