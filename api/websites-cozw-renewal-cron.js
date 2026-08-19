@@ -51,6 +51,11 @@
  * ── Secrets ──
  *   CRON_SECRET          Bearer token for manual /run endpoint
  *   MANYCHAT_API_TOKEN   WhatsApp notification (optional — silent if missing)
+ *   RESEND_API_KEY       Trial reminder/expiry emails (optional — silent if missing).
+ *                         WhatsApp Business API isn't live yet, so trial
+ *                         notifications go through email instead — this secret
+ *                         must be set on THIS Worker specifically, separate
+ *                         from websites-cozw-auth's own copy of the same key.
  *
  * ── Vars ──
  *   GRACE_DAYS           Site grace period in days (default: 14)
@@ -190,7 +195,7 @@ async function runRenewalSweep(env, opts = {}) {
     }
     summary.trialsExpired = trialsExpiring.length;
     for (const site of trialsExpiring) {
-      summary.notified += await notifyWhatsApp(env, site, "trial_ended", {}, dryRun);
+      summary.notified += await notifyTrialEmail(env, site, "trial_ended", {}, dryRun);
       if (!dryRun) {
         await purgeSiteCache(env, site.draft_subdomain, site.custom_domain, site.custom_domain_status);
         summary.cachePurged++;
@@ -206,7 +211,7 @@ async function runRenewalSweep(env, opts = {}) {
     summary.trialRemindersSent = 0;
     for (const site of trialsReminding) {
       const daysLeft = Math.max(1, Math.ceil((site.expires_at - now) / 86400));
-      const sent = await notifyWhatsApp(env, site, "trial_reminder", { daysLeft }, dryRun);
+      const sent = await notifyTrialEmail(env, site, "trial_reminder", { daysLeft }, dryRun);
       summary.trialRemindersSent += sent;
       summary.notified += sent;
       if (sent && !dryRun) {
@@ -391,6 +396,92 @@ async function sendRenewalReminders(env, now, dryRun) {
 
 // ─── WHATSAPP NOTIFICATION (sites) ──────────────────────────────────────────────
 
+// ─── EMAIL NOTIFICATION (trial-specific) ────────────────────────────────────
+// WhatsApp Business API isn't live yet (Meta approval pending, per Lenni
+// directly) -- notifyWhatsApp() above would either no-op (no
+// MANYCHAT_API_TOKEN) or silently fail (token set but the WhatsApp channel
+// itself not actually working), meaning trial reminders built to go
+// through it would never actually reach anyone. Trial notifications go
+// through Resend instead -- same API, same env var name, same request
+// shape as sendEmail() in websites-cozw-auth.js, so this is proven,
+// already-working infrastructure, not a new integration.
+//
+// Deliberately scoped to trial events only, not a wholesale swap of the
+// paid-site grace/suspended notifications above -- those already exist,
+// already work as WhatsApp-only, and changing them wasn't asked for.
+//
+// REQUIRES: RESEND_API_KEY secret set on THIS Worker (websites-cozw-
+// renewal-cron) specifically -- it's a separate Worker from websites-cozw-
+// auth, so having it configured there does not carry over here.
+async function notifyTrialEmail(env, site, event, extra, dryRun) {
+  try {
+    if (dryRun || !env.RESEND_API_KEY) return 0;
+
+    const owner = await env.DB.prepare(
+      "SELECT email FROM owners WHERE id=?1"
+    ).bind(site.owner_id).first().catch(() => null);
+    if (!owner?.email) return 0;
+
+    const { subject, html } = buildTrialEmail(event, site, extra);
+    if (!subject) return 0;
+
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: env.RESEND_FROM || "noreply@mail.websites.co.zw",
+        to: [owner.email],
+        subject,
+        html,
+      }),
+    });
+    return r.ok ? 1 : 0;
+  } catch (err) {
+    console.error("notifyTrialEmail failed (non-fatal):", event, err?.message);
+    return 0;
+  }
+}
+
+function buildTrialEmail(event, site, extra) {
+  const name = site.site_name || "your website";
+  const siteUrl = site.draft_subdomain ? `https://${site.draft_subdomain}.websites.co.zw` : "";
+  const upgradeUrl = "https://app.websites.co.zw/dashboard/customer.html";
+  const wrap = (heading, body, ctaLabel) => `
+<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:40px 24px">
+  <h2 style="font-size:22px;margin:0 0 12px;color:#0c0e13">${heading}</h2>
+  <p style="color:#3d4251;line-height:1.6;margin:0 0 24px">${body}</p>
+  <a href="${upgradeUrl}" style="display:inline-block;background:#15924B;color:#fff;font-weight:700;padding:13px 24px;border-radius:11px;text-decoration:none">${ctaLabel}</a>
+  ${siteUrl ? `<p style="color:#767c8c;font-size:13px;margin:24px 0 0">Your site: <a href="${siteUrl}" style="color:#767c8c">${siteUrl.replace('https://','')}</a></p>` : ""}
+</div>`;
+
+  switch (event) {
+    case "trial_reminder":
+      return {
+        subject: `Your free trial for ${name} ends in ${extra.daysLeft} day${extra.daysLeft === 1 ? "" : "s"}`,
+        html: wrap(
+          `⏳ ${extra.daysLeft} day${extra.daysLeft === 1 ? "" : "s"} left on your free trial`,
+          `Your site <strong>${esc(name)}</strong> is still live for now, but your 14-day free trial is almost up. Upgrade any time to keep it published — nothing you've built will be lost either way.`,
+          "Upgrade now →"
+        ),
+      };
+    case "trial_ended":
+      return {
+        subject: `Your free trial for ${name} has ended`,
+        html: wrap(
+          "Your free trial has ended",
+          `<strong>${esc(name)}</strong> is no longer live on the web — your 14-day free trial ran out. Nothing is lost: your site is saved exactly as you left it. Upgrade any time to publish it again.`,
+          "Upgrade & republish →"
+        ),
+      };
+    default:
+      return { subject: null, html: null };
+  }
+}
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
 async function notifyWhatsApp(env, site, event, extra, dryRun) {
   try {
     if (dryRun || !env.MANYCHAT_API_TOKEN) return 0;
@@ -490,19 +581,6 @@ function buildMessage(event, site, extra) {
         `💡 Reminder: your websites.co.zw subscription for *${name}* expires in ` +
         `*${extra.daysLeft} day${extra.daysLeft === 1 ? "" : "s"}*.\n\n` +
         `Renew now to keep your site live: ${renewUrl}`
-      );
-
-    case "trial_reminder":
-      return (
-        `⏳ Your free trial for *${name}* ends in ` +
-        `*${extra.daysLeft} day${extra.daysLeft === 1 ? "" : "s"}*.\n\n` +
-        `Upgrade now to keep it live — nothing you've built will be lost:\n${renewUrl}`
-      );
-
-    case "trial_ended":
-      return (
-        `Your free trial for *${name}* has ended, so it's no longer live on the web.\n\n` +
-        `Nothing is lost — your site is saved exactly as you left it. Upgrade any time to publish it again:\n${renewUrl}`
       );
 
     default:
