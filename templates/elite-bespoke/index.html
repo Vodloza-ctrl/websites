@@ -218,16 +218,20 @@ footer ul li { margin-bottom:8px; }
 
 <div id="products" class="elite-shop-wrap">
   <h2 class="team-heading" style="text-align:center;margin-bottom:36px">Shop</h2>
-  {{br_products_html}}
+  {{elite_products_html}}
 </div>
 
 <div id="testimonials" class="elite-testi-wrap">
   {{#each testimonials}}{{/each}}
 </div>
 
-<div id="reviews" class="elite-shop-wrap" style="max-width:1080px">
-  {{reviews_section_html}}
-</div>
+<!--WCZ:show_reviews_section-->
+<div id="reviews" class="wrap" style="max-width:900px;margin:80px auto;padding:0 30px">{{reviews_section_html}}</div>
+<!--WCZ:/show_reviews_section-->
+
+<!--WCZ:show_press_section-->
+<div id="press" class="wrap" style="max-width:900px;margin:80px auto;padding:0 30px">{{press_section_html}}</div>
+<!--WCZ:/show_press_section-->
 
 <section id="contact" class="contact-section">
   <div>

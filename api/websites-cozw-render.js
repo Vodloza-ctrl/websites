@@ -3473,6 +3473,39 @@ async function buildTemplateExtras(c, site, config, env) {
       .map(i => `<a href="${esc(i.href)}" onclick="closeMobileMenu()">${esc(i.label)}</a>`).join('\n  ');
   }
 
+  // -- ELITE-BESPOKE ------------------------------------------------------------
+  // Was previously using a raw {{#each products}} against the legacy
+  // content.products array -- completely disconnected from the editor's
+  // real "Products & Catalogue" panel, which manages the actual products
+  // table via products-worker. getStoreProducts() below is the same call
+  // every working template makes: tries the real table first, only falls
+  // back to the legacy array if that's empty. This is what makes "add a
+  // product in the editor" and "see it on the live site" the same action.
+  if (templateId === 'elite-bespoke') {
+    const eProducts = await getStoreProducts(env, site.id, c.products);
+    const rawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
+    const waNum = rawPhone.startsWith('263') ? rawPhone : rawPhone ? '263' + rawPhone.replace(/^0/, '') : '';
+    const shopCtx = {
+      waNum, bizName: c.business_name || c.name || '',
+      addonActive: whatsappStoreActive, storePaymentsEnabled,
+      siteId: site.id, checkoutApiBase,
+    };
+    // No 'elite-bespoke' entry in TEMPLATE_RENDERER_MAP -- resolveRenderer()
+    // falls back to the default (fashion) card style, which works fine
+    // against this template's dark/gold palette since buildCommerceCSS()
+    // uses CSS custom properties with sane fallbacks, not hardcoded colors.
+    const eCommerce = env && env.COMMERCE_SDK ?
+      await callCommerceSDK(env, eProducts, 'elite-bespoke', c.theme || {}, shopCtx) :
+      buildCommerceModule(eProducts, 'elite-bespoke', c.theme || {}, shopCtx);
+    extras.elite_products_html = eCommerce.gridHtml;
+    extras.wcz_qv_drawer_html = eCommerce.drawerHtml;
+    extras.wcz_lb_html = eCommerce.lbHtml;
+    extras.wcz_products_script = eCommerce.scriptHtml;
+    extras.wcz_commerce_css = env && env.COMMERCE_SDK ?
+      await callCommerceCSS(env) :
+      buildCommerceCSS();
+  }
+
   // -- BOUTIQUE-FASHION -------------------------------------------------------
   if (templateId === 'boutique-fashion' || templateId === 'boutique' || templateId === 'fashion') {
     const bSocials = c.socials || {};
@@ -5832,6 +5865,8 @@ main{padding:56px 0 90px}
 .article-date{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;opacity:.5;margin-bottom:14px}
 .article-title{font-family:"Fraunces",Georgia,serif;font-size:clamp(1.9rem,4vw,2.7rem);font-weight:700;line-height:1.15;margin-bottom:28px}
 .article-body p{margin-bottom:22px;font-size:1.05rem}
+.article-image-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:32px 0}
+.article-image-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px}
 .article-back{display:inline-block;margin-top:48px;font-weight:600;color:var(--accent,#333)}
 footer.blog-ftr{border-top:1px solid rgba(0,0,0,.08);padding:28px 0;text-align:center;font-size:.8rem;opacity:.5}
 </style>
@@ -5888,12 +5923,18 @@ function handleBlogArticle(site, content, slug, baseUrl) {
 
   const businessName = content.business_name || content.name || 'Blog';
   const articleUrl = baseUrl ? `${baseUrl}/blog/${encodeURIComponent(article.slug || article.id)}` : '';
+  const extraImages = Array.isArray(article.images) ? article.images.filter(Boolean) : [];
+  const imagesGridHtml = extraImages.length
+    ? `<div class="article-image-grid">${extraImages.map(url =>
+        `<img src="${esc(url)}" alt="${esc(article.title || '')}" loading="lazy">`).join('')}</div>`
+    : '';
   const bodyHtml = `
 <article class="wrap">
   ${article.cover_image ? `<img class="article-cover" src="${esc(article.cover_image)}" alt="${esc(article.title || '')}">` : ''}
   <div class="article-date">${esc(formatArticleDate(article.published_at))}</div>
   <h1 class="article-title">${esc(article.title || 'Untitled')}</h1>
   <div class="article-body">${paragraphsHtml(article.body)}</div>
+  ${imagesGridHtml}
   <a class="article-back" href="/blog">&larr; All articles</a>
 </article>`;
 
