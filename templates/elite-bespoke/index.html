@@ -82,6 +82,22 @@ header { position: sticky; top: 0; z-index: 1000; background: var(--black); bord
 .elite-testi-name { font-family:'Oswald',sans-serif; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
 .elite-testi-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
 
+.elite-events-wrap { max-width:900px; margin:80px auto; padding:0 30px; }
+.elite-event-card { display:flex; align-items:baseline; gap:20px; border-bottom:1px solid rgba(139,107,31,0.25); padding:18px 0; }
+.elite-event-date { font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); flex-shrink:0; min-width:110px; }
+.elite-event-title { font-family:'Oswald',sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+.elite-event-desc { color:var(--text-muted); font-size:14px; margin-top:4px; }
+
+.elite-shop-wrap { max-width:1300px; margin:80px auto; padding:0 20px; }
+.elite-shop-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.elite-product-card { background:#0a0a0a; border:1px solid rgba(139,107,31,0.35); border-radius:6px; overflow:hidden; text-align:center; padding-bottom:16px; }
+.elite-product-image { aspect-ratio:1/1; background:#111; }
+.elite-product-image img { width:100%; height:100%; object-fit:cover; }
+.elite-product-name { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:14px 10px 4px; }
+.elite-product-price { color:var(--gold); font-weight:700; margin-bottom:12px; }
+.elite-product-order { display:inline-block; border:1px solid var(--gold); color:var(--white); font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; padding:8px 16px; border-radius:4px; }
+.elite-product-order:hover { background:var(--gold); }
+
 .contact-section { max-width:1300px; margin:80px auto; padding:0 30px; display:grid; grid-template-columns:1.2fr 1fr; gap:60px; }
 .contact-section h2 { font-family:'Oswald',sans-serif; font-size:2rem; text-transform:uppercase; margin-bottom:16px; }
 .contact-section > div:first-child p { color:var(--text-muted); margin-bottom:28px; }
@@ -102,9 +118,11 @@ footer ul li { margin-bottom:8px; }
   .nav-links { display:none; }
   .hamburger { display:flex; }
   .elite-grid { grid-template-columns:repeat(2,1fr); }
+  .elite-shop-grid { grid-template-columns:repeat(2,1fr); }
   .split-section, .split-section.reverse { grid-template-columns:1fr; direction:ltr; }
   .contact-section { grid-template-columns:1fr; }
   .footer-inner { grid-template-columns:1fr; }
+  .elite-event-card { flex-direction:column; gap:4px; }
 }
 </style>
 </head>
@@ -113,13 +131,14 @@ footer ul li { margin-bottom:8px; }
 <header>
   <div class="nav-inner">
     <a href="#" class="nav-logo">
-      <!--WCZ:has_logo--><img src="{{logo_url}}" alt="{{business_name}}"><!--WCZ:/has_logo-->
+      <img src="{{logo_url}}" alt="{{business_name}}">
     </a>
     <nav class="nav-links">
       <a href="#about">About</a>
       <a href="#services">Programs</a>
       <a href="#team">Our Team</a>
       <a href="#testimonials">Testimonials</a>
+      <a href="/blog">Blog</a>
       <a href="#contact">Contact</a>
       <a href="{{whatsapp_wa_link}}" class="nav-cta" target="_blank">Enrol Now</a>
     </nav>
@@ -132,13 +151,14 @@ footer ul li { margin-bottom:8px; }
     <a href="#services">Programs</a>
     <a href="#team">Our Team</a>
     <a href="#testimonials">Testimonials</a>
+    <a href="/blog">Blog</a>
     <a href="#contact">Contact</a>
     <a href="{{whatsapp_wa_link}}" target="_blank">Enrol Now</a>
   </div>
 </header>
 
 <section class="hero-logo-section">
-  <!--WCZ:has_logo--><img src="{{logo_url}}" alt="{{business_name}}"><!--WCZ:/has_logo-->
+  <img src="{{logo_url}}" alt="{{business_name}}">
   <p class="hero-tagline">{{tagline}}</p>
 </section>
 
@@ -150,25 +170,57 @@ footer ul li { margin-bottom:8px; }
 
 <div class="elite-minimal-cta">
   <div class="elite-image-wrap">
-    <!--WCZ:has_hero_image--><img src="{{hero_image_url}}" alt="{{business_name}}"><!--WCZ:/has_hero_image-->
+    <img src="{{hero_image_url}}" alt="{{business_name}}">
   </div>
   <a href="{{whatsapp_wa_link}}" target="_blank" class="elite-enrol-btn">Enrol Now</a>
 </div>
 
 <div id="about">
-  <div class="split-section">
-    <div class="split-image"><!--WCZ:has_hero_image--><img src="{{hero_image_url}}" alt="{{business_name}}"><!--WCZ:/has_hero_image--></div>
-    <div class="split-text">
-      <h2>Who <span>We Are</span></h2>
-      <p>{{about}}</p>
-    </div>
-  </div>
+  <p id="about-raw" style="display:none">{{about}}</p>
+  <div id="about-blocks"></div>
 </div>
+<script>
+(function(){
+  var raw = document.getElementById('about-raw');
+  var text = raw ? raw.textContent.trim() : '';
+  var paras = text.split(/\n\s*\n/).map(function(p){return p.trim();}).filter(Boolean);
+  var groups = [paras.slice(0,2), paras.slice(2,4), paras.slice(4)];
+  var headings = [['Who ','We Are'],['Why Do We Do ','What We Do?'],['What We ','Offer']];
+  var images = [
+    'https://eliteinstitute.sale.co.zw/coach-observing-player-development.webp',
+    'https://eliteinstitute.sale.co.zw/coach-with-player-guidance.webp',
+    'https://eliteinstitute.sale.co.zw/training-session-sprint-drills.webp'
+  ];
+  var wrap = document.getElementById('about-blocks');
+  if (!wrap) return;
+  var html = '';
+  groups.forEach(function(group, i){
+    if (!group.length) return;
+    html += '<div class="split-section'+(i%2===1?' reverse':'')+'">'
+      + '<div class="split-image"><img src="'+images[i]+'" alt=""></div>'
+      + '<div class="split-text"><h2>'+headings[i][0]+'<span>'+headings[i][1]+'</span></h2>'
+      + group.map(function(p){return '<p>'+p+'</p>';}).join('')
+      + '</div></div>';
+  });
+  wrap.innerHTML = html;
+})();
+</script>
 
 <section id="team" class="elite-team-section">
   <h2 class="team-heading">Meet Our Team</h2>
   {{#each team}}{{/each}}
 </section>
+
+<div id="events" class="elite-events-wrap">
+  {{#each events}}{{/each}}
+</div>
+
+<div id="products" class="elite-shop-wrap">
+  <h2 class="team-heading" style="text-align:center;margin-bottom:36px">Shop</h2>
+  <div class="elite-shop-grid">
+    {{#each products}}{{/each}}
+  </div>
+</div>
 
 <div id="testimonials" class="elite-testi-wrap">
   {{#each testimonials}}{{/each}}

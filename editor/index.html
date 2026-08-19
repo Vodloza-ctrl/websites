@@ -1797,7 +1797,7 @@ async function loadPreview(){
 window.exitEditor=function(){if(state.dirty&&!confirm("You have unsaved changes. Leave without saving?"))return;location.href=DASH_URL;};
 
 var ALL_SECS_V3 = {
-  "elite-bespoke": [{key:"hero",label:"Hero banner"},{key:"services",label:"Programs"},{key:"about",label:"About us"},{key:"team",label:"Coaching staff"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
+  "elite-bespoke": [{key:"hero",label:"Hero banner"},{key:"services",label:"Programs"},{key:"about",label:"About us"},{key:"team",label:"Coaching staff"},{key:"events",label:"Events"},{key:"products",label:"Shop"},{key:"testimonials",label:"Testimonials"},{key:"contact",label:"Contact"}],
   "bold-retail": [{key:"hero",label:"Hero banner"},{key:"about",label:"About us"},{key:"services",label:"Services"},{key:"products",label:"Products"},{key:"video",label:"Video"},{key:"team",label:"Team"},{key:"testimonials",label:"Testimonials"},{key:"gallery",label:"Gallery"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "grill-house": [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
   "grill-noir": [{key:"hero",label:"Hero banner"},{key:"menu",label:"Menu"},{key:"gallery",label:"Gallery"},{key:"team",label:"Team"},{key:"hours",label:"Opening hours"},{key:"testimonials",label:"Testimonials"},{key:"reviews",label:"Reviews"},{key:"press",label:"Press"},{key:"contact",label:"Contact"}],
@@ -1886,7 +1886,7 @@ var TEMPLATES_V3=[
 var TPL_CAT_LABELS={all:"All",food:"🍽 Food & Restaurant",beauty:"💆 Beauty & Wellness",education:"🎓 Education",church:"⛪ Faith",professional:"💼 Professional",property:"🏠 Property",fashion:"👗 Fashion",grocery:"🛒 Grocery & Retail",hardware:"🔧 Hardware",hospitality:"🏨 Hospitality",medical:"🩺 Medical",personal:"👤 Personal",creative:"🎨 Creative",general:"🏢 General"};
 var tplActiveCat="all";
 var TPL_CFG={
-  "elite-bespoke":{services:"Programs",menu:0,listings:0,hours:0,stats:0,events:0,team:1,teamLbl:"Coaching Staff",servicesLbl:"Programs"},
+  "elite-bespoke":{services:"Programs",menu:0,listings:0,hours:0,stats:0,events:1,team:1,teamLbl:"Coaching Staff",servicesLbl:"Programs"},
   "bold-retail":{services:"Services",menu:0,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Team",servicesLbl:"Services"},
   "grill-house":{services:0,menu:1,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Services"},
   "grill-noir":{services:0,menu:1,listings:0,hours:1,stats:0,events:0,team:1,teamLbl:"Staff",servicesLbl:"Services"},
