@@ -122,6 +122,7 @@
  *   GET  /api/admin/secrets-check     (NEW: reports true/false per secret, never values)
  *   POST /api/admin/impersonate       (NEW: mints a 2hr owner session token for admin editor access)
  *   GET  /api/admin/sites
+ *   GET  /api/admin/owners             (NEW: real phone/name/email/is_demo — Customers tab never had this)
  *   PUT  /api/admin/sites/:id
  *   PUT  /api/admin/owners/:id
  *   GET  /api/admin/domain-queue      (Enhanced with .com registrations)
@@ -245,6 +246,8 @@ export default {
         return await adminSecretsCheck(request, env, origin);
       if (path === "/api/admin/sites" && method === "GET")
         return await adminListSites(request, env, origin);
+      if (path === "/api/admin/owners" && method === "GET")
+        return await adminListOwners(request, env, origin);
       const mAdminSite = path.match(/^\/api\/admin\/sites\/([^/]+)$/);
       if (mAdminSite && method === "PUT")
         return await adminUpdateSite(request, env, origin, mAdminSite[1]);
@@ -1258,6 +1261,22 @@ async function adminListSites(request, env, origin) {
   query += ` ORDER BY COALESCE(published_at,0) DESC, site_name ASC LIMIT ${limit} OFFSET ${offset}`;
   const res = await (bindings.length ? env.DB.prepare(query).bind(...bindings).all() : env.DB.prepare(query).all());
   return jsonResp({ sites: res?.results || [], limit, offset }, 200, origin);
+}
+
+// GET /api/admin/owners — the Customers tab has always rendered a Phone
+// and Demo? column, but nothing ever populated them: renderCustomerTable()
+// built its rows purely from /api/admin/sites (grouped by owner_id), which
+// has no phone/name/email/is_demo on it at all -- those only live on the
+// owners table. This is the endpoint that was missing.
+async function adminListOwners(request, env, origin) {
+  if (!resolveAdmin(request, env)) return jsonResp({ error: "unauthorized" }, 401, origin);
+  const url    = new URL(request.url);
+  const limit  = Math.min(parseInt(url.searchParams.get("limit") || "500"), 1000);
+  const offset = parseInt(url.searchParams.get("offset") || "0");
+  const res = await env.DB.prepare(
+    "SELECT id, phone, name, email, is_demo, created_at FROM owners ORDER BY created_at DESC LIMIT ?1 OFFSET ?2"
+  ).bind(limit, offset).all();
+  return jsonResp({ owners: res?.results || [], limit, offset }, 200, origin);
 }
 
 async function adminUpdateSite(request, env, origin, id) {

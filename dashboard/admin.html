@@ -593,18 +593,30 @@ window.loadCustomers = async function() {
     var r = await fetch(ADMIN_API+"/sites?limit=500", { headers: adminHeaders() });
     if (r.ok) _allSites = (await r.json()).sites || [];
   }
+  var ownersById = {};
+  var ownersResp = await fetch(ADMIN_API+"/owners?limit=1000", { headers: adminHeaders() });
+  if (ownersResp.ok) {
+    ((await ownersResp.json()).owners || []).forEach(function(o){ ownersById[o.id] = o; });
+  } else {
+    toast("Couldn't load owner details — check ADMIN_SECRET", "err");
+  }
   var byOwner = {};
   _allSites.forEach(function(s){
     if (!byOwner[s.owner_id]) byOwner[s.owner_id] = [];
     byOwner[s.owner_id].push(s);
   });
-  _allCustomers = Object.entries(byOwner).map(function(e){ return { owner_id:e[0], sites:e[1] }; });
+  _allCustomers = Object.entries(byOwner).map(function(e){
+    var owner = ownersById[e[0]] || {};
+    return { owner_id:e[0], sites:e[1], phone:owner.phone||"", name:owner.name||"", email:owner.email||"", is_demo:!!owner.is_demo };
+  });
   renderCustomerTable(_allCustomers);
 };
 
 window.filterCustomers = function() {
   var q = document.getElementById("custSearch").value.toLowerCase();
-  renderCustomerTable(_allCustomers.filter(function(c){ return !q||c.owner_id.toLowerCase().includes(q); }));
+  renderCustomerTable(_allCustomers.filter(function(c){
+    return !q || c.owner_id.toLowerCase().includes(q) || (c.phone||"").includes(q) || (c.name||"").toLowerCase().includes(q);
+  }));
 };
 
 function renderCustomerTable(customers) {
@@ -613,12 +625,23 @@ function renderCustomerTable(customers) {
     ? '<tr><td colspan="5" style="color:var(--ink3);padding:20px">No customers yet</td></tr>'
     : customers.map(function(c){
       var live = c.sites.filter(function(s){return s.status==="published"||s.status==="grace";}).length;
+      // Most recently touched site — used by the quick Edit button so a
+      // one-site owner (the common case) gets a single click straight
+      // into their editor, not a detour through the Sites tab first.
+      var primarySite = c.sites.slice().sort(function(a,b){
+        return (b.published_at||0) - (a.published_at||0);
+      })[0];
+      var waLink = c.phone ? '<a href="https://wa.me/'+esc(c.phone.replace(/\D/g,""))+'" target="_blank" style="color:var(--ink2)">'+esc(c.phone)+'</a>' : '<span style="color:var(--ink3)">—</span>';
+      var editBtn = primarySite
+        ? '<button class="btn btn-ghost btn-sm" onclick="openEditSite('+JSON.stringify(primarySite.id)+')">Edit</button>'
+        : '';
       return '<tr>'+
-        '<td class="name" style="font-family:monospace;font-size:12px">'+esc(c.owner_id)+'</td>'+
-        '<td style="color:var(--ink2)">—</td>'+
+        '<td class="name" style="font-family:monospace;font-size:12px">'+esc(c.owner_id)+(c.name?'<div style="font-family:inherit;font-size:12px;color:var(--ink2);margin-top:2px">'+esc(c.name)+'</div>':'')+'</td>'+
+        '<td>'+waLink+(c.email?'<div style="font-size:11px;color:var(--ink3);margin-top:2px">'+esc(c.email)+'</div>':'')+'</td>'+
         '<td>'+c.sites.length+' site'+(c.sites.length!==1?"s":"")+' · '+live+' live</td>'+
-        '<td style="color:var(--ink3)">—</td>'+
+        '<td>'+(c.is_demo?'<span style="color:var(--gold)">Yes</span>':'<span style="color:var(--ink3)">No</span>')+'</td>'+
         '<td><div style="display:flex;gap:5px">'+
+          editBtn+
           '<button class="btn btn-ghost btn-sm" onclick="viewOwnerSites('+JSON.stringify(c.owner_id)+')">Sites</button>'+
           '<button class="btn btn-ghost btn-sm" onclick="toggleDemoFlag('+JSON.stringify(c.owner_id)+')">Toggle demo</button>'+
         '</div></td>'+
