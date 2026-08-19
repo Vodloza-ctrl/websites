@@ -41,11 +41,6 @@
       "itemTemplate": "<div class=\"elite-testi-card\"><p class=\"elite-testi-label\">{{item.role}}</p><p class=\"elite-testi-text\">\u201c{{item.text}}\u201d</p><p class=\"elite-testi-name\">{{item.name}}</p><p class=\"elite-testi-sub\">Player Testimonial</p></div>"
     },
     {
-      "key": "products",
-      "emptyHtml": "<p style='text-align:center;padding:40px;color:var(--text-muted)'>Merch coming soon.</p>",
-      "itemTemplate": "<div class=\"elite-product-card\"><div class=\"elite-product-image\">{{#if item.image}}<img src=\"{{item.image}}\" alt=\"{{item.name}}\">{{/if}}</div><div class=\"elite-product-name\">{{item.name}}</div><div class=\"elite-product-price\">${{item.price}}</div><a class=\"elite-product-order\" href=\"{{whatsapp_wa_link}}\" target=\"_blank\">Order via WhatsApp</a></div>"
-    },
-    {
       "key": "events",
       "emptyHtml": "",
       "itemTemplate": "<div class=\"elite-event-card\">{{#if item.date}}<div class=\"elite-event-date\">{{item.date}}</div>{{/if}}<div class=\"elite-event-title\">{{item.title}}</div>{{#if item.description}}<div class=\"elite-event-desc\">{{item.description}}</div>{{/if}}</div>"

@@ -3993,7 +3993,7 @@ async function buildTemplateExtras(c, site, config, env) {
   }
 
   // ── BOLD-RETAIL (General Business) ──────────────────────────────────────
-  if (templateId === 'bold-retail' || templateId === 'retail' || templateId === 'general' || templateId === 'general-business') {
+  if (templateId === 'bold-retail' || templateId === 'retail' || templateId === 'general' || templateId === 'general-business' || templateId === 'elite-bespoke') {
     const sectionOrder = (c.theme && Array.isArray(c.theme.sections)) ?
       c.theme.sections :
       ['hero', 'about', 'services', 'products', 'video', 'team', 'testimonials', 'gallery', 'reviews', 'press', 'contact'];

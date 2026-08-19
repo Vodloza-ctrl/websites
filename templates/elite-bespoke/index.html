@@ -125,6 +125,7 @@ footer ul li { margin-bottom:8px; }
   .elite-event-card { flex-direction:column; gap:4px; }
 }
 </style>
+{{wcz_commerce_css}}
 </head>
 <body>
 
@@ -217,13 +218,15 @@ footer ul li { margin-bottom:8px; }
 
 <div id="products" class="elite-shop-wrap">
   <h2 class="team-heading" style="text-align:center;margin-bottom:36px">Shop</h2>
-  <div class="elite-shop-grid">
-    {{#each products}}{{/each}}
-  </div>
+  {{br_products_html}}
 </div>
 
 <div id="testimonials" class="elite-testi-wrap">
   {{#each testimonials}}{{/each}}
+</div>
+
+<div id="reviews" class="elite-shop-wrap" style="max-width:1080px">
+  {{reviews_section_html}}
 </div>
 
 <section id="contact" class="contact-section">
@@ -265,6 +268,10 @@ footer ul li { margin-bottom:8px; }
   </div>
   <div class="footer-bottom">&copy; {{business_name}}. All rights reserved. &middot; Built on websites.co.zw</div>
 </footer>
+
+{{wcz_qv_drawer_html}}
+{{wcz_lb_html}}
+{{wcz_products_script}}
 
 </body>
 </html>
