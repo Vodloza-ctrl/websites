@@ -9,4 +9,6 @@
 /terms/   /terms/index.html    200
 /checkout     /checkout/index.html    200
 /checkout/    /checkout/index.html    200
+/for/salons   /for/salons/index.html  200
+/for/salons/  /for/salons/index.html  200
 /templates/*  /templates/:splat  200
