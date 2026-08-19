@@ -550,7 +550,7 @@ async function handlePublic(request, env, slug, customDomain) {
       // publish/render path -- confirmed by grepping this whole file for
       // "favicon" before writing this, zero matches until now.
       const faviconUrl = raw.favicon || content.images?.favicon || content.images?.logo || content.logo_url
-        || 'https://assets.websites.co.zw/websites-favicon.svg';
+        || 'https://assets.websites.co.zw/Websites-minimalist--design.svg';
       faviconTag = `<link rel="icon" href="${esc(faviconUrl)}">`;
     }
 
