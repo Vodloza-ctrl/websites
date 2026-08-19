@@ -479,10 +479,15 @@ window.openOwnerEditor = async function(siteId) {
   window.open(url, "_blank");
 };
 
-var token = localStorage.getItem("wcz_token");
-if (!token) {
-  location.replace("/dashboard/customer.html?next="+encodeURIComponent(location.href));
-}
+// Deliberately no wcz_token (regular customer session) check here.
+// ADMIN_SECRET is this page's actual auth -- checked on every real admin
+// API call via adminHeaders(). A prior version also required a regular
+// owner session token to be present, which added no real security (it's
+// a client-side check, trivially bypassable) but did actively lock
+// Lenni out of his own admin panel whenever his owner session expired or
+// got cleared -- including right after using the admin-impersonate flow
+// above and logging out of the impersonated session, since that session
+// shares the same wcz_token localStorage key.
 
 // ── Template metadata ─────────────────────────────────────────────────────────
 var TEMPLATES = [
@@ -832,7 +837,7 @@ window.loadEmailRoutes = async function() {
     var allRoutes = [];
     for (var i = 0; i < Math.min(activeSites.length, 50); i++) {
       try {
-        var r = await fetch(API+"/sites/"+encodeURIComponent(activeSites[i].id)+"/email-routes", { headers: userHeaders() });
+        var r = await fetch(ADMIN_API+"/sites/"+encodeURIComponent(activeSites[i].id)+"/email-routes", { headers: adminHeaders() });
         if (r.ok) {
           var data = await r.json();
           (data.routes||[]).forEach(function(route){

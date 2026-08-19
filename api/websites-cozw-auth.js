@@ -121,6 +121,7 @@
  *   GET  /api/admin/stats
  *   GET  /api/admin/secrets-check     (NEW: reports true/false per secret, never values)
  *   POST /api/admin/impersonate       (NEW: mints a 2hr owner session token for admin editor access)
+ *   GET  /api/admin/sites/:id/email-routes (NEW: admin-scoped, no ownership check -- fixes the tab that was silently incomplete)
  *   GET  /api/admin/sites
  *   GET  /api/admin/owners             (NEW: real phone/name/email/is_demo — Customers tab never had this)
  *   PUT  /api/admin/sites/:id
@@ -279,6 +280,9 @@ export default {
         return await adminVerifyEmailRoute(request, env, origin, mER[1]);
       if (path === "/api/admin/impersonate" && method === "POST")
         return await adminImpersonate(request, env, origin);
+      const mAdminER = path.match(/^\/api\/admin\/sites\/([^/]+)\/email-routes$/);
+      if (mAdminER && method === "GET")
+        return await adminListEmailRoutes(request, env, origin, mAdminER[1]);
     } catch (e) {
       return jsonResp({ error: "admin_error", detail: String(e?.message || e) }, 500, origin);
     }
@@ -1145,6 +1149,21 @@ async function listEmailRoutes(request, env, origin, siteId) {
   if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
   const site = await env.DB.prepare("SELECT owner_id FROM sites WHERE id=?1").bind(siteId).first();
   if (!site || site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
+  const routes = await env.DB.prepare(
+    "SELECT id, local_part, destination, verified, status, created_at FROM email_routes WHERE site_id=?1 ORDER BY created_at ASC"
+  ).bind(siteId).all();
+  return jsonResp({ routes: routes?.results || [] }, 200, origin);
+}
+
+// GET /api/admin/sites/:id/email-routes -- admin.html's Email Routes tab
+// was calling the owner-scoped version above via a regular customer
+// wcz_token, which only ever returns data for sites *that specific
+// account* owns (site.owner_id !== ownerId check). For every other
+// tenant it silently 403'd and got skipped -- the tab has never actually
+// been comprehensive. This is the real fix: no ownership check, just
+// ADMIN_SECRET, same pattern as every other /api/admin/* route.
+async function adminListEmailRoutes(request, env, origin, siteId) {
+  if (!resolveAdmin(request, env)) return jsonResp({ error: "unauthorized" }, 401, origin);
   const routes = await env.DB.prepare(
     "SELECT id, local_part, destination, verified, status, created_at FROM email_routes WHERE site_id=?1 ORDER BY created_at ASC"
   ).bind(siteId).all();
