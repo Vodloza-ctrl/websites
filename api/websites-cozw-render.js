@@ -584,6 +584,27 @@ async function handlePublic(request, env, slug, customDomain) {
     const headExtra = canonicalTag + faviconTag + ogTags
       + (jsonLd ? `<script type="application/ld+json">${jsonLd}</script>` : '');
     if (html.includes('</head>')) html = html.replace('</head>', headExtra + '</head>');
+
+    // Privacy Policy footer link -- appended via a tiny script rather than
+    // editing each template's own footer HTML directly. There are 19
+    // templates with 19 different footer structures (different classes,
+    // different internal layout, checked before writing this) -- manually
+    // patching each one individually risks breaking a layout I have no
+    // way to visually verify. This finds whatever <footer> already exists
+    // and appends one small link, styled defensively (inherits
+    // surrounding color, small muted font) so it can't visually clash
+    // with any template's own footer styling. If a template has no
+    // <footer> element at all, it's skipped rather than forcing one in.
+    const privacyLinkScript = `<script>(function(){
+      var f = document.querySelector('footer');
+      if (!f) return;
+      var a = document.createElement('a');
+      a.href = '/privacy';
+      a.textContent = 'Privacy Policy';
+      a.style.cssText = 'display:inline-block;margin-top:14px;font-size:12px;opacity:.65;color:inherit;text-decoration:underline';
+      f.appendChild(a);
+    })();</script>`;
+    if (html.includes('</body>')) html = html.replace('</body>', privacyLinkScript + '</body>');
   }
 
   return new Response(html, {

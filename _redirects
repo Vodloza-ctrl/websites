@@ -11,4 +11,10 @@
 /checkout/    /checkout/index.html    200
 /for/salons   /for/salons/index.html  200
 /for/salons/  /for/salons/index.html  200
+/for/restaurants   /for/restaurants/index.html  200
+/for/restaurants/  /for/restaurants/index.html  200
+/for/hotels   /for/hotels/index.html  200
+/for/hotels/  /for/hotels/index.html  200
+/for/creators   /for/creators/index.html  200
+/for/creators/  /for/creators/index.html  200
 /templates/*  /templates/:splat  200
