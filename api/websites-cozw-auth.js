@@ -311,6 +311,15 @@ export default {
       const mPublishTrial = path.match(/^\/api\/sites\/([^/]+)\/publish-trial$/);
       if (mPublishTrial && method === "POST")
         return await publishTrialSite(request, env, origin, mPublishTrial[1]);
+      const mUnsubscribe = path.match(/^\/api\/sites\/([^/]+)\/unsubscribe$/);
+      if (mUnsubscribe && method === "GET")
+        return await unsubscribeFromNewsletter(request, env, origin, mUnsubscribe[1]);
+      const mSubscribers = path.match(/^\/api\/sites\/([^/]+)\/subscribers$/);
+      if (mSubscribers && method === "GET")
+        return await listNewsletterSubscribers(request, env, origin, mSubscribers[1]);
+      const mSubscribersExport = path.match(/^\/api\/sites\/([^/]+)\/subscribers\/export$/);
+      if (mSubscribersExport && method === "GET")
+        return await exportNewsletterSubscribers(request, env, origin, mSubscribersExport[1]);
       const mRenew = path.match(/^\/api\/sites\/([^/]+)\/renew$/);
       if (mRenew && method === "POST")
         return await renewSite(request, env, origin, mRenew[1]);
@@ -1773,6 +1782,83 @@ async function publishTrialSite(request, env, origin, id) {
     trial_expires_at: expiresAt,
     trial_days: TRIAL_DAYS,
   }, 200, origin);
+}
+
+// ── NEWSLETTER SUBSCRIBERS ───────────────────────────────────────────────
+// A real capture-and-comply system: public signup, public one-click
+// unsubscribe (no login required -- this is a legal requirement, not a
+// nicety, for any marketing list), owner-authenticated list/export.
+// Deliberately does NOT include actual newsletter SENDING -- that's a
+// separate, larger feature (compose + blast via Resend) worth building
+// once capture itself is proven working. This ships the honest, complete
+// version of "collect emails and let the owner use them", not a
+// half-built promise of automated campaigns that don't exist yet.
+
+function isValidEmail(s) {
+  return typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim()) && s.length < 200;
+}
+
+// NOTE: public subscribe (the form embedded on the tenant's own page)
+// lives in websites-cozw-render.js instead, at /api/newsletter/subscribe --
+// same-origin with the tenant site, matching the existing
+// /api/reviews/submit pattern exactly. A public form on a different
+// origin (app.websites.co.zw) would need CORS handling for no real
+// benefit when the render worker already serves the page itself.
+
+// GET /api/sites/:id/unsubscribe?token=... -- public, one-click, no login.
+// This is the part of a marketing list that's actually a legal
+// requirement almost everywhere, not just Zimbabwe -- must work without
+// any auth barrier.
+async function unsubscribeFromNewsletter(request, env, origin, id) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token') || '';
+  if (!token) return new Response('Invalid unsubscribe link.', { status: 400 });
+
+  await env.DB.prepare(
+    "UPDATE newsletter_subscribers SET status='unsubscribed', unsubscribed_at=unixepoch() " +
+    "WHERE site_id=?1 AND unsubscribe_token=?2"
+  ).bind(id, token).run();
+
+  return new Response(
+    '<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:420px;margin:80px auto;text-align:center;color:#0c0e13">' +
+    '<h2>You\'ve been unsubscribed</h2><p style="color:#767c8c">You will not receive further emails from this list.</p></body></html>',
+    { headers: { 'Content-Type': 'text/html;charset=UTF-8' } }
+  );
+}
+
+// GET /api/sites/:id/subscribers -- owner-authenticated, editor panel use.
+async function listNewsletterSubscribers(request, env, origin, id) {
+  const ownerId = await resolveOwner(request, env);
+  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+  const site = await env.DB.prepare("SELECT owner_id FROM sites WHERE id=?1").bind(id).first();
+  if (!site || site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
+
+  const rows = await env.DB.prepare(
+    "SELECT email, subscribed_at FROM newsletter_subscribers WHERE site_id=?1 AND status='subscribed' ORDER BY subscribed_at DESC"
+  ).bind(id).all();
+  return jsonResp({ subscribers: rows?.results || [], count: (rows?.results || []).length }, 200, origin);
+}
+
+// GET /api/sites/:id/subscribers/export -- owner-authenticated CSV download.
+async function exportNewsletterSubscribers(request, env, origin, id) {
+  const ownerId = await resolveOwner(request, env);
+  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
+  const site = await env.DB.prepare("SELECT owner_id FROM sites WHERE id=?1").bind(id).first();
+  if (!site || site.owner_id !== ownerId) return jsonResp({ error: "forbidden" }, 403, origin);
+
+  const rows = await env.DB.prepare(
+    "SELECT email, subscribed_at FROM newsletter_subscribers WHERE site_id=?1 AND status='subscribed' ORDER BY subscribed_at DESC"
+  ).bind(id).all();
+  const lines = ['email,subscribed_at'];
+  for (const r of (rows?.results || [])) {
+    lines.push(`${r.email},${new Date(r.subscribed_at * 1000).toISOString()}`);
+  }
+  return new Response(lines.join('\n'), {
+    headers: {
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="subscribers-${id}.csv"`,
+    },
+  });
 }
 
 async function renewSite(request, env, origin, id) {

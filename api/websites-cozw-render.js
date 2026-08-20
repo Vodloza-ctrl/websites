@@ -90,6 +90,20 @@ async function handleRequest(request, env) {
     return handleReviewSubmit(request, env);
   }
 
+  if (url.pathname === '/api/newsletter/subscribe') {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
+    return handleNewsletterSubscribe(request, env);
+  }
+
   if (host === 'assets.websites.co.zw') {
     const key = url.pathname.replace(/^\/+/, '');
     if (!key) return new Response('Not found', { status: 404 });
@@ -900,6 +914,249 @@ async function handleReviewSubmit(request, env) {
 // END PUBLIC REVIEW SUBMISSION ENDPOINT
 // =============================================================================
 
+// =============================================================================
+// PUBLIC NEWSLETTER SUBSCRIBE ENDPOINT -- same-origin with the tenant site,
+// same reasoning as reviews above. Writes to the dedicated
+// newsletter_subscribers D1 table rather than the site's content JSON blob
+// (unlike reviews) -- subscriber data doesn't need to round-trip through
+// the editor's save flow, and a dedicated table avoids a race condition
+// where two people subscribing at the same moment could clobber each
+// other's write to the same content blob.
+// =============================================================================
+function isValidEmailAddr(s) {
+  return typeof s === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim()) && s.length < 200;
+}
+
+async function handleNewsletterSubscribe(request, env) {
+  const cors = { 'Access-Control-Allow-Origin': '*' };
+  if (request.method !== 'POST') {
+    return jsonResp({ ok: false, error: 'Method not allowed' }, 405, cors);
+  }
+
+  let body;
+  try { body = await request.json(); } catch (err) {
+    return jsonResp({ ok: false, error: 'Invalid request' }, 400, cors);
+  }
+
+  // Honeypot -- same pattern as reviews above. Fake success so a bot
+  // doesn't learn the field is a trap.
+  if (body.website || body.hp) {
+    return jsonResp({ ok: true }, 200, cors);
+  }
+
+  const siteId = String(body.site_id || '').trim();
+  const email = String(body.email || '').trim().toLowerCase();
+  if (!siteId) return jsonResp({ ok: false, error: 'Missing site' }, 400, cors);
+  if (!isValidEmailAddr(email)) return jsonResp({ ok: false, error: 'Please enter a valid email address' }, 400, cors);
+
+  let site;
+  try {
+    site = await env.DB.prepare('SELECT id, status FROM sites WHERE id = ?1').bind(siteId).first();
+  } catch (err) {
+    console.error('Newsletter subscribe DB read failed:', err);
+    return jsonResp({ ok: false, error: 'Could not subscribe — please try again' }, 500, cors);
+  }
+  if (!site || !['published', 'grace'].includes(site.status)) {
+    return jsonResp({ ok: false, error: 'This site is not accepting subscriptions right now' }, 404, cors);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const recent = await env.DB
+    .prepare('SELECT COUNT(*) AS n FROM newsletter_subscribers WHERE site_id=?1 AND subscribed_at > ?2')
+    .bind(siteId, now - 3600).first();
+  if (recent && recent.n >= 30) {
+    return jsonResp({ ok: false, error: 'Too many signups right now — please try again shortly' }, 429, cors);
+  }
+
+  const token = crypto.randomUUID();
+  try {
+    await env.DB.prepare(
+      "INSERT INTO newsletter_subscribers (id, site_id, email, status, unsubscribe_token, subscribed_at) " +
+      "VALUES (?1,?2,?3,'subscribed',?4,?5) " +
+      "ON CONFLICT(site_id, email) DO UPDATE SET status='subscribed', unsubscribed_at=NULL"
+    ).bind('sub_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), siteId, email, token, now).run();
+  } catch (err) {
+    console.error('Newsletter subscribe write failed:', err);
+    return jsonResp({ ok: false, error: 'Could not subscribe — please try again' }, 500, cors);
+  }
+
+  return jsonResp({ ok: true }, 200, cors);
+}
+
+// =============================================================================
+// END PUBLIC NEWSLETTER SUBSCRIBE ENDPOINT
+// =============================================================================
+
+// --- NEWSLETTER SIGNUP WIDGET -------------------------------------------------
+// Same self-contained philosophy as buildReviewFormHtml: own scoped
+// <style> with sensible var(--gold,#c9a961) fallbacks, own inline
+// <script>, drops into any template via {{newsletter_signup_html}} with
+// no template-specific wiring. Consent language ("you agree to receive
+// email updates... unsubscribe anytime") is baked in, not optional --
+// this is the actual legal requirement from the data-protection
+// discussion, not just good practice.
+function buildNewsletterSignupHtml(siteId, businessName) {
+  const sid = esc(siteId);
+  const name = esc(businessName || 'us');
+  return `<div class="wcz-nl-wrap">
+<style>
+.wcz-nl-wrap{max-width:440px;margin:0 auto;text-align:center}
+.wcz-nl-eyebrow{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--gold,#c9a961);margin-bottom:8px}
+.wcz-nl-heading{font-size:clamp(1.4rem,2.5vw,1.9rem);font-weight:700;margin:0 0 10px}
+.wcz-nl-sub{font-size:.88rem;opacity:.65;margin:0 0 22px;line-height:1.5}
+.wcz-nl-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.wcz-nl-row input[type=email]{flex:1;min-width:200px;padding:12px 14px;border-radius:8px;border:1.5px solid var(--line,rgba(0,0,0,.15));background:var(--paper,rgba(0,0,0,.03));color:inherit;font:inherit;font-size:.9rem;box-sizing:border-box}
+.wcz-nl-row input[type=email]:focus{outline:none;border-color:var(--gold,#c9a961)}
+.wcz-nl-hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+.wcz-nl-submit{padding:12px 22px;border-radius:8px;border:none;background:var(--gold,#c9a961);color:var(--bg,#1a1a1a);font-weight:700;font-size:.85rem;cursor:pointer;transition:opacity .2s;white-space:nowrap}
+.wcz-nl-submit:hover{opacity:.88}
+.wcz-nl-submit:disabled{opacity:.5;cursor:not-allowed}
+.wcz-nl-msg{margin-top:12px;font-size:.83rem;padding:9px 13px;border-radius:6px;display:none}
+.wcz-nl-msg.show{display:block}
+.wcz-nl-msg.ok{background:rgba(34,197,94,.14);color:#1a8a4c}
+.wcz-nl-msg.err{background:rgba(220,38,38,.12);color:#c0392b}
+.wcz-nl-fine{margin-top:14px;font-size:.72rem;opacity:.5;line-height:1.5}
+</style>
+<div class="wcz-nl-eyebrow">Stay in the loop</div>
+<h3 class="wcz-nl-heading">Join the list</h3>
+<p class="wcz-nl-sub">Occasional updates from ${name} — new work, new drops, nothing else.</p>
+<div class="wcz-nl-row">
+  <input type="email" id="wcz-nl-email" placeholder="you@example.com" maxlength="200">
+  <input type="text" id="wcz-nl-hp" class="wcz-nl-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <button type="button" class="wcz-nl-submit" id="wcz-nl-submit">Subscribe</button>
+</div>
+<div class="wcz-nl-msg" id="wcz-nl-msg"></div>
+<p class="wcz-nl-fine">By subscribing, you agree to receive email updates from ${name}. Unsubscribe any time, no questions asked.</p>
+</div>
+<script>
+(function(){
+  var siteId = "${sid}";
+  var submitBtn = document.getElementById('wcz-nl-submit');
+  var msg = document.getElementById('wcz-nl-msg');
+  if (!submitBtn) return;
+  submitBtn.addEventListener('click', function(){
+    var emailEl = document.getElementById('wcz-nl-email');
+    var hpEl = document.getElementById('wcz-nl-hp');
+    var email = emailEl ? emailEl.value.trim() : '';
+    if (!email || email.indexOf('@') === -1) { msg.className = 'wcz-nl-msg err show'; msg.textContent = 'Please enter a valid email address.'; return; }
+    submitBtn.disabled = true; submitBtn.textContent = 'Joining…';
+    msg.className = 'wcz-nl-msg'; msg.textContent = '';
+    fetch('/api/newsletter/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ site_id: siteId, email: email, website: hpEl ? hpEl.value : '' })
+    }).then(function(r){ return r.json().then(function(d){ return { ok: r.ok, data: d }; }); })
+      .then(function(res){
+        submitBtn.disabled = false; submitBtn.textContent = 'Subscribe';
+        if (res.ok && res.data.ok) {
+          msg.className = 'wcz-nl-msg ok show'; msg.textContent = "You're on the list — thanks!";
+          if (emailEl) emailEl.value = '';
+        } else {
+          msg.className = 'wcz-nl-msg err show'; msg.textContent = (res.data && res.data.error) || 'Something went wrong — please try again.';
+        }
+      }).catch(function(){
+        submitBtn.disabled = false; submitBtn.textContent = 'Subscribe';
+        msg.className = 'wcz-nl-msg err show'; msg.textContent = 'Network error — please try again.';
+      });
+  });
+})();
+</script>`;
+}
+
+// Generalizes hospVideoInfo's URL-detection pattern to music streaming
+// platforms. Deliberately embed-widget-only, same reasoning as the video
+// system: Spotify and Apple Music both provide official iframe embeds,
+// which sidesteps hosting/streaming licensed audio directly -- no DRM,
+// no bandwidth cost, no copyright liability for content the platform
+// never touches. Checked real professional artist sites (Karina
+// Canellakis, Rene Barbera) before building this -- neither self-hosts
+// playable audio either, both link to Spotify/Apple Music/YouTube. This
+// matches that pattern rather than inventing something riskier.
+function parseTrackEmbed(url) {
+  url = String(url || '').trim();
+  if (!url) return { type: '', embedUrl: '', height: 0 };
+
+  let m = url.match(/open\.spotify\.com\/(track|album|artist|playlist|episode|show)\/([A-Za-z0-9]+)/);
+  if (m) {
+    const kind = m[1], id = m[2];
+    const height = (kind === 'track' || kind === 'episode') ? 152 : 352;
+    return { type: 'spotify', embedUrl: `https://open.spotify.com/embed/${kind}/${id}`, height };
+  }
+
+  m = url.match(/music\.apple\.com\/([a-z]{2})\/(album|song|playlist)\/[^/]+\/([\w.]+)/);
+  if (m) {
+    return { type: 'apple-music', embedUrl: `https://embed.music.apple.com/${m[1]}/${m[2]}/${m[3]}`, height: 175 };
+  }
+
+  if (/soundcloud\.com\//.test(url) && !/w\.soundcloud\.com\/player/.test(url)) {
+    return {
+      type: 'soundcloud',
+      embedUrl: `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23c9a961&auto_play=false&show_teaser=false`,
+      height: 166,
+    };
+  }
+  if (/w\.soundcloud\.com\/player/.test(url)) {
+    return { type: 'soundcloud', embedUrl: url, height: 166 };
+  }
+
+  // Already-a-video-platform URL (YouTube Music links resolve through
+  // regular YouTube) -- reuse the existing video detector rather than
+  // duplicate its logic.
+  const videoInfo = hospVideoInfo(url);
+  if (videoInfo.type && videoInfo.type !== 'unknown') {
+    return { type: videoInfo.type, embedUrl: videoInfo.embedUrl, height: 200 };
+  }
+
+  return { type: 'unknown', embedUrl: url, height: 152 };
+}
+
+function normalizeTrackObj(t) {
+  if (!t) return null;
+  const raw = (typeof t === 'string') ? { url: t } : (typeof t === 'object' ? t : null);
+  if (!raw) return null;
+  const url = raw.url || '';
+  if (!url) return null;
+  const info = parseTrackEmbed(url);
+  return {
+    url,
+    embedUrl: info.embedUrl,
+    embedType: info.type,
+    height: info.height,
+    title: raw.title || '',
+    subtitle: raw.subtitle || '',
+  };
+}
+
+// --- MUSIC / "LISTEN" SECTION -------------------------------------------------
+function buildTracksSectionHtml(tracks) {
+  const normalized = (tracks || []).map(normalizeTrackObj).filter(Boolean);
+  if (!normalized.length) return '';
+
+  const itemsHtml = normalized.map(t => {
+    const titleHtml = t.title
+      ? `<div class="wcz-tracks-title">${esc(t.title)}${t.subtitle ? `<span>${esc(t.subtitle)}</span>` : ''}</div>`
+      : '';
+    return `<div class="wcz-tracks-item">
+      ${titleHtml}
+      <iframe src="${esc(t.embedUrl)}" height="${t.height}" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    </div>`;
+  }).join('');
+
+  return `<div class="wcz-tracks-section">
+<style>
+.wcz-tracks-section{max-width:760px;margin:0 auto}
+.wcz-tracks-eyebrow{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--gold,#c9a961);margin-bottom:8px;text-align:center}
+.wcz-tracks-heading{font-size:clamp(1.7rem,3vw,2.3rem);font-weight:700;margin:0 0 32px;text-align:center}
+.wcz-tracks-item{margin-bottom:24px}
+.wcz-tracks-item iframe{width:100%;border-radius:10px;display:block}
+.wcz-tracks-title{font-size:.85rem;font-weight:700;margin-bottom:8px}
+.wcz-tracks-title span{display:block;font-weight:500;opacity:.6;font-size:.8rem;margin-top:2px}
+</style>
+<div class="wcz-tracks-eyebrow">Listen</div>
+<h2 class="wcz-tracks-heading">Music</h2>
+${itemsHtml}
+</div>`;
+}
 
 // --- SHARED FEATURED ITEM HELPER ---------------------------------------------
 
@@ -2438,6 +2695,22 @@ async function buildTemplateExtras(c, site, config, env) {
   // by handlePublic's /blog routing, not through any template markup).
   const publishedArticleCount = Array.isArray(c.articles) ? c.articles.filter(a => a && a.status === 'published').length : 0;
   extras.has_blog = (c.articles_enabled !== false && publishedArticleCount > 0) ? 'true' : '';
+
+  // Music / "Listen" — same generic-everywhere design as Press: owner-
+  // authored track list (Spotify/Apple Music/SoundCloud embed URLs, added
+  // in the editor), gated on having at least one track since an empty
+  // section has nothing to show. One flat token, same reasoning as
+  // reviews_section_html above.
+  const tracks = Array.isArray(c.tracks) ? c.tracks : [];
+  extras.show_tracks_section = tracks.length > 0 ? 'true' : '';
+  extras.tracks_section_html = buildTracksSectionHtml(tracks);
+
+  // Newsletter signup — generic everywhere, defaults ON like reviews
+  // (there's always a first subscriber to invite, unlike press/tracks
+  // which need real content to show anything). Owner can turn it off via
+  // newsletter_enabled if they don't want to build a list.
+  extras.show_newsletter_section = (c.newsletter_enabled !== false) ? 'true' : '';
+  extras.newsletter_signup_html = buildNewsletterSignupHtml(site.id || '', c.business_name || c.name || '');
 
   // -- ADVISORY-FIRM ----------------------------------------------------------
   if (templateId === 'advisory-firm' || templateId === 'consultant') {
