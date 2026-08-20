@@ -414,7 +414,10 @@ async function handlePublic(request, env, slug, customDomain) {
 
   if (seoUrl.pathname === '/sitemap.xml') {
     if (!isLive) return render404();
-    const urls = [{ loc: `${baseUrl}/`, priority: '1.0' }];
+    const urls = [
+      { loc: `${baseUrl}/`, priority: '1.0' },
+      { loc: `${baseUrl}/privacy`, priority: '0.3' },
+    ];
     const blogOn = content.articles_enabled !== false;
     const published = blogOn && Array.isArray(content.articles)
       ? content.articles.filter(a => a && a.status === 'published')
@@ -446,6 +449,9 @@ async function handlePublic(request, env, slug, customDomain) {
   if (blogEnabled && blogUrl.pathname.startsWith('/blog/')) {
     const articleSlug = blogUrl.pathname.slice('/blog/'.length).replace(/\/$/, '');
     return handleBlogArticle(site, content, articleSlug, baseUrl);
+  }
+  if (blogUrl.pathname === '/privacy' || blogUrl.pathname === '/privacy/') {
+    return handlePrivacyPolicy(site, content, baseUrl);
   }
 
   const templateId = site.template_id || content.template || 'beauty-salon';
@@ -5812,6 +5818,52 @@ function formatArticleDate(ts) {
   } catch (err) {
     return '';
   }
+}
+
+function handlePrivacyPolicy(site, content, baseUrl) {
+  const businessName = content.business_name || content.name || 'This business';
+  const email = content.email || content.contact?.email || '';
+  const phone = content.phone || content.contact?.phone || '';
+  const address = content.address || content.location || content.contact?.address || '';
+  const hasStore = STORE_TEMPLATE_IDS.has(site.template_id) || (Array.isArray(content.products) && content.products.length > 0);
+  const hasBookings = !!(content.services && content.services.length) || site.template_id === 'beauty-salon' || site.template_id?.startsWith('beauty-');
+
+  const contactLine = [email, phone].filter(Boolean).join(' or ') || 'the contact details on this site';
+
+  const bodyHtml = `
+<article class="wrap" style="max-width:760px">
+  <div class="article-date">Last updated ${new Date().toISOString().slice(0,10)}</div>
+  <h1 class="article-title">Privacy Policy</h1>
+  <div class="article-body">
+    <p>${esc(businessName)} ("we", "us", "our") respects your privacy. This page explains what personal information we collect through this website, why, and what you can do about it.</p>
+
+    <h3 style="margin:28px 0 10px">What we collect</h3>
+    <p>Depending on how you use this site, we may collect: your name, phone number, and/or email address when you submit a contact form or message us on WhatsApp${hasBookings ? '; appointment or booking details (date, time, service requested)' : ''}${hasStore ? '; order details such as items purchased and delivery information' : ''}. We do not knowingly collect sensitive personal information (such as health, biometric, or financial account data) beyond what you choose to share with us directly.</p>
+
+    <h3 style="margin:28px 0 10px">Payments</h3>
+    <p>${hasStore ? `Payments made through this site are processed directly by Paynow and/or EcoCash. We do not receive, store, or have access to your card or mobile money account credentials — that information stays with the payment provider, never with us.` : `This site does not currently process online payments directly.`}</p>
+
+    <h3 style="margin:28px 0 10px">How we use it</h3>
+    <p>We use the information you provide to respond to your enquiries, fulfil${hasBookings ? ' bookings and' : ''}${hasStore ? ' orders and' : ''} communicate with you about your relationship with us — nothing more. We do not sell your personal information to third parties.</p>
+
+    <h3 style="margin:28px 0 10px">Cookies</h3>
+    <p>This site does not currently use tracking or advertising cookies. If that changes, this page will be updated and, where required, you will be asked for consent before any non-essential cookie is set.</p>
+
+    <h3 style="margin:28px 0 10px">Your rights</h3>
+    <p>You may ask us what personal information we hold about you, request that we correct it, or request that we delete it. To do so, contact us at ${esc(contactLine)}.</p>
+
+    <h3 style="margin:28px 0 10px">This website's platform</h3>
+    <p>This site is built and hosted on websites.co.zw, which provides the underlying technology. Questions about your relationship with ${esc(businessName)} specifically should go to ${esc(businessName)} directly, using the contact details above.</p>
+  </div>
+</article>`;
+
+  const html = buildBlogLayout(site, content, {
+    pageTitle: `Privacy Policy — ${businessName}`,
+    metaDescription: `How ${businessName} collects, uses, and protects your personal information.`,
+    canonical: baseUrl ? `${baseUrl}/privacy` : '',
+    bodyHtml,
+  });
+  return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
 }
 
 function buildBlogLayout(site, content, opts) {
