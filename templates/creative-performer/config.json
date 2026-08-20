@@ -1,0 +1,42 @@
+{
+  "template_id": "creative-performer",
+  "name": "Performer (Premium)",
+  "description": "Premium template for musicians, bands, and touring performers -- streaming embeds, tour dates, merch store",
+  "palette": "custom",
+  "font_pair": "custom",
+  "defaultPalette": "stage-amber",
+  "defaultPrimaryColor": "#e8a33d",
+  "sections": [
+    "hero",
+    "listen",
+    "tour",
+    "watch",
+    "press",
+    "reviews",
+    "newsletter",
+    "shop",
+    "contact"
+  ],
+  "tokens": {
+    "business_name": "",
+    "tagline": "",
+    "about": "",
+    "hero_image_url": "",
+    "phone": "",
+    "whatsapp": "",
+    "email": ""
+  },
+  "flags": {},
+  "lists": [
+    {
+      "key": "events",
+      "emptyHtml": "<p class='tour-empty'>No dates on sale yet -- check back soon.</p>",
+      "itemTemplate": "<div class=\"tour-row\"><div class=\"tour-date\">{{item.date}}</div><div class=\"tour-venue\"><h4>{{item.title}}</h4><p>{{item.description}}</p></div></div>"
+    },
+    {
+      "key": "gallery",
+      "emptyHtml": "<p style='text-align:center;padding:40px;color:var(--paper-faint)'>Videos coming soon.</p>",
+      "itemTemplate": "<a class=\"watch-item\" href=\"{{item.url}}\" target=\"_blank\" rel=\"noopener\"><img src=\"{{item.thumbnail}}\" alt=\"{{item.caption}}\" loading=\"lazy\"><div class=\"watch-play\"><svg viewBox=\"0 0 24 24\" fill=\"#f4ede3\"><path d=\"M8 5v14l11-7z\"/></svg></div></a>"
+    }
+  ]
+}

@@ -3773,6 +3773,52 @@ async function buildTemplateExtras(c, site, config, env) {
       .map(i => `<a href="${esc(i.href)}" onclick="closeMobileMenu()">${esc(i.label)}</a>`).join('\n  ');
   }
 
+  // -- CREATIVE-PERFORMER ------------------------------------------------------
+  // Premium musician/performer template. Reuses the platform's real
+  // socials object (c.socials.{platform}, fixed keys -- confirmed this is
+  // the actual shape used elsewhere before writing this, not an array)
+  // and gates the hero press pull-quote on actually having content, same
+  // reasoning as press/reviews/tracks elsewhere -- an empty quote block
+  // with nothing to show just looks broken, not minimal.
+  if (templateId === 'creative-performer') {
+    const perfSocials = c.socials || {};
+    extras.facebook_url = perfSocials.facebook || '';
+    extras.instagram_url = perfSocials.instagram || '';
+    extras.youtube_url = perfSocials.youtube || '';
+    extras.spotify_url = perfSocials.spotify || '';
+    extras.has_facebook = extras.facebook_url ? 'true' : '';
+    extras.has_instagram = extras.instagram_url ? 'true' : '';
+    extras.has_youtube = extras.youtube_url ? 'true' : '';
+    extras.has_spotify = extras.spotify_url ? 'true' : '';
+    extras.icon_instagram = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85C2.38 3.86 3.9 2.31 7.15 2.16 8.42 2.1 8.8 2.16 12 2.16zM12 7a5 5 0 100 10 5 5 0 000-10zm0 8.2a3.2 3.2 0 110-6.4 3.2 3.2 0 010 6.4zm5.2-8.4a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z"/></svg>';
+    extras.icon_facebook = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.25-1.5 1.55-1.5H16.7V3.7C16.3 3.65 15.2 3.55 13.9 3.55c-2.7 0-4.5 1.65-4.5 4.65v2.6H6.6v3.1h2.8v8h4.1z"/></svg>';
+    extras.icon_youtube = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M21.6 7.2a2.8 2.8 0 00-2-2C17.9 4.7 12 4.7 12 4.7s-5.9 0-7.6.5a2.8 2.8 0 00-2 2A28.9 28.9 0 002 12a28.9 28.9 0 00.4 4.8 2.8 2.8 0 002 2c1.7.5 7.6.5 7.6.5s5.9 0 7.6-.5a2.8 2.8 0 002-2 28.9 28.9 0 00.4-4.8 28.9 28.9 0 00-.4-4.8zM9.8 15.2V8.8l5.3 3.2-5.3 3.2z"/></svg>';
+    extras.icon_spotify = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm4.3 14.4a.6.6 0 01-.85.2c-2.3-1.4-5.3-1.75-8.7-1a.6.6 0 11-.27-1.2c3.75-.85 7-.45 9.6 1.1a.6.6 0 01.22.9zm1.2-2.75a.75.75 0 01-1.05.25c-2.65-1.6-6.7-2.1-9.8-1.15a.75.75 0 11-.45-1.45c3.55-1.05 8-.5 11 1.3a.75.75 0 01.3 1.05zm.1-2.85C14.8 8.9 9.3 8.7 6.1 9.7a.9.9 0 11-.55-1.7c3.7-1.15 9.8-.9 13.2 1.15a.9.9 0 01-.9 1.55z"/></svg>';
+
+    extras.show_press_quote = (c.press_pull_quote || '').trim() ? 'true' : '';
+    extras.press_pull_quote = c.press_pull_quote || '';
+    extras.press_pull_source = c.press_pull_source || '';
+
+    const perfProducts = await getStoreProducts(env, site.id, c.products);
+    const perfRawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
+    const perfWaNum = perfRawPhone.startsWith('263') ? perfRawPhone : perfRawPhone ? '263' + perfRawPhone.replace(/^0/, '') : '';
+    const perfShopCtx = {
+      waNum: perfWaNum, bizName: c.business_name || c.name || '',
+      addonActive: whatsappStoreActive, storePaymentsEnabled,
+      siteId: site.id, checkoutApiBase,
+    };
+    const perfCommerce = env && env.COMMERCE_SDK ?
+      await callCommerceSDK(env, perfProducts, 'creative-performer', c.theme || {}, perfShopCtx) :
+      buildCommerceModule(perfProducts, 'creative-performer', c.theme || {}, perfShopCtx);
+    extras.music_products_html = perfCommerce.gridHtml;
+    extras.wcz_qv_drawer_html = perfCommerce.drawerHtml;
+    extras.wcz_lb_html = perfCommerce.lbHtml;
+    extras.wcz_products_script = perfCommerce.scriptHtml;
+    extras.wcz_commerce_css = env && env.COMMERCE_SDK ?
+      await callCommerceCSS(env) :
+      buildCommerceCSS();
+  }
+
   // -- ELITE-BESPOKE ------------------------------------------------------------
   // Was previously using a raw {{#each products}} against the legacy
   // content.products array -- completely disconnected from the editor's
