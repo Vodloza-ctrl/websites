@@ -249,20 +249,15 @@ footer{padding:56px 0 40px}
   <div class="wrap">
     <span class="eyebrow"><span class="pulse"></span>Live in seconds — not a mockup</span>
     <h1>Get your business online <span class="g">today.</span></h1>
-    <p class="lead">Try it out and see how your website will look. Type your business name. Pick your industry. Watch a real, live example update instantly with your name on it.</p>
+    <p class="lead">Tell us what you do. We'll find the right look for your business and show it to you live, with your name on it.</p>
 
     <div class="builder" id="builder">
       <div class="builder-grid">
         <div class="builder-controls">
 
           <div class="field">
-            <label for="bizName">Your business name</label>
-            <input type="text" id="bizName" placeholder="e.g. Tendai's Hardware" autofocus autocomplete="off">
-          </div>
-
-          <div class="field">
             <label for="bizDesc">What do you do? <span style="font-weight:500;color:var(--ink3)">— one line</span></label>
-            <input type="text" id="bizDesc" placeholder="e.g. Wedding and portrait photography in Bulawayo" autocomplete="off">
+            <input type="text" id="bizDesc" placeholder="e.g. Wedding and portrait photography in Bulawayo" autocomplete="off" autofocus>
           </div>
 
           <div class="rec-result" id="recResult" style="display:none">
@@ -271,6 +266,11 @@ footer{padding:56px 0 40px}
               <span id="recText"></span>
             </div>
             <div class="rec-premium" id="recPremium" style="display:none"></div>
+          </div>
+
+          <div class="field">
+            <label for="bizName">Your business name</label>
+            <input type="text" id="bizName" placeholder="e.g. Tendai's Hardware" autocomplete="off">
           </div>
 
           <button type="button" id="notQuiteRight" style="display:none;background:none;border:none;padding:0;font-size:12.5px;color:var(--ink3);text-decoration:underline;cursor:pointer;text-align:left;margin-top:-10px">Not quite right? Choose a different type</button>
@@ -528,6 +528,14 @@ const DOM = {
 
 let selectedTemplate = DEFAULT_TEMPLATE;
 let hasManualOverride = false;
+// Gates renderLivePreview() -- false means "we don't actually know the
+// right template yet, don't show one." Without this, the preview shows
+// DEFAULT_TEMPLATE (beauty-salon) to literally everyone for however long
+// the AI call takes, regardless of what they typed -- confirmed as a real
+// bug via a live screenshot: someone typed "wedding photography" twice
+// and still saw raw beauty-salon copy, because the fast 350ms name-based
+// render always fired before the AI recommendation had a chance to land.
+let firstRecommendationSettled = false;
 let claimingPhone = '';
 
 function debounce(fn, wait) {
@@ -565,6 +573,8 @@ DOM.pillGrid.addEventListener('click', function(e) {
   const pill = e.target.closest('.pill');
   if (!pill) return;
   selectedTemplate = pill.dataset.key;
+  hasManualOverride = true;
+  firstRecommendationSettled = true;
   DOM.pillGrid.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === pill));
   renderLivePreview();
 });
@@ -586,6 +596,7 @@ DOM.pillGrid.addEventListener('click', function(e) {
   if (templateParam && validKeys.has(templateParam)) {
     selectedTemplate = templateParam;
     hasManualOverride = true; // came with real intent from a landing page -- don't let a later AI guess override it
+    firstRecommendationSettled = true; // we already know the right template, no need to wait
     const pill = DOM.pillGrid.querySelector(`.pill[data-key="${templateParam}"]`);
     if (pill) {
       DOM.pillGrid.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === pill));
@@ -639,6 +650,7 @@ async function fetchRecommendation() {
     if (!r.ok || !r.data || !r.data.template_id) return;
     lastRecommendation = r.data;
     selectedTemplate = r.data.template_id;
+    firstRecommendationSettled = true;
 
     const ind = INDUSTRIES.find(i => i.key === r.data.template_id);
     const label = ind ? ind.label : 'General Business';
@@ -685,9 +697,6 @@ DOM.notQuiteRight.addEventListener('click', function() {
   DOM.pillField.classList.add('show');
   DOM.notQuiteRight.style.display = 'none';
 });
-DOM.pillGrid.addEventListener('click', function() {
-  hasManualOverride = true;
-});
 
 function setPreviewStatus(text, updating) {
   DOM.previewStatus.classList.toggle('updating', !!updating);
@@ -695,6 +704,10 @@ function setPreviewStatus(text, updating) {
 }
 
 function renderLivePreview() {
+  if (!firstRecommendationSettled) {
+    setPreviewStatus('waiting for your description…', false);
+    return;
+  }
   const name = DOM.bizName.value.trim() || 'Your Business';
   const params = new URLSearchParams({ name, template: selectedTemplate });
   setPreviewStatus('updating…', true);
@@ -707,8 +720,11 @@ DOM.livePreview.addEventListener('load', function() {
   }
 });
 
-// Render immediately on load — no gate, no click required.
-renderLivePreview();
+// No longer rendered unconditionally on load -- that was the direct cause
+// of everyone seeing beauty-salon by default. The preview now waits for
+// the person to actually type something, matching the field order above
+// (description first).
+setPreviewStatus('waiting for your description…', false);
 
 // ── Toast ───────────────────────────────────────────────────────────────
 function showToast(msg, type) {
