@@ -117,6 +117,9 @@ button{cursor:pointer;border:none;background:none;font:inherit}
 .final-cta .fine{margin-top:12px;font-size:.8rem;color:var(--ink3)}
 
 footer{border-top:1px solid var(--line);padding:32px 0;text-align:center;font-size:.8rem;color:var(--ink3)}
+.sticky-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:150;background:#fff;border-top:1px solid var(--line);padding:12px 16px;box-shadow:0 -6px 20px -8px rgba(15,20,35,.15);transform:translateY(100%);transition:transform .25s ease;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.sticky-cta-bar.show{transform:translateY(0)}
+@media(min-width:861px){.sticky-cta-bar{display:none}}
 </style>
 </head>
 <body>
@@ -129,7 +132,7 @@ footer{border-top:1px solid var(--line);padding:32px 0;text-align:center;font-si
   <a href="/#start" class="btn btn-ghost btn-sm">Back to home</a>
 </header>
 
-<section class="hero">
+<section class="hero" id="heroSection">
   <div class="wrap">
     <span class="eyebrow"><span class="dot"></span>Built for salons & beauty businesses</span>
     <h1>Your salon, booked 24/7 — even while you're doing a client's nails.</h1>
@@ -269,6 +272,10 @@ footer{border-top:1px solid var(--line);padding:32px 0;text-align:center;font-si
   </div>
 </section>
 
+<div class="sticky-cta-bar" id="stickyCtaBar">
+  <a href="/?utm_source=salons&utm_medium=landing_page&utm_campaign=free_trial&intent=trial&template=beauty-salon#start" class="btn btn-primary" style="width:100%">Publish free for 14 days →</a>
+</div>
+
 <footer>
   <div class="wrap">© 2026 websites.co.zw · where Zimbabwe builds online</div>
 </footer>
@@ -279,5 +286,16 @@ footer{border-top:1px solid var(--line);padding:32px 0;text-align:center;font-si
      > Web Analytics > Add a site (www.websites.co.zw), then replace
      YOUR_BEACON_TOKEN below. One token covers every page on the domain. -->
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "YOUR_BEACON_TOKEN"}'></script>
+<script>
+(function(){
+  var hero = document.getElementById('heroSection');
+  var bar = document.getElementById('stickyCtaBar');
+  if (!hero || !bar || !window.IntersectionObserver) return;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){ bar.classList.toggle('show', !entry.isIntersecting); });
+  }, { threshold: 0 });
+  obs.observe(hero);
+})();
+</script>
 </body>
 </html>
