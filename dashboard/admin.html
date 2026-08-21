@@ -205,6 +205,7 @@ main{overflow-x:hidden;padding:28px 28px 60px}
     <div class="sidebar-bottom">
       <div style="margin-bottom:6px">Signed in as <strong>Lenni</strong></div>
       <a href="/dashboard/customer.html">← Customer dashboard</a>
+      <a href="#" onclick="resetAdminSecret();return false;" style="display:block;margin-top:6px">🔑 Change admin secret</a>
     </div>
   </aside>
 
@@ -468,6 +469,18 @@ if (!ADMIN_SECRET) {
   var entered = prompt("Enter admin secret (ADMIN_SECRET from Cloudflare Worker secrets):");
   if (entered) { localStorage.setItem("wcz_admin_secret", entered); ADMIN_SECRET = entered; }
 }
+
+// Real fix for the "rotated the secret, dashboard is just stuck" problem --
+// previously there was no way to re-enter it short of clearing localStorage
+// via devtools, since the prompt only ever fired when the stored value was
+// completely empty, never when it was simply wrong. Callable from a real
+// button (added to the header below) instead of requiring the console.
+window.resetAdminSecret = function() {
+  var entered = prompt("Enter the new admin secret:");
+  if (!entered) return;
+  localStorage.setItem("wcz_admin_secret", entered);
+  location.reload();
+};
 
 function adminHeaders() {
   return { "Content-Type":"application/json", "Authorization":"Bearer "+ADMIN_SECRET };
