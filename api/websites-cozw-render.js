@@ -1,5 +1,12 @@
 /**
- * websites.co.zw -- Render Worker v10.32 + Church Template Support
+ * websites.co.zw -- Render Worker v10.33 + Church Template Support
+ *
+ * v10.33:
+ *   - OG image tags now declare og:image:type (derived from the actual
+ *     file extension being served) and og:image:secure_url. Fixes
+ *     WhatsApp/Facebook link previews silently not rendering on sites
+ *     whose hero image is .webp -- some crawler versions won't fetch an
+ *     image at all if the meta tag doesn't pre-declare its type.
  *
  * v10.32:
  *   - Added hospitality-sands and hospitality-wild, two premium ($15
@@ -581,6 +588,23 @@ async function handlePublic(request, env, slug, customDomain) {
         || content.images?.logo || content.logo_url
         || 'https://assets.websites.co.zw/websites-og-image.png';
       const ogDescRaw = (content.about || content.tagline || '').toString().slice(0, 200);
+
+      // WhatsApp/Facebook's link-preview crawler is far stricter than a
+      // browser about the og:image response -- it wants an explicit,
+      // *correct* Content-Type on the meta tag itself before it will even
+      // fetch the file, and several tenant sites' hero images are .webp
+      // (a format both crawlers accept, but only when og:image:type is
+      // declared -- without it, some crawler versions skip the image
+      // entirely rather than sniffing the real type). This derives the
+      // real MIME type from the file extension actually being served so
+      // the tag never claims a type the file doesn't have.
+      const OG_MIME_MAP = {
+        jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+        webp: 'image/webp', gif: 'image/gif',
+      };
+      const ogImageExt = (ogImageUrl.split('.').pop() || '').toLowerCase().split('?')[0];
+      const ogImageType = OG_MIME_MAP[ogImageExt] || 'image/jpeg';
+
       if (businessName) {
         ogTags = `<meta property="og:type" content="website">`
           + `<meta property="og:site_name" content="${esc(businessName)}">`
@@ -588,6 +612,8 @@ async function handlePublic(request, env, slug, customDomain) {
           + (ogDescRaw ? `<meta property="og:description" content="${esc(ogDescRaw)}">` : '')
           + `<meta property="og:url" content="${esc(baseUrl + '/')}">`
           + `<meta property="og:image" content="${esc(ogImageUrl)}">`
+          + `<meta property="og:image:secure_url" content="${esc(ogImageUrl)}">`
+          + `<meta property="og:image:type" content="${esc(ogImageType)}">`
           + `<meta name="twitter:card" content="summary_large_image">`
           + `<meta name="twitter:title" content="${esc(businessName)}">`
           + (ogDescRaw ? `<meta name="twitter:description" content="${esc(ogDescRaw)}">` : '')
