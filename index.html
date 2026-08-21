@@ -115,6 +115,13 @@ svg{display:block}
 
 .pill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
 @media(max-width:480px){.pill-grid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}}
+.rec-result{background:var(--green-bg);border:1px solid #cdead9;border-radius:11px;padding:14px 16px}
+.rec-result-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.88rem;color:var(--green-dk);font-weight:600}
+.rec-badge{font-size:.72rem;background:var(--green);color:#fff;padding:3px 9px;border-radius:99px;font-weight:700;letter-spacing:.02em}
+.rec-premium{margin-top:10px;padding-top:10px;border-top:1px solid #cdead9;font-size:.83rem;color:var(--ink2)}
+.rec-premium a{font-weight:700;color:var(--gold-dk,#8a6a1a)}
+#pillField{display:none}
+#pillField.show{display:block}
 .pill{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);cursor:pointer;transition:.15s;text-align:center}
 .pill:hover{border-color:var(--ink3)}
 .pill svg{color:var(--ink2);transition:.15s}
@@ -254,6 +261,21 @@ footer{padding:56px 0 40px}
           </div>
 
           <div class="field">
+            <label for="bizDesc">What do you do? <span style="font-weight:500;color:var(--ink3)">— one line</span></label>
+            <input type="text" id="bizDesc" placeholder="e.g. Wedding and portrait photography in Bulawayo" autocomplete="off">
+          </div>
+
+          <div class="rec-result" id="recResult" style="display:none">
+            <div class="rec-result-main">
+              <span class="rec-badge">✨ AI match</span>
+              <span id="recText"></span>
+            </div>
+            <div class="rec-premium" id="recPremium" style="display:none"></div>
+          </div>
+
+          <button type="button" id="notQuiteRight" style="display:none;background:none;border:none;padding:0;font-size:12.5px;color:var(--ink3);text-decoration:underline;cursor:pointer;text-align:left;margin-top:-10px">Not quite right? Choose a different type</button>
+
+          <div class="field" id="pillField">
             <label>Your industry</label>
             <div class="pill-grid" id="pillGrid"></div>
           </div>
@@ -474,6 +496,12 @@ const DOM = {
   claimBlock: document.getElementById('claimBlock'),
   claimIconSmall: document.getElementById('claimIconSmall'),
   generateBtn: document.getElementById('generateBtn'),
+  bizDesc: document.getElementById('bizDesc'),
+  recResult: document.getElementById('recResult'),
+  recText: document.getElementById('recText'),
+  recPremium: document.getElementById('recPremium'),
+  notQuiteRight: document.getElementById('notQuiteRight'),
+  pillField: document.getElementById('pillField'),
   claimBackBtn: document.getElementById('claimBackBtn'),
   claimStepRequest: document.getElementById('claimStepRequest'),
   claimStepCode: document.getElementById('claimStepCode'),
@@ -499,6 +527,7 @@ const DOM = {
 };
 
 let selectedTemplate = DEFAULT_TEMPLATE;
+let hasManualOverride = false;
 let claimingPhone = '';
 
 function debounce(fn, wait) {
@@ -556,6 +585,7 @@ DOM.pillGrid.addEventListener('click', function(e) {
 
   if (templateParam && validKeys.has(templateParam)) {
     selectedTemplate = templateParam;
+    hasManualOverride = true; // came with real intent from a landing page -- don't let a later AI guess override it
     const pill = DOM.pillGrid.querySelector(`.pill[data-key="${templateParam}"]`);
     if (pill) {
       DOM.pillGrid.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === pill));
@@ -585,6 +615,79 @@ DOM.pillGrid.addEventListener('click', function(e) {
 // ── Live preview — always on screen, updates as the person types/picks ──
 const debouncedRender = debounce(renderLivePreview, 350);
 DOM.bizName.addEventListener('input', debouncedRender);
+
+// ── AI template recommendation ────────────────────────────────────────────
+// Leads with description instead of forcing an industry pick up front --
+// the pill grid still exists (kept, not removed) but only as a lightweight
+// escape hatch for when the AI guesses wrong, not the first thing anyone
+// has to decide. Calls the now-public /api/recommend-template (previously
+// required a login, which made it unusable by exactly the person who needs
+// it most -- someone who's never signed up yet).
+let lastRecommendation = null;
+
+async function fetchRecommendation() {
+  if (hasManualOverride) return; // once someone picks a pill manually, stop overriding their choice
+  const name = DOM.bizName.value.trim();
+  const desc = DOM.bizDesc.value.trim();
+  if (!name && !desc) { DOM.recResult.style.display = 'none'; return; }
+
+  try {
+    const r = await authApi(API_BASE + '/recommend-template', {
+      business_name: name || undefined,
+      description: desc || undefined,
+    });
+    if (!r.ok || !r.data || !r.data.template_id) return;
+    lastRecommendation = r.data;
+    selectedTemplate = r.data.template_id;
+
+    const ind = INDUSTRIES.find(i => i.key === r.data.template_id);
+    const label = ind ? ind.label : 'General Business';
+    DOM.recText.textContent = `We think ${label} is the best fit${r.data.reason ? ' — ' + r.data.reason : ''}.`;
+    DOM.recResult.style.display = 'block';
+    DOM.notQuiteRight.style.display = 'block';
+
+    if (r.data.premium_match && r.data.premium_match.template_id) {
+      // Explicit map, not a guessed pattern -- the real subdomains don't
+      // follow a consistent rule (hospitality-sands is demo-iris-sands,
+      // not demo-sands; beauty-atelier is demo-salon-atelier, etc.),
+      // confirmed against what was actually built this session.
+      const PREMIUM_DEMO_SUBDOMAINS = {
+        'hospitality-sands': 'demo-iris-sands',
+        'hospitality-wild': 'demo-iris-wild',
+        'beauty-atelier': 'demo-salon-atelier',
+        'beauty-maison': 'demo-salon-maison',
+        'grill-noir': 'demo-grill-noir',
+        'grill-market': 'demo-grill-market',
+        'grill-frame': 'demo-grill-frame',
+        'creative-performer': 'demo-performer',
+        'creative-photographer': 'demo-photographer',
+      };
+      const sub = PREMIUM_DEMO_SUBDOMAINS[r.data.premium_match.template_id];
+      DOM.recPremium.innerHTML = sub
+        ? `Given what you've described, our premium <a href="https://${sub}.websites.co.zw" target="_blank">${r.data.premium_match.name}</a> template might suit you even better — you can try the look after your site is live.`
+        : `Given what you've described, our premium ${r.data.premium_match.name} template might suit you even better — you can try the look after your site is live.`;
+      DOM.recPremium.style.display = 'block';
+    } else {
+      DOM.recPremium.style.display = 'none';
+    }
+
+    const pill = DOM.pillGrid.querySelector(`.pill[data-key="${r.data.template_id}"]`);
+    if (pill) DOM.pillGrid.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === pill));
+
+    renderLivePreview();
+  } catch (e) { /* silent -- recommendation is a nice-to-have, never blocks the flow */ }
+}
+const debouncedRecommend = debounce(fetchRecommendation, 700);
+DOM.bizName.addEventListener('input', debouncedRecommend);
+DOM.bizDesc.addEventListener('input', debouncedRecommend);
+
+DOM.notQuiteRight.addEventListener('click', function() {
+  DOM.pillField.classList.add('show');
+  DOM.notQuiteRight.style.display = 'none';
+});
+DOM.pillGrid.addEventListener('click', function() {
+  hasManualOverride = true;
+});
 
 function setPreviewStatus(text, updating) {
   DOM.previewStatus.classList.toggle('updating', !!updating);
@@ -734,9 +837,26 @@ async function verifyClaimCode() {
       return;
     }
 
+    const siteId = siteResp.data.site.id;
+
+    // Real AI generation from what they actually typed, not just a bare
+    // draft with a name. Best-effort -- if this fails, they still land in
+    // the editor with a real (if plainer) site, never blocked on it.
+    const description = DOM.bizDesc.value.trim();
+    if (description) {
+      setClaimMsg(DOM.claimMsg2, 'Writing your site with AI…', 'ok');
+      try {
+        await authApi(API_BASE + '/sites/' + encodeURIComponent(siteId) + '/generate', {
+          business_name: siteName,
+          description: description,
+          industry: (INDUSTRIES.find(i => i.key === selectedTemplate) || {}).label || undefined,
+        });
+      } catch (e) { /* best-effort -- fall through to the editor either way */ }
+    }
+
     setClaimMsg(DOM.claimMsg2, 'Your site is ready — taking you to the editor…', 'ok');
     await sleep(500);
-    window.location.href = EDITOR_BASE + '?site=' + encodeURIComponent(siteResp.data.site.id);
+    window.location.href = EDITOR_BASE + '?site=' + encodeURIComponent(siteId) + '&new=1';
   } catch (e) {
     setClaimMsg(DOM.claimMsg2, 'Network error. Try again.', 'err');
   } finally {

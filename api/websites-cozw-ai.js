@@ -182,7 +182,7 @@ async function handleRecommendTemplate(request, env, origin) {
   const industry     = clampStr(body.industry, 80);
   const businessName = clampStr(body.business_name, 120);
   const description  = clampStr(body.description, 300);
-  if (!industry) return json({ error: "missing_industry" }, 400, origin);
+  if (!industry && !description) return json({ error: "missing_input" }, 400, origin);
   if (!env.ANTHROPIC_API_KEY) return json({ error: "ai_not_configured" }, 503, origin);
   const catalogueText = TEMPLATE_CATALOGUE.map(t => `- ${t.id}: ${t.desc}`).join("\n");
   const premiumText = Object.entries(PREMIUM_CATALOGUE).map(([baseId, variants]) =>
@@ -199,9 +199,11 @@ async function handleRecommendTemplate(request, env, origin) {
     "Premium templates (premium_match must be one of these, or null -- these are $15 upgrades, never the primary template_id):",
     premiumText,
   ].join("\n");
-  const userLines = ["Industry: " + industry];
+  const userLines = [];
+  if (industry) userLines.push("Industry: " + industry);
   if (businessName) userLines.push("Business name: " + businessName);
   if (description)  userLines.push("What they do: " + description);
+  if (!userLines.length) userLines.push("No information given — pick the safest general-purpose template.");
   const model = env.MODEL || DEFAULT_MODEL;
   const base  = (env.GATEWAY_URL || "https://api.anthropic.com").replace(/\/+$/, "");
   let data;
