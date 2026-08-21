@@ -5265,6 +5265,35 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.has_facebook = extras.facebook_url ? 'true' : '';
     extras.has_instagram = extras.instagram_url ? 'true' : '';
     extras.has_youtube = extras.youtube_url ? 'true' : '';
+    extras.icon_facebook = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.25-1.5 1.55-1.5H16.7V3.7C16.3 3.65 15.2 3.55 13.9 3.55c-2.7 0-4.5 1.65-4.5 4.65v2.6H6.6v3.1h2.8v8h4.1z"/></svg>';
+    extras.icon_instagram = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85C2.38 3.86 3.9 2.31 7.15 2.16 8.42 2.1 8.8 2.16 12 2.16zM12 7a5 5 0 100 10 5 5 0 000-10zm0 8.2a3.2 3.2 0 110-6.4 3.2 3.2 0 010 6.4zm5.2-8.4a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z"/></svg>';
+    extras.icon_youtube = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.6 7.2a2.8 2.8 0 00-2-2C17.9 4.7 12 4.7 12 4.7s-5.9 0-7.6.5a2.8 2.8 0 00-2 2A28.9 28.9 0 002 12a28.9 28.9 0 00.4 4.8 2.8 2.8 0 002 2c1.7.5 7.6.5 7.6.5s5.9 0 7.6-.5a2.8 2.8 0 002-2 28.9 28.9 0 00.4-4.8 28.9 28.9 0 00-.4-4.8zM9.8 15.2V8.8l5.3 3.2-5.3 3.2z"/></svg>';
+
+    // Hero video -- new capability, added directly to the base church
+    // template (not a separate premium variant -- confirmed zero real
+    // customers were on this template, so upgrading it in place was safe
+    // and is what was actually asked for).
+    const churchHeroVideoUrl = c.hero_video || '';
+    const churchHeroVideoInfo = churchHeroVideoUrl ? hospVideoInfo(churchHeroVideoUrl) : { type: '', embedUrl: '' };
+    extras.has_hero_video = churchHeroVideoInfo.type === 'file' ? 'true' : '';
+    extras.hero_video_embed_url = churchHeroVideoInfo.type === 'file' ? churchHeroVideoInfo.embedUrl : '';
+
+    // Sermons / media -- new capability. Same list-of-videos pattern as
+    // the platform's other video features, using hospVideoInfo per item.
+    const sermons = Array.isArray(c.sermons) ? c.sermons : [];
+    extras.has_sermons = sermons.length > 0 ? 'true' : '';
+    const sermonInfos = sermons.map(s => ({ ...s, info: hospVideoInfo(s.url || s.video_url || '') })).filter(s => s.info.embedUrl);
+    extras.sermon_featured_embed_url = sermonInfos.length ? sermonInfos[0].info.embedUrl : '';
+    extras.br_sermons_html = sermonInfos.map(s => {
+      const title = esc(s.title || s.name || '');
+      const date = esc(s.date || '');
+      const thumb = s.thumbnail || '';
+      const thumbEl = thumb ? `<img src="${esc(thumb)}" alt="${title}" loading="lazy">` : '';
+      return `<div class="sermon-item" data-embed="${esc(s.info.embedUrl)}">
+        <div class="sermon-thumb">${thumbEl}</div>
+        <div class="sermon-info"><h4>${title}</h4>${date ? `<p>${date}</p>` : ''}</div>
+      </div>`;
+    }).join('');
 
     const waPhone = (c.whatsapp || c.contact?.whatsapp || c.phone || '').replace(/\D/g, '');
     const waNum = waPhone.startsWith('263') ? waPhone : waPhone ? '263' + waPhone.replace(/^0/, '') : '';
