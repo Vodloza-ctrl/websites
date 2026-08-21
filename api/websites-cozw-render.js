@@ -1317,16 +1317,41 @@ async function checkAddonActive(env, siteId, addonType) {
 //
 // Unlike checkAddonActive (which fails OPEN — a broken binding shouldn't
 // block a free feature), this fails CLOSED: if we can't confirm the owner
-// has a verified Paynow connection, "Pay online" simply doesn't render.
-// WhatsApp ordering is completely unaffected either way — this only ever
-// gates the extra "Pay online" button/modal on top of it.
+// has a verified Paynow connection AND a currently-paid Store Payments
+// subscription, "Pay online" simply doesn't render. WhatsApp ordering is
+// completely unaffected either way — this only ever gates the extra
+// "Pay online" button/modal on top of it.
+//
+// FIXED (Aug 2026): this previously checked ONLY merchant_credentials.
+// status='verified' -- meaning once a merchant connected Paynow once,
+// "Pay online" stayed live permanently, regardless of whether the actual
+// $20/month store_payments_subscriptions billing record was ever renewed,
+// lapsed, or was cancelled. Confirmed via grep before writing this fix:
+// store_payments_subscriptions was referenced NOWHERE outside the
+// payments worker -- not here, not in renewal-cron's sweep. This wasn't
+// trial-specific; it affected every Store Payments customer. Checked
+// real data before deploying this: two sites (both Lenni's own demo
+// sites) had zero subscription row at all, which this stricter check
+// would have broken -- gave them an explicit billing_exempt=1 row first,
+// matching the column's own intended purpose, rather than let the fix
+// regress a real demo.
 async function checkStorePaymentsEnabled(env, siteId) {
   if (!env.DB || !siteId) return false;
   try {
     const row = await env.DB.prepare(
       "SELECT status FROM merchant_credentials WHERE site_id = ?1"
     ).bind(siteId).first();
-    return !!row && row.status === 'verified';
+    if (!row || row.status !== 'verified') return false;
+
+    const sub = await env.DB.prepare(
+      "SELECT status, billing_exempt, current_period_end FROM store_payments_subscriptions WHERE site_id = ?1"
+    ).bind(siteId).first();
+    if (!sub) return false; // verified Paynow but never actually subscribed -- fail closed
+    if (sub.billing_exempt) return true;
+    if (sub.status !== 'active') return false;
+    const now = Math.floor(Date.now() / 1000);
+    if (sub.current_period_end !== null && sub.current_period_end < now) return false;
+    return true;
   } catch (err) {
     console.error('Store Payments check failed, failing closed:', err);
     return false;

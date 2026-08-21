@@ -84,6 +84,7 @@ const ADDON_DISPLAY_NAME = {
   template:       "your premium template",
   promotions:     "Promotions",
   analytics:      "Analytics",
+  store_payments: "Online Store payments",
 };
 
 export default {
@@ -169,6 +170,8 @@ async function runRenewalSweep(env, opts = {}) {
     remindersSent:    0,
     addonsExpiredToGrace:   0,
     addonsGraceToSuspended: 0,
+    storePaymentsExpiredToGrace:   0,
+    storePaymentsGraceToCancelled: 0,
     notified:         0,
     cachePurged:      0,
     errors:           [],
@@ -332,6 +335,66 @@ async function runRenewalSweep(env, opts = {}) {
         await purgeSiteCacheById(env, addon.site_id);
         summary.cachePurged++;
       }
+    }
+
+    // ── 5) STORE PAYMENTS SUBSCRIPTIONS: active → past_due → cancelled ──────
+    // Added Aug 2026 after confirming store_payments_subscriptions was never
+    // referenced anywhere outside the payments worker -- meaning a lapsed
+    // $20/month subscription never actually stopped "Pay online" from
+    // showing on the public site (checkStorePaymentsEnabled() in render.js
+    // now checks this table properly; this sweep is what actually moves a
+    // lapsed row out of 'active' over time instead of relying purely on the
+    // render-time check to catch a row that should have already flipped).
+    // billing_exempt rows (demo sites, grants) are never swept, matching the
+    // addons table's NULL-expires_at convention.
+    const spsGraceDays   = clampInt(env.STORE_PAYMENTS_GRACE_DAYS, ADDON_GRACE_DAYS_DEFAULT, 0, 90);
+    const spsGraceWindow = spsGraceDays * 86400;
+
+    const spsExpiring = await env.DB.prepare(
+      `SELECT sps.site_id, s.site_name, o.phone AS owner_phone
+       FROM store_payments_subscriptions sps
+       JOIN sites s ON s.id = sps.site_id
+       JOIN owners o ON o.id = s.owner_id
+       WHERE sps.status='active' AND sps.billing_exempt=0
+         AND sps.current_period_end IS NOT NULL AND sps.current_period_end <= ?1`
+    ).bind(now).all().then(r => r?.results || []).catch(() => []);
+
+    if (spsExpiring.length && !dryRun) {
+      await env.DB.prepare(
+        "UPDATE store_payments_subscriptions SET status='past_due', updated_at=unixepoch() " +
+        "WHERE status='active' AND billing_exempt=0 AND current_period_end IS NOT NULL AND current_period_end <= ?1"
+      ).bind(now).run();
+    }
+    summary.storePaymentsExpiredToGrace = spsExpiring.length;
+    for (const sub of spsExpiring) {
+      summary.notified += await notifyAddonWhatsApp(env,
+        { site_id: sub.site_id, site_name: sub.site_name, owner_phone: sub.owner_phone, addon_type: 'store_payments' },
+        "addon_grace_started", { graceDays: spsGraceDays }, dryRun);
+      if (!dryRun) { await purgeSiteCacheById(env, sub.site_id); summary.cachePurged++; }
+    }
+
+    const spsCutoff = now - spsGraceWindow;
+    const spsGracing = await env.DB.prepare(
+      `SELECT sps.site_id, s.site_name, o.phone AS owner_phone
+       FROM store_payments_subscriptions sps
+       JOIN sites s ON s.id = sps.site_id
+       JOIN owners o ON o.id = s.owner_id
+       WHERE sps.status='past_due' AND sps.billing_exempt=0
+         AND sps.current_period_end IS NOT NULL AND sps.current_period_end <= ?1`
+    ).bind(spsCutoff).all().then(r => r?.results || []).catch(() => []);
+
+    if (spsGracing.length && !dryRun) {
+      await env.DB.prepare(
+        "UPDATE store_payments_subscriptions SET status='cancelled', updated_at=unixepoch() " +
+        "WHERE status='past_due' AND billing_exempt=0 AND current_period_end IS NOT NULL AND current_period_end <= ?1"
+      ).bind(spsCutoff).run();
+    }
+    summary.storePaymentsGraceToCancelled = spsGracing.length;
+    for (const sub of spsGracing) {
+      summary.notified += await notifyAddonWhatsApp(env,
+        { site_id: sub.site_id, site_name: sub.site_name, owner_phone: sub.owner_phone, addon_type: 'store_payments' },
+        "addon_suspended", {}, dryRun);
+      if (!dryRun) { await purgeSiteCacheById(env, sub.site_id); summary.cachePurged++; }
     }
 
   } catch (err) {
