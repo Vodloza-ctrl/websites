@@ -3410,6 +3410,9 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.has_linkedin = extras.linkedin_url ? 'true' : '';
     extras.has_instagram = extras.instagram_url ? 'true' : '';
     extras.has_facebook = extras.facebook_url ? 'true' : '';
+    extras.icon_linkedin = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M20.4 20.4h-3.5v-5.5c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.6H9.5V9h3.4v1.6h.05c.5-.9 1.6-1.8 3.3-1.8 3.5 0 4.15 2.3 4.15 5.3v6.3zM5.7 7.4a2 2 0 110-4 2 2 0 010 4zM7.5 20.4H4V9h3.5v11.4z"/></svg>';
+    extras.icon_instagram = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85C2.38 3.86 3.9 2.31 7.15 2.16 8.42 2.1 8.8 2.16 12 2.16zM12 7a5 5 0 100 10 5 5 0 000-10zm0 8.2a3.2 3.2 0 110-6.4 3.2 3.2 0 010 6.4zm5.2-8.4a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z"/></svg>';
+    extras.icon_facebook = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.25-1.5 1.55-1.5H16.7V3.7C16.3 3.65 15.2 3.55 13.9 3.55c-2.7 0-4.5 1.65-4.5 4.65v2.6H6.6v3.1h2.8v8h4.1z"/></svg>';
 
     // Shop — merch / digital products via the Universal Commerce SDK,
     // identical pattern to bold-retail/church's shop sections.
@@ -3453,6 +3456,7 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.has_products = ppProducts.length > 0 ? 'true' : '';
     extras.has_testimonials = (Array.isArray(c.testimonials) && c.testimonials.length > 0) ? 'true' : '';
     extras.has_gallery = (Array.isArray(c.gallery) && c.gallery.length > 0) ? 'true' : '';
+    extras.has_brands = (Array.isArray(c.brands) && c.brands.length > 0) ? 'true' : '';
 
     const { sectionOn: ppSectionOn, orderOf: ppOrderOf } = buildSectionOrderHelpers(c,
       ['hero', 'about', 'stats', 'experience', 'awards', 'services', 'shop', 'testimonials', 'gallery', 'reviews', 'press', 'contact'],
