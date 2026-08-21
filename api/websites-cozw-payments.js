@@ -190,6 +190,8 @@ const ADDON_USD_PRICE = {
   'template:grill-noir': { unlock: 15 },
   'template:grill-market': { unlock: 15 },
   'template:grill-frame': { unlock: 15 },
+  'template:creative-performer': { unlock: 15 },
+  'template:creative-photographer': { unlock: 15 },
 };
 
 export default {

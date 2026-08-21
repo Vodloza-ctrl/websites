@@ -694,16 +694,21 @@ async function fetchRecommendation() {
     const variants = PREMIUM_FAMILIES[r.data.template_id] || [];
     if (variants.length) {
       const aiPickId = (r.data.premium_match && r.data.premium_match.template_id) || null;
+      // Lead with the strongest match: if the AI is confident enough to
+      // name a specific premium variant, show THAT immediately as the
+      // first thing seen, not the free Standard look. Someone can still
+      // toggle to Standard themselves -- this only changes the default.
+      if (aiPickId) previewTemplateOverride = aiPickId;
       const toggleButtons = variants.map(v => {
         const isRecommended = v.id === aiPickId;
-        return `<button type="button" class="btn btn-sm preview-toggle-btn" data-view="premium" data-template="${v.id}"
+        return `<button type="button" class="btn btn-sm preview-toggle-btn${isRecommended ? ' active' : ''}" data-view="premium" data-template="${v.id}"
           style="padding:7px 14px;${isRecommended ? 'background:var(--gold-dk,#8a6a1a);color:#fff;border-color:var(--gold-dk,#8a6a1a)' : 'background:transparent;color:var(--gold-dk,#8a6a1a);border:1.5px solid var(--gold-dk,#8a6a1a)'}">
           ${isRecommended ? '✨ ' : ''}${v.name}${isRecommended ? ' — Recommended' : ''}</button>`;
       }).join('');
       DOM.recPremium.innerHTML = `
-        <div style="margin-bottom:10px">${variants.length > 1 ? 'Premium looks available for this template:' : 'A premium look is available for this template:'}</div>
+        <div style="margin-bottom:10px">${aiPickId ? 'This looks like a strong fit for our premium look:' : (variants.length > 1 ? 'Premium looks available for this template:' : 'A premium look is available for this template:')}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button type="button" class="btn btn-ghost btn-sm preview-toggle-btn" data-view="standard" style="padding:7px 14px">Standard look</button>
+          <button type="button" class="btn btn-ghost btn-sm preview-toggle-btn${aiPickId ? '' : ' active'}" data-view="standard" style="padding:7px 14px">Standard look${aiPickId ? ' (free)' : ''}</button>
           ${toggleButtons}
         </div>
         <div style="margin-top:8px;font-size:12px;color:var(--ink3)">Free to build now. Premium looks are a $15 one-time upgrade after your site is live.</div>`;
