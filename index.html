@@ -120,6 +120,7 @@ svg{display:block}
 .rec-badge{font-size:.72rem;background:var(--green);color:#fff;padding:3px 9px;border-radius:99px;font-weight:700;letter-spacing:.02em}
 .rec-premium{margin-top:10px;padding-top:10px;border-top:1px solid #cdead9;font-size:.83rem;color:var(--ink2)}
 .rec-premium a{font-weight:700;color:var(--gold-dk,#8a6a1a)}
+.preview-toggle-btn.active{outline:2px solid var(--green);outline-offset:1px}
 #pillField{display:none}
 #pillField.show{display:block}
 .pill{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 6px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);cursor:pointer;transition:.15s;text-align:center}
@@ -536,6 +537,11 @@ let hasManualOverride = false;
 // and still saw raw beauty-salon copy, because the fast 350ms name-based
 // render always fired before the AI recommendation had a chance to land.
 let firstRecommendationSettled = false;
+// Lets someone SEE a premium template with their own name in the live
+// preview, without ever changing what actually gets created -- creation
+// always uses selectedTemplate (a free, creatable template_id); this only
+// ever affects which template_id gets sent to the preview endpoint.
+let previewTemplateOverride = null;
 let claimingPhone = '';
 
 function debounce(fn, wait) {
@@ -650,6 +656,7 @@ async function fetchRecommendation() {
     if (!r.ok || !r.data || !r.data.template_id) return;
     lastRecommendation = r.data;
     selectedTemplate = r.data.template_id;
+    previewTemplateOverride = null; // fresh recommendation -- never carry over a stale premium view from a different business type
     firstRecommendationSettled = true;
 
     const ind = INDUSTRIES.find(i => i.key === r.data.template_id);
@@ -674,11 +681,24 @@ async function fetchRecommendation() {
         'creative-performer': 'demo-performer',
         'creative-photographer': 'demo-photographer',
       };
-      const sub = PREMIUM_DEMO_SUBDOMAINS[r.data.premium_match.template_id];
-      DOM.recPremium.innerHTML = sub
-        ? `Given what you've described, our premium <a href="https://${sub}.websites.co.zw" target="_blank">${r.data.premium_match.name}</a> template might suit you even better — you can try the look after your site is live.`
-        : `Given what you've described, our premium ${r.data.premium_match.name} template might suit you even better — you can try the look after your site is live.`;
+      const premiumId = r.data.premium_match.template_id;
+      const premiumName = r.data.premium_match.name;
+      const sub = PREMIUM_DEMO_SUBDOMAINS[premiumId];
+      DOM.recPremium.innerHTML = `
+        <div style="margin-bottom:10px">Given what you've described, our premium <strong>${premiumName}</strong> template might suit you even better.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button type="button" class="btn btn-ghost btn-sm preview-toggle-btn" data-view="standard" style="padding:7px 14px">Standard look</button>
+          <button type="button" class="btn btn-sm preview-toggle-btn" data-view="premium" data-template="${premiumId}" style="padding:7px 14px;background:var(--gold-dk,#8a6a1a);color:#fff;border-color:var(--gold-dk,#8a6a1a)">✨ See ${premiumName} with your name</button>
+          ${sub ? `<a href="https://${sub}.websites.co.zw" target="_blank" style="font-size:12.5px;color:var(--ink3);margin-left:4px">Open full demo →</a>` : ''}
+        </div>`;
       DOM.recPremium.style.display = 'block';
+      DOM.recPremium.querySelectorAll('.preview-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          previewTemplateOverride = this.dataset.view === 'premium' ? this.dataset.template : null;
+          DOM.recPremium.querySelectorAll('.preview-toggle-btn').forEach(b => b.classList.toggle('active', b === this));
+          renderLivePreview();
+        });
+      });
     } else {
       DOM.recPremium.style.display = 'none';
     }
@@ -709,7 +729,7 @@ function renderLivePreview() {
     return;
   }
   const name = DOM.bizName.value.trim() || 'Your Business';
-  const params = new URLSearchParams({ name, template: selectedTemplate });
+  const params = new URLSearchParams({ name, template: previewTemplateOverride || selectedTemplate });
   setPreviewStatus('updating…', true);
   DOM.livePreview.src = PREVIEW_ENDPOINT + '?' + params.toString();
 }
