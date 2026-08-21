@@ -540,6 +540,48 @@ DOM.pillGrid.addEventListener('click', function(e) {
   renderLivePreview();
 });
 
+// ── Intent from an incoming pricing/addon CTA ────────────────────────────
+// Every priced button across this page and the /for/* landing pages used
+// to just link to #start -- scrolling back to this same generic builder
+// with zero memory of what was actually clicked. A Store button and a
+// Free Trial button landed on an identical screen, which is exactly why
+// it read as "nothing happened." This reads ?template=X / ?intent=Y from
+// the URL, pre-selects the matching industry pill, and shows a plain-
+// language acknowledgment so the click visibly did something specific.
+(function applyIncomingIntent(){
+  const params = new URLSearchParams(location.search);
+  const templateParam = params.get('template');
+  const intentParam = params.get('intent');
+  const validKeys = new Set(INDUSTRIES.map(i => i.key));
+
+  if (templateParam && validKeys.has(templateParam)) {
+    selectedTemplate = templateParam;
+    const pill = DOM.pillGrid.querySelector(`.pill[data-key="${templateParam}"]`);
+    if (pill) {
+      DOM.pillGrid.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p === pill));
+    }
+  }
+
+  const INTENT_MESSAGES = {
+    trial: 'Free for 14 days — pick your name and industry below, then claim it.',
+    store: 'Great choice — set up your site below, then add Online Store once it\'s live.',
+    booking: 'Great choice — set up your site below, then add Bookings once it\'s live.',
+    domain: 'Set up your site below — your free domain comes bundled once you publish.',
+  };
+  const msg = intentParam && INTENT_MESSAGES[intentParam];
+  if (msg) {
+    const banner = document.createElement('div');
+    banner.className = 'intent-banner';
+    banner.style.cssText = 'max-width:560px;margin:0 auto 20px;padding:12px 18px;background:var(--green-bg);border:1px solid #cdead9;border-radius:11px;color:var(--green-dk);font-size:.88rem;font-weight:600;text-align:center';
+    banner.textContent = msg;
+    DOM.bizName.closest('.builder-controls')?.insertBefore(banner, DOM.bizName.closest('.field'));
+  }
+
+  if (templateParam || intentParam) {
+    renderLivePreview();
+  }
+})();
+
 // ── Live preview — always on screen, updates as the person types/picks ──
 const debouncedRender = debounce(renderLivePreview, 350);
 DOM.bizName.addEventListener('input', debouncedRender);
@@ -776,25 +818,25 @@ DOM.priceGrid.innerHTML = `
     <h3>Free Trial</h3>
     <div class="price">$0 <span>/14 days</span></div>
     <ul>${priceList(['Live on yourbiz.websites.co.zw', 'Full editor access', 'No card required'])}</ul>
-    <a href="#start" class="btn btn-primary" style="width:100%">Publish free</a>
+    <a href="/?intent=trial#start" class="btn btn-primary" style="width:100%">Publish free</a>
   </div>
   <div class="price-card">
     <h3>Website</h3>
     <div class="price">$30 <span>/yr</span></div>
     <ul>${priceList(['Free .co.zw domain', 'WhatsApp integration', 'Self-edit'])}</ul>
-    <a href="#start" class="btn btn-ghost" style="width:100%">Start</a>
+    <a href="/?intent=domain#start" class="btn btn-ghost" style="width:100%">Start</a>
   </div>
   <div class="price-card">
     <h3>Website + .com</h3>
     <div class="price">$50 <span>/yr</span></div>
     <ul>${priceList(['Everything in Website', 'Your own .com', 'Priority support'])}</ul>
-    <a href="#start" class="btn btn-ghost" style="width:100%">Get .com</a>
+    <a href="/?intent=domain#start" class="btn btn-ghost" style="width:100%">Get .com</a>
   </div>
   <div class="price-card">
     <h3>Online Store</h3>
     <div class="price">$30 <span>/mo</span></div>
     <ul>${priceList(['Products & payments', 'EcoCash & cards', 'WhatsApp store'])}</ul>
-    <a href="#start" class="btn btn-ghost" style="width:100%">Add store</a>
+    <a href="/?intent=store#start" class="btn btn-ghost" style="width:100%">Add store</a>
   </div>
 `;
 
