@@ -1,5 +1,52 @@
 /**
- * websites.co.zw -- Render Worker v10.33 + Church Template Support
+ * websites.co.zw -- Render Worker v10.35 + Church Template Support
+ *
+ * v10.35:
+ *   - Demo view/claim tracking. preview_tokens.first_viewed_at is stamped
+ *     the first time a demo (purpose='demo') token renders -- gives an
+ *     honest "viewed" signal for the outreach dashboard. The banner's
+ *     "Claim this website" link now routes through a new same-worker
+ *     /claim?token=...&text=... redirect instead of a direct wa.me link --
+ *     it stamps sites.demo_claimed_at (first click only) before handing
+ *     off to WhatsApp, so a demo's lifecycle (sent -> viewed -> claimed)
+ *     is now fully trackable without any separate analytics service.
+ *     Both stamps are non-fatal by design -- a DB error here must never
+ *     break rendering the demo or the WhatsApp handoff itself.
+ *   - Outreach WhatsApp number hardcoded to 263716173131 in the /claim
+ *     handler (Lenni's dedicated outreach line, per direct instruction).
+ *
+ *
+ * v10.36 (reconciliation):
+ *   - This file was pulled from live production and found to contain
+ *     real, complete work (v10.34/v10.35 prospect-demo outreach tracking)
+ *     that had no corresponding entry in the local dev history it was
+ *     being compared against -- reconciled by taking the live version as
+ *     the base and re-applying local-only work on top, rather than the
+ *     other way around, to avoid deleting a real deployed feature.
+ *   - Re-applied on top of live: LinkedIn/Instagram/Facebook icon SVGs
+ *     for personal-portfolio's footer, a missing has_brands flag for the
+ *     same template (its Trusted By section could never have rendered
+ *     without it), and church's hero-video + sermon/media-video-library
+ *     support.
+ *
+ * v10.34:
+ *   - Prospect demo support. preview_tokens gained a nullable `purpose`
+ *     column; a token with purpose='demo' renders a distinct banner
+ *     ("PRIVATE WEBSITE CONCEPT... Claim this website" -> WhatsApp deep
+ *     link) instead of the owner-facing "Preview mode -> dashboard"
+ *     banner. No new route, no new hostname, no sites table change --
+ *     reuses the existing draft-status + preview_token mechanism as-is.
+ *   - Added <meta name="robots" content="noindex,nofollow"> on any
+ *     non-live (preview/demo) render, alongside the existing robots.txt
+ *     Disallow -- belt-and-suspenders against accidental indexing.
+ *   - TODO before first demo goes out: replace DEMO_WHATSAPP_NUMBER in
+ *     buildPreviewBanner() with the real WhatsApp number in
+ *     international format, no +, e.g. 2637XXXXXXXX.
+ *   - This patch was reconciled against the live production worker
+ *     (which had independently gained the newsletter-subscribe endpoint
+ *     and other work since this file was first pulled into this thread)
+ *     rather than applied on top of a stale local snapshot -- confirmed
+ *     via diff before delivery.
  *
  * v10.33:
  *   - OG image tags now declare og:image:type (derived from the actual
@@ -95,6 +142,10 @@ async function handleRequest(request, env) {
       });
     }
     return handleReviewSubmit(request, env);
+  }
+
+  if (url.pathname === '/claim') {
+    return handleClaimRedirect(request, env);
   }
 
   if (url.pathname === '/api/newsletter/subscribe') {
@@ -382,12 +433,27 @@ async function handlePublic(request, env, slug, customDomain) {
 
   const isLive = ['published', 'grace'].includes(site.status);
   let isPreview = false;
+  let isDemo = false;
+  let demoToken = null;
   if (!isLive) {
     const previewToken = new URL(request.url).searchParams.get('preview_token');
     if (previewToken) {
-      const valid = await checkPreviewToken(env.DB, previewToken, site.id);
-      if (!valid) return render404();
+      const result = await checkPreviewToken(env.DB, previewToken, site.id);
+      if (!result || !result.valid) return render404();
       isPreview = true;
+      isDemo = result.isDemo;
+      if (isDemo) {
+        demoToken = previewToken;
+        // Fire-and-forget view stamp -- "first_viewed_at" only ever gets
+        // set once (WHERE ... IS NULL), so this is safe to run on every
+        // render of the same demo without corrupting the "first" semantics.
+        // Non-fatal: a failure here must never break rendering the demo.
+        try {
+          await env.DB.prepare(
+            "UPDATE preview_tokens SET first_viewed_at=?2 WHERE token=?1 AND first_viewed_at IS NULL"
+          ).bind(previewToken, Math.floor(Date.now() / 1000)).run();
+        } catch (e) { console.error('demo view-stamp failed (non-fatal):', e?.message); }
+      }
     } else {
       return render404();
     }
@@ -525,13 +591,13 @@ async function handlePublic(request, env, slug, customDomain) {
         if (slotAssets.js) out = out.replace('</body>', slotAssets.js + '</body>');
       }
       if (isPreview) {
-        const banner = `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600">Preview mode -- <a href="https://app.websites.co.zw" style="color:#fff;text-decoration:underline">Go to dashboard</a> to publish</div>`;
+        const banner = buildPreviewBanner(isDemo, content.business_name || content.name || '', demoToken);
         html = out.replace('</body>', banner + '</body>');
       } else {
         html = out;
       }
     } else {
-      let shellOut = wrapWithShell(resolved, content, site, config, isPreview);
+      let shellOut = wrapWithShell(resolved, content, site, config, isPreview, isDemo, demoToken);
       if (fontsUrl) {
         shellOut = shellOut.replace(
           /https:\/\/fonts\.googleapis\.com\/css2\?[^"]+/,
@@ -851,6 +917,39 @@ function jsonResp(obj, status, extraHeaders) {
     status,
     headers: { 'Content-Type': 'application/json', ...(extraHeaders || {}) },
   });
+}
+
+// ── /claim redirect (demo-outreach tracking) ────────────────────────────────
+// The demo banner's "Claim this website" link points here instead of
+// straight to wa.me, so a click can be stamped before handing off to
+// WhatsApp. Deliberately non-fatal on any DB error -- a tracking failure
+// must never stop the redirect itself from happening; a prospect clicking
+// "claim" should always land on WhatsApp regardless of what else breaks.
+async function handleClaimRedirect(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token');
+  const text = url.searchParams.get('text') || '';
+  const OUTREACH_WHATSAPP_NUMBER = '263716173131';
+
+  if (token) {
+    try {
+      const row = await env.DB.prepare(
+        "SELECT site_id FROM preview_tokens WHERE token=?1 AND purpose='demo' LIMIT 1"
+      ).bind(token).first();
+      if (row && row.site_id) {
+        // Conditional UPDATE -- only the FIRST claim click ever stamps
+        // demo_claimed_at, so re-clicking an already-claimed link never
+        // overwrites the original claim timestamp.
+        await env.DB.prepare(
+          "UPDATE sites SET demo_claimed_at=?2 WHERE id=?1 AND demo_claimed_at IS NULL"
+        ).bind(row.site_id, Math.floor(Date.now() / 1000)).run();
+      }
+    } catch (e) {
+      console.error('claim-stamp failed (non-fatal):', e?.message);
+    }
+  }
+
+  return Response.redirect(`https://wa.me/${OUTREACH_WHATSAPP_NUMBER}?text=${text}`, 302);
 }
 
 async function handleReviewSubmit(request, env) {
@@ -5273,17 +5372,16 @@ async function buildTemplateExtras(c, site, config, env) {
     extras.icon_instagram = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85C2.38 3.86 3.9 2.31 7.15 2.16 8.42 2.1 8.8 2.16 12 2.16zM12 7a5 5 0 100 10 5 5 0 000-10zm0 8.2a3.2 3.2 0 110-6.4 3.2 3.2 0 010 6.4zm5.2-8.4a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z"/></svg>';
     extras.icon_youtube = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.6 7.2a2.8 2.8 0 00-2-2C17.9 4.7 12 4.7 12 4.7s-5.9 0-7.6.5a2.8 2.8 0 00-2 2A28.9 28.9 0 002 12a28.9 28.9 0 00.4 4.8 2.8 2.8 0 002 2c1.7.5 7.6.5 7.6.5s5.9 0 7.6-.5a2.8 2.8 0 002-2 28.9 28.9 0 00.4-4.8 28.9 28.9 0 00-.4-4.8zM9.8 15.2V8.8l5.3 3.2-5.3 3.2z"/></svg>';
 
-    // Hero video -- new capability, added directly to the base church
-    // template (not a separate premium variant -- confirmed zero real
-    // customers were on this template, so upgrading it in place was safe
-    // and is what was actually asked for).
+    // Hero video -- added directly to the base church template (not a
+    // separate premium variant -- confirmed zero real customers were on
+    // this template, so upgrading it in place was safe).
     const churchHeroVideoUrl = c.hero_video || '';
     const churchHeroVideoInfo = churchHeroVideoUrl ? hospVideoInfo(churchHeroVideoUrl) : { type: '', embedUrl: '' };
     extras.has_hero_video = churchHeroVideoInfo.type === 'file' ? 'true' : '';
     extras.hero_video_embed_url = churchHeroVideoInfo.type === 'file' ? churchHeroVideoInfo.embedUrl : '';
 
-    // Sermons / media -- new capability. Same list-of-videos pattern as
-    // the platform's other video features, using hospVideoInfo per item.
+    // Sermons / media -- same list-of-videos pattern as the platform's
+    // other video features, using hospVideoInfo per item.
     const sermons = Array.isArray(c.sermons) ? c.sermons : [];
     extras.has_sermons = sermons.length > 0 ? 'true' : '';
     const sermonInfos = sermons.map(s => ({ ...s, info: hospVideoInfo(s.url || s.video_url || '') })).filter(s => s.info.embedUrl);
@@ -5719,7 +5817,28 @@ function buildGrillExtras(c, config) {
 
 // --- SHELL WRAPPER ------------------------------------------------------------
 
-function wrapWithShell(body, c, site, config, isPreview) {
+// Shared between the bespoke-template branch and wrapWithShell so demo
+// vs. real-owner-preview wording never drifts apart. Demo banner names
+// the business (matches the "clearly labelled concept" requirement) and
+// links to WhatsApp instead of a dashboard the prospect doesn't have.
+function buildPreviewBanner(isDemo, businessName, token) {
+  if (isDemo) {
+    const waText = encodeURIComponent(
+      `Hi, I viewed the website concept you prepared for ${businessName || 'my business'} and I'd like to discuss making it official.`
+    );
+    // Routes through /claim?token=... on this same worker instead of a
+    // direct wa.me link -- lets the click be stamped (sites.demo_claimed_at)
+    // before redirecting on to WhatsApp, without needing any separate
+    // tracking service. token is the exact preview_tokens.token this page
+    // was rendered with, so the redirect handler can look up the right
+    // site and owner phone unambiguously.
+    const claimUrl = `/claim?token=${encodeURIComponent(token || '')}&text=${waText}`;
+    return `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem 1rem;font-size:.85rem;font-weight:600">PRIVATE WEBSITE CONCEPT -- prepared for ${esc(businessName || 'this business')} by websites.co.zw, not the official website -- <a href="${claimUrl}" style="color:#fff;text-decoration:underline">Claim this website</a></div>`;
+  }
+  return `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600">Preview mode -- <a href="https://app.websites.co.zw" style="color:#fff;text-decoration:underline">Go to dashboard</a> to publish</div>`;
+}
+
+function wrapWithShell(body, c, site, config, isPreview, isDemo, demoToken) {
   const phone = c.phone || c.contact?.phone || '';
   const digits = phone.replace(/\D/g, '');
   const waNum = digits.startsWith('263') ? digits : '263' + digits.replace(/^0/, '');
@@ -5746,9 +5865,7 @@ function wrapWithShell(body, c, site, config, isPreview) {
   ${phone ? `<a href="${esc(waHref)}" target="_blank" rel="noopener" style="background:#25d366;color:#fff;padding:.75rem 2rem;border-radius:999px;font-weight:700">WhatsApp</a>` : ''}
 </div>`;
 
-  const previewBanner = isPreview ?
-    `<div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;text-align:center;padding:.75rem;font-size:.85rem;font-weight:600">Preview mode -- <a href="https://app.websites.co.zw" style="color:#fff;text-decoration:underline">Go to dashboard</a> to publish</div>` :
-    '';
+  const previewBanner = isPreview ? buildPreviewBanner(isDemo, c.business_name || c.name || '', demoToken) : '';
 
   const shellJs = skipNav ? '' : `<script>
 (function(){
@@ -5767,6 +5884,7 @@ function wrapWithShell(body, c, site, config, isPreview) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(c.seo?.meta_title || c.business_name || c.name || '')}</title>
 <meta name="description" content="${esc(c.seo?.meta_description || c.about || '')}">
+${isPreview ? '<meta name="robots" content="noindex,nofollow">' : ''}
 <meta property="og:title" content="${esc(c.business_name || c.name || '')}">
 <meta property="og:description" content="${esc(c.about || '')}">
 ${c.hero_image_url || c.hero_image ? `<meta property="og:image" content="${esc(c.hero_image_url || c.hero_image)}">` : ''}
@@ -7805,11 +7923,15 @@ async function getSiteByDomain(db, domain) {
 }
 
 async function checkPreviewToken(db, token, siteId) {
-  const row = await db.prepare('SELECT site_id, expires_at FROM preview_tokens WHERE token = ?1 LIMIT 1').bind(token).first();
+  const row = await db.prepare('SELECT site_id, expires_at, purpose FROM preview_tokens WHERE token = ?1 LIMIT 1').bind(token).first();
   if (!row) return false;
   if (row.site_id !== siteId) return false;
   if (row.expires_at < Math.floor(Date.now() / 1000)) return false;
-  return true;
+  // purpose='demo' distinguishes a prospect-facing sales demo (minted by
+  // us, no account behind it) from a real customer's own draft preview.
+  // Both use the identical unauthenticated preview_token mechanism --
+  // only the banner/CTA wording downstream needs to differ.
+  return { valid: true, isDemo: row.purpose === 'demo' };
 }
 
 function render404() {
@@ -8309,4 +8431,3 @@ function buildHospHoursHtml(hours) {
     const time = slot.closed ? 'Closed' : `${slot.open || '?'} - ${slot.close || '?'}`;
     return `<div class="hours-row${isToday ? ' today' : ''}"><span class="hours-day">${labels[d]}${isToday ? '<span class="today-pill">Today</span>' : ''}</span><span class="hours-time">${esc(time)}</span></div>`;
   }).filter(Boolean).join('');
-}
