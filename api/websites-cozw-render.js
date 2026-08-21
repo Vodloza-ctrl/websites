@@ -670,6 +670,7 @@ const KNOWN_TEMPLATE_IDS = new Set([
   'hospitality-sands', 'hospitality-wild',
   'beauty-atelier', 'beauty-maison',
   'grill-noir', 'grill-market', 'grill-frame',
+  'creative-performer', 'creative-photographer',
 ]);
 
 const PREVIEW_RIBBON = `<div style="position:fixed;bottom:14px;right:14px;z-index:99999;background:rgba(13,15,20,.92);color:#fff;font:600 11px/1 system-ui,sans-serif;letter-spacing:.02em;padding:8px 14px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25);pointer-events:none">✨ Preview — claim it to make it yours</div>`;

@@ -2011,11 +2011,26 @@ async function getPreviewToken(request, env, origin, id) {
 // AI WORKER PROXIES
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// PUBLIC by design -- a visitor who has never logged in is exactly who
+// needs this (typing their business name before any account exists).
+// Rate-limited per IP since there's no owner session to key on, and this
+// calls a real, paid Anthropic API per request -- an open, unauthenticated
+// endpoint hitting a metered API needs its own guard, not just a "trust
+// the frontend to not spam it" assumption.
 async function recommendTemplate(request, env, origin) {
-  const ownerId = await resolveOwner(request, env);
-  if (!ownerId) return jsonResp({ error: "unauthorized" }, 401, origin);
   if (!env.AI_WORKER_URL && !env.AI_WORKER)
     return jsonResp({ error: "ai_not_configured" }, 503, origin);
+
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const now = nowSec();
+  const recent = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM ai_rate_limit_log WHERE ip=?1 AND endpoint='recommend' AND created_at > ?2"
+  ).bind(ip, now - 300).first().catch(() => null);
+  if (recent && recent.n >= 8) return jsonResp({ error: "too_many_requests" }, 429, origin);
+  await env.DB.prepare(
+    "INSERT INTO ai_rate_limit_log (ip, endpoint, created_at) VALUES (?1, 'recommend', ?2)"
+  ).bind(ip, now).run().catch(() => {});
+
   const body = await readJson(request);
   try {
     const payload = {
@@ -2023,7 +2038,7 @@ async function recommendTemplate(request, env, origin) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + env.AI_SERVICE_SECRET,
-        "X-Owner-Id": ownerId,
+        "X-Owner-Id": "anonymous",
       },
       body: JSON.stringify({
         industry: body.industry,

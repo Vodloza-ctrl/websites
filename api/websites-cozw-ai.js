@@ -57,14 +57,44 @@ const MODEL_PRICES = {
 const TEMPLATE_CATALOGUE = [
   { id: "grill-house",        name: "Grill House",         desc: "Full-bleed hero, menu tabs, live opening hours — for restaurants, cafés, takeaways, grills." },
   { id: "beauty-salon",       name: "Beauty Salon",        desc: "Price list, before/after slider — for salons, spas, barbers, beauty clinics." },
-  { id: "school-institution", name: "School & Academy",    desc: "Stats bar, programmes, term dates, leadership team — for schools, churches, NGOs, academies." },
+  { id: "school-institution", name: "School & Academy",    desc: "Stats bar, programmes, term dates, leadership team — for schools, NGOs, academies." },
+  { id: "church",             name: "Church & Ministry",   desc: "Sermon highlights, service times, events, community focus — for churches and ministries." },
   { id: "advisory-firm",      name: "Advisory Firm",       desc: "Minimal hero, accordion services, credentials — for consultants, lawyers, accountants." },
   { id: "property-estate",    name: "Property Estate",     desc: "Listings-first hero, agent cards — for real estate agencies and property managers." },
   { id: "boutique-fashion",   name: "Boutique Fashion",    desc: "Dark editorial layout, masonry product grid — for fashion, cosmetics, jewellery boutiques." },
   { id: "grocery-fmcg",       name: "Grocery & Spaza",     desc: "Category navigation, stock badges — for grocers, spaza shops, FMCG retailers." },
   { id: "hardware-store",     name: "Hardware & Retail",   desc: "Dense catalogue, quote-builder feel — for hardware stores, electronics, general retail." },
+  { id: "hospitality-inn",    name: "Lodge / B&B / Hotel", desc: "Room cards, WhatsApp booking, availability — for lodges, B&Bs, guesthouses, hotels." },
+  { id: "medical-clinic",     name: "Medical Clinic",      desc: "Practitioners, appointment booking, insurance accepted — for clinics, doctors, dentists." },
+  { id: "personal-portfolio", name: "Personal Portfolio",  desc: "CV, awards, speaking bookings — for consultants, coaches, public speakers, personal brands." },
+  { id: "creative-studio",    name: "Creative Studio",     desc: "Masonry gallery, session booking — for photographers, videographers, musicians, artists, design studios." },
   { id: "bold-retail",        name: "General Business",    desc: "Split hero, service cards, team section — safe general-purpose default for any SME that doesn't fit a narrower template." },
 ];
+
+// Premium ($15 one-time) variants, grouped by which base template they're a
+// visual upgrade of. NEVER returned as the primary template_id -- createSite()
+// itself rejects premium IDs at creation time (confirmed before writing this),
+// so a premium ID here can only ever be a secondary suggestion the frontend
+// offers as an upsell after the free base site is already being built.
+const PREMIUM_CATALOGUE = {
+  "hospitality-inn": [
+    { id: "hospitality-sands", name: "Sands", desc: "Boutique coastal-luxury lodge aesthetic" },
+    { id: "hospitality-wild",  name: "Wild",  desc: "Safari-lodge, earthy and adventurous" },
+  ],
+  "beauty-salon": [
+    { id: "beauty-atelier", name: "Atelier", desc: "High-fashion, editorial salon aesthetic" },
+    { id: "beauty-maison",  name: "Maison",  desc: "Soft luxury spa aesthetic" },
+  ],
+  "grill-house": [
+    { id: "grill-noir",   name: "Noir",   desc: "Moody, upscale steakhouse aesthetic" },
+    { id: "grill-market", name: "Market", desc: "Bright, market-fresh aesthetic" },
+    { id: "grill-frame",  name: "Frame",  desc: "Bold food-photography-forward aesthetic" },
+  ],
+  "creative-studio": [
+    { id: "creative-performer",    name: "Performer",    desc: "For musicians and touring performers — streaming embeds, tour dates, ticket-stub styling" },
+    { id: "creative-photographer", name: "Photographer", desc: "For photographers and visual artists — gallery-wall aesthetic, print sales, category-filtered portfolio" },
+  ],
+};
 
 // ── v2.1: Added person_bio ────────────────────────────────────────────────────
 const TUNE_ALLOWED_FIELDS = {
@@ -155,7 +185,20 @@ async function handleRecommendTemplate(request, env, origin) {
   if (!industry) return json({ error: "missing_industry" }, 400, origin);
   if (!env.ANTHROPIC_API_KEY) return json({ error: "ai_not_configured" }, 503, origin);
   const catalogueText = TEMPLATE_CATALOGUE.map(t => `- ${t.id}: ${t.desc}`).join("\n");
-  const sys = ["You pick the single best website template ID for a Zimbabwean small business.","Output ONLY a JSON object, no markdown, no commentary:",'{ "template_id": string (must be one of the listed IDs), "confidence": number 0-1, "reason": string (max 12 words) }',"","Available templates:",catalogueText].join("\n");
+  const premiumText = Object.entries(PREMIUM_CATALOGUE).map(([baseId, variants]) =>
+    variants.map(v => `- ${v.id} (premium variant of ${baseId}): ${v.desc}`).join("\n")
+  ).join("\n");
+  const sys = [
+    "You pick the single best website template ID for a Zimbabwean small business.",
+    "Output ONLY a JSON object, no markdown, no commentary:",
+    '{ "template_id": string (must be one of the FREE template IDs listed), "confidence": number 0-1, "reason": string (max 12 words), "premium_match": string|null (a PREMIUM template ID from the list below, ONLY if the description gives a specific, confident signal that variant fits notably better than the free base -- e.g. "professional wedding photographer" clearly warrants creative-photographer, but a generic description does not warrant guessing one) }',
+    "",
+    "Free templates (template_id must be one of these):",
+    catalogueText,
+    "",
+    "Premium templates (premium_match must be one of these, or null -- these are $15 upgrades, never the primary template_id):",
+    premiumText,
+  ].join("\n");
   const userLines = ["Industry: " + industry];
   if (businessName) userLines.push("Business name: " + businessName);
   if (description)  userLines.push("What they do: " + description);
@@ -173,7 +216,20 @@ async function handleRecommendTemplate(request, env, origin) {
   const validIds = new Set(TEMPLATE_CATALOGUE.map(t=>t.id));
   const templateId = validIds.has(parsed.template_id) ? parsed.template_id : "bold-retail";
   const confidence  = (typeof parsed.confidence==="number"&&parsed.confidence>=0&&parsed.confidence<=1) ? parsed.confidence : 0.5;
-  return json({ template_id:templateId, confidence, reason:clampStr(parsed.reason,120) }, 200, origin);
+
+  // Validate premium_match against the REAL family mapping for the chosen
+  // base template -- never trust the model's own family association, since
+  // a hallucinated premium_match paired with the wrong base would send
+  // someone to switch-template later expecting an upgrade path that
+  // doesn't actually exist for their site's template.
+  let premiumMatch = null;
+  const validPremiumForBase = new Set((PREMIUM_CATALOGUE[templateId] || []).map(v => v.id));
+  if (parsed.premium_match && validPremiumForBase.has(parsed.premium_match)) {
+    const variant = PREMIUM_CATALOGUE[templateId].find(v => v.id === parsed.premium_match);
+    premiumMatch = { template_id: variant.id, name: variant.name };
+  }
+
+  return json({ template_id:templateId, confidence, reason:clampStr(parsed.reason,120), premium_match: premiumMatch }, 200, origin);
 }
 
 async function handleTune(request, env, origin) {
