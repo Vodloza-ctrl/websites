@@ -542,6 +542,32 @@ let firstRecommendationSettled = false;
 // always uses selectedTemplate (a free, creatable template_id); this only
 // ever affects which template_id gets sent to the preview endpoint.
 let previewTemplateOverride = null;
+
+// Client-side mirror of the AI worker's PREMIUM_CATALOGUE. Deliberately
+// duplicated rather than fetched -- this needs to be known instantly and
+// deterministically the moment a base template is picked, not dependent
+// on whether the AI felt confident enough to name a specific premium_match.
+// Confirmed against the real PREMIUM_TEMPLATE_IDS billing map (auth-worker)
+// and PREMIUM_CATALOGUE (AI worker) before writing this, not guessed.
+const PREMIUM_FAMILIES = {
+  'hospitality-inn': [
+    { id: 'hospitality-sands', name: 'Sands', sub: 'demo-iris-sands' },
+    { id: 'hospitality-wild', name: 'Wild', sub: 'demo-iris-wild' },
+  ],
+  'beauty-salon': [
+    { id: 'beauty-atelier', name: 'Atelier', sub: 'demo-salon-atelier' },
+    { id: 'beauty-maison', name: 'Maison', sub: 'demo-salon-maison' },
+  ],
+  'grill-house': [
+    { id: 'grill-noir', name: 'Noir', sub: 'demo-grill-noir' },
+    { id: 'grill-market', name: 'Market', sub: 'demo-grill-market' },
+    { id: 'grill-frame', name: 'Frame', sub: 'demo-grill-frame' },
+  ],
+  'creative-studio': [
+    { id: 'creative-performer', name: 'Performer', sub: 'demo-performer' },
+    { id: 'creative-photographer', name: 'Photographer', sub: 'demo-photographer' },
+  ],
+};
 let claimingPhone = '';
 
 function debounce(fn, wait) {
@@ -665,32 +691,22 @@ async function fetchRecommendation() {
     DOM.recResult.style.display = 'block';
     DOM.notQuiteRight.style.display = 'block';
 
-    if (r.data.premium_match && r.data.premium_match.template_id) {
-      // Explicit map, not a guessed pattern -- the real subdomains don't
-      // follow a consistent rule (hospitality-sands is demo-iris-sands,
-      // not demo-sands; beauty-atelier is demo-salon-atelier, etc.),
-      // confirmed against what was actually built this session.
-      const PREMIUM_DEMO_SUBDOMAINS = {
-        'hospitality-sands': 'demo-iris-sands',
-        'hospitality-wild': 'demo-iris-wild',
-        'beauty-atelier': 'demo-salon-atelier',
-        'beauty-maison': 'demo-salon-maison',
-        'grill-noir': 'demo-grill-noir',
-        'grill-market': 'demo-grill-market',
-        'grill-frame': 'demo-grill-frame',
-        'creative-performer': 'demo-performer',
-        'creative-photographer': 'demo-photographer',
-      };
-      const premiumId = r.data.premium_match.template_id;
-      const premiumName = r.data.premium_match.name;
-      const sub = PREMIUM_DEMO_SUBDOMAINS[premiumId];
+    const variants = PREMIUM_FAMILIES[r.data.template_id] || [];
+    if (variants.length) {
+      const aiPickId = (r.data.premium_match && r.data.premium_match.template_id) || null;
+      const toggleButtons = variants.map(v => {
+        const isRecommended = v.id === aiPickId;
+        return `<button type="button" class="btn btn-sm preview-toggle-btn" data-view="premium" data-template="${v.id}"
+          style="padding:7px 14px;${isRecommended ? 'background:var(--gold-dk,#8a6a1a);color:#fff;border-color:var(--gold-dk,#8a6a1a)' : 'background:transparent;color:var(--gold-dk,#8a6a1a);border:1.5px solid var(--gold-dk,#8a6a1a)'}">
+          ${isRecommended ? '✨ ' : ''}${v.name}${isRecommended ? ' — Recommended' : ''}</button>`;
+      }).join('');
       DOM.recPremium.innerHTML = `
-        <div style="margin-bottom:10px">Given what you've described, our premium <strong>${premiumName}</strong> template might suit you even better.</div>
+        <div style="margin-bottom:10px">${variants.length > 1 ? 'Premium looks available for this template:' : 'A premium look is available for this template:'}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button type="button" class="btn btn-ghost btn-sm preview-toggle-btn" data-view="standard" style="padding:7px 14px">Standard look</button>
-          <button type="button" class="btn btn-sm preview-toggle-btn" data-view="premium" data-template="${premiumId}" style="padding:7px 14px;background:var(--gold-dk,#8a6a1a);color:#fff;border-color:var(--gold-dk,#8a6a1a)">✨ See ${premiumName} with your name</button>
-          ${sub ? `<a href="https://${sub}.websites.co.zw" target="_blank" style="font-size:12.5px;color:var(--ink3);margin-left:4px">Open full demo →</a>` : ''}
-        </div>`;
+          ${toggleButtons}
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--ink3)">Free to build now. Premium looks are a $15 one-time upgrade after your site is live.</div>`;
       DOM.recPremium.style.display = 'block';
       DOM.recPremium.querySelectorAll('.preview-toggle-btn').forEach(btn => {
         btn.addEventListener('click', function() {

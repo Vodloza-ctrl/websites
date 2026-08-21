@@ -177,6 +177,8 @@ const PREMIUM_TEMPLATE_IDS = {
   "grill-noir":        { addon_type: "template:grill-noir",        price: 15 },
   "grill-market":      { addon_type: "template:grill-market",      price: 15 },
   "grill-frame":       { addon_type: "template:grill-frame",       price: 15 },
+  "creative-performer":    { addon_type: "template:creative-performer",    price: 15 },
+  "creative-photographer": { addon_type: "template:creative-photographer", price: 15 },
 };
 
 // Checks ownership via payments-worker's GET /addon-status (v1.13+), using
@@ -2157,6 +2159,8 @@ function defaultSectionsFor(t) {
     "grill-noir":          ["hero","menu","about","gallery","contact"],
     "grill-market":        ["hero","menu","about","gallery","contact"],
     "grill-frame":         ["hero","menu","about","gallery","contact"],
+    "creative-performer":    ["hero","listen","tour","watch","press","reviews","newsletter","shop","contact"],
+    "creative-photographer": ["hero","work","reviews","press","prints","newsletter","book","contact"],
   };
   return d[t] || ["hero","about","services","contact"];
 }
@@ -2396,7 +2400,9 @@ function paletteFor(t) {
     "beauty-maison":      "rose-clay",
     "grill-noir":         "trattoria-terracotta",
     "grill-market":       "market-citrus",
-    "grill-frame":        "noir-chartreuse"
+    "grill-frame":        "noir-chartreuse",
+    "creative-performer":    "stage-amber",
+    "creative-photographer": "gallery-wall"
   };
   return m[t] || "clean-white";
 }
@@ -2436,7 +2442,9 @@ function fontFor(t) {
     "beauty-maison":      "caslon-sora",
     "grill-noir":         "bodoni-nunito",
     "grill-market":       "fredoka-inter",
-    "grill-frame":        "bebas-inter"
+    "grill-frame":        "bebas-inter",
+    "creative-performer":    "bebas-newsreader",
+    "creative-photographer": "cormorant-worksans"
   };
   return m[t] || "grotesk-serif";
 }
