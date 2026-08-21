@@ -105,7 +105,11 @@ svg{display:block}
 /* ── Builder — the demo. Always on screen, never gated behind a click. ──── */
 .builder{max-width:1080px;margin:32px auto 0;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);overflow:hidden;text-align:left}
 .builder-grid{display:grid;grid-template-columns:1fr 1.05fr}
-@media(max-width:860px){.builder-grid{grid-template-columns:1fr}}
+@media(max-width:860px){
+  .builder-grid{grid-template-columns:1fr}
+  .preview-pane{order:-1;margin-bottom:20px}
+  .builder-controls{order:1}
+}
 
 .builder-controls{padding:30px 30px;display:flex;flex-direction:column;gap:20px}
 @media(max-width:480px){.builder-controls{padding:22px 18px;gap:16px}}
@@ -667,18 +671,29 @@ DOM.bizName.addEventListener('input', debouncedRender);
 // required a login, which made it unusable by exactly the person who needs
 // it most -- someone who's never signed up yet).
 let lastRecommendation = null;
+// Guards against a real race: authApi() has no way to cancel an
+// in-flight request, so if someone edits the field again before a
+// previous call resolves, both requests are in flight simultaneously.
+// If the OLDER one resolves after the newer one (plausible over a real
+// network, not guaranteed to arrive in order), it would silently
+// overwrite the correct, already-applied result -- explains exactly the
+// reported symptom: the toggle buttons showed the right recommendation,
+// but the live preview itself reverted to something older.
+let recommendationSeq = 0;
 
 async function fetchRecommendation() {
   if (hasManualOverride) return; // once someone picks a pill manually, stop overriding their choice
   const name = DOM.bizName.value.trim();
   const desc = DOM.bizDesc.value.trim();
   if (!name && !desc) { DOM.recResult.style.display = 'none'; return; }
+  const mySeq = ++recommendationSeq;
 
   try {
     const r = await authApi(API_BASE + '/recommend-template', {
       business_name: name || undefined,
       description: desc || undefined,
     });
+    if (mySeq !== recommendationSeq) return; // a newer request has started since -- this response is stale, discard it
     if (!r.ok || !r.data || !r.data.template_id) return;
     lastRecommendation = r.data;
     selectedTemplate = r.data.template_id;
