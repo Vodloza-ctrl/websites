@@ -1,0 +1,36 @@
+{
+  "template_id": "creative-photographer",
+  "name": "Photographer (Premium)",
+  "description": "Premium template for photographers and visual artists -- category-organized gallery, print sales, session booking",
+  "palette": "custom",
+  "font_pair": "custom",
+  "defaultPalette": "gallery-wall",
+  "defaultPrimaryColor": "#b23a2e",
+  "sections": [
+    "hero",
+    "work",
+    "reviews",
+    "press",
+    "prints",
+    "newsletter",
+    "book",
+    "contact"
+  ],
+  "tokens": {
+    "business_name": "",
+    "tagline": "",
+    "about": "",
+    "hero_image_url": "",
+    "phone": "",
+    "whatsapp": "",
+    "email": ""
+  },
+  "flags": {},
+  "lists": [
+    {
+      "key": "gallery",
+      "emptyHtml": "<p style='text-align:center;padding:40px;color:var(--ink-faint)'>Portfolio coming soon.</p>",
+      "itemTemplate": "<div class=\"gal-item cs-tile\" data-category=\"{{item.category}}\"><div class=\"mat\"><img src=\"{{item.url}}\" alt=\"{{item.caption}}\" loading=\"lazy\"><div class=\"mat-cap\"><span>{{item.caption}}</span><span>{{item.category}}</span></div></div></div>"
+    }
+  ]
+}

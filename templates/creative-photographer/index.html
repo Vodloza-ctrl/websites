@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{seo_title}}</title>
+<meta name="description" content="{{seo_description}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --wall:#f6f4f0;
+  --wall-2:#eeebe5;
+  --wall-3:#e4e0d8;
+  --ink:#1c1a17;
+  --ink-soft:rgba(28,26,23,.62);
+  --ink-faint:rgba(28,26,23,.38);
+  --select-red:#b23a2e;
+  --line:rgba(28,26,23,.13);
+  --font-display:'Cormorant',Georgia,serif;
+  --font-body:'Work Sans',system-ui,sans-serif;
+  --font-mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--wall);color:var(--ink);font-family:var(--font-body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+img{max-width:100%;display:block}
+.wrap{max-width:1220px;margin:0 auto;padding:0 32px}
+@media(max-width:640px){.wrap{padding:0 20px}}
+
+/* -- signature device: framed-print mat, used everywhere an image needs a caption -- */
+.mat{background:#fff;padding:14px 14px 0;box-shadow:0 1px 3px rgba(28,26,23,.08)}
+.mat img{width:100%;display:block}
+.mat-cap{display:flex;justify-content:space-between;align-items:baseline;padding:10px 2px 14px;font-family:var(--font-mono);font-size:.66rem;letter-spacing:.04em;color:var(--ink-faint)}
+.select-mark{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--select-red)}
+.select-mark::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--select-red);display:inline-block}
+
+.eyebrow{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--select-red)}
+.section{padding:96px 0}
+@media(max-width:768px){.section{padding:56px 0}}
+
+/* -- NAV -- */
+.bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(246,244,240,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:20px 0}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between}
+.bar-name{font-family:var(--font-display);font-size:1.6rem;font-style:italic;letter-spacing:.01em}
+.bar-links{display:flex;gap:30px;align-items:center}
+.bar-links a{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);transition:color .2s}
+.bar-links a:hover{color:var(--select-red)}
+.bar-cta{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:9px 18px;background:var(--ink);color:var(--wall);border-radius:1px;transition:.2s}
+.bar-cta:hover{background:var(--select-red)}
+.bar-burger{display:none;background:none;border:none;color:var(--ink);width:26px;height:20px}
+@media(max-width:860px){.bar-links{display:none}.bar-burger{display:block}}
+
+/* -- HERO: full-bleed matted print -- */
+.hero{padding:150px 0 0}
+.hero-head{text-align:center;max-width:640px;margin:0 auto 40px}
+.hero-eyebrow{margin-bottom:14px}
+.hero h1{font-family:var(--font-display);font-size:clamp(3rem,7vw,5.2rem);font-weight:500;font-style:italic;line-height:1}
+.hero-tag{margin-top:16px;color:var(--ink-soft);font-size:1.02rem}
+.hero-frame{max-width:900px;margin:0 auto 0}
+.hero-frame .mat{padding:24px 24px 0}
+.hero-frame img{aspect-ratio:4/3;object-fit:cover}
+.hero-frame .mat-cap{padding:16px 6px 8px;font-size:.72rem}
+
+/* -- SECTION HEADS -- */
+.sec-head{text-align:center;max-width:600px;margin:0 auto 52px}
+.sec-head .eyebrow{margin-bottom:10px;display:block}
+.sec-head h2{font-family:var(--font-display);font-size:clamp(2.2rem,4.5vw,3.1rem);font-style:italic;font-weight:500}
+
+/* -- CATEGORY FILTERS -- */
+.cat-bar{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:44px}
+.cat-pill{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;padding:8px 16px;border:1px solid var(--line);border-radius:1px;background:transparent;color:var(--ink-soft);transition:.2s}
+.cat-pill:hover,.cat-pill.active{border-color:var(--select-red);color:var(--select-red)}
+.gal-item.filtered-out{display:none}
+
+/* -- GALLERY GRID (matted, reuses platform lightbox) -- */
+.gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+@media(max-width:900px){.gal-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.gal-grid{grid-template-columns:1fr}}
+.gal-item{cursor:pointer}
+.gal-item .mat img{aspect-ratio:4/5;object-fit:cover}
+.gal-item:nth-child(3n+2) .mat img{aspect-ratio:1/1}
+
+/* -- PRINTS / SHOP -- */
+.shop-note{text-align:center;color:var(--ink-soft);max-width:480px;margin:0 auto 44px;font-size:.94rem}
+
+/* -- PRESS QUOTE -- */
+.press-quote{max-width:740px;margin:0 auto;text-align:center}
+.press-quote blockquote{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:clamp(1.5rem,3.2vw,2.3rem);line-height:1.4;color:var(--ink)}
+.press-quote cite{display:block;margin-top:20px;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--select-red);font-style:normal}
+
+/* -- BOOK A SESSION -- */
+.book-band{background:var(--ink);color:var(--wall)}
+.book-inner{max-width:640px;margin:0 auto;text-align:center}
+.book-inner h2{font-family:var(--font-display);font-size:clamp(2.2rem,4.5vw,3.1rem);font-style:italic;font-weight:500;margin-bottom:16px}
+.book-inner p{color:rgba(246,244,240,.68);margin-bottom:32px}
+.session-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left;margin-top:8px}
+@media(max-width:600px){.session-grid{grid-template-columns:1fr}}
+.session-card{background:rgba(246,244,240,.06);border:1px solid rgba(246,244,240,.14);padding:22px;border-radius:1px}
+.session-card h4{font-family:var(--font-display);font-size:1.3rem;font-style:italic;margin-bottom:6px}
+.session-card p{font-size:.84rem;color:rgba(246,244,240,.6);margin-bottom:14px}
+.btn-book{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:9px 16px;border:1px solid rgba(246,244,240,.4);color:var(--wall);display:inline-block;transition:.2s}
+.btn-book:hover{background:var(--wall);color:var(--ink)}
+
+/* -- FOOTER -- */
+footer{padding:56px 0 40px;border-top:1px solid var(--line)}
+.footer-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+.footer-name{font-family:var(--font-display);font-size:1.4rem;font-style:italic}
+.footer-social{display:flex;gap:16px}
+.footer-social a{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:.2s}
+.footer-social a:hover{border-color:var(--select-red);color:var(--select-red)}
+.footer-fine{margin-top:26px;font-family:var(--font-mono);font-size:.66rem;color:var(--ink-faint);text-align:center}
+</style>
+{{wcz_commerce_css}}
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a href="#" class="bar-name">{{business_name}}</a>
+    <nav class="bar-links">
+      <a href="#work">Work</a>
+      <a href="#reviews">Reviews</a>
+      <a href="#prints">Prints</a>
+      <a href="#book">Book</a>
+    </nav>
+    <a href="#book" class="bar-cta">Enquire</a>
+    <button class="bar-burger" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-head">
+      <span class="eyebrow hero-eyebrow">{{tagline}}</span>
+      <h1>{{business_name}}</h1>
+      <p class="hero-tag">{{about}}</p>
+    </div>
+    <div class="hero-frame">
+      <div class="mat">
+        <img src="{{hero_image_url}}" alt="{{business_name}}">
+        <div class="mat-cap"><span class="select-mark">Selected</span><span>{{business_type_label}}</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="work">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Portfolio</span>
+      <h2>The Work</h2>
+    </div>
+    <div class="cat-bar">
+      {{gallery_filters_bar_html}}
+    </div>
+    <div class="gal-grid" id="cs-grid">
+      {{#each gallery}}
+      <div class="gal-item">
+        <div class="mat">
+          <img src="{{item.url}}" alt="{{item.caption}}">
+          <div class="mat-cap"><span>{{item.caption}}</span><span>{{item.category}}</span></div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+</section>
+
+<!--WCZ:show_reviews_section-->
+<section class="section" id="reviews" style="background:var(--wall-2)">
+  <div class="wrap">{{reviews_section_html}}</div>
+</section>
+<!--WCZ:/show_reviews_section-->
+
+<!--WCZ:show_press_quote-->
+<section class="section">
+  <div class="wrap">
+    <div class="press-quote">
+      <blockquote>&ldquo;{{press_pull_quote}}&rdquo;</blockquote>
+      <cite>{{press_pull_source}}</cite>
+    </div>
+  </div>
+</section>
+<!--WCZ:/show_press_quote-->
+
+<!--WCZ:show_press_section-->
+<section class="section" style="padding-top:0">
+  <div class="wrap">{{press_section_html}}</div>
+</section>
+<!--WCZ:/show_press_section-->
+
+<section class="section" id="prints" style="background:var(--wall-2)">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Shop</span>
+      <h2>Prints</h2>
+    </div>
+    <p class="shop-note">Archival prints, available in limited runs.</p>
+    {{print_products_html}}
+  </div>
+</section>
+
+<!--WCZ:show_newsletter_section-->
+<section class="section">
+  <div class="wrap">{{newsletter_signup_html}}</div>
+</section>
+<!--WCZ:/show_newsletter_section-->
+
+<section class="section book-band" id="book">
+  <div class="wrap">
+    <div class="book-inner">
+      <h2>Book a Session</h2>
+      <p>Weddings, portraits, and editorial work — enquire for availability.</p>
+      <div class="session-grid">
+        {{bookable_services_html}}
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-row">
+      <div class="footer-name">{{business_name}}</div>
+      <div class="footer-social">
+        {{#if has_instagram}}<a href="{{instagram_url}}" target="_blank" rel="noopener" aria-label="Instagram">{{{icon_instagram}}}</a>{{/if}}
+        {{#if has_facebook}}<a href="{{facebook_url}}" target="_blank" rel="noopener" aria-label="Facebook">{{{icon_facebook}}}</a>{{/if}}
+      </div>
+    </div>
+    <div class="footer-fine">© {{current_year}} {{business_name}}. Site by websites.co.zw.</div>
+  </div>
+</footer>
+
+{{wcz_qv_drawer_html}}
+{{wcz_lb_html}}
+{{wcz_products_script}}
+
+<script>
+(function(){
+  var filterBar = document.getElementById('cs-filters');
+  var grid = document.getElementById('cs-grid');
+  if (filterBar && grid) {
+    filterBar.addEventListener('click', function(e){
+      var btn = e.target.closest('.cs-filter');
+      if (!btn) return;
+      filterBar.querySelectorAll('.cs-filter').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var cat = btn.getAttribute('data-filter') || '';
+      grid.querySelectorAll('.cs-tile').forEach(function(tile){
+        var tileCat = tile.getAttribute('data-category') || '';
+        tile.classList.toggle('filtered-out', !!cat && tileCat !== cat);
+      });
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

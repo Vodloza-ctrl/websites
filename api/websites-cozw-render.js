@@ -3845,6 +3845,74 @@ async function buildTemplateExtras(c, site, config, env) {
       buildCommerceCSS();
   }
 
+  // -- CREATIVE-PHOTOGRAPHER ----------------------------------------------------
+  // Premium photographer/visual-artist template. Category filter bar reuses
+  // creative-studio's exact logic (confirmed the gallery item's category
+  // field is real and editable before writing this) so a photographer's
+  // "Weddings / Portraits / Events" categories work identically to how
+  // creative-studio already filters its own gallery.
+  if (templateId === 'creative-photographer') {
+    const photoSocials = c.socials || {};
+    extras.facebook_url = photoSocials.facebook || '';
+    extras.instagram_url = photoSocials.instagram || '';
+    extras.has_facebook = extras.facebook_url ? 'true' : '';
+    extras.has_instagram = extras.instagram_url ? 'true' : '';
+    extras.icon_instagram = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85C2.38 3.86 3.9 2.31 7.15 2.16 8.42 2.1 8.8 2.16 12 2.16zM12 7a5 5 0 100 10 5 5 0 000-10zm0 8.2a3.2 3.2 0 110-6.4 3.2 3.2 0 010 6.4zm5.2-8.4a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4z"/></svg>';
+    extras.icon_facebook = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V8c0-.9.25-1.5 1.55-1.5H16.7V3.7C16.3 3.65 15.2 3.55 13.9 3.55c-2.7 0-4.5 1.65-4.5 4.65v2.6H6.6v3.1h2.8v8h4.1z"/></svg>';
+
+    extras.show_press_quote = (c.press_pull_quote || '').trim() ? 'true' : '';
+    extras.press_pull_quote = c.press_pull_quote || '';
+    extras.press_pull_source = c.press_pull_source || '';
+
+    // Category filter bar -- identical logic to creative-studio's own
+    // gallery_filters_bar_html, applied here since this template uses the
+    // same category-tagged gallery items.
+    const photoGallery = Array.isArray(c.gallery) ? c.gallery : [];
+    const photoCategories = [...new Set(photoGallery.map(i => (i && i.category || '').trim()).filter(Boolean))];
+    extras.gallery_filters_bar_html = photoCategories.length > 1 ?
+      `<div class="cat-filter-bar" id="cs-filters">
+        <button type="button" class="cs-filter cat-pill active" data-filter="">All</button>
+        ${photoCategories.map(cat => `<button type="button" class="cs-filter cat-pill" data-filter="${esc(cat)}">${esc(cat)}</button>`).join('')}
+      </div>` : '';
+
+    // Bookable sessions -- same booking_services pattern as every other
+    // template, styled as the dark "Book a Session" band's session cards.
+    const photoBookable = (Array.isArray(c.booking_services) ? c.booking_services : []).filter(s => s && s.service_id);
+    extras.bookable_services_html = photoBookable.map(s => {
+      const svcName = esc(s.name || '');
+      const svcPrice = s.price ? esc(String(s.price)) : '';
+      const svcDuration = parseInt(s.duration_min, 10) || 60;
+      const staffMode = s.staff_mode === 'any' ? 'any' : 'choose';
+      return `<div class="session-card">
+        <h4>${svcName}</h4>
+        <p>${svcDuration} min${svcPrice ? ` &middot; ${svcPrice}` : ''}</p>
+        ${svcDepositLabel(s) ? `<p class="wcz-deposit-note" style="color:rgba(246,244,240,.5);font-size:.78rem;margin-bottom:10px">${esc(svcDepositLabel(s))}</p>` : ''}
+        <button type="button" class="wcz-slot-book-trigger btn-book" data-service-id="${esc(s.service_id)}" data-service-name="${svcName}" data-duration-min="${svcDuration}" data-price="${svcPrice}" data-staff-mode="${staffMode}" ${svcDepositAttrs(s)}>Enquire</button>
+      </div>`;
+    }).join('');
+
+    // Prints -- Commerce SDK, same integration pattern as every other
+    // shop-enabled template.
+    const photoProducts = await getStoreProducts(env, site.id, c.products);
+    const photoRawPhone = (c.phone || c.contact?.phone || '').replace(/\D/g, '');
+    const photoWaNum = photoRawPhone.startsWith('263') ? photoRawPhone : photoRawPhone ? '263' + photoRawPhone.replace(/^0/, '') : '';
+    const photoShopCtx = {
+      waNum: photoWaNum, bizName: c.business_name || c.name || '',
+      addonActive: whatsappStoreActive, storePaymentsEnabled,
+      siteId: site.id, checkoutApiBase,
+    };
+    const photoCommerce = env && env.COMMERCE_SDK ?
+      await callCommerceSDK(env, photoProducts, 'creative-photographer', c.theme || {}, photoShopCtx) :
+      buildCommerceModule(photoProducts, 'creative-photographer', c.theme || {}, photoShopCtx);
+    extras.print_products_html = photoCommerce.gridHtml;
+    extras.wcz_qv_drawer_html = photoCommerce.drawerHtml;
+    extras.wcz_lb_html = photoCommerce.lbHtml;
+    extras.wcz_products_script = photoCommerce.scriptHtml;
+    extras.wcz_commerce_css = env && env.COMMERCE_SDK ?
+      await callCommerceCSS(env) :
+      buildCommerceCSS();
+  }
+
   // -- ELITE-BESPOKE ------------------------------------------------------------
   // Was previously using a raw {{#each products}} against the legacy
   // content.products array -- completely disconnected from the editor's
