@@ -1,8 +1,8 @@
 {
   "templateId": "personal-portfolio",
   "selfContainedNav": true,
-  "defaultPalette": "deep-teal",
-  "defaultPrimaryColor": "#061a1a",
+  "defaultPalette": "ink-amber-violet",
+  "defaultPrimaryColor": "#e8a33d",
   "defaultTypeLabel": "Portfolio",
   "showOpenBadge": false,
   "showHoursGrid": false,
